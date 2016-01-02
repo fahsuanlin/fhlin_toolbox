@@ -1,4 +1,5 @@
 function ice_master(varargin)
+%test
 
 %setting up defaults
 file_prot='meas.asc';   %default protocol file name
