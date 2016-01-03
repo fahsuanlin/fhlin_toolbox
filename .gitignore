@@ -1,0 +1,7 @@
+#ignore following folders
+release/
+ice_vd11/
+read_m/
+snr/
+mask/
+ice/data/
