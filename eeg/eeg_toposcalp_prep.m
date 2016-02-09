@@ -42,6 +42,7 @@ topo_config=[];
 
 surf_os='/Users/fhlin_admin/workspace/subjects//lf/bem/watershed/lf_outer_skull_surface';
 
+point=[];
 
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
@@ -49,6 +50,8 @@ for i=1:length(varargin)/2
     switch lower(option)
         case 'surfin_os'
              surf_os=option_value;
+        case 'point'
+            point=option_value; %electrode 3D coordinates (corresponding to the selected head model)
         otherwise
             fprintf('unknown option [%s].\n',option);
             fprintf('error!\n');
@@ -79,9 +82,19 @@ set(gcf,'color','k','invert','off');
 axis vis3d;
 
 for ii=1:length(electrodes)
-    fprintf('click to locate electrode [%s]]\n',electrodes{ii});
-    waitforbuttonpress 
-    pt=inverse_select3d(P_tmp);
+    if(flag_interactive)
+        fprintf('click to locate electrode [%s]]\n',electrodes{ii});
+        waitforbuttonpress 
+        pt=inverse_select3d(P_tmp);
+    else
+        if(isempty(point))
+            pt=point(ii,:);
+        else
+            fprintf('no specified electrode coordinates in "point" variable!\n');
+            fprintf('error!\n);
+            return;
+        end;
+    end;
     click_point=plot3(pt(1),pt(2),pt(3),'.');
     set(click_point,'color','y');
     

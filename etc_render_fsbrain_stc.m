@@ -56,7 +56,9 @@ for f_idx=1:length(file_stem)
     view_count=1;
     
     for view_idx=1:n_view
-        hh=subplot(length(file_stem),n_view,view_count);
+        %hh=subplot(length(file_stem),n_view,view_count);
+        hh=axes('pos',[1/n_view*(view_idx-1),0,1/n_view*(view_idx),1]);
+        
         xx=(view_idx-1)*dx;
         yy=(f_idx-1)*dy+dys;
         set(hh,'pos',[xx,yy,dx,dy]);
@@ -91,6 +93,12 @@ for f_idx=1:length(file_stem)
         if(strcmp(render_view{view_idx},'med')&strcmp(hemi{view_idx},'rh'))
             view(-90,0);
         end;
+        if(strcmp(render_view{view_idx},'ven')&strcmp(hemi{view_idx},'lh'))
+            view(0,-90);
+        end;
+        if(strcmp(render_view{view_idx},'ven')&strcmp(hemi{view_idx},'rh'))
+            view(0,-90);
+        end;
 %       camlight(-90,0);
 %       camlight(90,0);    
 %       camlight(0,0);
@@ -109,9 +117,11 @@ if(flag_colorbar)
     overlay_cmap_neg(:,3)=1;
     cmap = [overlay_cmap;overlay_cmap_neg];
     
-    subplot('position',[0.45 0 0.1 dys/2*0.8]);
+    %subplot('position',[0.45 0 0.1 dys/2*0.8]);
+    axes('pos',[0.45 0.1 0.1 dys/2*0.8]);
     image([1:80]); axis off; colormap(cmap)
-    subplot('position',[0.45 dys/2 0.1 dys/2*0.8]);
+    %subplot('position',[0.45 dys/2 0.1 dys/2*0.8]);
+    axes('pos',[0.45 dys/2+0.1 0.1 dys/2*0.8]);
     image([81:160]); axis off; colormap(cmap)
 end;
 

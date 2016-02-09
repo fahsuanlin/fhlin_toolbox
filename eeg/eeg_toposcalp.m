@@ -35,15 +35,16 @@ end;
 if(isempty(topoconfig))
     load('eeg_topoconfig32.mat'); %default topology configuration
 end;
+non_nan=find(~isnan(topoconfig.electrodes_vertex));
                  
 if(isempty(clim))
-    dummy=sort(data(:));
+    dummy=sort(data(non_nan));
     clim(1)=data(round(length(data(:))*0.05));
     clim(2)=data(round(length(data(:))*0.95));
 end;
 
 val=zeros(size(topoconfig.verts_os,1),1);
-val(topoconfig.electrodes_vertex)=data;
+val(topoconfig.electrodes_vertex(non_nan))=data(non_nan);
 cmap=colormap;
 
 val_interp=inverse_smooth('','value',val,'step',20,'face',topoconfig.faces_os'-1,'vertex',topoconfig.verts_os','flag_fixval',1);
