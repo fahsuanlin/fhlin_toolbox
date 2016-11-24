@@ -80,8 +80,6 @@ output.path_val_opt=path_val_opt;
 output.C_diff=sem_diff;
 output.C=sem_C;
 
-
-
 %chi-square calculation
 if(flag_display)
 	fprintf('calculating chi-squares...\n');

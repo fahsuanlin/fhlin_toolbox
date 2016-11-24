@@ -61,6 +61,7 @@ p = size(covv,1);
 %Maximal likelihood 
 if(strcmp('ml',obj_type)) 
 	f = log(det(C))+trace(covv*inv(C))-log(det(covv))-p;
+    if(~isreal(f)) keyboard; end;
 end;
 
 %Ordinary least square (OLS)

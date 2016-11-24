@@ -23,10 +23,12 @@ nv=[];
 nf=[];
 
 exc_vertex=[];
+inc_vertex=[];
 
 flag_fixval=1;
 flag_display=1;
 flag_regrid=1;
+flag_regrid_zero=0;
 
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
@@ -44,6 +46,8 @@ for i=1:length(varargin)/2
             vertex=option_value;
         case 'exc_vertex'
             exc_vertex=option_value;
+        case 'inc_vertex'
+            inc_vertex=option_value;
         case 'face'
             face=option_value;
         case 'flag_display'
@@ -52,6 +56,8 @@ for i=1:length(varargin)/2
             flag_fixval=option_value;
         case 'flag_regrid'
             flag_regrid=option_value;
+        case 'flag_regrid_zero'
+            flag_regrid_zero=option_value;
         otherwise
             fprintf('unknown option [%s]\n',option);
             return;
@@ -116,6 +122,13 @@ end;
 
 smooth_value=zeros(size(value));
 dd=zeros(size(value,2),step);
+
+%inclusive label
+if(~isempty(inc_vertex))
+    tmp=setdiff([1:length(value)],inc_vertex);    
+    exc_vertex=union(exc_vertex,tmp);    
+end;
+
 for tt=1:size(value,2)
     if(flag_display)
     	fprintf('smoothing [%d|%d]',tt,size(value,2));
@@ -127,12 +140,21 @@ for tt=1:size(value,2)
 	pidx=find(w0>eps);
 	nidx=find(w0<-eps);
 	
+
     if(flag_regrid)
-    	non_zero=find(abs(w)>eps);
-        if(flag_display)
-            fprintf('gridding...');
+        if(~flag_regrid_zero)
+            non_zero=find(abs(w)>eps);
+            if(flag_display)
+                fprintf('gridding...');
+            end;
+            w=griddatan(vertex(1:3,non_zero)',w(non_zero),vertex(1:3,:)','nearest');
+        else
+            non_zero=[1:length(w)];
+            w=griddatan(vertex(1:3,non_zero)',w(non_zero),vertex(1:3,:)','nearest');
         end;
-        w=griddatan(vertex(1:3,non_zero)',w(non_zero),vertex(1:3,:)','nearest');
+
+        scale_idx=find(abs(w)>eps);
+
         if(flag_display)
             fprintf('done!\n');
         end;
@@ -164,7 +186,10 @@ for tt=1:size(value,2)
 	end;
 	if(flag_display) fprintf('\n'); end;
 
-	smooth_value(:,tt)=fmri_scale(w,max(w0),min(w0));
+    if(~isempty(exc_vertex))
+                w(exc_vertex)=nan;
+    end;
+	smooth_value(scale_idx,tt)=fmri_scale(w(scale_idx),max(w0(non_zero)),min(w0(non_zero)));
 end;
 
 return;

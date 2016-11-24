@@ -1,11 +1,13 @@
-function [latency, fitted, ttp, onset,data,fitted_timeVec]=fmri_latency_est(data,timeVec,varargin)
+function [latency, fitted, ttp, onset,data,fitted_timeVec, latency_off]=fmri_latency_est(data,timeVec,varargin)
 
+latency_off=nan;
 latency=nan;
 fitted=[];
 ttp=nan;
 onset=nan;
 timeVec_oversample=[];
 param_init=[];
+fitted_timeVec=[];
 
 flag_normalize_fitted=0;
 flag_model_tth=0;
@@ -14,7 +16,6 @@ flag_spline=0;
 spline_timeVec=[];
 
 flag_linear=0;
-
 flag_fir=0;
 
 for i=1:length(varargin)/2
@@ -114,7 +115,7 @@ elseif(flag_fir)
     t_max=timeVec(max_idx);
     [dummy,min_idx]=min(abs(timeVec));
     
-    %find timing indices between +1 and +7 s
+    %"on" time-to-half; find timing indices between +1 and +7 s
     [dummy,max_idx]=min(abs(timeVec-7));
     [dummy,min_idx]=min(abs(timeVec-1));
     
@@ -125,7 +126,7 @@ elseif(flag_fir)
     else
         dd=data(min_idx:max_idx);
         
-        xx=diff(sign(dd-0.5));
+        xx=diff(sign(dd-max(dd)./2));
         latency_idx=find(xx>1);
         if(isempty(latency_idx))
             latency=nan;
@@ -143,6 +144,30 @@ elseif(flag_fir)
         else
             onset=nan;
         end;
+    end;
+    
+    
+    %"off" time-to-half; find timing indices after peak
+    [dummy,max_idx]=max(data);
+    tmp=data;
+    tmp(1:max_idx)=dummy;
+    [dummy,min_idx]=min(tmp);
+
+    tt=timeVec(max_idx:min_idx);
+    if(isempty(tt))
+        latency=nan;
+    else
+        dd=data(max_idx:min_idx);
+        
+        xx=diff(sign(dd-max(dd)/2));
+        latency_idx=find(xx<-1);
+        if(isempty(latency_idx))
+            latency_off=nan;
+        else
+            latency_idx=latency_idx(1);
+            %[dummy,latency_idx]=min(abs(dd-0.5));
+            latency_off=tt(latency_idx);
+        end;        
     end;
     
     fitted=data;
