@@ -25,7 +25,7 @@ default_solid_color=[1.0000    0.7031    0.3906];
 curv_pos_color=[1 1 1].*0.4;
 curv_neg_color=[1 1 1].*0.7;
 
-bg_color='w'; %figure background color;
+bg_color=[1 1 1]; %figure background color;
 overlay_cmap=autumn(80); %overlay colormap;
 overlay_cmap_neg=winter(80); %overlay colormap;
 overlay_cmap_neg(:,3)=1;
@@ -43,9 +43,13 @@ overlay_threshold=[];
 overlay_value_flag_pos=0;
 overlay_value_flag_neg=0;
 overlay_regrid_flag=1;
+overlay_regrid_zero_flag=0;
 
 overlay_exclude_fstem='';
 overlay_exclude=[];
+
+overlay_include_fstem='';
+overlay_include=[];
 
 %cluster file
 cluster_file={};
@@ -56,6 +60,7 @@ view_angle=[];
 
 flag_redraw=0;
 flag_camlight=1;
+flag_colorbar=0;
 
 for idx=1:length(varargin)/2
     option=varargin{idx*2-1};
@@ -85,6 +90,10 @@ for idx=1:length(varargin)/2
             overlay_exclude=option_value;
         case 'overlay_exclude_fstem'
             overlay_exclude_fstem=option_value;
+        case 'overlay_include'
+            overlay_include=option_value;
+        case 'overlay_include_fstem'
+            overlay_include_fstem=option_value;
         case 'overlay_stc_lim'
             overlay_stc_lim=option_value;
         case 'overlay_stc_timevec'
@@ -95,10 +104,14 @@ for idx=1:length(varargin)/2
             overlay_smooth=option_value;
         case 'overlay_regrid_flag'
             overlay_regrid_flag=option_value;
+        case 'overlay_regrid_zero_flag'
+            overlay_regrid_zero_flag=option_value;
         case 'overlay_threshold'
             overlay_threshold=option_value;
         case 'overlay_cmap'
             overlay_cmap=option_value;
+        case 'overlay_cmap_neg'
+            overlay_cmap_neg=option_value;
         case 'cluster_file'
             cluster_file=option_value;
         case 'alpha'
@@ -107,8 +120,12 @@ for idx=1:length(varargin)/2
             flag_redraw=option_value;
         case 'flag_camlight'
             flag_camlight=option_value;
+        case 'flag_colorbar'
+            flag_colorbar=option_value;
         case 'view_angle'
             view_angle=option_value;
+        case 'bg_color'
+            bg_color=option_value;
         otherwise
             fprintf('unknown option [%s]...\n',option);
             return;
@@ -139,7 +156,6 @@ if(isempty(overlay_value)&~isempty(overlay_stc))
         overlay_stc_hemi=overlay_stc;
     end;
 end;
-
 
 
 if(isempty(view_angle))
@@ -177,25 +193,35 @@ else
 end;
 
 
-%excluding labels
+%exclusive/inclusive labels
 if(~isempty(overlay_exclude_fstem))
     if(~iscell(hemi))
         overlay_exclude_tmp=inverse_read_label(sprintf('%s',overlay_exclude_fstem));
-        %[dummy,overlay_exclude]=intersect(vertex_coords,overlay_exclude_tmp);
         overlay_exclude=overlay_exclude_tmp+1;
     else
         for i=1:length(hemi)
             overlay_exclude_tmp{i}=inverse_read_label(sprintf('%s-%s.label',overlay_exclude_fstem,hemi{i}));
-            %[dummy,overlay_exclude{i}]=intersect(vertex_coords_hemi{i},overlay_exclude_tmp{i});
             overlay_exclude{i}=overlay_exclude_tmp{i}+1;
+        end;
+    end;
+elseif(~isempty(overlay_include_fstem))
+    if(~iscell(hemi))
+        overlay_include_tmp=inverse_read_label(sprintf('%s',overlay_include_fstem));
+        overlay_include=overlay_include_tmp+1;
+    else
+        for i=1:length(hemi)
+            overlay_include_tmp{i}=inverse_read_label(sprintf('%s-%s.label',overlay_include_fstem,hemi{i}));
+            overlay_include{i}=overlay_include_tmp{i}+1;
         end;
     end;
 else
     if(~iscell(hemi))
         overlay_exclude=[];
+        overlay_include=[];
     else
         for i=1:length(hemi)
             overlay_exclude{i}=[];
+            overlay_include{i}=[];
         end;
     end;
 end;
@@ -242,11 +268,10 @@ if(~isempty(overlay_value))
         ov(overlay_vertex+1)=overlay_value;
         
         if(~isempty(overlay_smooth))
-            ovs=inverse_smooth('','vertex',vertex_coords','face',faces','value',ov,'step',overlay_smooth,'flag_fixval',0,'exc_vertex',overlay_exclude,'flag_regrid',overlay_regrid_flag);
+            ovs=inverse_smooth('','vertex',vertex_coords','face',faces','value',ov,'step',overlay_smooth,'flag_fixval',0,'exc_vertex',overlay_exclude,'inc_vertex',overlay_include,'flag_regrid',overlay_regrid_flag,'flag_regrid_zero',overlay_regrid_zero_flag);
         else
             ovs=ov;
         end;
-        
         
         if(~isempty(find(overlay_value>0))) overlay_value_flag_pos=1; end;
         if(~isempty(find(overlay_value<0))) overlay_value_flag_neg=1; end;
@@ -255,9 +280,9 @@ if(~isempty(overlay_value))
         for h_idx=1:length(overlay_value)
             ov=zeros(size(vertex_coords_hemi{h_idx},1),1);
             ov(overlay_vertex{h_idx}+1)=overlay_value{h_idx};
-            
+
             if(~isempty(overlay_smooth))
-                ovs=cat(1,ovs,inverse_smooth('','vertex',vertex_coords_hemi{h_idx}','face',faces_hemi{h_idx}','value',ov,'step',overlay_smooth,'flag_fixval',0,'exc_vertex',overlay_exclude{h_idx},'flag_regrid',overlay_regrid_flag));
+                ovs=cat(1,ovs,inverse_smooth('','vertex',vertex_coords_hemi{h_idx}','face',faces_hemi{h_idx}','value',ov,'step',overlay_smooth,'flag_fixval',0,'exc_vertex',overlay_exclude{h_idx},'inc_vertex',overlay_include{h_idx},'flag_regrid',overlay_regrid_flag,'flag_regrid_zero',overlay_regrid_zero_flag));
             else
                 ovs=cat(1,ovs,ov);
             end;
@@ -274,7 +299,7 @@ if(~isempty(overlay_value))
     c_idx=find(ovs(:)>=min(overlay_threshold));
     
     fvdata(c_idx,:)=inverse_get_color(overlay_cmap,ovs(c_idx),max(overlay_threshold),min(overlay_threshold));
-    
+
     c_idx=find(ovs(:)<=-min(overlay_threshold));
     
     fvdata(c_idx,:)=inverse_get_color(overlay_cmap_neg,ovs(c_idx),-max(overlay_threshold),-min(overlay_threshold));
@@ -296,6 +321,12 @@ if(~flag_redraw)
     set(gcf,'color',bg_color);
     
     view(view_angle(1), view_angle(2));
+    
+    cp=campos;
+    cp=cp./norm(cp);
+    
+    campos(1300.*cp);
+    
     material dull;
     if(flag_camlight)
        camlight(-90,0);
@@ -305,6 +336,8 @@ if(~flag_redraw)
     end;
 end;
 
+
+    
 %%%%%%%%%%%%%%%%%%%%%%%%
 %setup global object
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -347,6 +380,7 @@ etc_render_fsbrain.overlay_cmap_neg=overlay_cmap_neg;
 etc_render_fsbrain.overlay_value_flag_pos=overlay_value_flag_pos;
 etc_render_fsbrain.overlay_value_flag_neg=overlay_value_flag_neg;
 etc_render_fsbrain.overlay_exclude=overlay_exclude;
+etc_render_fsbrain.overlay_include=overlay_include;
 
 etc_render_fsbrain.h=h;
 etc_render_fsbrain.click_point=[];
@@ -363,7 +397,13 @@ etc_render_fsbrain.cluster_file=cluster_file;
 %%%%%%%%%%%%%%%%%%%%%%%%
 set(gcf,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
 set(gcf,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
+set(gcf,'invert','off');
 
 hold on;
+
+
+if(flag_colorbar)
+    etc_render_fsbrain_handle('kb','c0','c0');
+end;
 return;
     
