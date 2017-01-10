@@ -36,6 +36,7 @@ overlay_stc=[];
 overlay_stc_hemi=[];
 overlay_stc_lim=[];
 overlay_stc_timeVec=[];
+overlay_stc_timeVec_unit='';
 overlay_stc_timeVec_idx=[];
 overlay_vertex=[];
 overlay_smooth=5;
@@ -44,12 +45,16 @@ overlay_value_flag_pos=0;
 overlay_value_flag_neg=0;
 overlay_regrid_flag=1;
 overlay_regrid_zero_flag=0;
+overlay_flag_render=1;
 
 overlay_exclude_fstem='';
 overlay_exclude=[];
 
 overlay_include_fstem='';
 overlay_include=[];
+
+%stc time course
+flag_hold_fig_stc_timecourse=0;
 
 %cluster file
 cluster_file={};
@@ -82,6 +87,8 @@ for idx=1:length(varargin)/2
             curv_pos_color=option_value;
         case 'curv_neg_color'
             curv_neg_color=option_value;
+        case 'overlay_flag_render'
+            overlay_flag_render=option_value;
         case 'overlay_value'
             overlay_value=option_value;
         case 'overlay_stc'
@@ -98,6 +105,8 @@ for idx=1:length(varargin)/2
             overlay_stc_lim=option_value;
         case 'overlay_stc_timevec'
             overlay_stc_timeVec=option_value;
+        case 'overlay_stc_timevec_unit'
+            overlay_stc_timeVec_unit=option_value;
         case 'overlay_vertex'
             overlay_vertex=option_value;
         case 'overlay_smooth'
@@ -122,6 +131,8 @@ for idx=1:length(varargin)/2
             flag_camlight=option_value;
         case 'flag_colorbar'
             flag_colorbar=option_value;
+        case 'flag_hold_fig_stc_timecourse'
+            flag_hold_fig_stc_timecourse=option_value;
         case 'view_angle'
             view_angle=option_value;
         case 'bg_color'
@@ -261,10 +272,11 @@ if(~isempty(curv))
     fvdata(idx,:)=repmat(curv_neg_color,[length(idx),1]);
 end;
 
+overlay_flag_render=0;
 %2: curvature and overlay color
 if(~isempty(overlay_value))
     if(~iscell(overlay_value))
-        ov=zeros(size(vertex_coords,1),1);
+        ov=zeros(size(vertex_coords,1),1); 
         ov(overlay_vertex+1)=overlay_value;
         
         if(~isempty(overlay_smooth))
@@ -273,6 +285,7 @@ if(~isempty(overlay_value))
             ovs=ov;
         end;
         
+        overlay_flag_render=1;
         if(~isempty(find(overlay_value>0))) overlay_value_flag_pos=1; end;
         if(~isempty(find(overlay_value<0))) overlay_value_flag_neg=1; end;
     else
@@ -288,6 +301,7 @@ if(~isempty(overlay_value))
             end;
         end;
         
+        overlay_flag_render=1;
         if(~isempty(find(overlay_value{h_idx}>0))) overlay_value_flag_pos=1; end;
         if(~isempty(find(overlay_value{h_idx}<0))) overlay_value_flag_neg=1; end;
     end;
@@ -364,11 +378,13 @@ etc_render_fsbrain.alpha=alpha;
 
 etc_render_fsbrain.fig_brain=gcf;
 etc_render_fsbrain.fig_stc=[];
+etc_render_fsbrain.fig_gui=[];
 
 etc_render_fsbrain.overlay_value=overlay_value;
 etc_render_fsbrain.overlay_stc=overlay_stc;
 etc_render_fsbrain.overlay_stc_hemi=overlay_stc_hemi;
 etc_render_fsbrain.overlay_stc_timeVec=overlay_stc_timeVec;
+etc_render_fsbrain.overlay_stc_timeVec_unit=overlay_stc_timeVec_unit;
 etc_render_fsbrain.overlay_stc_timeVec_idx=overlay_stc_timeVec_idx;
 etc_render_fsbrain.overlay_stc_timeVec_idx_line=[];
 etc_render_fsbrain.overlay_stc_lim=overlay_stc_lim;
@@ -381,7 +397,11 @@ etc_render_fsbrain.overlay_value_flag_pos=overlay_value_flag_pos;
 etc_render_fsbrain.overlay_value_flag_neg=overlay_value_flag_neg;
 etc_render_fsbrain.overlay_exclude=overlay_exclude;
 etc_render_fsbrain.overlay_include=overlay_include;
+etc_render_fsbrain.overlay_flag_render=overlay_flag_render;
 
+etc_render_fsbrain.flag_hold_fig_stc_timecourse=flag_hold_fig_stc_timecourse;
+etc_render_fsbrain.handle_fig_stc_timecourse=[];
+            
 etc_render_fsbrain.h=h;
 etc_render_fsbrain.click_point=[];
 etc_render_fsbrain.click_vertex=[];

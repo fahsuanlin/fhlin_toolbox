@@ -15,13 +15,9 @@ vol_face=[];
 vol_vertex_hemi={};
 vol_face_hemi={};
 
-flag_curv=0;
-curv=[];
-
 %color 
 default_solid_color=[256 180 100]./256;
-%curv_pos_color=[1 1 1].*0.4;
-%curv_neg_color=[1 1 1].*0.7;
+
 
 bg_color=[1 1 1]; %figure background color;
 
@@ -41,6 +37,7 @@ topo_stc_timeVec_unit='';
 topo_stc_timeVec_idx=[];
 topo_vertex=[];
 topo_vertex_hemi=[];
+topo_label={};
 
 topo_smooth=5;
 topo_threshold=[];
@@ -118,20 +115,10 @@ for idx=1:length(varargin)/2
             topo_stc_timeVec=option_value;
         case 'topo_stc_timevec_unit'
             topo_stc_timeVec_unit=option_value;            
-            
-            
-            
-            
+        case 'topo_label'
+            topo_label=option_value;
         case 'default_solid_color'
             default_solid_color=option_value;
-        case 'curv_pos_color'
-            curv_pos_color=option_value;
-        case 'curv_neg_color'
-            curv_neg_color=option_value;
-        case 'overlay_value'
-            overlay_value=option_value;       
-        case 'overlay_vertex'
-            overlay_vertex=option_value;
 
         
         case 'cluster_file'
@@ -298,7 +285,7 @@ etc_render_fsbrain.overlay_value_flag_neg=topo_value_flag_neg;
 etc_render_fsbrain.overlay_exclude=topo_exclude;
 etc_render_fsbrain.overlay_include=topo_include;
 etc_render_fsbrain.flag_hold_fig_stc_timecourse=flag_hold_fig_stc_timecourse;
-etc_render_fsbrain.handleg_fig_stc_timecourse=[];
+etc_render_fsbrain.handle_fig_stc_timecourse=[];
 etc_render_fsbrain.overlay_flag_render=topo_flag_render;
         
 etc_render_fsbrain.h=h;
@@ -311,6 +298,8 @@ etc_render_fsbrain.roi_radius=[];
 
 etc_render_fsbrain.cluster_file=cluster_file;
 
+etc_render_fsbrain.aux(1).data=topo_label;
+etc_render_fsbrain.aux(1).tag='topo_label';
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%

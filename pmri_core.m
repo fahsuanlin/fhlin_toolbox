@@ -339,17 +339,17 @@ for fe_idx=1:size(Y,3)
                 end;
             end;
             
-            if(~flag_phase_constraint)
-                x_reg(:,fe_idx)=tmp;
-            else
-                if(~flag_loose_phase_constraint)
-                    x_reg(:,fe_idx)=tmp.*exp(sqrt(-1).Omega(:,fe_idx));
-                else
-                    tmp1=tmp(1:length(tmp)/2).*exp(sqrt(-1).*Omega(:,fe_idx));
-                    tmp2=tmp(length(tmp)/2+1:end).*exp(sqrt(-1).*(Omega(:,fe_idx)+pi/2));
-                    x_reg(:,fe_idx)=tmp1+tmp2;
-                end;
-            end;
+%             if(~flag_phase_constraint)
+%                 x_reg(:,fe_idx)=tmp;
+%             else
+%                 if(~flag_loose_phase_constraint)
+%                     x_reg(:,fe_idx)=tmp.*exp(sqrt(-1).Omega(:,fe_idx));
+%                 else
+%                     tmp1=tmp(1:length(tmp)/2).*exp(sqrt(-1).*Omega(:,fe_idx));
+%                     tmp2=tmp(length(tmp)/2+1:end).*exp(sqrt(-1).*(Omega(:,fe_idx)+pi/2));
+%                     x_reg(:,fe_idx)=tmp1+tmp2;
+%                 end;
+%             end;
         end;
         
         if(flag_reg_g)
