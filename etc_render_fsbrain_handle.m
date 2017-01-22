@@ -35,7 +35,6 @@ switch lower(param)
                 fprintf('c: switch on/off the colorbar\n');
                 fprintf('u: show cluster labels from files\n');
                 fprintf('\n\n fhlin@dec 25, 2014\n');
-                
             case 'a'
                 fprintf('archiving...\n');
                 fn=sprintf('etc_render_fsbrain.tif');
@@ -49,7 +48,7 @@ switch lower(param)
                 fprintf('\nredrawing...\n');
                 redraw;
             case 'g'
-                fprintf('\nGUI...\n');
+                %fprintf('\nGUI...\n');
                 if(isfield(etc_render_fsbrain,'fig_gui'))
                     etc_render_fsbrain.fig_gui=[];
                 end;
@@ -58,6 +57,16 @@ switch lower(param)
                 pos=get(etc_render_fsbrain.fig_gui,'pos');
                 pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
                 set(etc_render_fsbrain.fig_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
+            case 'k'
+                %fprintf('\nregister points...\n');
+                if(isfield(etc_render_fsbrain,'fig_register'))
+                    etc_render_fsbrain.fig_register=[];
+                end;
+                etc_render_fsbrain.fig_register=etc_render_fsbrain_register;
+                set(etc_render_fsbrain.fig_register,'unit','pixel');
+                pos=get(etc_render_fsbrain.fig_register,'pos');
+                pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                set(etc_render_fsbrain.fig_register,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
             case 't'
                 fprintf('\ntemporal integration...\n');
                 if(isempty(inverse_time_integration))
@@ -657,6 +666,30 @@ view(etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2));
 
 %set(gcf,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
 %set(gcf,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
+
+if(isfield(etc_render_fsbrain,'aux_point_coords'))
+    if(~isempty(etc_render_fsbrain.aux_point_coords_h))
+        delete(etc_render_fsbrain.aux_point_coords_h(:));
+        etc_render_fsbrain.aux_point_coords_h=[];
+    end;
+    
+    if(~isempty(etc_render_fsbrain.aux_point_name_h))
+        delete(etc_render_fsbrain.aux_point_name_h(:));
+        etc_render_fsbrain.aux_point_name_h=[];
+    end;
+    
+    if(~isempty(etc_render_fsbrain.aux_point_coords))
+        [sx,sy,sz] = sphere;
+        sr=0.005;
+        for idx=1:size(etc_render_fsbrain.aux_point_coords,1)
+            etc_render_fsbrain.aux_point_coords_h(idx)=surf(sx.*sr+etc_render_fsbrain.aux_point_coords(idx,1),sy.*sr+etc_render_fsbrain.aux_point_coords(idx,2),sz.*sr+etc_render_fsbrain.aux_point_coords(idx,3));
+            set(etc_render_fsbrain.aux_point_coords_h(idx),'facecolor','r','edgecolor','none');
+            if(~isempty(etc_render_fsbrain.aux_point_name))
+                etc_render_fsbrain.aux_point_name_h(idx)=text(etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3),etc_render_fsbrain.aux_point_name{idx});
+            end;
+        end;
+    end;
+end;
 
 return;
 

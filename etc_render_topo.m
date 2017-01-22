@@ -47,6 +47,11 @@ topo_regrid_flag=1;
 topo_regrid_zero_flag=0;
 topo_flag_render=0;
 
+topo_aux_point_coords=[];
+topo_aux_point_coords_h=[];
+topo_aux_point_name={};
+topo_aux_point_name_h=[];
+
 topo_exclude_fstem='';
 topo_exclude=[];
 
@@ -117,10 +122,12 @@ for idx=1:length(varargin)/2
             topo_stc_timeVec_unit=option_value;            
         case 'topo_label'
             topo_label=option_value;
+        case 'topo_aux_point_coords';
+            topo_aux_point_coords=option_value;
+        case 'topo_aux_point_name';
+            topo_aux_point_name=option_value;
         case 'default_solid_color'
-            default_solid_color=option_value;
-
-        
+            default_solid_color=option_value;        
         case 'cluster_file'
             cluster_file=option_value;
         case 'alpha'
@@ -226,6 +233,20 @@ if(isempty(view_angle))
         view_angle=[-135 20];
    end;
 view(view_angle(1), view_angle(2));
+
+hold on;
+[sx,sy,sz] = sphere;
+sr=0.005;
+%plot3(topo_aux_point_coords(:,1),topo_aux_point_coords(:,2),topo_aux_point_coords(:,3),'ko'); 
+for idx=1:size(topo_aux_point_coords,1)
+    topo_aux_point_coords_h(idx)=surf(sx.*sr+topo_aux_point_coords(idx,1),sy.*sr+topo_aux_point_coords(idx,2),sz.*sr+topo_aux_point_coords(idx,3));
+    set(topo_aux_point_coords_h(idx),'facecolor','r','edgecolor','none');
+    if(~isempty(topo_aux_point_name))
+        topo_aux_point_name_h(idx)=text(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3),topo_aux_point_name{idx}); hold on;
+    end;
+end;
+
+
 % 
 % cp=campos;
 % cp=cp./norm(cp);
@@ -300,7 +321,10 @@ etc_render_fsbrain.cluster_file=cluster_file;
 
 etc_render_fsbrain.aux(1).data=topo_label;
 etc_render_fsbrain.aux(1).tag='topo_label';
-
+etc_render_fsbrain.aux_point_coords=topo_aux_point_coords;
+etc_render_fsbrain.aux_point_coords_h=topo_aux_point_coords_h;
+etc_render_fsbrain.aux_point_name=topo_aux_point_name;
+etc_render_fsbrain.aux_point_name_h=topo_aux_point_name_h;
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 %setup call-back function

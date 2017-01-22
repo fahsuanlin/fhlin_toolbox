@@ -27,11 +27,11 @@ function varargout = etc_render_fsbrain_gui(varargin)
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
-                   'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @etc_render_fsbrain_gui_OpeningFcn, ...
-                   'gui_OutputFcn',  @etc_render_fsbrain_gui_OutputFcn, ...
-                   'gui_LayoutFcn',  [] , ...
-                   'gui_Callback',   []);
+    'gui_Singleton',  gui_Singleton, ...
+    'gui_OpeningFcn', @etc_render_fsbrain_gui_OpeningFcn, ...
+    'gui_OutputFcn',  @etc_render_fsbrain_gui_OutputFcn, ...
+    'gui_LayoutFcn',  [] , ...
+    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
 end
@@ -63,7 +63,7 @@ guidata(hObject, handles);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = etc_render_fsbrain_gui_OutputFcn(hObject, eventdata, handles) 
+function varargout = etc_render_fsbrain_gui_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -122,7 +122,7 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 global etc_render_fsbrain
-if(~isempty(etc_render_fsbrain.overlay_stc))    
+if(~isempty(etc_render_fsbrain.overlay_stc))
     if(~isempty(etc_render_fsbrain.overlay_stc_timeVec))
         set(hObject,'Min',min(etc_render_fsbrain.overlay_stc_timeVec));
         set(hObject,'Max',max(etc_render_fsbrain.overlay_stc_timeVec));
@@ -135,8 +135,10 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
         set(hObject,'Max',max(etc_render_fsbrain.overlay_stc_timeVec));
         if(isfield(etc_render_fsbrain,'overlay_stc_timeVec_idx'));
             set(hObject,'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
-        end;        
+        end;
     end;
+else
+    set(hObject,'enable','off');
 end;
 
 
@@ -163,7 +165,6 @@ mm=str2double(get(hObject,'string'));
 mx=max(etc_render_fsbrain.overlay_threshold);
 etc_render_fsbrain.overlay_threshold=[mm,mx];
 etc_render_fsbrain_handle('redraw');
-fprintf('redraw DONE!\n');
 
 
 % --- Executes during object creation, after setting all properties.
@@ -195,7 +196,6 @@ mx=str2double(get(hObject,'string'));
 mm=min(etc_render_fsbrain.overlay_threshold);
 etc_render_fsbrain.overlay_threshold=[mm,mx];
 etc_render_fsbrain_handle('redraw');
-fprintf('redraw DONE!\n');
 
 
 % --- Executes during object creation, after setting all properties.
@@ -219,7 +219,7 @@ function text_timeVec_min_CreateFcn(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 global etc_render_fsbrain
-if(~isempty(etc_render_fsbrain.overlay_stc))    
+if(~isempty(etc_render_fsbrain.overlay_stc))
     if(isempty(etc_render_fsbrain.overlay_stc_timeVec))
         etc_render_fsbrain.overlay_stc_timeVec=[1:size(etc_render_fsbrain.overlay_stc,2)];
     end;
@@ -236,7 +236,7 @@ function text_timeVec_max_CreateFcn(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 global etc_render_fsbrain
-if(~isempty(etc_render_fsbrain.overlay_stc))    
+if(~isempty(etc_render_fsbrain.overlay_stc))
     if(isempty(etc_render_fsbrain.overlay_stc_timeVec))
         etc_render_fsbrain.overlay_stc_timeVec=[1:size(etc_render_fsbrain.overlay_stc,2)];
     end;
@@ -254,6 +254,12 @@ function checkbox_show_overlay_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 global etc_render_fsbrain
 set(hObject,'value',etc_render_fsbrain.overlay_flag_render);
+%keyboard;
+if(~isempty(etc_render_fsbrain.overlay_stc)|~isempty(etc_render_fsbrain.overlay_value))
+else
+    set(hObject,'enable','off');
+end;
+
 
 
 
@@ -334,11 +340,15 @@ function checkbox_show_colorbar_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 global etc_render_fsbrain
 
-set(hObject,'value',1);
-if(isfield(etc_render_fsbrain,'h_colorbar_pos'))
-    if(isempty(etc_render_fsbrain.h_colorbar_pos))
-        set(hObject,'value',0);
+if(~isempty(etc_render_fsbrain.overlay_stc)|~isempty(etc_render_fsbrain.overlay_value))
+    set(hObject,'value',1);
+    if(isfield(etc_render_fsbrain,'h_colorbar_pos'))
+        if(isempty(etc_render_fsbrain.h_colorbar_pos))
+            set(hObject,'value',0);
+        end;
     end;
+else
+    set(hObject,'enable','off');
 end;
 
 
@@ -366,4 +376,8 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 global etc_render_fsbrain
-set(hObject,'string',sprintf('%1.0f',etc_render_fsbrain.overlay_smooth));
+if(~isempty(etc_render_fsbrain.overlay_stc)|~isempty(etc_render_fsbrain.overlay_value))
+    set(hObject,'string',sprintf('%1.0f',etc_render_fsbrain.overlay_smooth));
+else
+    set(hObject,'enable','off');
+end;

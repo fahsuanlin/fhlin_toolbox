@@ -2,6 +2,7 @@ function h=etc_render_fsbrain_stc(file_stem,threshold,varargin)
 
 
 h=[];
+subject='faverage';
 
 render_view={'lat','med','med','lat'};
 hemi={'lh','lh','rh','rh'};
@@ -28,6 +29,8 @@ for idx=1:length(varargin)/2
     option=varargin{idx*2-1};
     option_value=varargin{idx*2};
     switch lower(option)
+        case 'subject'
+            subject=option_value;
         case 'hemi'
             hemi=option_value;
         case 'overlay_exclude_fstem'
@@ -121,7 +124,7 @@ end;
         hh=axes('pos',[0,0,1/4,1]);
         over=stc_lh;
         v=v_lh;
-        etc_render_fsbrain('surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','lh','flag_camlight',0,'overlay_exclude_fstem',oef_lh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
+        etc_render_fsbrain('subject',subject,'surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','lh','flag_camlight',0,'overlay_exclude_fstem',oef_lh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
         view(-90,0);
         cp=campos;
         cp=cp./norm(cp);
@@ -131,7 +134,7 @@ end;
         hh=axes('pos',[1/4,0,1/4,1]);
         over=stc_lh;
         v=v_lh;
-        etc_render_fsbrain('surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','lh','flag_camlight',0,'overlay_exclude_fstem',oef_lh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
+        etc_render_fsbrain('subject',subject,'surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','lh','flag_camlight',0,'overlay_exclude_fstem',oef_lh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
         view(90,0);
         cp=campos;
         cp=cp./norm(cp);
@@ -141,7 +144,7 @@ end;
         hh=axes('pos',[2/4,0,1/4,1]);
         over=stc_rh;
         v=v_rh;
-        etc_render_fsbrain('surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','rh','flag_camlight',0,'overlay_exclude_fstem',oef_rh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
+        etc_render_fsbrain('subject',subject,'surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','rh','flag_camlight',0,'overlay_exclude_fstem',oef_rh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
         view(90,0);
         cp=campos;
         cp=cp./norm(cp);
@@ -151,7 +154,7 @@ end;
         hh=axes('pos',[3/4,0,1/4,1]);
         over=stc_rh;
         v=v_rh;
-        etc_render_fsbrain('surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','rh','flag_camlight',0,'overlay_exclude_fstem',oef_rh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
+        etc_render_fsbrain('subject',subject,'subj',subj,'surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','rh','flag_camlight',0,'overlay_exclude_fstem',oef_rh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
         view(-90,0);        
         cp=campos;
         cp=cp./norm(cp);
@@ -162,7 +165,7 @@ end;
         hh=axes('pos',[0,0.2,1/4,1]);
         over=stc_lh;
         v=v_lh;
-        etc_render_fsbrain('surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','lh','flag_camlight',0,'overlay_exclude_fstem',oef_lh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
+        etc_render_fsbrain('subject',subject,'surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','lh','flag_camlight',0,'overlay_exclude_fstem',oef_lh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
         view(-90,0);
         cp=campos;
         cp=cp./norm(cp);
@@ -172,7 +175,7 @@ end;
         hh=axes('pos',[1/4,0.2,1/4,1]);
         over=stc_lh;
         v=v_lh;
-        etc_render_fsbrain('surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','lh','flag_camlight',0,'overlay_exclude_fstem',oef_lh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
+        etc_render_fsbrain('subject',subject,'surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','lh','flag_camlight',0,'overlay_exclude_fstem',oef_lh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
         view(90,0);
         cp=campos;
         cp=cp./norm(cp);
@@ -182,7 +185,7 @@ end;
         hh=axes('pos',[2/4,0.2,1/4,1]);
         over=stc_rh;
         v=v_rh;
-        etc_render_fsbrain('surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','rh','flag_camlight',0,'overlay_exclude_fstem',oef_rh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
+        etc_render_fsbrain('subject',subject,'surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','rh','flag_camlight',0,'overlay_exclude_fstem',oef_rh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
         view(-90,0);
         cp=campos;
         cp=cp./norm(cp);
@@ -192,7 +195,7 @@ end;
         hh=axes('pos',[3/4,0.2,1/4,1]);
         over=stc_rh;
         v=v_rh;
-        etc_render_fsbrain('surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','rh','flag_camlight',0,'overlay_exclude_fstem',oef_rh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
+        etc_render_fsbrain('subject',subject,'surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','rh','flag_camlight',0,'overlay_exclude_fstem',oef_rh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
         view(90,0);        
         cp=campos;
         cp=cp./norm(cp);
@@ -202,7 +205,7 @@ end;
         hh=axes('pos',[1/8,-0.3,1/4,1]);
         over=stc_lh;
         v=v_lh;
-        etc_render_fsbrain('surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','lh','flag_camlight',0,'overlay_exclude_fstem',oef_lh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
+        etc_render_fsbrain('subject',subject,'surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','lh','flag_camlight',0,'overlay_exclude_fstem',oef_lh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
         camup([1 0 0])
         campos([0 0 -2200])
         camlight;
@@ -210,7 +213,7 @@ end;
         hh=axes('pos',[5/8,-0.3,1/4,1]);
         over=stc_rh;
         v=v_rh;
-        etc_render_fsbrain('surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','rh','flag_camlight',0,'overlay_exclude_fstem',oef_rh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
+        etc_render_fsbrain('subject',subject,'surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','rh','flag_camlight',0,'overlay_exclude_fstem',oef_rh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
         camup([-1 0 0])
         campos([0 0 -2200])
         camlight;
@@ -239,7 +242,7 @@ end;
             else
                 oef='';
             end;
-            etc_render_fsbrain('surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi',hemi{view_idx},'flag_camlight',0,'overlay_exclude_fstem',oef,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
+            etc_render_fsbrain('subject',subject,'surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi',hemi{view_idx},'flag_camlight',0,'overlay_exclude_fstem',oef,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
             %set view angle
             if(strcmp(render_view{view_idx},'lat')&strcmp(hemi{view_idx},'lh'))
                 view(-90,0);
