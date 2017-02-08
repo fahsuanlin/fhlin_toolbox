@@ -13,7 +13,7 @@ ok=1;
 %       return FALSE;
 %     }
 
-if(ice_obj.flag_epi)
+if(ice_obj.flag_epi|ice_obj.flag_sege)
 	if(~ice_obj.flag_3D)
 		%   %// In-place FT in Y
 		% FT in phase encoding direction for all echoes
@@ -46,7 +46,7 @@ end;
 %     }
 
 %   // Rotate and/or mirror to put into standard radiological orientation.
-if(ice_obj.flag_epi)
+if(ice_obj.flag_epi|ice_obj.flag_sege)
     if(ice_obj.MrProt.swap_PE)
             if(ice_obj.flag_debug)
                 fprintf('MrProt requires swapping phase encoding direction!\n');
