@@ -44,7 +44,7 @@ if(ice_obj.flag_debug_file)
 end;
 
 if(~ice_obj.flag_output_burst)
-    if(ice_obj.flag_epi|ice_obj.flag_sege)
+    if(ice_obj.flag_epi)
         for s=1:ice_obj.m_Nz
             for ch=1:ice_obj.m_NChan
                 if(ice_obj.flag_init)
@@ -113,6 +113,12 @@ if(~ice_obj.flag_output_burst)
                     end;
                 end;
             end;
+        end;
+    elseif(flag_sege)
+        for ch=1:ice_obj.m_NChan
+            data=ice_m_data(:,:,:,ch);
+            fn=sprintf('%s_chan%03d.mat',ice_obj.output_stem,ch);
+            save(fn,'data');
         end;
     end;
     
