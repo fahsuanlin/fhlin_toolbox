@@ -43,6 +43,7 @@ nav_phase_slope_override=[];
 flag_archive_segments=0;
 
 flag_epi=1;
+flag_sege=0;
 flag_pepsi=0;
 flag_svs=0;
 flag_ini3d=0;
@@ -148,7 +149,7 @@ else
                 flag_phase_cor_ini=option_value;
             case 'flag_rev_even_odd'
                 flag_rev_even_odd=option_value;
-	    case 'flag_phase_cor_offset'
+            case 'flag_phase_cor_offset'
                 flag_phase_cor_offset=option_value;
             case 'flag_shimming_cor'
                 flag_shimming_cor=option_value;
@@ -171,19 +172,29 @@ else
                 flag_archive_segments=option_value;
             case 'flag_epi'
                 flag_epi=option_value;
+                flag_sege=0;
                 flag_svs=0;
                 flag_pepsi=0;
                 flag_ini3d=0;
                 fprintf('reading EPI data!\n');
+            case 'flag_sege'
+                flag_epi=0;
+                flag_sege=option_value;
+                flag_svs=0;
+                flag_pepsi=0;
+                flag_ini3d=0;
+                fprintf('reading SE/GE data!\n');
             case 'flag_pepsi'
                 flag_pepsi=option_value;
                 flag_epi=0;
+                flag_sege=0;
                 flag_svs=0;
                 flag_ini3d=0;
                 fprintf('reading PEPSI data!\n');
             case 'flag_ini3d'
                 flag_ini3d=option_value;
                 flag_epi=0;
+                flag_sege=0;
                 flag_svs=0;
                 flag_pepsi=0;
             case 'n_channel'
@@ -317,11 +328,6 @@ elseif(flag_VB15)
         fprintf(fp,'%s',char(fprot{j}.data));
         fclose(fp);
         
-        %         if(~isempty(findstr(lower(fprot{j}.name),'meas')))
-        %             fp=fopen(sprintf('vb15_meas.asc.tmp'),'w');
-        %             fprintf(fp,'%s',(fprot{j}.data));
-        %             fclose(fp);
-        %         end;
     end;
     fclose(file_in);
     
@@ -393,6 +399,7 @@ global ice_obj;
 ice_obj.flag_pepsi=flag_pepsi;
 ice_obj.flag_svs=flag_svs;
 ice_obj.flag_epi=flag_epi;
+ice_obj.flag_sege=flag_sege;
 ice_obj.flag_ini3d=flag_ini3d;
 ice_obj.slice_order=slice_order;
 
@@ -564,7 +571,7 @@ while (flag_cont)
                 MrProt.m_NChan=sMdh_scan.ushUsedChannels;
                 MrProt.lNumberOfChannels=sMdh_scan.ushUsedChannels;
                 [ice_obj]= ice_prepare(MrProt);
-            
+                
             end;
             
             sFifo.lDimX =  ice_obj.m_NxRaw*2;
@@ -573,7 +580,7 @@ while (flag_cont)
             
             flag_VD11_init=0;
         end;
-
+        
         
         %debug....
         if(ice_obj.flag_debug_file)

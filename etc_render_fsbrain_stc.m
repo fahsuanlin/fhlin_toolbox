@@ -2,7 +2,7 @@ function h=etc_render_fsbrain_stc(file_stem,threshold,varargin)
 
 
 h=[];
-subject='faverage';
+subject='fsaverage';
 
 render_view={'lat','med','med','lat'};
 hemi={'lh','lh','rh','rh'};

@@ -41,6 +41,7 @@ nav_phase_slope_override=[];
 flag_archive_segments=0;
 
 flag_epi=1;
+flag_sege=0;
 flag_ini3d=0;
 flag_phase_cor_ini=0;
 flag_3d=[];
@@ -164,11 +165,18 @@ else
                 flag_archive_segments=option_value;
             case 'flag_epi'
                 flag_epi=option_value;
+                flag_sege==0;
                 flag_ini3d=0;
                 fprintf('reading EPI data!\n');
+            case 'flag_sege'
+                flag_epi=0;
+                flag_sege=option_value;
+                flag_ini3d=0;
+                fprintf('reading SE/GE data!\n');
             case 'flag_ini3d'
                 flag_ini3d=option_value;
                 flag_epi=0;
+                flag_sege=0;
             case 'n_channel'
                 n_channel=option_value;
             case 'array_index'
@@ -270,6 +278,7 @@ fp=fopen(file_raw);
 ice_obj.flag_svs=0;
 ice_obj.flag_pepsi=0;
 ice_obj.flag_epi=flag_epi;
+ice_obj.flag_sege=flag_sege;
 ice_obj.flag_ini3d=flag_ini3d;
 ice_obj.slice_order=slice_order;
 
@@ -398,7 +407,7 @@ while (flag_cont)
                 MrProt.m_NChan=sMdh_scan.ushUsedChannels;
                 MrProt.lNumberOfChannels=sMdh_scan.ushUsedChannels;
                 [ice_obj]= ice_prepare(MrProt);
-            
+                
             end;
             
             sFifo.lDimX =  ice_obj.m_NxRaw*2;
@@ -407,7 +416,7 @@ while (flag_cont)
             
             flag_VD11_init=0;
         end;
-
+        
         
         %debug....
         if(ice_obj.flag_debug_file)
@@ -443,11 +452,11 @@ while (flag_cont)
         data=fread(file_in, [2 sMdh_scan.ushUsedChannels*(sMdh_scan.ushSamplesInScan+4)],'float'); %read 32 more bytes to account for channel MDH
         data=reshape(data(1,:)+sqrt(-1).*data(2,:),[sMdh_scan.ushSamplesInScan+4 sMdh_scan.ushUsedChannels]);
         sFifo.FCData=data(5:end,:);
-       
+        
         
         %process data
         [ok]= ice_online(sMdh_scan, sFifo);
-    
+        
     end;
 end;
 
