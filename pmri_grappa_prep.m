@@ -265,6 +265,9 @@ for i=1:length(acc_token)
             end;
         end;
     end;
+    if(flag_display)
+        fprintf('\n');
+    end;
     %the rows of A is nested: # of frequency_encoding -> # of coil -> # of phase_encoding
     
     A_prep{i}=A;
@@ -287,7 +290,7 @@ for i=1:length(acc_token)
     else
         pinv_A=inv(A'*A)*A';
     end;
-
+    
     for coil_idx=1:size(obs,3)
         Y=permute(obs(acs_idx,freq_select_idx,coil_idx),[2 1 3]);
         Y=Y(:);

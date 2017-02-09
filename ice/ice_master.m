@@ -22,6 +22,7 @@ flag_output_reim=1;
 flag_output_maph=0;
 flag_output_burst=0;
 n_measurement=1;
+flag_clear_after_saving=1;      %clear ice_m_data after saving into files
 
 flag_phase_cor=1;
 flag_phase_cor_mgh=1;
@@ -197,6 +198,8 @@ else
                 flag_sege=0;
                 flag_svs=0;
                 flag_pepsi=0;
+            case 'flag_clear_after_saving'
+                flag_clear_after_saving=option_value;
             case 'n_channel'
                 n_channel=option_value;
             case 'array_index'
@@ -402,6 +405,8 @@ ice_obj.flag_epi=flag_epi;
 ice_obj.flag_sege=flag_sege;
 ice_obj.flag_ini3d=flag_ini3d;
 ice_obj.slice_order=slice_order;
+
+ice_obj.flag_clear_after_saving=flag_clear_after_saving;
 
 ice_obj.flag_regrid=flag_regrid;
 

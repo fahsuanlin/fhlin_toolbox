@@ -21,6 +21,8 @@ flag_output_reim=1;
 flag_output_maph=0;
 flag_output_burst=0;
 n_measurement=1;
+flag_clear_after_saving=1;      %clear ice_m_data after saving into files
+
 
 flag_phase_cor=1;
 flag_phase_cor_mgh=1;
@@ -177,6 +179,8 @@ else
                 flag_ini3d=option_value;
                 flag_epi=0;
                 flag_sege=0;
+            case 'flag_clear_after_saving'
+                flag_clear_after_saving=option_value;
             case 'n_channel'
                 n_channel=option_value;
             case 'array_index'
@@ -288,6 +292,7 @@ ice_obj.flag_archive_nav_jbm=flag_archive_nav_jbm;
 
 ice_obj.flag_output_burst=flag_output_burst;
 ice_obj.n_measurement=n_measurement;
+ice_obj.flag_clear_after_saving=flag_clear_after_saving;
 
 if(~isempty(nav_phase_offset_override))
     fprintf('phase correction [offset] has been overriden!\n');

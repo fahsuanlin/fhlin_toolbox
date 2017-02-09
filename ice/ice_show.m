@@ -12,6 +12,8 @@ flag_phase_detrend=0;
 flag_scan=0; 
 flag_display=1;
 
+flag_mat=0;
+
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
@@ -28,11 +30,45 @@ for i=1:length(varargin)/2
 	    flag_scan=option_value;
 	case 'flag_display'
 	    flag_display=option_value;
-        case 'flag_phase_detrend'
+        case 'flag_mat'
+	    flag_mat=option_value;
+	case 'flag_phase_detrend'
             flag_phase_detrend=option_value;
     end;
 end;
 
+if(flag_mat)
+	chan=1;
+	cont=1;
+	while(cont)
+    		d=dir(sprintf('*chan%03d*.mat',chan));
+    		if(isempty(d))
+	        	cont=0;
+        		chan=chan-1;
+    		else
+        		chan=chan+1;
+    		end;
+	end;
+	if(flag_display) fprintf('[%d] channels.\n',chan); end;
+	for ch_idx=1:chan
+		if(flag_display) fprintf('channel [%03d]...\r',ch_idx); end;
+		load(sprintf('%s_chan%03d.mat',output_stem,ch_idx));
+		if(length(size(data))==2)
+			d0(:,:,ch_idx)=data;
+		elseif(length(size(data)==3))
+			d0(:,:,:,ch_idx)=data;
+		end;
+	end;
+	data=d0;
+	if(length(size(data))==3)
+		data_combined=sqrt(mean(abs(data).^2,3));
+	elseif(length(size(data))==4)
+		data_combined=sqrt(mean(abs(data).^2,4));
+	end;
+	
+	fprintf('\n');
+	return;
+end;
 
 slice=1;
 cont=1;

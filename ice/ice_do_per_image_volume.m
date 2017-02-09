@@ -114,11 +114,29 @@ if(~ice_obj.flag_output_burst)
                 end;
             end;
         end;
-    elseif(flag_sege)
+    elseif(ice_obj.flag_sege)
         for ch=1:ice_obj.m_NChan
-            data=ice_m_data(:,:,:,ch);
+            
             fn=sprintf('%s_chan%03d.mat',ice_obj.output_stem,ch);
-            save(fn,'data');
+            if(ice_obj.flag_init)
+                if(ndims(data)==3)
+                    data=ice_m_data(:,:,ch);
+                elseif(ndims(data)==4)
+                    data=ice_m_data(:,:,:,ch);
+                elseif(ndims(data)==5)
+                    data=ice_m_data(:,:,:,:,ch);
+                end;
+                save(fn,'data');
+            else
+                load(fn);
+                if(ndims(data)==3)
+                    data(:,:,end+1)=ice_m_data(:,:,ch);
+                elseif(ndims(data)==4)
+                    data(:,:,:,end+1)=ice_m_data(:,:,:,ch);
+                elseif(ndims(data)==5)
+                    data(:,:,:,:,end+1)=ice_m_data(:,:,:,:,ch);
+                end;
+                save(fn,'data');
         end;
     end;
     
@@ -166,7 +184,8 @@ if(ice_obj.flag_ini3d)
 end;
 
 %reset data
-ice_m_data(:)=0; %reseting this to zero is crucial because some FT/redimension operations have been applied.
-
+if(ice_obj.flag_clear_after_saving)
+    ice_m_data(:)=0; %reseting this to zero is crucial because some FT/redimension operations have been applied.
+end;
 
 return;
