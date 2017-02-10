@@ -16,7 +16,7 @@ if(ice_obj.flag_epi|ice_obj.flag_sege)
 end;
 
 
-if(ice_obj.flag_epi|ice_obj.flag_sege)
+if(ice_obj.flag_epi)
     if(ice_obj.flag_3D)
         if(ice_obj.flag_debug_file)
             fprintf(ice_obj.fp_debug,'3D FFT\n');
@@ -33,6 +33,27 @@ if(ice_obj.flag_epi|ice_obj.flag_sege)
         
         ice_obj.m_Nz=size(ice_m_data,3);
     end;
+elseif(ice_obj.flag_sege)
+    if(ice_obj.flag_3D)
+        if(ice_obj.flag_debug_file)
+            fprintf(ice_obj.fp_debug,'3D FFT\n');
+        end;
+        fprintf('3D FFT...\n');
+        for d_idx=2:4
+            if(size(ice_m_data,d_idx)>1)
+                ice_m_data=fftshift(fft(fftshift(ice_m_data(:,:,:,:,:,sMdh.sLC.ushAcquisition+1,:,:),d_idx),[],d_idx),d_idx);
+            end;
+        end;
+        
+        fprintf('flipping S-I direction...\n');
+        ice_m_data=flipdim(ice_m_data,1);
+        
+        if(size(ice_m_data,3)>1)
+            ice_obj.m_Nz=size(ice_m_data,3);
+        else
+            ice_obj.m_Nz=size(ice_m_data,4);
+        end;
+    end;    
 end;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -115,33 +136,38 @@ if(~ice_obj.flag_output_burst)
             end;
         end;
     elseif(ice_obj.flag_sege)
+        [n_readout,n_line,n_slice,n_partition,n_echo,n_acq,n_phase,n_coil]=size(ice_m_data);
+        fprintf('[<%03d> readout] [<%03d> line] [<%03d> slice] [<%03d> partition] [<%03d> echo] [<%03d> acquisition] [<%03d> phase] [<%03d> coil]\n',n_readout,n_line,n_slice,n_partition,n_echo,n_acq,n_phase,n_coil);
+        
         for ch=1:ice_obj.m_NChan
-            
             fn=sprintf('%s_chan%03d.mat',ice_obj.output_stem,ch);
             if(ice_obj.flag_init)
-                if(ndims(data)==3)
-                    data=ice_m_data(:,:,ch);
-                elseif(ndims(data)==4)
-                    data=ice_m_data(:,:,:,ch);
-                elseif(ndims(data)==5)
-                    data=ice_m_data(:,:,:,:,ch);
-                end;
+%                 if(ndims(ice_m_data)==3)
+%                     data=ice_m_data(:,:,ch);
+%                 elseif(ndims(ice_m_data)==4)
+%                     data=ice_m_data(:,:,:,ch);
+%                 elseif(ndims(ice_m_data)==5)
+%                     data=squeeze(ice_m_data(:,:,:,ch,:));
+%                 end;
+                data=squeeze(ice_m_data(:,:,:,:,:,:,:,ch));
                 save(fn,'data');
             else
                 load(fn);
-                if(ndims(data)==3)
-                    data(:,:,end+1)=ice_m_data(:,:,ch);
-                elseif(ndims(data)==4)
-                    data(:,:,:,end+1)=ice_m_data(:,:,:,ch);
-                elseif(ndims(data)==5)
-                    data(:,:,:,:,end+1)=ice_m_data(:,:,:,:,ch);
-                end;
+%                 if(ndims(ice_m_data)==3)
+%                     data(:,:,end+1)=ice_m_data(:,:,ch);
+%                 elseif(ndims(ice_m_data)==4)
+%                     data(:,:,:,end+1)=ice_m_data(:,:,:,ch);
+%                 elseif(ndims(ice_m_data)==5)
+%                     data(:,:,:,end+1:end+size(ice_m_data,5))=squeeze(ice_m_data(:,:,:,ch,:));
+%                 end;
+                data=squeeze(ice_m_data(:,:,:,:,:,:,:,ch));
                 save(fn,'data');
+            end;
         end;
-    end;
-    
-    if(ice_obj.flag_debug)
-        keyboard;
+        
+        if(ice_obj.flag_debug)
+            keyboard;
+        end;
     end;
     
 else
@@ -163,7 +189,7 @@ end;
 %reset init flag for the 2nd and following measurements.
 if(ice_obj.flag_init) ice_obj.flag_init=0; end;
 
-if(ice_obj.flag_epi|ice_obj.flag_sege)
+if(ice_obj.flag_epi)
     if(~ice_obj.flag_3D)
         %re-orient image dimension back to init.
         ice_m_data=permute(ice_m_data,[2 1 3 4 5]);
@@ -174,13 +200,18 @@ if(ice_obj.flag_epi|ice_obj.flag_sege)
         fprintf('re-dimension back...\n');
         ice_m_data=permute(ice_m_data,[3 1 2 4 5]);
         
-        ice_obj.m_Nz=size(ice_m_data,3);
     end;
+elseif(ice_obj.flag_sege)
+    if(ice_obj.flag_3D)
+        
+        fprintf('flipping back S-I direction...\n');
+        ice_m_data=flipdim(ice_m_data,1);
+        
+    end;    
 end;
 
 if(ice_obj.flag_ini3d)
     fprintf('ice_do_per_image_vol.m\n');
-    keyboard;
 end;
 
 %reset data

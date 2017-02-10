@@ -186,28 +186,32 @@ else
         ice_m_data(:,:,sMdh.sLC.ushRepetition+1)=sFifo.FCData(size(sFifo.FCData,1)-size(ice_m_data,1)+1:end,:);
         %end;
     elseif(ice_obj.flag_sege) %spin-echo/gradient-echo type basic...
-        if(sMdh.sLC.ushAcquisition>0)
-            if(~ice_obj.flag_3D)
-                %2D sequence
-                ice_m_data(:,ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushSlice+1,:,sMdh.sLC.ushEcho+1)=(squeeze(ice_m_data(:,ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushSlice+1,:,sMdh.sLC.ushEcho+1).*sMdh.sLC.ushAcquisition)+sFifo.FCData)./(sMdh.sLC.ushAcquisition+1);
-                %ice_m_data(:,ice_obj.m_NyImage/2-sMdh.ushKSpaceCentreLineNo+ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushSlice+1,:,sMdh.sLC.ushEcho+1)=(squeeze(ice_m_data(:,ice_obj.m_NyImage/2-sMdh.ushKSpaceCentreLineNo+ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushSlice+1,:,sMdh.sLC.ushEcho+1).*sMdh.sLC.ushAcquisition)+sFifo.FCData)./(sMdh.sLC.ushAcquisition+1);
-            else
-                %3D sequence
-                ice_m_data(:,ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushPartition+1,:,sMdh.sLC.ushEcho+1)=(squeeze(ice_m_data(:,ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushPartition+1,:,sMdh.sLC.ushEcho+1).*sMdh.sLC.ushAcquisition)+sFifo.FCData)./(sMdh.sLC.ushAcquisition+1);
-                %ice_m_data(:,ice_obj.m_NyImage/2-sMdh.ushKSpaceCentreLineNo+ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushPartition+1,:,sMdh.sLC.ushEcho+1)=(squeeze(ice_m_data(:,ice_obj.m_NyImage/2-sMdh.ushKSpaceCentreLineNo+ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushPartition+1,:,sMdh.sLC.ushEcho+1).*sMdh.sLC.ushAcquisition)+sFifo.FCData)./(sMdh.sLC.ushAcquisition+1);
-            end;
-        else
-            %save FIFO into data buffer
-            if(~ice_obj.flag_3D)
-                %2D sequence
-                ice_m_data(:,ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushSlice+1,:,sMdh.sLC.ushEcho+1)=sFifo.FCData;
-                %ice_m_data(:,ice_obj.m_NyImage/2-sMdh.ushKSpaceCentreLineNo+ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushSlice+1,:,sMdh.sLC.ushEcho+1)=sFifo.FCData;
-            else
-                %3D sequence
-                ice_m_data(:,ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushPartition+1,:,sMdh.sLC.ushEcho+1)=sFifo.FCData;
-                %ice_m_data(:,ice_obj.m_NyImage/2-sMdh.ushKSpaceCentreLineNo+ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushPartition+1,:,sMdh.sLC.ushEcho+1)=sFifo.FCData;
-            end;
-        end;
+%         if(sMdh.sLC.ushAcquisition>0)
+%             if(~ice_obj.flag_3D)
+%                 %2D sequence
+%                 ice_m_data(:,ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushSlice+1,:,sMdh.sLC.ushEcho+1)=(squeeze(ice_m_data(:,ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushSlice+1,:,sMdh.sLC.ushEcho+1).*sMdh.sLC.ushAcquisition)+sFifo.FCData)./(sMdh.sLC.ushAcquisition+1);
+%                 %ice_m_data(:,ice_obj.m_NyImage/2-sMdh.ushKSpaceCentreLineNo+ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushSlice+1,:,sMdh.sLC.ushEcho+1)=(squeeze(ice_m_data(:,ice_obj.m_NyImage/2-sMdh.ushKSpaceCentreLineNo+ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushSlice+1,:,sMdh.sLC.ushEcho+1).*sMdh.sLC.ushAcquisition)+sFifo.FCData)./(sMdh.sLC.ushAcquisition+1);
+%             else
+%                 %3D sequence
+%                 ice_m_data(:,ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushPartition+1,:,sMdh.sLC.ushEcho+1)=(squeeze(ice_m_data(:,ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushPartition+1,:,sMdh.sLC.ushEcho+1).*sMdh.sLC.ushAcquisition)+sFifo.FCData)./(sMdh.sLC.ushAcquisition+1);
+%                 %ice_m_data(:,ice_obj.m_NyImage/2-sMdh.ushKSpaceCentreLineNo+ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushPartition+1,:,sMdh.sLC.ushEcho+1)=(squeeze(ice_m_data(:,ice_obj.m_NyImage/2-sMdh.ushKSpaceCentreLineNo+ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushPartition+1,:,sMdh.sLC.ushEcho+1).*sMdh.sLC.ushAcquisition)+sFifo.FCData)./(sMdh.sLC.ushAcquisition+1);
+%             end;
+%         else
+%             %save FIFO into data buffer
+%             if(~ice_obj.flag_3D)
+%                 %2D sequence
+%                 ice_m_data(:,ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushSlice+1,:,sMdh.sLC.ushEcho+1)=sFifo.FCData;
+%                 %ice_m_data(:,ice_obj.m_NyImage/2-sMdh.ushKSpaceCentreLineNo+ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushSlice+1,:,sMdh.sLC.ushEcho+1)=sFifo.FCData;
+%             else
+%                 %3D sequence
+%                 ice_m_data(:,ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushPartition+1,:,sMdh.sLC.ushEcho+1)=sFifo.FCData;
+%                 %ice_m_data(:,ice_obj.m_NyImage/2-sMdh.ushKSpaceCentreLineNo+ice_obj.m_PEshift+sMdh.sLC.ushLine+1,sMdh.sLC.ushPartition+1,:,sMdh.sLC.ushEcho+1)=sFifo.FCData;
+%             end;
+%         end;
+          
+            %generic reading
+            ice_m_data(:,sMdh.sLC.ushLine+1,sMdh.sLC.ushSlice+1,sMdh.sLC.ushPartition+1,sMdh.sLC.ushEcho+1,sMdh.sLC.ushAcquisition+1,sMdh.sLC.ushPhase+1,:)=sFifo.FCData;
+
     elseif(ice_obj.flag_epi)
         if(ice_obj.flag_shimming_cor&ice_obj.flag_phase_cor_jbm)
             %calculate 1st order shimming correction from navigator only at

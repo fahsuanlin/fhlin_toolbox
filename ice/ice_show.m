@@ -53,18 +53,19 @@ if(flag_mat)
 	for ch_idx=1:chan
 		if(flag_display) fprintf('channel [%03d]...\r',ch_idx); end;
 		load(sprintf('%s_chan%03d.mat',output_stem,ch_idx));
+        
 		if(length(size(data))==2)
 			d0(:,:,ch_idx)=data;
-		elseif(length(size(data)==3))
+		elseif(length(size(data))==3)
 			d0(:,:,:,ch_idx)=data;
+        elseif(length(size(data))==4)
+            d0(:,:,:,:,ch_idx)=data;
 		end;
 	end;
 	data=d0;
-	if(length(size(data))==3)
-		data_combined=sqrt(mean(abs(data).^2,3));
-	elseif(length(size(data))==4)
-		data_combined=sqrt(mean(abs(data).^2,4));
-	end;
+    
+    nd=ndims(data);
+    data_combined=sqrt(mean(abs(data).^2,nd));
 	
 	fprintf('\n');
 	return;
