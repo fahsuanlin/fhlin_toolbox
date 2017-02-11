@@ -60,7 +60,7 @@ else
     else
         if(sMdh.sLC.ushEcho+1==ice_obj.m_NContrast)
             LAST_SCAN =bitand (sMdh.aulEvalInfoMask(1),  MDH_LASTSCANINSLICE);
-        	if(ice_obj.MrProt.lRepetitions~=(sMdh.sLC.ushRepetition+1)) LAST_SCAN=0; end;
+	 	if(ice_obj.MrProt.lRepetitions~=(sMdh.sLC.ushAcquisition+1)) LAST_SCAN=0; end;
 	else
             LAST_SCAN=0;
         end;

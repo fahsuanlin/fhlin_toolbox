@@ -41,7 +41,7 @@ elseif(ice_obj.flag_sege)
         fprintf('3D FFT...\n');
         for d_idx=2:4
             if(size(ice_m_data,d_idx)>1)
-                ice_m_data=fftshift(fft(fftshift(ice_m_data(:,:,:,:,:,sMdh.sLC.ushAcquisition+1,:,:),d_idx),[],d_idx),d_idx);
+                ice_m_data=fftshift(fft(fftshift(ice_m_data(:,:,:,:,:,:,:,:),d_idx),[],d_idx),d_idx);
             end;
         end;
         
