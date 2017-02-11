@@ -211,8 +211,8 @@ for i=1:length(acc_token)
             acc_block_idx=acc_block_idx-find(acc_idx==acs_idx(j));
             acc_block_idx=setdiff(acc_block_idx,0);
             acc_idx=setdiff(acc_idx,acs_idx(j));
-            %idx=find(abs(acc_block_idx)<=phase_encode_grappa_block);
-            idx=find((acc_block_idx<=max(phase_encode_grappa_block))&(acc_block_idx>=min(phase_encode_grappa_block)));
+            idx=find(abs(acc_block_idx)<=phase_encode_grappa_block);
+            %idx=find((acc_block_idx<=max(phase_encode_grappa_block))&(acc_block_idx>=min(phase_encode_grappa_block)));
             bidx=union(bidx,acc_block_idx(idx));
         else
             acc_idx=find(acc_vector==0);
@@ -234,7 +234,7 @@ for i=1:length(acc_token)
             %bidx=union(bidx,acc_block_idx_0(idx));
             bidx=union(bidx,ii(idx));
         end;
-        
+
         A0=[];
         for k=1:size(freq_idx,2)
             tmp=permute(obs(acc_idx(idx),freq_idx(:,k),:),[2,1,3]);
@@ -315,7 +315,7 @@ for i=1:length(acc_token)
                 end;
             else
                 beta=pinv_A*Y;
-                res=sum(abs(A*beta-Y).^2);
+                res=sum(abs(A*beta-Y).^2)./sum(abs(Y).^2);
                 if(flag_display) fprintf('error=[%2.2f %%]\r',res*100); end;
             end;
         end;

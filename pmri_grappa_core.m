@@ -185,8 +185,8 @@ for i=1:length(acc_token)
             acc_block_idx=acc_block_idx-find(acc_idx==acs_idx(j));
             acc_block_idx=setdiff(acc_block_idx,0);
             acc_idx=setdiff(acc_idx,acs_idx(j));
-            %idx=find(abs(acc_block_idx)<=phase_encode_grappa_block);
-            idx=find((acc_block_idx<=max(phase_encode_grappa_block))&(acc_block_idx>=min(phase_encode_grappa_block)));
+            idx=find(abs(acc_block_idx)<=phase_encode_grappa_block);
+            %idx=find((acc_block_idx<=max(phase_encode_grappa_block))&(acc_block_idx>=min(phase_encode_grappa_block)));
             bidx=acc_block_idx(idx);
         else
             acc_idx=find(acc_vector==0);
