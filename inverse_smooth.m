@@ -140,7 +140,6 @@ for tt=1:size(value,2)
 	pidx=find(w0>eps);
 	nidx=find(w0<-eps);
 	
-
     if(flag_regrid)
         if(~flag_regrid_zero)
             non_zero=find(abs(w)>eps);
@@ -159,7 +158,7 @@ for tt=1:size(value,2)
             fprintf('done!\n');
         end;
     end;
-    
+
     for ss=1:step
 		
 		%w=(A*(mean(w(connection),1))')./xx;

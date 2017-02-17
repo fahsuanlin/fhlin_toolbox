@@ -9,7 +9,7 @@ time_idx='end';
 
 dummy_idx=[];
 flag_phase_detrend=0;
-flag_scan=0; 
+flag_scan=0;
 flag_display=1;
 
 flag_mat=0;
@@ -26,49 +26,44 @@ for i=1:length(varargin)/2
             time_idx=option_value;
         case 'dummy_idx'
             dummy_idx=option_value;
-	case 'flag_scan'
-	    flag_scan=option_value;
-	case 'flag_display'
-	    flag_display=option_value;
+        case 'flag_scan'
+            flag_scan=option_value;
+        case 'flag_display'
+            flag_display=option_value;
         case 'flag_mat'
-	    flag_mat=option_value;
-	case 'flag_phase_detrend'
+            flag_mat=option_value;
+        case 'flag_phase_detrend'
             flag_phase_detrend=option_value;
     end;
 end;
 
 if(flag_mat)
-	chan=1;
-	cont=1;
-	while(cont)
-    		d=dir(sprintf('*chan%03d*.mat',chan));
-    		if(isempty(d))
-	        	cont=0;
-        		chan=chan-1;
-    		else
-        		chan=chan+1;
-    		end;
-	end;
-	if(flag_display) fprintf('[%d] channels.\n',chan); end;
-	for ch_idx=1:chan
-		if(flag_display) fprintf('channel [%03d]...\r',ch_idx); end;
-		load(sprintf('%s_chan%03d.mat',output_stem,ch_idx));
-        
-		if(length(size(data))==2)
-			d0(:,:,ch_idx)=data;
-		elseif(length(size(data))==3)
-			d0(:,:,:,ch_idx)=data;
-        elseif(length(size(data))==4)
-            d0(:,:,:,:,ch_idx)=data;
-		end;
-	end;
-	data=d0;
+    chan=1;
+    cont=1;
+    while(cont)
+        d=dir(sprintf('*chan%03d*.mat',chan));
+        if(isempty(d))
+            cont=0;
+            chan=chan-1;
+        else
+            chan=chan+1;
+        end;
+    end;
+    if(flag_display) fprintf('[%d] channels.\n',chan); end;
+    d0=[];
+    for ch_idx=1:chan
+        if(flag_display) fprintf('channel [%03d]...\r',ch_idx); end;
+        load(sprintf('%s_chan%03d.mat',output_stem,ch_idx));
+
+        d0=cat(ndims(data)+1,d0,data);
+    end;
+    data=d0;
     
     nd=ndims(data);
     data_combined=sqrt(mean(abs(data).^2,nd));
-	
-	fprintf('\n');
-	return;
+    
+    fprintf('\n');
+    return;
 end;
 
 slice=1;
@@ -111,10 +106,10 @@ for s=1:slice
         if(flag_display) fprintf('slice [%03d]...channel [%03d]...\r',s,c); end;
         dre=fmri_ldbfile(sprintf('%s_slice%03d_chan%03d_re.bfloat',output_stem,s,c));
         dre(:,:,dummy_idx)=[];
-
-	ice_dim(3)=size(dre,3);
-	if(flag_scan) break; end;
-
+        
+        ice_dim(3)=size(dre,3);
+        if(flag_scan) break; end;
+        
         switch(time_idx)
             case 'end'
                 dre=dre(:,:,end);

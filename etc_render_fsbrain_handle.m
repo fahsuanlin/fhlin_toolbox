@@ -495,7 +495,7 @@ function draw_stc()
 global etc_render_fsbrain;
 
 
-if(~isempty(etc_render_fsbrain.click_overlay_vertex))
+if(~isempty(etc_render_fsbrain.click_overlay_vertex)&~isempty(etc_render_fsbrain.overlay_stc))
     if(isempty(etc_render_fsbrain.fig_stc))
         etc_render_fsbrain.fig_stc=figure;
         pos=get(etc_render_fsbrain.fig_brain,'pos');
