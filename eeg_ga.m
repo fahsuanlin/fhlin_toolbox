@@ -31,7 +31,7 @@ end;
 
 %epoching; only valid for data with MRI triggers
 if(sum(abs(eeg_trigger))>0)
-    epoch=zeros(size(eeg,1),n_samp,length(trigger));
+    %epoch=zeros(size(eeg,1),n_samp,length(trigger));
     for tr_idx=1:length(trigger)
         if(~isempty(n_samp))
             if(trigger(tr_idx)+n_samp-1<=size(eeg,2))
@@ -39,7 +39,6 @@ if(sum(abs(eeg_trigger))>0)
             end;
         end;
     end;
-    
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % correction with interpolation
@@ -64,7 +63,7 @@ if(sum(abs(eeg_trigger))>0)
     
     if(flag_display) fprintf('GA: aligning trials...'); end;
     shift(tr_idx)=0;
-    for tr_idx=2:length(trigger)
+    for tr_idx=2:size(epoch,3)
         ss=[-5:1:5];
         %ss=[-1:0.5:1];
         dss=1;
@@ -108,7 +107,8 @@ if(sum(abs(eeg_trigger))>0)
     ga_template=mean(epoch_shift,3);
     
     if(flag_display) fprintf('subtracting GA tamplate from data...'); end;
-    for tr_idx=1:length(trigger)
+    eeg_aas=eeg;
+    for tr_idx=1:size(epoch,3)
         if(flag_display) fprintf('#'); end;
         for ch_idx=1:size(epoch,1)
             if(trigger(tr_idx)+n_samp-1<=size(eeg,2))

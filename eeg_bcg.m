@@ -30,7 +30,7 @@ end;
 % BCG start;
 %----------------------------
 if(flag_display) fprintf('detecting EKG peaks...\n'); end;
-[qrs_amp_raw,qrs_i_raw,delay]=pan_tompkin(ecg,fs,0);
+[qrs_amp_raw,qrs_i_raw,delay]=pan_tompkin(ecg,fs,flag_display,'flag_fhlin',1);
 
 
 BCG_tPre_sample=round(BCG_tPre.*fs);
