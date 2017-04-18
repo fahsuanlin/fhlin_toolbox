@@ -3,12 +3,26 @@ function [eeg_aas, ga_template, shift]=eeg_ga(eeg,eeg_trigger,TR,fs,varargin)
 %defaults
 flag_display=1;
 
+flag_ma_aas=0;
+n_ma_aas=7; %# of movign GA template trials
+
+flag_ga_obs=0;
+n_ga_obs=4; %# of GA OBS basis
+
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
     switch lower(option)
         case 'flag_display'
             flag_display=option_value;
+        case 'flag_ma_aas'
+            flag_ma_aas=option_value;
+        case 'n_ma_aas'
+            n_ma_aas=option_value;
+        case 'flag_ga_obs'
+            flag_ga_obs=option_value;
+        case 'n_ga_obs'
+            n_ga_obs=option_value; %# of GA OBS basis
         otherwise
             fprintf('unknown option [%s]...\n',option);
             fprintf('error!\n');
@@ -57,7 +71,7 @@ if(sum(abs(eeg_trigger))>0)
     
     ref_idx=1;
     ref=epoch_sum(:,ref_idx);
-     
+    
     epoch_sum_shift=epoch_sum;
     epoch_shift=epoch;
     
@@ -102,22 +116,104 @@ if(sum(abs(eeg_trigger))>0)
         end;
     end;
     if(flag_display) fprintf('\n'); end;
-
-    if(flag_display) fprintf('estimating GA template...\n'); end;
-    ga_template=mean(epoch_shift,3);
     
-    if(flag_display) fprintf('subtracting GA tamplate from data...'); end;
-    eeg_aas=eeg;
-    for tr_idx=1:size(epoch,3)
-        if(flag_display) fprintf('#'); end;
-        for ch_idx=1:size(epoch,1)
-            if(trigger(tr_idx)+n_samp-1<=size(eeg,2))
-                tmp=eeg(ch_idx,trigger(tr_idx):trigger(tr_idx)+n_samp-1);
-                tmp=tmp-etc_circshift(ga_template(ch_idx,:),shift(tr_idx));
-                eeg_aas(ch_idx,trigger(tr_idx):trigger(tr_idx)+n_samp-1)=tmp;
+    
+    %remove gradient artifacts by subtracting the artifact template
+    if(~flag_ma_aas)
+        if(flag_display) fprintf('estimating GA template (global)...\n'); end;
+        ga_template=mean(epoch_shift,3);
+        
+        if(flag_display) fprintf('subtracting GA tamplate (global) from data...'); end;
+        eeg_aas=eeg;
+        for tr_idx=1:size(epoch,3)
+            if(flag_display) fprintf('#'); end;
+            for ch_idx=1:size(epoch,1)
+                if(trigger(tr_idx)+n_samp-1<=size(eeg,2))
+                    tmp=eeg(ch_idx,trigger(tr_idx):trigger(tr_idx)+n_samp-1);
+                    
+                    %subtract by regression
+                    tt=etc_circshift(ga_template(ch_idx,:),shift(tr_idx));
+                    D=[ones(length(tt),1),tt(:)];
+                    tmp=tmp(:)-D*inv(D'*D)*D'*tmp(:);
+                    
+                    %tmp=tmp-etc_circshift(ga_template(ch_idx,:),shift(tr_idx));
+                    eeg_aas(ch_idx,trigger(tr_idx):trigger(tr_idx)+n_samp-1)=tmp;
+                end;
+            end;
+        end;
+    else
+        if(flag_display) fprintf('subtracting GA tamplate (moving average) from data...'); end;
+        eeg_aas=eeg;
+        for tr_idx=1:size(epoch,3)
+            if(flag_display) fprintf('#'); end;
+            
+            if(size(epoch,3)<=n_ma_aas)
+                trial_sel=[1:size(epoch,3)];
+            else
+                if(tr_idx<=round((n_ma_aas-1)/2))
+                    trial_sel=[1:n_ma_aas];
+                elseif(tr_idx>=size(epoch,3)-round((n_ma_aas-1)/2))
+                    trial_sel=[size(epoch,3)-(n_ma_aas-1):size(epoch,3)];
+                else
+                    trial_sel=[tr_idx-round((n_ma_aas-1)/2):tr_idx+round((n_ma_aas-1)/2)];
+                end;
+            end;
+            
+            %estimate the GA template by moving average
+            ga_template=mean(epoch_shift(:,:,trial_sel),3);
+            
+            for ch_idx=1:size(epoch,1)
+                if(trigger(tr_idx)+n_samp-1<=size(eeg,2))
+                    tmp=eeg(ch_idx,trigger(tr_idx):trigger(tr_idx)+n_samp-1);
+                    
+                    %subtract by regression
+                    tt=etc_circshift(ga_template(ch_idx,:),shift(tr_idx));
+                    D=[ones(length(tt),1),tt(:)];
+                    tmp=tmp(:)-D*inv(D'*D)*D'*tmp(:);
+                    
+                    %tmp=tmp-etc_circshift(ga_template(ch_idx,:),shift(tr_idx));
+                    eeg_aas(ch_idx,trigger(tr_idx):trigger(tr_idx)+n_samp-1)=tmp;
+                end;
             end;
         end;
     end;
+    
+    if(flag_ga_obs)
+        %remove gradient artifacts by OBS
+        for tr_idx=1:length(trigger)
+            if(~isempty(n_samp))
+                if(trigger(tr_idx)+n_samp-1<=size(eeg,2))
+                    epoch(:,:,tr_idx)=eeg_aas(:,trigger(tr_idx):trigger(tr_idx)+n_samp-1);
+                end;
+            end;
+        end;
+        epoch_shift=epoch;
+        for tr_idx=2:size(epoch,3)
+            for ch_idx=1:size(epoch,1)
+                epoch_shift(ch_idx,:,tr_idx)=etc_circshift(squeeze(epoch(ch_idx,:,tr_idx)),-shift(tr_idx));
+            end;
+        end;
+        
+        for ch_idx=1:size(epoch,1)
+            
+            [uu,ss,vv]=svd(squeeze(epoch_shift(ch_idx,:,:)),0);
+            tt=[];
+            for tr_idx=1:size(epoch,3)
+                if(flag_display) fprintf('.'); end;
+                if(trigger(tr_idx)+n_samp-1<=size(eeg,2))
+                    tmp=eeg_aas(ch_idx,trigger(tr_idx):trigger(tr_idx)+n_samp-1);
+                    
+                    %subtract by regression
+                    for uu_idx=1:n_ga_obs tt(:,uu_idx)=etc_circshift(uu(:,uu_idx),shift(tr_idx)); end;
+                    D=[ones(size(tt,1),1),tt];
+                    tmp=tmp(:)-D*inv(D'*D)*D'*tmp(:);
+                    
+                    eeg_aas(ch_idx,trigger(tr_idx):trigger(tr_idx)+n_samp-1)=tmp;
+                end;
+            end;
+        end;
+    end;
+    
     if(flag_display) fprintf('\n'); end;
 end;
 
