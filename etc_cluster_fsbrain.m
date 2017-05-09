@@ -88,7 +88,7 @@ for f_idx=1:length(file_stc)
         cmd=sprintf('!mri_surfcluster --fwhm 10 --minarea %f --in tmp2-%s.mgh --subject %s --hemi %s --annot %s --thmin %f --thmax %f --sign %s --no-adjust --sum %s',minarea, hemi, target_subject, hemi, aparc_filestem, threshold_min, threshold_max, sign_str,output_file{end});
         eval(cmd)
         
-        eval('!rm tmp*');        
+        eval('!rm tmp*w tmp*mgh');        
     end;
 end;
 
