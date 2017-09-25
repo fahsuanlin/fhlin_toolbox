@@ -328,7 +328,14 @@ end;
 h=patch('Faces',faces+1,'Vertices',vertex_coords,'FaceVertexCData',fvdata,'facealpha',alpha,'CDataMapping','direct','facecolor','interp','edgecolor','none');   
 
 if(~flag_redraw)
-    axis off vis3d equal;
+    xmin=min(vertex_coords(:,1));
+    xmax=max(vertex_coords(:,1));
+    ymin=min(vertex_coords(:,2));
+    ymax=max(vertex_coords(:,2));
+    zmin=min(vertex_coords(:,3));
+    zmax=max(vertex_coords(:,3));
+    set(gca,'xlim',[xmin xmax],'ylim',[ymin ymax],'zlim',[zmin zmax]);
+    axis off vis3d equal tight;
     if(~isempty(overlay_threshold))
         set(gca,'climmode','manual','clim',overlay_threshold);
     end;

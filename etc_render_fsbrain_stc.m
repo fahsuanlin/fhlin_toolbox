@@ -121,44 +121,44 @@ end;
     
     view_count=1;
     if(flag_view_default4)
-        hh=axes('pos',[0,0,1/4,1]);
+        hh=axes('ActivePositionProperty','pos','pos',[0,0,1/4,1]);
         over=stc_lh;
         v=v_lh;
         etc_render_fsbrain('subject',subject,'surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','lh','flag_camlight',0,'overlay_exclude_fstem',oef_lh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
         view(-90,0);
         cp=campos;
         cp=cp./norm(cp);
-        campos(2200.*cp);
+        campos(1600.*cp);
         camlight;
         
-        hh=axes('pos',[1/4,0,1/4,1]);
+        hh=axes('ActivePositionProperty','pos','pos',[1/4,0,1/4,1]);
         over=stc_lh;
         v=v_lh;
         etc_render_fsbrain('subject',subject,'surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','lh','flag_camlight',0,'overlay_exclude_fstem',oef_lh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
         view(90,0);
         cp=campos;
         cp=cp./norm(cp);
-        campos(2200.*cp);
+        campos(1600.*cp);
         camlight;
         
         hh=axes('pos',[2/4,0,1/4,1]);
         over=stc_rh;
         v=v_rh;
         etc_render_fsbrain('subject',subject,'surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','rh','flag_camlight',0,'overlay_exclude_fstem',oef_rh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
-        view(90,0);
+        view(-90,0);
         cp=campos;
         cp=cp./norm(cp);
-        campos(2200.*cp);
+        campos(1600.*cp);
         camlight;
         
         hh=axes('pos',[3/4,0,1/4,1]);
         over=stc_rh;
         v=v_rh;
-        etc_render_fsbrain('subject',subject,'subj',subj,'surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','rh','flag_camlight',0,'overlay_exclude_fstem',oef_rh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
-        view(-90,0);        
+        etc_render_fsbrain('subject',subject,'surf',surf,'overlay_value',over,'overlay_vertex',v,'overlay_threshold',threshold,'hemi','rh','flag_camlight',0,'overlay_exclude_fstem',oef_rh,'overlay_smooth',overlay_smooth,'overlay_cmap',overlay_cmap,'flag_curv',flag_curv,'default_solid_color',default_solid_color);
+        view(90,0);        
         cp=campos;
         cp=cp./norm(cp);
-        campos(2200.*cp);
+        campos(1600.*cp);
         camlight;
 
     elseif(flag_view_default6)
@@ -306,15 +306,15 @@ if(flag_colorbar)
         hh=axes('pos',[0.45 dys/2*(idx-1)+0.1 0.1 dys/2*0.8]);
         image([1:mm]+mm.*(idx-1)); axis off; colormap(cm);
         if(cm_pos(idx))
-            h=text(-25, 1, sprintf('%1.1f',min(threshold)));
-            set(h,'fontname','helvetica','fontsize',18);
-            h=text(90, 1, sprintf('%1.1f',max(threshold)));
-            set(h,'fontname','helvetica','fontsize',18);
+            h=text(-2, 1, sprintf('%1.1f',min(threshold)));
+            set(h,'fontname','helvetica','fontsize',12,'hori','right');
+            h=text(85, 1, sprintf('%1.1f',max(threshold)));
+            set(h,'fontname','helvetica','fontsize',12,'hori','left');
         else
-            h=text(-25, 1, sprintf('-%1.1f',min(threshold)));
-            set(h,'fontname','helvetica','fontsize',18);
-            h=text(90, 1, sprintf('-%1.1f',max(threshold)));
-            set(h,'fontname','helvetica','fontsize',18);
+            h=text(-2, 1, sprintf('-%1.1f',min(threshold)));
+            set(h,'fontname','helvetica','fontsize',12,'hori','right');
+            h=text(85, 1, sprintf('-%1.1f',max(threshold)));
+            set(h,'fontname','helvetica','fontsize',12,'hori','left');
         end;
     end;
 

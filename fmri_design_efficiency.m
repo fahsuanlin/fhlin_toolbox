@@ -124,19 +124,17 @@ for c_idx=1:contrast_count
 end;
 contrast_hdr=contrast_hdr(1:size(scm,1),:);
 
-
 tmp=zeros(size(HDR,2),1);
 if(~isempty(design.rv))
+    c_vec=zeros(length(scm_type)*size(HDR,2),size(HDR,2));
     for rv_idx=1:length(design.rv)
         rv=find(scm_type==design.rv(rv_idx));
 
-        c_vec=zeros(length(scm_type)*size(HDR,2),size(HDR,2));
         for t_idx=1:size(HDR,2)
             c_vec((rv-1)*size(HDR,2)+t_idx,t_idx)=design.cvec(rv_idx);
         end;
     end;
 end;
-
 efficiency=1/trace(c_vec'*inv(contrast_hdr'*contrast_hdr)*c_vec).*100;
 
 
