@@ -4,6 +4,8 @@ function [efficiency, param]=fmri_design_efficiency(design, hrf, varargin);
 efficiency=[];
 param=[];
 
+rv=[];
+
 flag_display=1;
 
 
@@ -13,6 +15,8 @@ for i=1:length(varargin)/2
     switch option
         case 'flag_display'
             flag_display=option_value;
+        case 'rv'
+            rv=option_value;
         otherwise
             fprintf('unknown option [%s]!\n',option);
             fprintf('error!\n');
@@ -26,19 +30,20 @@ para_type=[];
 para_duration=[];
 para_name=[];
 
+%keyboard;
 if(isempty(design.param))
     if(flag_display) fprintf('generating paradigm...\n'); end;
-    [design_param,ON]=etc_param_min_isi(design.t_step, design.min_isi, design.n_trial, design.duration);
+    [design_param,ON]=etc_param_min_isi(design.t_step, design.min_isi, design.n_trial, design.duration,'rv',rv);
     idx=find(design_param);
     idx=idx(randperm(length(idx)));
 
-    n=floor(design.n_trial/length(design.rv));
-
-    for ii=1:length(design.rv)-1
-        design_param(idx((ii-1)*n+1:ii*n))=design.rv(ii);
-    end;
-    ii=ii+1;
-    design_param(idx((ii-1)*n+1:end))=design.rv(ii);
+%     n=floor(design.n_trial/length(design.rv));
+% 
+%     for ii=1:length(design.rv)-1
+%         design_param(idx((ii-1)*n+1:ii*n))=design.rv(ii);
+%     end;
+%     ii=ii+1;
+%     design_param(idx((ii-1)*n+1:end))=design.rv(ii);
 
     for ii=1:length(design_param)
         for jj=0:round(design.t_step/design.TR)-1
@@ -133,7 +138,7 @@ if(~isempty(design.rv))
         for t_idx=1:size(HDR,2)
             c_vec((rv-1)*size(HDR,2)+t_idx,t_idx)=design.cvec(rv_idx);
         end;
-    end;
+    end;    
 end;
 efficiency=1/trace(c_vec'*inv(contrast_hdr'*contrast_hdr)*c_vec).*100;
 

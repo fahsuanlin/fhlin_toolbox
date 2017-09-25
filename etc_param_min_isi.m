@@ -1,4 +1,4 @@
-function [param,ON]=etc_param_min_isi(TR, min_isi, n_trial, total_run_time)
+function [param,ON]=etc_param_min_isi(TR, min_isi, n_trial, total_run_time,varargin)
 %   etc_param_min_isi       generate the paradigm and onset time for
 %   event-related design with minimal ISI constraint
 %
@@ -21,6 +21,24 @@ function [param,ON]=etc_param_min_isi(TR, min_isi, n_trial, total_run_time)
 % n_trial=32;             %number of trial of stimulus
 % total_run_time=240;     %240 sec per run
 
+rv=1;
+
+for i=length(varargin)/2
+    option=varargin{i*2-1};
+    option_value=varargin{i*2};
+    switch lower(option)
+        case 'rv'
+            rv=option_value;
+        otherwise
+            fprintf('unknown option [%s]. error!\n',option);
+            return;
+    end;
+end;
+
+if(isempty(rv))
+    rv=1;
+end;
+
 param=zeros(1,round(total_run_time/TR));
 
 done=0;
@@ -35,7 +53,8 @@ while(~done)
     idx=2;
 
     flag_break=0;
-    for ii=2:n_trial
+    n_trial_total=sum(n_trial);
+    for ii=2:n_trial_total
         found=0;
         while(~found)
             if(onset(idx)-ceil(min_isi/TR/2)>0) start=onset(idx)-ceil(min_isi/TR/2); else start=1; end;
@@ -50,9 +69,12 @@ while(~done)
         end;
         if(flag_break) break; end;
     end;
-    if(length(ON)==n_trial) done=1; end;
+    if(length(ON)==n_trial_total) done=1; end;
 end;
-param(ON)=1;
 
-%stem(param)
+for rv_idx=1:length(rv)
+    aa=sum(n_trial(1:rv_idx-1))+1;
+    bb=sum(n_trial(1:rv_idx));
+    param(ON(aa:bb))=rv(rv_idx);
+end;
 return;
