@@ -56,7 +56,15 @@ else
         %             if(sMdh.sLC.ushLine==63| LAST_SCAN>0)
         %                 keyboard;
         %             end;
-                if(ice_obj.MrProt.lRepetitions~=(sMdh.sLC.ushRepetition+1)) LAST_SCAN=0; end;
+
+if(ice_obj.flag_debug_file)
+        fprintf(ice_obj.fp_debug,'----LAST_SCAN=[%d]----\n',LAST_SCAN);
+	fprintf(ice_obj.fp_debug,'ice_obj.MrProt.lRepetitions=[%d]...\n',ice_obj.MrProt.lRepetitions);
+	fprintf(ice_obj.fp_debug,'sMdh.sLC.ushRepetition+1=[%d]...\n',sMdh.sLC.ushRepetition+1);
+end;
+
+                %if(ice_obj.MrProt.lRepetitions~=(sMdh.sLC.ushRepetition+1)) LAST_SCAN=0; end;
+    		if(ice_obj.MrProt.lRepetitions>(sMdh.sLC.ushRepetition+1)) LAST_SCAN=0; end;
     else
         if(sMdh.sLC.ushEcho+1==ice_obj.m_NContrast)
             LAST_SCAN =bitand (sMdh.aulEvalInfoMask(1),  MDH_LASTSCANINSLICE);
@@ -65,6 +73,9 @@ else
             LAST_SCAN=0;
         end;
     end;
+end;
+if(ice_obj.flag_debug_file)
+	fprintf(ice_obj.fp_debug,'LAST_SCAN=[%d]\n',LAST_SCAN);
 end;
 
 if(~ice_obj.flag_3D)
