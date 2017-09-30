@@ -326,6 +326,9 @@ etc_render_fsbrain.aux_point_coords_h=topo_aux_point_coords_h;
 etc_render_fsbrain.aux_point_name=topo_aux_point_name;
 etc_render_fsbrain.aux_point_name_h=topo_aux_point_name_h;
 
+etc_render_fsbrain.register_rotate_angle=3; %default: 3 degrees
+etc_render_fsbrain.register_translate_dist=1e-3; %default: 1 mm
+
 %%%%%%%%%%%%%%%%%%%%%%%%
 %setup call-back function
 %%%%%%%%%%%%%%%%%%%%%%%%

@@ -145,8 +145,7 @@ elseif(flag_fir)
             onset=nan;
         end;
     end;
-    
-    
+   
     %"off" time-to-half; find timing indices after peak
     [dummy,max_idx]=max(data);
     tmp=data;

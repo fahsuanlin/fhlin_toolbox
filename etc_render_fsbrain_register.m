@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_register(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_register
 
-% Last Modified by GUIDE v2.5 22-Jan-2017 16:45:46
+% Last Modified by GUIDE v2.5 29-Sep-2017 22:36:13
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -67,6 +67,7 @@ else
     etc_render_fsbrain.aux_point_coords_orig=[];
     etc_render_fsbrain.aux_point_coords=[];
 end;
+
 
 % --- Outputs from this function are returned to the command line.
 function varargout = etc_render_fsbrain_register_OutputFcn(hObject, eventdata, handles) 
@@ -296,3 +297,18 @@ function pushbutton_reset_Callback(hObject, eventdata, handles)
 global etc_render_fsbrain;
 etc_render_fsbrain.aux_point_coords=etc_render_fsbrain.aux_point_coords_orig;
 etc_render_fsbrain_handle('redraw');
+
+
+% --- Executes on button press in pushbutton_exportsave.
+function pushbutton_exportsave_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_exportsave (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain
+assignin('base','points',etc_render_fsbrain.aux_point_coords);
+filename = uigetfile;
+if(filename)
+    points=etc_render_fsbrain.aux_point_coords;
+    save(filename,'-append','points');
+    fprintf('variable "points" exported and saved in [%s]\n',filename);
+end;
