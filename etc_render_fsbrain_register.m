@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_register(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_register
 
-% Last Modified by GUIDE v2.5 29-Sep-2017 22:36:13
+% Last Modified by GUIDE v2.5 06-Oct-2017 13:33:35
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;

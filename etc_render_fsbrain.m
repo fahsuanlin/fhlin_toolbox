@@ -33,6 +33,7 @@ overlay_cmap_neg(:,3)=1;
 %overlay
 overlay_value=[];
 overlay_stc=[];
+overlay_aux_stc=[];
 overlay_stc_hemi=[];
 overlay_stc_lim=[];
 overlay_stc_timeVec=[];
@@ -93,6 +94,8 @@ for idx=1:length(varargin)/2
             overlay_value=option_value;
         case 'overlay_stc'
             overlay_stc=option_value;
+        case 'overlay_aux_stc'
+            overlay_aux_stc=option_value;
         case 'overlay_exclude'
             overlay_exclude=option_value;
         case 'overlay_exclude_fstem'
@@ -389,6 +392,7 @@ etc_render_fsbrain.fig_gui=[];
 
 etc_render_fsbrain.overlay_value=overlay_value;
 etc_render_fsbrain.overlay_stc=overlay_stc;
+etc_render_fsbrain.overlay_aux_stc=overlay_aux_stc;
 etc_render_fsbrain.overlay_stc_hemi=overlay_stc_hemi;
 etc_render_fsbrain.overlay_stc_timeVec=overlay_stc_timeVec;
 etc_render_fsbrain.overlay_stc_timeVec_unit=overlay_stc_timeVec_unit;
@@ -408,7 +412,8 @@ etc_render_fsbrain.overlay_flag_render=overlay_flag_render;
 
 etc_render_fsbrain.flag_hold_fig_stc_timecourse=flag_hold_fig_stc_timecourse;
 etc_render_fsbrain.handle_fig_stc_timecourse=[];
-            
+etc_render_fsbrain.handle_fig_stc_aux_timecourse=[];
+
 etc_render_fsbrain.h=h;
 etc_render_fsbrain.click_point=[];
 etc_render_fsbrain.click_vertex=[];

@@ -494,6 +494,12 @@ return;
 function draw_stc()
 global etc_render_fsbrain;
 
+if(~isempty(etc_render_fsbrain.fig_stc))
+    if(~isvalid(etc_render_fsbrain.fig_stc))
+        delete(etc_render_fsbrain.fig_stc);
+        etc_render_fsbrain.fig_stc=[];
+    end;
+end;
 
 if(~isempty(etc_render_fsbrain.click_overlay_vertex)&~isempty(etc_render_fsbrain.overlay_stc))
     if(isempty(etc_render_fsbrain.fig_stc))
@@ -518,14 +524,23 @@ if(~isempty(etc_render_fsbrain.click_overlay_vertex)&~isempty(etc_render_fsbrain
     if(isempty(etc_render_fsbrain.overlay_stc_timeVec))
         if(~etc_render_fsbrain.flag_hold_fig_stc_timecourse)
             delete(etc_render_fsbrain.handle_fig_stc_timecourse)
+            delete(etc_render_fsbrain.handle_fig_stc_aux_timecourse);
         end;
         
         etc_render_fsbrain.overlay_stc_timeVec=[1:size(etc_render_fsbrain.overlay_stc,2)]; 
             
         h_xline=line([1 size(etc_render_fsbrain.overlay_stc,2)],[0 0]); hold on;
         set(h_xline,'linewidth',2,'color',[1 1 1].*0.5);
+        if(~isempty(etc_render_fsbrain.overlay_aux_stc))
+            h=plot(squeeze(etc_render_fsbrain.overlay_aux_stc(etc_render_fsbrain.click_overlay_vertex,:,:)));
+            cc=get(gca,'ColorOrder');
+            for ii=1:length(h)
+                set(h(ii),'linewidth',1,'color',cc(rem(ii,8),:)); 
+            end;
+            etc_render_fsbrain.handle_fig_stc_aux_timecourse=h;
+        end;
         h=plot(etc_render_fsbrain.overlay_stc(etc_render_fsbrain.click_overlay_vertex,:));
-        set(h,'linewidth',2); hold off;
+        set(h,'linewidth',2,'color','r'); hold off;
         
         if(~etc_render_fsbrain.flag_hold_fig_stc_timecourse)
             etc_render_fsbrain.handle_fig_stc_timecourse=h;
@@ -534,12 +549,21 @@ if(~isempty(etc_render_fsbrain.click_overlay_vertex)&~isempty(etc_render_fsbrain
         end;
     else
         if(~etc_render_fsbrain.flag_hold_fig_stc_timecourse)
-            delete(etc_render_fsbrain.handle_fig_stc_timecourse)
+            delete(etc_render_fsbrain.handle_fig_stc_timecourse);
+            delete(etc_render_fsbrain.handle_fig_stc_aux_timecourse);
         end;
         h_xline=line([min(etc_render_fsbrain.overlay_stc_timeVec) max(etc_render_fsbrain.overlay_stc_timeVec)],[0 0]); hold on;
         set(h_xline,'linewidth',2,'color',[1 1 1].*0.5);
+        if(~isempty(etc_render_fsbrain.overlay_aux_stc))
+            h=plot(etc_render_fsbrain.overlay_stc_timeVec,squeeze(etc_render_fsbrain.overlay_aux_stc(etc_render_fsbrain.click_overlay_vertex,:,:)));
+            cc=get(gca,'ColorOrder');
+            for ii=1:length(h)
+                set(h(ii),'linewidth',1,'color',cc(rem(ii,8),:)); 
+            end;
+            etc_render_fsbrain.handle_fig_stc_aux_timecourse=h;
+        end;
         h=plot(etc_render_fsbrain.overlay_stc_timeVec,etc_render_fsbrain.overlay_stc(etc_render_fsbrain.click_overlay_vertex,:));
-        set(h,'linewidth',2); hold off;
+        set(h,'linewidth',2,'color','r'); hold off;
         
         if(~etc_render_fsbrain.flag_hold_fig_stc_timecourse)
             etc_render_fsbrain.handle_fig_stc_timecourse=h;
@@ -679,7 +703,7 @@ if(isfield(etc_render_fsbrain,'aux_point_coords'))
     end;
     
     if(~isempty(etc_render_fsbrain.aux_point_coords))
-        [sx,sy,sz] = sphere;
+        [sx,sy,sz] = sphere(8);
         sr=0.005;
         for idx=1:size(etc_render_fsbrain.aux_point_coords,1)
             etc_render_fsbrain.aux_point_coords_h(idx)=surf(sx.*sr+etc_render_fsbrain.aux_point_coords(idx,1),sy.*sr+etc_render_fsbrain.aux_point_coords(idx,2),sz.*sr+etc_render_fsbrain.aux_point_coords(idx,3));
@@ -688,6 +712,16 @@ if(isfield(etc_render_fsbrain,'aux_point_coords'))
                 etc_render_fsbrain.aux_point_name_h(idx)=text(etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3),etc_render_fsbrain.aux_point_name{idx});
             end;
         end;
+        
+%         for idx=1:size(etc_render_fsbrain.aux_point_coords,1)
+%             etc_render_fsbrain.aux_point_coords_h(idx)=plot3(etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3));
+%             %set(etc_render_fsbrain.aux_point_coords_h(idx),'facecolor','r','edgecolor','none');
+%             set(etc_render_fsbrain.aux_point_coords_h(idx),'color','r','MarkerSize',10,'Marker','+');
+%             if(~isempty(etc_render_fsbrain.aux_point_name))
+%                 etc_render_fsbrain.aux_point_name_h(idx)=text(etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3),etc_render_fsbrain.aux_point_name{idx});
+%                 set(etc_render_fsbrain.aux_point_name_h(idx),'hori','center');
+%             end;
+%         end;
     end;
 end;
 

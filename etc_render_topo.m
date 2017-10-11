@@ -15,7 +15,7 @@ vol_face=[];
 vol_vertex_hemi={};
 vol_face_hemi={};
 
-%color 
+%color
 default_solid_color=[256 180 100]./256;
 
 
@@ -30,6 +30,7 @@ topo_cmap_neg=flipud(tmp(1:128,:));
 %overlay
 topo_value=[];
 topo_stc=[];
+topo_aux_stc=[];
 topo_stc_hemi=[];
 topo_stc_lim=[];
 topo_stc_timeVec=[];
@@ -66,7 +67,7 @@ cluster_file={};
 
 %etc
 alpha=1;
-view_angle=[]; 
+view_angle=[];
 
 flag_redraw=0;
 flag_camlight=1;
@@ -93,7 +94,7 @@ for idx=1:length(varargin)/2
         case 'topo_value_hemi'
             topo_value_hemi=option_value;
         case 'topo_smooth'
-            topo_smooth=option_value;            
+            topo_smooth=option_value;
         case 'topo_threshold'
             topo_threshold=option_value;
         case 'topo_cmap'
@@ -103,7 +104,7 @@ for idx=1:length(varargin)/2
         case 'topo_regrid_flag'
             topo_regrid_flag=option_value;
         case 'topo_regrid_zero_flag'
-            topo_regrid_zero_flag=option_value;           
+            topo_regrid_zero_flag=option_value;
         case 'topo_exclude'
             topo_exclude=option_value;
         case 'topo_exclude_fstem'
@@ -111,15 +112,17 @@ for idx=1:length(varargin)/2
         case 'topo_include'
             topo_include=option_value;
         case 'topo_include_fstem'
-            topo_include_fstem=option_value;    
+            topo_include_fstem=option_value;
         case 'topo_stc'
-            topo_stc=option_value;       
+            topo_stc=option_value;
+        case 'topo_aux_stc'
+            topo_aux_stc=option_value;
         case 'topo_stc_lim'
             topo_stc_lim=option_value;
         case 'topo_stc_timevec'
             topo_stc_timeVec=option_value;
         case 'topo_stc_timevec_unit'
-            topo_stc_timeVec_unit=option_value;            
+            topo_stc_timeVec_unit=option_value;
         case 'topo_label'
             topo_label=option_value;
         case 'topo_aux_point_coords';
@@ -127,7 +130,7 @@ for idx=1:length(varargin)/2
         case 'topo_aux_point_name';
             topo_aux_point_name=option_value;
         case 'default_solid_color'
-            default_solid_color=option_value;        
+            default_solid_color=option_value;
         case 'cluster_file'
             cluster_file=option_value;
         case 'alpha'
@@ -165,11 +168,11 @@ topo_flag_render=0;
 %2: curvature and overlay color
 if(~isempty(topo_value))
     if(~iscell(topo_value))
-        ov=zeros(size(vol_vertex,1),1); 
+        ov=zeros(size(vol_vertex,1),1);
         ov(topo_vertex+1)=topo_value;
         
         topo_exclude=find(vol_vertex(:,3)<min(vol_vertex(topo_vertex+1,3)));
-
+        
         if(~isempty(topo_smooth))
             %ovs=inverse_smooth('','value',ov,'step',topo_smooth,'face',vol_face','vertex',vol_vertex','flag_fixval',1);
             ovs=inverse_smooth('','vertex',vol_vertex','face',vol_face','value',ov,'step',topo_smooth,'flag_fixval',0,'exc_vertex',topo_exclude,'inc_vertex',topo_include,'flag_regrid',topo_regrid_flag,'flag_regrid_zero',topo_regrid_zero_flag);
@@ -178,7 +181,7 @@ if(~isempty(topo_value))
         end;
         
         topo_flag_render=1;
-
+        
         if(~isempty(find(topo_value(:)>0))) topo_value_flag_pos=1; end;
         if(~isempty(find(topo_value(:)<0))) topo_value_flag_neg=1; end;
     else
@@ -222,22 +225,22 @@ h=patch('Faces',vol_face+1,'Vertices',vol_vertex,'FaceVertexCData',fvdata,'facea
 material dull;
 
 axis off vis3d equal;
- 
+
 if(~isempty(topo_threshold))
     set(gca,'climmode','manual','clim',topo_threshold);
 end;
 set(gcf,'color',bg_color);
 
 if(isempty(view_angle))
-   
-        view_angle=[-135 20];
-   end;
+    
+    view_angle=[-135 20];
+end;
 view(view_angle(1), view_angle(2));
 
 hold on;
-[sx,sy,sz] = sphere;
+[sx,sy,sz] = sphere(8);
 sr=0.005;
-%plot3(topo_aux_point_coords(:,1),topo_aux_point_coords(:,2),topo_aux_point_coords(:,3),'ko'); 
+
 for idx=1:size(topo_aux_point_coords,1)
     topo_aux_point_coords_h(idx)=surf(sx.*sr+topo_aux_point_coords(idx,1),sy.*sr+topo_aux_point_coords(idx,2),sz.*sr+topo_aux_point_coords(idx,3));
     set(topo_aux_point_coords_h(idx),'facecolor','r','edgecolor','none');
@@ -246,11 +249,20 @@ for idx=1:size(topo_aux_point_coords,1)
     end;
 end;
 
+% for idx=1:size(topo_aux_point_coords,1)
+%     topo_aux_point_coords_h(idx)=plot3(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3));
+%     %set(topo_aux_point_coords_h(idx),'facecolor','r','edgecolor','none');
+%     set(topo_aux_point_coords_h(idx),'color','r','MarkerSize',10,'Marker','+');
+%     if(~isempty(topo_aux_point_name))
+%         topo_aux_point_name_h(idx)=text(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3),topo_aux_point_name{idx}); hold on;
+%         set(topo_aux_point_name_h(idx),'hori','center');
+%     end;
+% end;
 
-% 
+%
 % cp=campos;
 % cp=cp./norm(cp);
-% 
+%
 % campos(1300.*cp);
 
 if(flag_camlight)
@@ -290,6 +302,7 @@ etc_render_fsbrain.fig_gui=[];
 
 etc_render_fsbrain.overlay_value=topo_value;
 etc_render_fsbrain.overlay_stc=topo_stc;
+etc_render_fsbrain.overlay_aux_stc=topo_aux_stc;
 etc_render_fsbrain.overlay_stc_hemi=topo_stc_hemi;
 etc_render_fsbrain.overlay_stc_timeVec=topo_stc_timeVec;
 etc_render_fsbrain.overlay_stc_timeVec_unit=topo_stc_timeVec_unit;
@@ -307,8 +320,9 @@ etc_render_fsbrain.overlay_exclude=topo_exclude;
 etc_render_fsbrain.overlay_include=topo_include;
 etc_render_fsbrain.flag_hold_fig_stc_timecourse=flag_hold_fig_stc_timecourse;
 etc_render_fsbrain.handle_fig_stc_timecourse=[];
+etc_render_fsbrain.handle_fig_stc_aux_timecourse=[];
 etc_render_fsbrain.overlay_flag_render=topo_flag_render;
-        
+
 etc_render_fsbrain.h=h;
 etc_render_fsbrain.click_point=[];
 etc_render_fsbrain.click_vertex=[];
