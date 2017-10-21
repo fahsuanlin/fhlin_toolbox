@@ -189,7 +189,7 @@ if(~iscell(hemi))
     vertex_coords_hemi=vertex_coords;
     faces_hemi=faces;
 else
-    vertex_coords=[]; faces=[];
+    vertex_coords=[]; faces=[]; ovelay_vertex_tmp=[];
     for h_idx=1:length(hemi)
         file_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi{h_idx},surf);
         fprintf('rendering [%s]...\n',file_surf);
@@ -200,9 +200,18 @@ else
         
         faces=cat(1,faces,ff+size(vertex_coords,1));
         
+        if(iscell(overlay_vertex))
+            ovelay_vertex_tmp=cat(1,ovelay_vertex_tmp,overlay_vertex{h_idx}+size(vertex_coords,1));
+        end;
+        
         vv(:,1)=vv(:,1)+(-1).^(h_idx).*50;
         
         vertex_coords=cat(1,vertex_coords,vv);
+    
+    end;
+    
+    if(iscell(overlay_vertex))
+        ovelay_vertex=ovelay_vertex_tmp;
     end;
 end;
 

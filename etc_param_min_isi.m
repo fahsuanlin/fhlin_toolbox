@@ -23,7 +23,7 @@ function [param,ON]=etc_param_min_isi(TR, min_isi, n_trial, total_run_time,varar
 
 rv=1;
 
-for i=length(varargin)/2
+for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
     switch lower(option)

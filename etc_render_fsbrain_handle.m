@@ -348,7 +348,12 @@ switch lower(param)
                 fprintf('showing STC at time index [%d] (sample)\n',etc_render_fsbrain.overlay_stc_timeVec_idx);
             else
                 [dummy,etc_render_fsbrain.overlay_stc_timeVec_idx]=min(abs(etc_render_fsbrain.overlay_stc_timeVec-xx));
-                fprintf('showing STC at time [%2.2f] ms\n',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
+                if(isempty(etc_render_fsbrain.overlay_stc_timeVec_unit))
+                    unt='sample';
+                else
+                    unt=etc_render_fsbrain.overlay_stc_timeVec_unit;
+                end;
+                fprintf('showing STC at time [%2.2f] %s\n',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx),unt);
             end;
             
             if(~iscell(etc_render_fsbrain.overlay_value))
@@ -586,9 +591,9 @@ if(~isempty(etc_render_fsbrain.click_overlay_vertex)&~isempty(etc_render_fsbrain
     end;
     
     
-    h=xlabel(sprintf('time [%s]',etc_render_fsbrain.overlay_stc_timeVec_unit)); set(h,'fontname','helvetica','fontsize',18);
+    h=xlabel(sprintf('time [%s]',etc_render_fsbrain.overlay_stc_timeVec_unit)); set(h,'fontname','helvetica','fontsize',12);
     
-    axis tight; set(gca,'fontname','helvetica','fontsize',18);
+    axis tight; set(gca,'fontname','helvetica','fontsize',12);
     set(gcf,'color','w')
 end;
 return;
