@@ -45,7 +45,8 @@ eeg_bcg=eeg;
 
 non_ecg_channel=[1:size(eeg,1)];
 for ch_idx=1:length(non_ecg_channel)
-    if(flag_display) fprintf('*'); end;
+    %if(flag_display) fprintf('*'); end;
+    fprintf('*'); 
     
     %generating BCG template
     bcg_all{non_ecg_channel(ch_idx)}=[];
@@ -65,7 +66,9 @@ for ch_idx=1:length(non_ecg_channel)
 %              bcg_all{non_ecg_channel(ch_idx)}(trial_idx,:)=sgolayfilt(bcg_all{non_ecg_channel(ch_idx)}(trial_idx,:),6,2*round(fs*0.03)+1); %smoothing out residual GA in ECG
 %     end;
     
-    if(flag_display) fprintf('#'); end;
+    %if(flag_display) fprintf('#'); end;
+    fprintf('#');
+    
     %ii=1;
     for trial_idx=1:length(qrs_i_raw)
         
@@ -141,7 +144,8 @@ for ch_idx=1:length(non_ecg_channel)
     end;
 end;
 
-if(flag_display) fprintf('\nBCG correction done!\n'); end;
+fprintf('\n');
+if(flag_display) fprintf('BCG correction done!\n'); end;
 
 %----------------------------
 % BCG end;
