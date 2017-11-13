@@ -62,7 +62,9 @@ for stc_idx=1:length(stcin)
                         fn(findstr(fn,'.'))='p';     
                     end;
                     
-                    cmd=sprintf('!mne_make_movie --subject %s --spm --%s --stcin %s --view %s --fthresh %f --fmid %f --fmax %f --nocomments --tif %s --smooth %d --pick %d --surface %s --alpha %f', subject{subj_idx}, hemi{hemi_idx}, stcin{stc_idx}, view{view_idx}, fthresh, fmid, fmax,fn,smooth,pick(pick_idx),surf,alpha);
+                    cmd=('!export DYLD_LIBRARY_PATH=/Applications/MNE-2.7.3-3268-MacOSX-i386/lib:$DYLD_LIBRARY_PATH;');
+                    cmd=sprintf('%s mne_make_movie --subject %s --spm --%s --stcin %s --view %s --fthresh %f --fmid %f --fmax %f --nocomments --tif %s --smooth %d --pick %d --surface %s --alpha %f', cmd, subject{subj_idx}, hemi{hemi_idx}, stcin{stc_idx}, view{view_idx}, fthresh, fmid, fmax,fn,smooth,pick(pick_idx),surf,alpha);
+                    %cmd=sprintf('!mne_make_movie --subject %s --spm --%s --stcin %s --view %s --fthresh %f --fmid %f --fmax %f --nocomments --tif %s --smooth %d --pick %d --surface %s --alpha %f', subject{subj_idx}, hemi{hemi_idx}, stcin{stc_idx}, view{view_idx}, fthresh, fmid, fmax,fn,smooth,pick(pick_idx),surf,alpha);
                     fprintf('%s',cmd);
                     eval(cmd);
                     
