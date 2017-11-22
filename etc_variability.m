@@ -27,8 +27,11 @@ end;
 %var_index=s(1)./sum(s(:));
 
 %data=data-mean(data(:));
-data=bsxfun(@minus,data,mean(data,2));
-res=bsxfun(@minus,data,mean(data,1));
+%data=bsxfun(@minus,data,mean(data,2));
+avg=repmat(mean(data,1),[size(data,1) 1]);
+res=data(:)-avg(:)*(inv(avg(:)'*avg(:))*avg(:)'*data(:));
+res=reshape(res,size(data));
+%res=bsxfun(@minus,data,mean(data,1));
 var_index=sum(res(:).^2)./sum(data(:).^2);
 
 %bootstrap
@@ -40,8 +43,11 @@ for bstp_idx=1:n_bstp
 %    var_index_bstp(bstp_idx)=s(1)./sum(s(:));
 
     %tmp=tmp-mean(tmp(:));
-    tmp=bsxfun(@minus,tmp,mean(tmp,2));
-    res=bsxfun(@minus,tmp,mean(tmp,1));
-    var_index_bstp(bstp_idx)=sum(res(:).^2)./sum(data(:).^2);
+    %tmp=bsxfun(@minus,tmp,mean(tmp,2));
+    avg=repmat(mean(tmp,1),[size(tmp,1) 1]);
+    res=tmp(:)-avg(:)*(inv(avg(:)'*avg(:))*avg(:)'*tmp(:));
+    res=reshape(res,size(tmp));
+    %res=bsxfun(@minus,tmp,mean(tmp,1));
+    var_index_bstp(bstp_idx)=sum(res(:).^2)./sum(tmp(:).^2);
 
 end;

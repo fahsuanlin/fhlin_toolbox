@@ -123,6 +123,8 @@ for idx=1:length(varargin)/2
             topo_stc_timeVec=option_value;
         case 'topo_stc_timevec_unit'
             topo_stc_timeVec_unit=option_value;
+        case 'topo_stc_timevec_idx'
+            topo_stc_timeVec_idx=option_value;
         case 'topo_label'
             topo_label=option_value;
         case 'topo_aux_point_coords';
@@ -155,9 +157,10 @@ end
 
 %get the overlay value from STC at the largest power instant, if it is not specified.
 if(isempty(topo_value)&~isempty(topo_stc))
-    
-    [tmp,topo_stc_timeVec_idx]=max(sum(topo_stc.^2,1));
-    topo_value=topo_stc(:,topo_stc_timeVec_idx);
+    if(isempty(topo_stc_timeVec_idx))
+        [tmp,topo_stc_timeVec_idx]=max(sum(topo_stc.^2,1));
+        topo_value=topo_stc(:,topo_stc_timeVec_idx);
+    end;
 end;
 
 
@@ -351,6 +354,10 @@ set(gcf,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
 set(gcf,'invert','off');
 
 hold on;
+
+if(~isempty(view_angle))
+    view(view_angle(1),view_angle(2));
+end;
 
 if(flag_colorbar)
     etc_render_fsbrain_handle('kb','c0','c0');
