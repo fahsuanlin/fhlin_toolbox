@@ -8,7 +8,7 @@ n_ma_aas=7; %# of movign GA template trials
 
 
 flag_aas_svd=1; 
-aas_svd_threshold=0.995;
+aas_svd_threshold=0.95;
 
 flag_anchor_bnd=1;
 
@@ -55,16 +55,16 @@ for i=1:length(varargin)/2
     end;
 end;
 
-if(~isempty(ecg))
-    [qrs_amp_raw,qrs_i_raw,delay]=pan_tompkin(ecg,fs,0,'flag_fhlin',1);
-    qrs=zeros(1,size(eeg,2));
-    qrs(qrs_i_raw)=1000;
-else
-    qrs_amp_raw=[];
-    qrs_i_raw=[];
-    delay=[];
-    qrs=[];
-end;
+% if(~isempty(ecg))
+%     [qrs_amp_raw,qrs_i_raw,delay]=pan_tompkin(ecg,fs,0,'flag_fhlin',1);
+%     qrs=zeros(1,size(eeg,2));
+%     qrs(qrs_i_raw)=1000;
+% else
+%     qrs_amp_raw=[];
+%     qrs_i_raw=[];
+%     delay=[];
+%     qrs=[];
+% end;
 
 %----------------------------
 % AAS start;
@@ -280,15 +280,6 @@ if(sum(abs(eeg_trigger))>0)
                 tt=[epoch_onset(tr_idx):epoch_offset(tr_idx)]./fs;
                 plot(tt,squeeze(epoch(ch_idx,:,tr_idx))); hold on; set(gca,'ylim',[-1000 1000]); title(sprintf('trials [%04d|%4d]',tr_idx,size(epoch,3)));
                 h=plot(tt,buffer(:,tr_idx));  hold off; set(h,'linewidth',3,'color','r');
-%                 subplot(512);
-%                 plot(squeeze(epoch_shift(ch_idx,:,trial_sel))); set(gca,'ylim',[-1000 1000]); title('template components');
-%                 subplot(513);
-%                 plot(tt); set(gca,'ylim',[-1000 1000]); title('artifact template');
-%                 subplot(514);
-%                 if(~isempty(ecg))
-%                     plot(ecg(trigger(tr_idx):trigger(tr_idx)+n_samp-1)); hold on; set(gca,'ylim',[-1000 1000]); title('ECG');
-%                     h=plot(qrs(trigger(tr_idx):trigger(tr_idx)+n_samp-1)); set(h,'color',[1 1 1].*0.3); hold off set(gca,'ylim',[-1000 1000]); title('ECG');
-%                 end;
                 subplot(212);
                 plot(tt,squeeze(epoch(ch_idx,:,tr_idx))); hold on; set(gca,'ylim',[-100 100]); title(sprintf('trials [%04d|%4d]',tr_idx,size(epoch,3)));
                 h=plot(tt,buffer(:,tr_idx));  hold off; set(h,'linewidth',3,'color','r');

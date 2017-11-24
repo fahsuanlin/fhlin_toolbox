@@ -35,8 +35,8 @@ end;
 %----------------------------
 if(flag_display) fprintf('detecting EKG peaks...\n'); end;
 %[qrs_amp_raw,qrs_i_raw,delay]=pan_tompkin(ecg,fs,flag_display,'flag_fhlin',1);
-[pks,qrs_i_raw] = findpeaks(ecg,'MINPEAKDISTANCE',round(0.7*fs));
-
+%[pks,qrs_i_raw] = findpeaks(ecg,'MINPEAKDISTANCE',round(0.7*fs));
+[pks,qrs_i_raw] =etc_pan_tompkin(ecg,fs,1,'flag_fhlin',1);
 
 BCG_tPre_sample=round(BCG_tPre.*fs);
 BCG_tPost_sample=round(BCG_tPost.*fs);
