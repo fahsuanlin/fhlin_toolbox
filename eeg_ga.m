@@ -230,17 +230,25 @@ if(sum(abs(eeg_trigger))>0)
             trial_sel=setdiff(trial_sel,tr_idx);
             
             %estimate the GA template by moving average
-            ga_template=mean(epoch_shift(:,:,trial_sel),3);
-                        
+            ga_template=mean(epoch_shift(:,:,trial_sel),3).';
+            
+            
+            %[u,s,v]=svd(squeeze(epoch_shift(ch_idx,:,trial_sel)),'econ');
+            %ga_template=u(:,1:4);
+            
             %tmp=eeg(ch_idx,trigger(tr_idx)-t_pre_n:trigger(tr_idx)+n_samp-1+t_post_n);
             tmp=squeeze(epoch(ch_idx,:,tr_idx));
             
             %AAS by regression
-            tt=etc_circshift(ga_template(ch_idx,:),shift(tr_idx));
-            D=[tt(:)];
+            %tt=etc_circshift(ga_template(ch_idx,:),shift(tr_idx));
+            %D=[tt(:)];
+            for ii=1:size(ga_template,2)
+                ga_template(:,ii)=etc_circshift(ga_template(:,ii)',shift(tr_idx))';
+            end;
+            D=ga_template;
             
             bnd0(tr_idx,:)=[tmp(1) tmp(end)]; %aligning ends (prep.)
-            tmp=tmp(:)-D*inv(D'*D)*D'*tmp(:); %AAS by regression 
+            tmp=tmp(:)-D*inv(D'*D)*(D'*tmp(:)); %AAS by regression 
 
             buffer(:,tr_idx)=tmp(:);
         end;
