@@ -6,6 +6,8 @@ flag_display=1;
 flag_ma_aas=0;
 n_ma_aas=7; %# of movign GA template trials
 
+flag_ga_templage_avg=1;
+flag_ga_templage_svd=0;
 
 flag_aas_svd=1; 
 aas_svd_threshold=0.95;
@@ -40,6 +42,12 @@ for i=1:length(varargin)/2
             flag_anchor_bnd=option_value;
         case 'flag_ga_obs'
             flag_ga_obs=option_value;
+        case 'flag_ga_template_avg'
+            flag_ga_template_avg=option_value;
+            flag_ga_template_svd=1-flag_ga_template_avg;
+        case 'flag_ga_template_svd'
+            flag_ga_template_svd=option_value;
+            flag_ga_template_avg=1-flag_ga_template_svd;            
         case 'n_ga_obs'
             n_ga_obs=option_value; %# of GA OBS basis
         case 'ecg'
@@ -230,11 +238,12 @@ if(sum(abs(eeg_trigger))>0)
             trial_sel=setdiff(trial_sel,tr_idx);
             
             %estimate the GA template by moving average
-            ga_template=mean(epoch_shift(:,:,trial_sel),3).';
-            
-            
-            %[u,s,v]=svd(squeeze(epoch_shift(ch_idx,:,trial_sel)),'econ');
-            %ga_template=u(:,1:4);
+            if(flag_ga_templage_avg)
+                ga_template=mean(epoch_shift(:,:,trial_sel),3).';
+            elseif(flag_ga_template_svd)
+                [u,s,v]=svd(squeeze(epoch_shift(ch_idx,:,trial_sel)),'econ');
+                ga_template=u(:,1:4);
+            end;
             
             %tmp=eeg(ch_idx,trigger(tr_idx)-t_pre_n:trigger(tr_idx)+n_samp-1+t_post_n);
             tmp=squeeze(epoch(ch_idx,:,tr_idx));

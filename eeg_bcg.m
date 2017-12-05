@@ -57,14 +57,23 @@ for ch_idx=1:length(non_ecg_channel)
     %generating BCG template
     bcg_all{non_ecg_channel(ch_idx)}=[];
     for trial_idx=1:length(qrs_i_raw)
+        if(trial_idx==1)
+            tmp=[qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample];
+            ecg_all=zeros(length(qrs_i_raw),length(tmp));
+
+            bcg_all{non_ecg_channel(ch_idx)}=zeros(length(qrs_i_raw),length(tmp));
+        end;
+
         if(((qrs_i_raw(trial_idx)-BCG_tPre_sample)>0)&((qrs_i_raw(trial_idx)+BCG_tPost_sample)<=size(eeg,2)))
-            bcg_all{non_ecg_channel(ch_idx)}=cat(1,bcg_all{non_ecg_channel(ch_idx)},eeg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample));
-            if(ch_idx==1)
-                if(~exist('ecg_all'))
-                    ecg_all=[];
-                end;
-                ecg_all=cat(1,ecg_all,ecg(qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample));
-            end;
+            %bcg_all{non_ecg_channel(ch_idx)}=cat(1,bcg_all{non_ecg_channel(ch_idx)},eeg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample));
+            bcg_all{non_ecg_channel(ch_idx)}(trial_idx,:)=eeg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample);
+            %if(ch_idx==1)
+            %    if(~exist('ecg_all'))
+            %        ecg_all=[];
+            %    end;
+            %    ecg_all=cat(1,ecg_all,ecg(qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample));
+            %end;
+            ecg_all(trial_idx,:)=ecg(qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample);
         end;
     end;
     
@@ -77,6 +86,7 @@ for ch_idx=1:length(non_ecg_channel)
     
     %ii=1;
     if(~flag_dyn_bcg)
+        if(ch_idx==0) keyboard; end;
         [uu,ss,vv]=svd(bcg_all{non_ecg_channel(ch_idx)}(:,:),'econ');
         bcg_residual=uu(:,bcg_nsvd+1:end)*ss(bcg_nsvd+1:end,bcg_nsvd+1:end)*vv(:,bcg_nsvd+1:end)';
         
