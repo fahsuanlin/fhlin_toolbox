@@ -97,7 +97,9 @@ z*x*(1-cos(theta))-y*sin(theta) z*y*(1-cos(theta))+x*sin(theta) cos(theta)+z*z*(
 %https://en.wikipedia.org/wiki/Rotation_matrix
 
 etc_render_fsbrain.aux_point_coords=(R*etc_render_fsbrain.aux_point_coords.').';
-
+if(~isempty(etc_render_fsbrain.aux2_point_coords))
+    etc_render_fsbrain.aux2_point_coords=(R*etc_render_fsbrain.aux2_point_coords.').';
+end;
 etc_render_fsbrain_handle('redraw');
 % --- Executes on button press in pushbutton_rotate_c.
 function pushbutton_rotate_c_Callback(hObject, eventdata, handles)
@@ -116,7 +118,9 @@ z*x*(1-cos(theta))-y*sin(theta) z*y*(1-cos(theta))+x*sin(theta) cos(theta)+z*z*(
 %https://en.wikipedia.org/wiki/Rotation_matrix
 
 etc_render_fsbrain.aux_point_coords=(R*etc_render_fsbrain.aux_point_coords.').';
-
+if(~isempty(etc_render_fsbrain.aux2_point_coords))
+    etc_render_fsbrain.aux2_point_coords=(R*etc_render_fsbrain.aux2_point_coords.').';
+end;
 etc_render_fsbrain_handle('redraw');
 
 
@@ -158,7 +162,9 @@ uu = cross(oo,rr); %up screen unit vector
 
 dist=etc_render_fsbrain.register_translate_dist;
 etc_render_fsbrain.aux_point_coords=etc_render_fsbrain.aux_point_coords+repmat(uu.'.*dist,[size(etc_render_fsbrain.aux_point_coords,1),1]);
-
+if(~isempty(etc_render_fsbrain.aux2_point_coords))
+    etc_render_fsbrain.aux2_point_coords=etc_render_fsbrain.aux2_point_coords+repmat(uu.'.*dist,[size(etc_render_fsbrain.aux2_point_coords,1),1]);
+end;
 etc_render_fsbrain_handle('redraw');
 
 % --- Executes on button press in pushbutton_translate_down.
@@ -177,7 +183,9 @@ uu = cross(oo,rr); %up screen unit vector
 
 dist=-1.*etc_render_fsbrain.register_translate_dist;
 etc_render_fsbrain.aux_point_coords=etc_render_fsbrain.aux_point_coords+repmat(uu.'.*dist,[size(etc_render_fsbrain.aux_point_coords,1),1]);
-
+if(~isempty(etc_render_fsbrain.aux2_point_coords))
+    etc_render_fsbrain.aux2_point_coords=etc_render_fsbrain.aux2_point_coords+repmat(uu.'.*dist,[size(etc_render_fsbrain.aux2_point_coords,1),1]);
+end;
 etc_render_fsbrain_handle('redraw');
 
 % --- Executes on button press in pushbutton_translate_left.
@@ -196,7 +204,9 @@ uu = cross(oo,rr); %up screen unit vector
 
 dist=-1.*etc_render_fsbrain.register_translate_dist;
 etc_render_fsbrain.aux_point_coords=etc_render_fsbrain.aux_point_coords+repmat(rr.'.*dist,[size(etc_render_fsbrain.aux_point_coords,1),1]);
-
+if(~isempty(etc_render_fsbrain.aux2_point_coords))
+    etc_render_fsbrain.aux2_point_coords=etc_render_fsbrain.aux2_point_coords+repmat(rr.'.*dist,[size(etc_render_fsbrain.aux2_point_coords,1),1]);
+end;
 etc_render_fsbrain_handle('redraw');
 
 % --- Executes on button press in pushbutton_translate_right.
@@ -215,7 +225,9 @@ uu = cross(oo,rr); %up screen unit vector
 
 dist=etc_render_fsbrain.register_translate_dist;
 etc_render_fsbrain.aux_point_coords=etc_render_fsbrain.aux_point_coords+repmat(rr.'.*dist,[size(etc_render_fsbrain.aux_point_coords,1),1]);
-
+if(~isempty(etc_render_fsbrain.aux2_point_coords))
+    etc_render_fsbrain.aux2_point_coords=etc_render_fsbrain.aux2_point_coords+repmat(rr.'.*dist,[size(etc_render_fsbrain.aux2_point_coords,1),1]);
+end;
 etc_render_fsbrain_handle('redraw');
 
 

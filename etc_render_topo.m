@@ -53,6 +53,11 @@ topo_aux_point_coords_h=[];
 topo_aux_point_name={};
 topo_aux_point_name_h=[];
 
+topo_aux2_point_coords=[];
+topo_aux2_point_coords_h=[];
+topo_aux2_point_name={};
+topo_aux2_point_name_h=[];
+
 topo_exclude_fstem='';
 topo_exclude=[];
 
@@ -131,6 +136,10 @@ for idx=1:length(varargin)/2
             topo_aux_point_coords=option_value;
         case 'topo_aux_point_name';
             topo_aux_point_name=option_value;
+        case 'topo_aux2_point_coords';
+            topo_aux2_point_coords=option_value;
+        case 'topo_aux2_point_name';
+            topo_aux2_point_name=option_value;
         case 'default_solid_color'
             default_solid_color=option_value;
         case 'cluster_file'
@@ -244,13 +253,38 @@ hold on;
 [sx,sy,sz] = sphere(8);
 sr=0.005;
 
+% for idx=1:size(topo_aux_point_coords,1)
+%     topo_aux_point_coords_h(idx)=surf(sx.*sr+topo_aux_point_coords(idx,1),sy.*sr+topo_aux_point_coords(idx,2),sz.*sr+topo_aux_point_coords(idx,3));
+%     set(topo_aux_point_coords_h(idx),'facecolor','r','edgecolor','none');
+%     if(~isempty(topo_aux_point_name))
+%         topo_aux_point_name_h(idx)=text(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3),topo_aux_point_name{idx}); hold on;
+%     end;
+% end;
+
+xx=[]; yy=[]; zz=[];
 for idx=1:size(topo_aux_point_coords,1)
-    topo_aux_point_coords_h(idx)=surf(sx.*sr+topo_aux_point_coords(idx,1),sy.*sr+topo_aux_point_coords(idx,2),sz.*sr+topo_aux_point_coords(idx,3));
-    set(topo_aux_point_coords_h(idx),'facecolor','r','edgecolor','none');
+    xx=cat(1,xx,sx.*sr+topo_aux_point_coords(idx,1));
+    yy=cat(1,yy,sy.*sr+topo_aux_point_coords(idx,2));
+    zz=cat(1,zz,sz.*sr+topo_aux_point_coords(idx,3));
     if(~isempty(topo_aux_point_name))
         topo_aux_point_name_h(idx)=text(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3),topo_aux_point_name{idx}); hold on;
     end;
 end;
+topo_aux_point_coords_h(1)=surf(xx,yy,zz);
+set(topo_aux_point_coords_h(1),'facecolor','r','edgecolor','none');
+
+
+xx=[]; yy=[]; zz=[];
+for idx=1:size(topo_aux2_point_coords,1)
+    xx=cat(1,xx,topo_aux2_point_coords(idx,1));
+    yy=cat(1,yy,topo_aux2_point_coords(idx,2));
+    zz=cat(1,zz,topo_aux2_point_coords(idx,3));
+    if(~isempty(topo_aux2_point_name))
+        topo_aux2_point_name_h(idx)=text(topo_aux2_point_coords(idx,1),topo_aux2_point_coords(idx,2),topo_aux2_point_coords(idx,3),topo_aux2_point_name{idx}); hold on;
+    end;
+end;
+topo_aux2_point_coords_h=plot3(xx,yy,zz,'r.');
+set(topo_aux2_point_coords_h,'color',[1 0 0].*0.5);
 
 % for idx=1:size(topo_aux_point_coords,1)
 %     topo_aux_point_coords_h(idx)=plot3(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3));
@@ -342,6 +376,11 @@ etc_render_fsbrain.aux_point_coords=topo_aux_point_coords;
 etc_render_fsbrain.aux_point_coords_h=topo_aux_point_coords_h;
 etc_render_fsbrain.aux_point_name=topo_aux_point_name;
 etc_render_fsbrain.aux_point_name_h=topo_aux_point_name_h;
+
+etc_render_fsbrain.aux2_point_coords=topo_aux2_point_coords;
+etc_render_fsbrain.aux2_point_coords_h=topo_aux2_point_coords_h;
+etc_render_fsbrain.aux2_point_name=topo_aux2_point_name;
+etc_render_fsbrain.aux2_point_name_h=topo_aux2_point_name_h;
 
 etc_render_fsbrain.register_rotate_angle=3; %default: 3 degrees
 etc_render_fsbrain.register_translate_dist=1e-3; %default: 1 mm

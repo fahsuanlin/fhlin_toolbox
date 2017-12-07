@@ -710,23 +710,45 @@ if(isfield(etc_render_fsbrain,'aux_point_coords'))
     if(~isempty(etc_render_fsbrain.aux_point_coords))
         [sx,sy,sz] = sphere(8);
         sr=0.005;
+        xx=[]; yy=[]; zz=[];
         for idx=1:size(etc_render_fsbrain.aux_point_coords,1)
-            etc_render_fsbrain.aux_point_coords_h(idx)=surf(sx.*sr+etc_render_fsbrain.aux_point_coords(idx,1),sy.*sr+etc_render_fsbrain.aux_point_coords(idx,2),sz.*sr+etc_render_fsbrain.aux_point_coords(idx,3));
-            set(etc_render_fsbrain.aux_point_coords_h(idx),'facecolor','r','edgecolor','none');
+            xx=cat(1,xx,sx.*sr+etc_render_fsbrain.aux_point_coords(idx,1));
+            yy=cat(1,yy,sy.*sr+etc_render_fsbrain.aux_point_coords(idx,2));
+            zz=cat(1,zz,sz.*sr+etc_render_fsbrain.aux_point_coords(idx,3));
             if(~isempty(etc_render_fsbrain.aux_point_name))
-                etc_render_fsbrain.aux_point_name_h(idx)=text(etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3),etc_render_fsbrain.aux_point_name{idx});
+                etc_render_fsbrain.aux_point_name_h(idx)=text(etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3),etc_render_fsbrain.aux_point_name{idx}); hold on;
             end;
         end;
-        
-%         for idx=1:size(etc_render_fsbrain.aux_point_coords,1)
-%             etc_render_fsbrain.aux_point_coords_h(idx)=plot3(etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3));
-%             %set(etc_render_fsbrain.aux_point_coords_h(idx),'facecolor','r','edgecolor','none');
-%             set(etc_render_fsbrain.aux_point_coords_h(idx),'color','r','MarkerSize',10,'Marker','+');
-%             if(~isempty(etc_render_fsbrain.aux_point_name))
-%                 etc_render_fsbrain.aux_point_name_h(idx)=text(etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3),etc_render_fsbrain.aux_point_name{idx});
-%                 set(etc_render_fsbrain.aux_point_name_h(idx),'hori','center');
-%             end;
-%         end;
+        etc_render_fsbrain.aux_point_coords_h(1)=surf(xx,yy,zz);
+        set(etc_render_fsbrain.aux_point_coords_h(1),'facecolor','r','edgecolor','none');       
+    end;
+end;
+
+
+if(isfield(etc_render_fsbrain,'aux2_point_coords'))
+    if(~isempty(etc_render_fsbrain.aux2_point_coords_h))
+        delete(etc_render_fsbrain.aux2_point_coords_h(:));
+        etc_render_fsbrain.aux2_point_coords_h=[];
+    end;
+    
+    if(~isempty(etc_render_fsbrain.aux2_point_name_h))
+        delete(etc_render_fsbrain.aux2_point_name_h(:));
+        etc_render_fsbrain.aux2_point_name_h=[];
+    end;
+    
+    if(~isempty(etc_render_fsbrain.aux2_point_coords))
+
+        xx=[]; yy=[]; zz=[];
+        for idx=1:size(etc_render_fsbrain.aux2_point_coords,1)
+            xx=cat(1,xx,etc_render_fsbrain.aux2_point_coords(idx,1));
+            yy=cat(1,yy,etc_render_fsbrain.aux2_point_coords(idx,2));
+            zz=cat(1,zz,etc_render_fsbrain.aux2_point_coords(idx,3));
+            if(~isempty(etc_render_fsbrain.aux2_point_name))
+                etc_render_fsbrain.aux2_point_name_h(idx)=text(etc_render_fsbrain.aux2_point_coords(idx,1),etc_render_fsbrain.aux2_point_coords(idx,2),etc_render_fsbrain.aux2_point_coords(idx,3),etc_render_fsbrain.aux2_point_name{idx}); hold on;
+            end;
+        end;
+        etc_render_fsbrain.aux2_point_coords_h=plot3(xx,yy,zz,'r.');
+        set(etc_render_fsbrain.aux2_point_coords_h,'color',[1 0 0].*0.5);       
     end;
 end;
 
