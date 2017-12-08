@@ -96,10 +96,6 @@ switch lower(param)
                         set(etc_render_fsbrain.brain_axis,'pos',[etc_render_fsbrain.brain_axis_pos(1) 0.2 etc_render_fsbrain.brain_axis_pos(3) 0.8]);
                         etc_render_fsbrain.h_colorbar=subplot('position',[etc_render_fsbrain.brain_axis_pos(1) 0.0 etc_render_fsbrain.brain_axis_pos(3) 0.2]);
                         
-                        %overlay_cmap=autumn(80); %overlay colormap;
-                        %overlay_cmap_neg=winter(80); %overlay colormap;
-                        %overlay_cmap_neg(:,3)=1;
-                        %cmap = [overlay_cmap;overlay_cmap_neg];
                         cmap=[etc_render_fsbrain.overlay_cmap; etc_render_fsbrain.overlay_cmap_neg];
                         hold on;
                         
@@ -140,10 +136,6 @@ switch lower(param)
                     set(etc_render_fsbrain.brain_axis,'pos',[etc_render_fsbrain.brain_axis_pos(1) 0.2 etc_render_fsbrain.brain_axis_pos(3) 0.8]);
                     etc_render_fsbrain.h_colorbar=subplot('position',[etc_render_fsbrain.brain_axis_pos(1) 0.0 etc_render_fsbrain.brain_axis_pos(3) 0.2]);
                     
-                    %overlay_cmap=autumn(80); %overlay colormap;
-                    %overlay_cmap_neg=winter(80); %overlay colormap;
-                    %overlay_cmap_neg(:,3)=1;
-                    %cmap = [overlay_cmap;overlay_cmap_neg];
                     cmap=[etc_render_fsbrain.overlay_cmap; etc_render_fsbrain.overlay_cmap_neg];
                     
                     if(etc_render_fsbrain.overlay_value_flag_pos)
@@ -171,10 +163,6 @@ switch lower(param)
                 set(etc_render_fsbrain.brain_axis,'pos',[etc_render_fsbrain.brain_axis_pos(1) 0.2 etc_render_fsbrain.brain_axis_pos(3) 0.8]);
                 etc_render_fsbrain.h_colorbar=subplot('position',[etc_render_fsbrain.brain_axis_pos(1) 0.0 etc_render_fsbrain.brain_axis_pos(3) 0.2]);
                 
-                %overlay_cmap=autumn(80); %overlay colormap;
-                %overlay_cmap_neg=winter(80); %overlay colormap;
-                %overlay_cmap_neg(:,3)=1;
-                %cmap = [overlay_cmap;overlay_cmap_neg];
                 cmap=[etc_render_fsbrain.overlay_cmap; etc_render_fsbrain.overlay_cmap_neg];
                 hold on;
                 
@@ -197,17 +185,6 @@ switch lower(param)
                 
             case 'y' %cluster
                 
-                %                 [stcs]=etc_smooth_fsbrain(stc(:,time_idx_pick),v_idx,'hemi',hemi,'flag_fixval',0);
-                %
-                %                 inverse_write_wfile(sprintf('tmp-%s.w',hemi),etc_render_fsbrain.overlay_ovs(:),[1:size(stcs,1)]-1);
-                %
-                %                 cmd=sprintf('!mri_surf2surf  --sfmt w --srcsubject %s --trgsubject %s --hemi %s --sval %s/tmp-%s.w --tval ./tmp2-%s.mgh --tfmt mgh',source_subject, target_subject, hemi, pdir,hemi, hemi);
-                %                 eval(cmd);
-                %
-                %                 cmd=sprintf('!mri_surfcluster --fwhm 10 --minarea %f --in tmp2-%s.mgh --subject %s --hemi %s --annot %s --thmin %f --thmax %f --sign %s --no-adjust --sum %s-%s.txt',minarea, hemi, target_subject, hemi, aparc_filestem, threshold_min, threshold_max, sign_str,output_stem, hemi);
-                %                 eval(cmd)
-                %
-                %                 eval('!rm tmp*');
                 
             case 'u' %show cluster labeling from files
                 if(isfield(etc_render_fsbrain,'h_cluster'))
@@ -330,17 +307,32 @@ switch lower(param)
     case 'bd'
         if(gcf==etc_render_fsbrain.fig_brain)
             draw_pointer;
-            %if(~isempty(etc_render_fsbrain.overlay_stc))
                 draw_stc;
-            %end;
             figure(etc_render_fsbrain.fig_brain);
+        elseif(gcf==etc_render_fsbrain.fig_vol)
+            xx=get(gca,'currentpoint');
+            xx=xx(1,1:2);
+            tmp=ceil(xx(1,1:2)./256);
+            if(min(tmp(:))>=1&max(tmp(:))<=2)
+                ind=sub2ind([2 2],tmp(1),tmp(2));
+                
+                
+                vox=etc_render_fsbrain.click_vertex_vox;
+                switch ind
+                    case 1 %cor slice
+                    v=[xx(1) xx(2) vox(3)];    
+                    case 2 %ax slice
+                    v=[xx(2) vox(2) xx(1)-256];                           
+                    case 3 %sag slice
+                    v=[vox(1) xx(2)-256 xx(1)];    
+                end;                        
+                surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[v(:); 1];
+                surface_coord=surface_coord(1:3);
+    
+                draw_pointer('pt',surface_coord);
+            end;
         elseif(gcf==etc_render_fsbrain.fig_stc)
-            %             if(~isempty(etc_render_fsbrain.overlay_stc_timeVec_idx_line))
-            %                 if(ishandle(etc_render_fsbrain.overlay_stc_timeVec_idx_line))
-            %                     delete(etc_render_fsbrain.overlay_stc_timeVec_idx_line);
-            %                 end;
-            %                 etc_render_fsbrain.overlay_stc_timeVec_idx_line=[];
-            %             end;
+
             xx=get(gca,'currentpoint');
             xx=xx(1);
             if(isempty(etc_render_fsbrain.overlay_stc_timeVec))
@@ -369,10 +361,8 @@ switch lower(param)
             end;
             
             if(ishandle(etc_render_fsbrain.fig_gui))
-                %obj=gco(etc_render_fsbrain.fig_gui);
                 set(findobj(etc_render_fsbrain.fig_gui,'tag','slider_timeVec'),'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
                 
-                %keyboard;
                 set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_timeVec'),'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
                 set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_timeVec'),'string',sprintf('%1.0f',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx)));
             end;
@@ -387,9 +377,16 @@ end;
 return;
 
 
-
-
-function draw_pointer()
+function draw_pointer(varargin)
+pt=[];
+for i=1:length(varargin)/2
+    option=varargin{i*2-1};
+    option_value=varargin{i*2};
+    switch option
+        case 'pt'
+            pt=option_value;
+    end;
+end;
 
 global etc_render_fsbrain;
 %fprintf('at the beginning of draw pointer: [%d]\n', ishandle(etc_render_fsbrain.h));
@@ -401,13 +398,7 @@ if(~isempty(etc_render_fsbrain.click_point))
         etc_render_fsbrain.click_point=[];
     end;
 end;
-% if(~isempty(etc_render_fsbrain.click_vertex))
-%     if(ishandle(etc_render_fsbrain.click_vertex))
-%         delete(etc_render_fsbrain.click_vertex);
-% %        fprintf('2: [%d]\n',ishandle(etc_render_fsbrain.h));
-%         etc_render_fsbrain.click_vertex=[];
-%     end;
-% end;
+
 if(~isempty(etc_render_fsbrain.click_vertex_point))
     if(ishandle(etc_render_fsbrain.click_vertex_point))
         delete(etc_render_fsbrain.click_vertex_point);
@@ -415,13 +406,7 @@ if(~isempty(etc_render_fsbrain.click_vertex_point))
         etc_render_fsbrain.click_vertex_point=[];
     end;
 end;
-% if(~isempty(etc_render_fsbrain.click_overlay_vertex))
-%     if(ishandle(etc_render_fsbrain.click_overlay_vertex))
-%         delete(etc_render_fsbrain.click_overlay_vertex);
-% %        fprintf('4: [%d]\n',ishandle(etc_render_fsbrain.h));
-%         etc_render_fsbrain.click_overlay_vertex=[];
-%     end;
-% end;
+
 if(~isempty(etc_render_fsbrain.click_overlay_vertex_point))
     if(ishandle(etc_render_fsbrain.click_overlay_vertex_point))
         delete(etc_render_fsbrain.click_overlay_vertex_point);
@@ -430,7 +415,10 @@ if(~isempty(etc_render_fsbrain.click_overlay_vertex_point))
     end;
 end;
 
-if(ishandle(etc_render_fsbrain.h))
+
+figure(etc_render_fsbrain.fig_brain);
+
+if(ishandle(etc_render_fsbrain.h)&isempty(pt))
     pt=inverse_select3d(etc_render_fsbrain.h);
     if(isempty(pt))
         return;
@@ -446,7 +434,7 @@ end;
 
 etc_render_fsbrain.click_point=plot3(pt(1),pt(2),pt(3),'.');
 fprintf('\nselected [x,y,z]=(%s)\n',num2str(pt','%2.2f '));
-set(etc_render_fsbrain.click_point,'color',[0 0 1]);
+set(etc_render_fsbrain.click_point,'color',[0 0 1],'markersize',20);
 
 vv=etc_render_fsbrain.vertex_coords;
 dist=sqrt(sum((vv-repmat([pt(1),pt(2),pt(3)],[size(vv,1),1])).^2,2));
@@ -455,6 +443,61 @@ fprintf('nearest vertex: IDX=[%d] (%2.2f %2.2f %2.2f) \n',min_dist_idx,vv(min_di
 etc_render_fsbrain.click_vertex=min_dist_idx;
 etc_render_fsbrain.click_vertex_point=plot3(vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3),'.');
 set(etc_render_fsbrain.click_vertex_point,'color',[1 0 0]);
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%volume image rendering
+if(~isempty(etc_render_fsbrain.fig_vol))
+    if(~isvalid(etc_render_fsbrain.fig_vol))
+        delete(etc_render_fsbrain.fig_vol);
+        etc_render_fsbrain.fig_vol=[];
+    end;
+    xlim=get(etc_render_fsbrain.vol_img_h,'xlim');
+    ylim=get(etc_render_fsbrain.vol_img_h,'ylim');
+    
+else
+    etc_render_fsbrain.fig_vol=figure;
+    pos=get(etc_render_fsbrain.fig_brain,'pos');
+    set(etc_render_fsbrain.fig_vol,'pos',[pos(1)-pos(3), pos(2), pos(3), pos(4)]);
+    
+    xlim=[];
+    ylim=[];
+end;
+
+figure(etc_render_fsbrain.fig_vol);
+
+set(etc_render_fsbrain.fig_vol,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
+set(etc_render_fsbrain.fig_vol,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
+set(etc_render_fsbrain.fig_vol,'invert','off','color','k');
+
+
+%coordinate transformation
+etc_render_fsbrain.click_vertex_vox=round(etc_render_fsbrain.vol_vox(min_dist_idx,:));
+fprintf('clicked surface voxel = [%d %d %d]\n',etc_render_fsbrain.click_vertex_vox(1),etc_render_fsbrain.click_vertex_vox(2),etc_render_fsbrain.click_vertex_vox(3));
+if(~isempty(etc_render_fsbrain.talxfm))
+    etc_render_fsbrain.click_vertex_point_tal=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol.vox2ras*[etc_render_fsbrain.click_vertex_vox 1].';
+    fprintf('clicked surface voxel MNI305 coordinate = [%1.0f %1.0f %1.0f]\n',etc_render_fsbrain.click_vertex_point_tal(1),etc_render_fsbrain.click_vertex_point_tal(2),etc_render_fsbrain.click_vertex_point_tal(3));
+end;
+clf;
+img_cor=squeeze(etc_render_fsbrain.vol.vol(:,:,round(etc_render_fsbrain.click_vertex_vox(3))));
+img_sag=squeeze(etc_render_fsbrain.vol.vol(:,round(etc_render_fsbrain.click_vertex_vox(1)),:));
+img_ax=squeeze(etc_render_fsbrain.vol.vol(round(etc_render_fsbrain.click_vertex_vox(2)),:,:));
+etc_render_fsbrain.vol_img=[img_cor img_ax; img_sag, zeros(size(img_cor))];
+imagesc(etc_render_fsbrain.vol_img);
+etc_render_fsbrain.vol_img_h=gca;
+axis off image; colormap(gray);
+if(~isempty(xlim)) set(etc_render_fsbrain.vol_img_h,'xlim',xlim); end;
+if(~isempty(ylim)) set(etc_render_fsbrain.vol_img_h,'ylim',ylim); end;
+
+etc_render_fsbrain.vol_img_h_cor=text(etc_render_fsbrain.click_vertex_vox(1), etc_render_fsbrain.click_vertex_vox(2),'x'); set(etc_render_fsbrain.vol_img_h_cor,'color','m','HorizontalAlignment','center','VerticalAlignment','middle');
+etc_render_fsbrain.vol_img_h_ax=text(256+etc_render_fsbrain.click_vertex_vox(3), etc_render_fsbrain.click_vertex_vox(1),'x'); set(etc_render_fsbrain.vol_img_h_ax,'color','m','HorizontalAlignment','center','VerticalAlignment','middle');
+etc_render_fsbrain.vol_img_h_sag=text(etc_render_fsbrain.click_vertex_vox(3), 256+etc_render_fsbrain.click_vertex_vox(2),'x'); set(etc_render_fsbrain.vol_img_h_sag,'color','m','HorizontalAlignment','center','VerticalAlignment','middle');
+
+    
+%volume image rendering
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 
 %overlay
 if(~isempty(etc_render_fsbrain.overlay_vertex))
@@ -693,8 +736,6 @@ set(gcf,'color',etc_render_fsbrain.bg_color);
 
 view(etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2));
 
-%set(gcf,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
-%set(gcf,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
 
 if(isfield(etc_render_fsbrain,'aux_point_coords'))
     if(~isempty(etc_render_fsbrain.aux_point_coords_h))
