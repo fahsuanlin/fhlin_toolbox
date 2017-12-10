@@ -42,6 +42,7 @@ overlay_stc_timeVec=[];
 overlay_stc_timeVec_unit='';
 overlay_stc_timeVec_idx=[];
 overlay_vertex=[];
+orig_overlay_vertex=[];
 overlay_smooth=5;
 overlay_threshold=[];
 overlay_value_flag_pos=0;
@@ -55,6 +56,18 @@ overlay_exclude=[];
 
 overlay_include_fstem='';
 overlay_include=[];
+
+topo_label={};
+
+topo_aux_point_coords=[];
+topo_aux_point_coords_h=[];
+topo_aux_point_name={};
+topo_aux_point_name_h=[];
+
+topo_aux2_point_coords=[];
+topo_aux2_point_coords_h=[];
+topo_aux2_point_name={};
+topo_aux2_point_name_h=[];
 
 %stc time course
 flag_hold_fig_stc_timecourse=0;
@@ -146,6 +159,16 @@ for idx=1:length(varargin)/2
             view_angle=option_value;
         case 'bg_color'
             bg_color=option_value;
+        case 'topo_label'
+            topo_label=option_value;
+        case 'topo_aux_point_coords';
+            topo_aux_point_coords=option_value;
+        case 'topo_aux_point_name';
+            topo_aux_point_name=option_value;
+        case 'topo_aux2_point_coords';
+            topo_aux2_point_coords=option_value;
+        case 'topo_aux2_point_name';
+            topo_aux2_point_name=option_value;
         otherwise
             fprintf('unknown option [%s]...\n',option);
             return;
@@ -188,14 +211,23 @@ end;
 
 if(~iscell(hemi))
     file_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi,surf);
-    fprintf('rendering [%s]...\n',file_surf);
+    fprintf('reading [%s]...\n',file_surf);
 
     [vertex_coords, faces] = read_surf(file_surf);
     
     vertex_coords_hemi=vertex_coords;
     faces_hemi=faces;
+
+    file_orig_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi,'orig');
+    fprintf('reading orig [%s]...\n',file_orig_surf);
+
+    [orig_vertex_coords, orig_faces] = read_surf(file_orig_surf);
+    
+    orig_vertex_coords_hemi=orig_vertex_coords;
+    orig_faces_hemi=faces;
 else
     vertex_coords=[]; faces=[]; ovelay_vertex_tmp=[];
+    orig_vertex_coords=[]; orig_faces=[]; orig_ovelay_vertex_tmp=[];
     for h_idx=1:length(hemi)
         file_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi{h_idx},surf);
         fprintf('rendering [%s]...\n',file_surf);
@@ -210,14 +242,32 @@ else
             ovelay_vertex_tmp=cat(1,ovelay_vertex_tmp,overlay_vertex{h_idx}+size(vertex_coords,1));
         end;
         
-        vv(:,1)=vv(:,1)+(-1).^(h_idx).*50;
+        %vv(:,1)=vv(:,1)+(-1).^(h_idx).*50;
         
         vertex_coords=cat(1,vertex_coords,vv);
-    
+
+        
+        file_orig_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi{h_idx},'orig');
+        fprintf('reading [%s]...\n',file_orig_surf);
+        
+        [vv, ff] = read_surf(file_orig_surf);
+        orig_vertex_coords_hemi{h_idx}=vv;
+        orig_faces_hemi{h_idx}=ff;
+        
+        orig_faces=cat(1,orig_faces,ff+size(orig_vertex_coords,1));
+        
+        if(iscell(orig_overlay_vertex))
+            orig_ovelay_vertex_tmp=cat(1,orig_ovelay_vertex_tmp,orig_overlay_vertex{h_idx}+size(orig_vertex_coords,1));
+        end;
+        
+        %vv(:,1)=vv(:,1)+(-1).^(h_idx).*50;
+        
+        orig_vertex_coords=cat(1,orig_vertex_coords,vv);
     end;
     
     if(iscell(overlay_vertex))
         ovelay_vertex=ovelay_vertex_tmp;
+        orig_ovelay_vertex=orig_ovelay_vertex_tmp;
     end;
 end;
 
@@ -252,10 +302,11 @@ if(~isempty(vol))
         talxfm=[];
     end;
     
-    right_column = [ ones( size(vertex_coords,1), 1 ); 0 ];
-    SurfVertices = [ [vertex_coords; 0 0 0]  right_column ];
+    %voxel coordinates
+    right_column = [ ones( size(orig_vertex_coords,1), 1 ); 0 ];
+    SurfVertices = [ [orig_vertex_coords; 0 0 0]  right_column ];
     vol_vox=(inv(vol.tkrvox2ras)*(SurfVertices.')).';
-    vol_vox = vol_vox(1:size(vertex_coords,1),1:3);
+    vol_vox = vol_vox(1:size(orig_vertex_coords,1),1:3);
     
 end;
 
@@ -429,6 +480,8 @@ etc_render_fsbrain.faces=faces;
 etc_render_fsbrain.vertex_coords=vertex_coords;
 etc_render_fsbrain.faces_hemi=faces_hemi;
 etc_render_fsbrain.vertex_coords_hemi=vertex_coords_hemi;
+etc_render_fsbrain.orig_vertex_coords=orig_vertex_coords;
+etc_render_fsbrain.orig_vertex_coords_hemi=orig_vertex_coords_hemi;
 etc_render_fsbrain.fvdata=fvdata;
 etc_render_fsbrain.curv=curv;
 %etc_render_fsbrain.curv_hemi=curv_hemi;
@@ -479,6 +532,21 @@ etc_render_fsbrain.click_overlay_vertex_point=[];
 etc_render_fsbrain.roi_radius=[];
 
 etc_render_fsbrain.cluster_file=cluster_file;
+
+etc_render_fsbrain.aux(1).data=topo_label;
+etc_render_fsbrain.aux(1).tag='topo_label';
+etc_render_fsbrain.aux_point_coords=topo_aux_point_coords;
+etc_render_fsbrain.aux_point_coords_h=topo_aux_point_coords_h;
+etc_render_fsbrain.aux_point_name=topo_aux_point_name;
+etc_render_fsbrain.aux_point_name_h=topo_aux_point_name_h;
+
+etc_render_fsbrain.aux2_point_coords=topo_aux2_point_coords;
+etc_render_fsbrain.aux2_point_coords_h=topo_aux2_point_coords_h;
+etc_render_fsbrain.aux2_point_name=topo_aux2_point_name;
+etc_render_fsbrain.aux2_point_name_h=topo_aux2_point_name_h;
+
+etc_render_fsbrain.register_rotate_angle=3; %default: 3 degrees
+etc_render_fsbrain.register_translate_dist=1e-3; %default: 1 mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 %setup call-back function

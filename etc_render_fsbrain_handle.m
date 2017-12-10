@@ -320,19 +320,25 @@ switch lower(param)
                 vox=etc_render_fsbrain.click_vertex_vox;
                 switch ind
                     case 1 %cor slice
-                    v=[xx(1) xx(2) vox(3)];    
+                        v=[xx(1) xx(2) vox(3)];
                     case 2 %ax slice
-                    v=[xx(2) vox(2) xx(1)-256];                           
+                        v=[xx(2) vox(2) xx(1)-256];
                     case 3 %sag slice
-                    v=[vox(1) xx(2)-256 xx(1)];    
-                end;                        
+                        v=[vox(1) xx(2)-256 xx(1)];
+                end;
                 surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[v(:); 1];
                 surface_coord=surface_coord(1:3);
-    
-                draw_pointer('pt',surface_coord);
+                click_vertex_vox=v;
+                
+                vv=etc_render_fsbrain.orig_vertex_coords;
+                dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+                [min_dist,min_dist_idx]=min(dist);
+                surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+                
+                draw_pointer('pt',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
             end;
         elseif(gcf==etc_render_fsbrain.fig_stc)
-
+            
             xx=get(gca,'currentpoint');
             xx=xx(1);
             if(isempty(etc_render_fsbrain.overlay_stc_timeVec))
@@ -379,12 +385,18 @@ return;
 
 function draw_pointer(varargin)
 pt=[];
+min_dist_idx=[];
+click_vertex_vox=[];
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
     switch option
         case 'pt'
             pt=option_value;
+        case 'min_dist_idx'
+            min_dist_idx=option_value;
+        case 'click_vertex_vox'
+            click_vertex_vox=option_value;
     end;
 end;
 
@@ -437,8 +449,10 @@ fprintf('\nsurface coordinate of the selected point ={%s}\n',num2str(pt','%2.2f 
 set(etc_render_fsbrain.click_point,'color',[1 0 1],'markersize',10);
 
 vv=etc_render_fsbrain.vertex_coords;
-dist=sqrt(sum((vv-repmat([pt(1),pt(2),pt(3)],[size(vv,1),1])).^2,2));
-[min_dist,min_dist_idx]=min(dist);
+if(isempty(min_dist_idx))
+    dist=sqrt(sum((vv-repmat([pt(1),pt(2),pt(3)],[size(vv,1),1])).^2,2));
+    [min_dist,min_dist_idx]=min(dist);
+end;
 fprintf('the nearest vertex: IDX=[%d] {%2.2f %2.2f %2.2f} \n',min_dist_idx,vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3));
 etc_render_fsbrain.click_vertex=min_dist_idx;
 etc_render_fsbrain.click_vertex_point=plot3(vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3),'.');
@@ -451,10 +465,17 @@ if(~isempty(etc_render_fsbrain.fig_vol))
     if(~isvalid(etc_render_fsbrain.fig_vol))
         delete(etc_render_fsbrain.fig_vol);
         etc_render_fsbrain.fig_vol=[];
+        
+        etc_render_fsbrain.fig_vol=figure;
+        pos=get(etc_render_fsbrain.fig_brain,'pos');
+        set(etc_render_fsbrain.fig_vol,'pos',[pos(1)-pos(3), pos(2), pos(3), pos(4)]);
+        
+        xlim=[];
+        ylim=[];
+    else
+        xlim=get(etc_render_fsbrain.vol_img_h,'xlim');
+        ylim=get(etc_render_fsbrain.vol_img_h,'ylim');
     end;
-    xlim=get(etc_render_fsbrain.vol_img_h,'xlim');
-    ylim=get(etc_render_fsbrain.vol_img_h,'ylim');
-    
 else
     etc_render_fsbrain.fig_vol=figure;
     pos=get(etc_render_fsbrain.fig_brain,'pos');
@@ -473,9 +494,14 @@ set(etc_render_fsbrain.fig_vol,'invert','off','color','k');
 
 %coordinate transformation
 etc_render_fsbrain.click_vertex_vox_round=round(etc_render_fsbrain.vol_vox(min_dist_idx,:));
-%etc_render_fsbrain.click_vertex_vox=(etc_render_fsbrain.vol_vox(min_dist_idx,:));
-tmp=inv(etc_render_fsbrain.vol.tkrvox2ras)*([pt(:); 1]);
-etc_render_fsbrain.click_vertex_vox=tmp(1:3)';
+%tmp=inv(etc_render_fsbrain.vol.tkrvox2ras)*([pt(:); 1]);
+%etc_render_fsbrain.click_vertex_vox=tmp(1:3)';
+if(isempty(click_vertex_vox))
+    etc_render_fsbrain.click_vertex_vox=(etc_render_fsbrain.vol_vox(min_dist_idx,:));
+else
+    etc_render_fsbrain.click_vertex_vox=click_vertex_vox;
+end;
+%etc_render_fsbrain.click_vertex_vox_round=round(tmp(1:3))';
 fprintf('clicked surface voxel = [%1.1f %1.1f %1.1f]\n',etc_render_fsbrain.click_vertex_vox(1),etc_render_fsbrain.click_vertex_vox(2),etc_render_fsbrain.click_vertex_vox(3));
 fprintf('closest voxel to the clicked surface voxel = [%d %d %d]\n',etc_render_fsbrain.click_vertex_vox_round(1),etc_render_fsbrain.click_vertex_vox_round(2),etc_render_fsbrain.click_vertex_vox_round(3));
 if(~isempty(etc_render_fsbrain.talxfm))
@@ -517,7 +543,7 @@ if(~isempty(etc_render_fsbrain.overlay_vertex))
         vv=[];
         for h_idx=1:length(etc_render_fsbrain.overlay_vertex)
             tmp=etc_render_fsbrain.vertex_coords_hemi{h_idx}(etc_render_fsbrain.overlay_vertex{h_idx}+1,:);
-            tmp(:,1)=tmp(:,1)+(-1).^(h_idx).*50;
+            %tmp(:,1)=tmp(:,1)+(-1).^(h_idx).*50;
             vv=cat(1,vv,tmp);
         end;
     end;

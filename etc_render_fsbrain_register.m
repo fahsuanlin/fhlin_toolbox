@@ -68,6 +68,15 @@ else
     etc_render_fsbrain.aux_point_coords=[];
 end;
 
+if(isempty(etc_render_fsbrain.aux_point_coords))
+    c=struct2cell(handles);
+    for i=1:length(c)
+        if(strcmp(c{i}.Type,'uicontrol'))
+            c{i}.Enable='off';
+        end;
+    end;
+end;
+
 
 % --- Outputs from this function are returned to the command line.
 function varargout = etc_render_fsbrain_register_OutputFcn(hObject, eventdata, handles) 
@@ -131,7 +140,7 @@ function pushbutton_rotate_cc_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 global etc_render_fsbrain
 if(isempty(etc_render_fsbrain.aux_point_coords))
-    set(hObject,'enable','off');
+    set(hObject,'Enable','off');
 end;
 
 
@@ -142,7 +151,7 @@ function pushbutton_rotate_c_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 global etc_render_fsbrain
 if(isempty(etc_render_fsbrain.aux_point_coords))
-    set(hObject,'enable','off');
+    set(hObject,'Enable','off');
 end;
 
 
