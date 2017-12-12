@@ -24,12 +24,8 @@ switch lower(param)
         switch(cc)
             case 'h'
                 fprintf('interactive rendering commands:\n\n');
-                fprintf('a: archiving image (fmri_overlay.tif if no specified output file name)\n');
-                fprintf('q: exit\n');
                 fprintf('s: smooth overlay \n');
                 fprintf('d: interactive threshold change\n');
-                fprintf('c: switch on/off the colorbar\n');
-                fprintf('u: show cluster labels from files\n');
                 fprintf('\n\n fhlin@dec 25, 2014\n');
             case 's'
                 fprintf('saving data...\n');

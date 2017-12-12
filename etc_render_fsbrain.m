@@ -498,6 +498,7 @@ etc_render_fsbrain.fig_brain=gcf;
 etc_render_fsbrain.fig_stc=[];
 etc_render_fsbrain.fig_gui=[];
 etc_render_fsbrain.fig_vol=[];
+etc_render_fsbrain.fig_coord_gui=[];
 
 etc_render_fsbrain.overlay_value=overlay_value;
 etc_render_fsbrain.overlay_stc=overlay_stc;
