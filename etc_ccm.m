@@ -1,11 +1,24 @@
-function [Y_est, rho, W, U, D]=etc_ccm(x,y,varargin)
+function [y_est, rho, W, U, D]=etc_ccm(x,y,varargin)
 % etc_ccm convergent cross mapping
 %
-% calculate the y (source) cross mapped by x (target) (M_x)
+% [y_est, rho, W, U, D]=etc_ccm(x,y,[option, option_value,...]);
+%
+% estimate  y (source) by cross mapping from x (target) (M_x)
 % y --> x gives high correlation coefficient (rho) between cross mapped y and y.
+%
+% rho: correlation coefficient between y and cross mapped y; high
+% correlation suggests y --> x
+% W: normalized cross mapping weights
+% U: cross mapping weights
+% D: cross mapping distances
 %
 % fhlin@dec. 20 2017
 %
+y_est=[];
+rho=[];
+W=[];
+U=[];
+D=[];
 
 flag_display=1;
 flag_graphics=1;
@@ -54,9 +67,9 @@ U=exp(-D./repmat(D(:,1),[1,size(D,2)]));
 W=U./repmat(sum(U,2),[1,size(U,2)]);
 
 Y=y(IDX); %<---locating the nearest points in Y manifold
-Y_est=reshape(sum(Y.*W,2),size(y_trim));
+y_est=reshape(sum(Y.*W,2),size(y_trim));
 
-rho=corrcoef(y_trim(:),Y_est(:));
+rho=corrcoef(y_trim(:),y_est(:));
 rho=rho(2,1);
 
 return;
