@@ -20,6 +20,7 @@ W=[];
 U=[];
 D=[];
 
+flag_normalize=1;
 flag_display=1;
 flag_graphics=1;
 
@@ -37,12 +38,21 @@ for i=1:length(varargin)/2
             tau=option_value;
         case 'flag_display'
             flag_display=option_value;
+        case 'flag_normalize'
+            flag_normalize=option_value;
         case 'flag_graphics'
             flag_graphics=option_value;
         otherwise
             fprintf('unknown option [%s].\nerror!\n',option_name);
             return;
     end;
+end;
+
+if(flag_normalize)
+    x=x-mean(x);
+    x=x./std(x);
+    y=y-mean(y);
+    y=y./std(y);
 end;
 
 for time_idx=1:length(x)

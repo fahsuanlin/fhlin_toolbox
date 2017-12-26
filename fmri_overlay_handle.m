@@ -85,6 +85,14 @@ switch lower(param)
                         fmri_origin=[fmri_origin(end), fmri_origin(1), fmri_origin(2)];
                     end;
                     
+                    if(~isempty(fmri_over_data))
+                        if(ndims(fmri_over_data)==4)
+                            fmri_over_data=permute(fmri_over_data,[2 3 1 4]);
+                        elseif(ndims(fmri_over_data)==3)
+                            fmri_over_data=permute(fmri_over_data,[2 1 3]);
+                        end;
+                    end;
+                    
                     redraw_all;
                 end;
             case 'l'
@@ -100,19 +108,23 @@ switch lower(param)
                     end;
                     
                     
-                    o=zeros(size(fmri_over,2),size(fmri_over,1),size(fmri_over,3));
+                    o=zeros(size(fmri_over,1),size(fmri_over,2),size(fmri_over,3));
                     for i=1:size(fmri_over,3)
                         o(:,:,i)=fliplr(fmri_over(:,:,i));
                     end;
                     fmri_over=o;
                     clear o;
                     
-                    u=zeros(size(fmri_under,2),size(fmri_under,1),size(fmri_under,3));
+                    u=zeros(size(fmri_under,1),size(fmri_under,2),size(fmri_under,3));
                     for i=1:size(fmri_under,3)
                         u(:,:,i)=fliplr(fmri_under(:,:,i));
                     end;
                     fmri_under=u;
                     clear u;
+                    
+                    if(~isempty(fmri_over_data))
+                        fmri_over_data=flipdim(fmri_over_data,2);
+                    end;
                     
                     redraw_all;
                 end;
@@ -147,6 +159,22 @@ switch lower(param)
                     fmri_under=u;
                     clear u;
                     
+                    if(ndims(fmri_over_data)==3)
+                        u=zeros(size(fmri_over_data,2),size(fmri_over_data,1),size(fmri_over_data,3));
+                        for t=1:size(fmri_over_data,3)
+                            u(:,:,t)=rot90(fmri_over_data(:,:,t));
+                        end;
+                    elseif(ndims(fmri_over_data)==4)
+                        u=zeros(size(fmri_over_data,2),size(fmri_over_data,1),size(fmri_over_data,3),size(fmri_over_data,4));
+                        for t=1:size(fmri_over_data,4)
+                            for i=1:size(fmri_over_data,3)
+                                u(:,:,i,t)=rot90(fmri_over_data(:,:,i,t));
+                            end;
+                        end;
+                    end;
+                    fmri_over_data=u;
+                    clear u;
+                    
                     redraw_all;
                 end;
             case 'u'
@@ -176,6 +204,10 @@ switch lower(param)
                     fmri_under=u;
                     clear u;
                     
+                    if(~isempty(fmri_over_data))
+                        fmri_over_data=flipdim(fmri_over_data,1);
+                    end;
+                    
                     redraw_all;
                 end;
             case 'p'
@@ -184,26 +216,15 @@ switch lower(param)
                 
             case 's'
                 fprintf('sharpening overlay...\n');
-                overlay=fmri_over;
-                mx=max(max(max(overlay)));
-                mn=min(min(min(overlay)));
-                fmri_over=fmri_scale((fmri_over).^1.1,mx,mn);
+                %overlay=fmri_over;
+                %mx=max(max(max(overlay)));
+                %mn=min(min(min(overlay)));
+                %fmri_over=fmri_scale((fmri_over).^1.1,mx,mn);
                 
-                redraw_all;
-                
-            case '+'
-                fprintf('increasing threshold...\n');
-                fprintf('current threshold = %s\n',mat2str(fmri_threshold));
                 fmri_threshold=fmri_threshold.*1.1;
-                fprintf('updated threshold = %s\n',mat2str(fmri_threshold));
                 
                 redraw_all;
-            case '-'
-                fprintf('decreasing threshold...\n');
-                fprintf('current threshold = %s\n',mat2str(fmri_threshold));
-                fmri_threshold=fmri_threshold.*0.9;
-                fprintf('updated threshold = %s\n',mat2str(fmri_threshold));
-                redraw_all;
+                
             case 'd'
                 fprintf('change threshold...\n');
                 fprintf('current threshold = %s\n',mat2str(fmri_threshold));
@@ -327,7 +348,7 @@ switch lower(param)
             pp=get(gca,'currentpoint');
             xx=round(pp(1,1));
             yy=round(pp(1,2));
-            
+            pos=get(gcf,'pos');
             fmri_pointer=etc_coords_convert([xx,yy],[size(fmri_under,2),size(fmri_under,1),size(fmri_under,3)],'flag_display',0);
             if(fmri_pointer(end)<1) fmri_pointer(end)=1; end;
             
@@ -335,11 +356,17 @@ switch lower(param)
                 global fmri_fig_timeVec;
                 
                 if(~isempty(fmri_fig_timeVec))
-                    figure(fmri_fig_timeVec);
+                    if(isvalid(fmri_fig_timeVec))
+                        figure(fmri_fig_timeVec);
+                    else
+                        fmri_fig_timeVec=figure;
+                    end;
                 else
                     fmri_fig_timeVec=figure;
                 end;
                 set(fmri_fig_timeVec,'name','fmri_fig_timeVec');
+                pos1=get(fmri_fig_timeVec,'pos');
+                set(fmri_fig_timeVec,'pos',[pos(1)+pos(3),pos1(2),pos1(3),pos1(4)]);
                 set(fmri_fig_timeVec,'KeyPressFcn','fmri_overlay_handle(''kb'')');
                 set(fmri_fig_timeVec,'WindowButtonDownFcn','fmri_overlay_handle(''bd'')');
                 
@@ -347,29 +374,29 @@ switch lower(param)
                     tmp=sub2ind(size(fmri_under),fmri_pointer(2),fmri_pointer(1),fmri_pointer(3));
                     tmp=find(fmri_coords==tmp);
                     
-                    if(isempty(fmri_timeVec)) 
+                    if(isempty(fmri_timeVec))
                         if(isempty(fmri_over_data))
-                            fmri_timeVec=[1:size(fmri_hdr,1)]; 
+                            fmri_timeVec=[1:size(fmri_hdr,1)];
                         else
-                            fmri_timeVec=[1:size(fmri_over_data,4)]; 
+                            fmri_timeVec=[1:size(fmri_over_data,4)];
                         end;
                     end;
                     
                     if(~isempty(fmri_over_data))
-                                plot(fmri_timeVec,squeeze(fmri_over_data(fmri_pointer(2),fmri_pointer(1),fmri_pointer(3),:)));
-                                
-                                ymax=max(get(gca,'ylim'));
-                                ymin=min(get(gca,'ylim'));
-                                
-                                try
-                                    delete(fmri_timeVec_line);
-                                catch
-                                    
-                                end;
-                                
-                                if(~isempty(fmri_timeVec_x_idx))
-                                    fmri_timeVec_line=line([fmri_timeVec(fmri_timeVec_x_idx),fmri_timeVec(fmri_timeVec_x_idx)],[ymax,ymin]); set(fmri_timeVec_line,'color',[1 1 1].*0.5);
-                                end;
+                        plot(fmri_timeVec,squeeze(fmri_over_data(fmri_pointer(2),fmri_pointer(1),fmri_pointer(3),:)));
+                        
+                        ymax=max(get(gca,'ylim'));
+                        ymin=min(get(gca,'ylim'));
+                        
+                        try
+                            delete(fmri_timeVec_line);
+                        catch
+                            
+                        end;
+                        
+                        if(~isempty(fmri_timeVec_x_idx))
+                            fmri_timeVec_line=line([fmri_timeVec(fmri_timeVec_x_idx),fmri_timeVec(fmri_timeVec_x_idx)],[ymax,ymin]); set(fmri_timeVec_line,'color',[1 1 1].*0.5);
+                        end;
                         
                     else
                         if(~isempty(tmp))
@@ -525,9 +552,10 @@ switch lower(param)
         end;
     case 'proj'
         draw_projection;
+        figure(fmri_fig_overlay);
 end;
 
-figure(ff);
+%figure(ff);
 
 return;
 
@@ -541,15 +569,21 @@ global fmri_origin_handle;
 global fmri_colorbar_handle;
 
 if(~isempty(fmri_fig_profile))
-    close(fmri_fig_profile);
+    if(isvalid(fmri_fig_profile))
+        close(fmri_fig_profile);
+    end;
     fmri_fig_profile=[];
 end;
 if(~isempty(fmri_fig_overlay))
-    close(fmri_fig_overlay);
-    %    fmri_fig_overlay=[];
+    if(isvalid(fmri_fig_overlay))
+        close(fmri_fig_overlay);
+    end;
+    fmri_fig_overlay=[];
 end;
 if(~isempty(fmri_fig_projection))
-    close(fmri_fig_projection);
+    if(isvalid(fmri_fig_projection))
+        close(fmri_fig_projection);
+    end;
     fmri_fig_projection=[];
 end;
 if(~isempty(fmri_colorbar_handle))
@@ -609,7 +643,8 @@ end;
 
 close_all;
 
-figure(fmri_fig_overlay);
+%figure(fmri_fig_overlay);
+fmri_fig_overlay=figure;
 fmri_overlay(fmri_under,fmri_over,fmri_op,fmri_threshold,'cmap',fmri_colormap,'datamat',fmri_datamat,'beta',fmri_beta,'hdr',fmri_hdr,'over_data',fmri_over_data,'timeVec',fmri_timeVec);
 
 if(flag_profile)
@@ -774,6 +809,7 @@ hh=rectangle('pos',[pos_b(1),pos_b(2),pos_b(3)/2,pos_b(4)]);
 return;
 
 function draw_projection()
+global fmri_fig_overlay;
 global fmri_fig_projection;
 global fmri_under;
 global fmri_over;
@@ -785,13 +821,21 @@ global fmri_colormap;
 
 fprintf('creating projection...\n');
 if(~isempty(fmri_fig_projection))
-    figure(fmri_fig_projection);
+    if(isvalid(fmri_fig_projection))
+        figure(fmri_fig_projection);
+    end;
 else
     fmri_fig_projection=figure;
 end;
 
-if(isempty(fmri_pointer)) fmri_pointer=[round(size(fmri_under,2)/2),round(size(fmri_under,1)/2),round(size(fmri_under,3)/2)]; end;
+if(isvalid(fmri_fig_overlay))
+    pos=get(fmri_fig_overlay,'pos');
+    pos1=get(fmri_fig_projection,'pos');
+    set(fmri_fig_projection,'pos',[pos(1)-pos(3),pos1(2),pos1(3),pos1(4)]);
+end;
 
+
+if(isempty(fmri_pointer)) fmri_pointer=[round(size(fmri_under,2)/2),round(size(fmri_under,1)/2),round(size(fmri_under,3)/2)]; end;
 
 if(fmri_projection_slice)
     uu=[rot90(squeeze(fmri_under(fmri_pointer(2),:,:))),rot90(squeeze(fmri_under(:,fmri_pointer(1),:)));
