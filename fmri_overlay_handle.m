@@ -390,81 +390,15 @@ switch lower(param)
             tmp=inv(fmri_xfm)*[fmri_pointer(:); 1];
             click_vertex_vox=tmp(1:3);
 %            click_vertex_point_tal=fmri_talxfm*fmri_under_vol.vox2ras*[click_vertex_vox(:)' 1].';
-            click_vertex_point_tal=fmri_talxfm*fmri_under_vol.vox2ras*[click_vertex_vox(:)' 1].';
-            click_vertex_point_tal=click_vertex_point_tal(1:3)';
-            fprintf('clicked surface voxel MNI305 coordinate = (%1.0f %1.0f %1.0f)\n',click_vertex_point_tal(1),click_vertex_point_tal(2),click_vertex_point_tal(3));
-        
-                    
-            
+            click_vertex_point_mni=fmri_talxfm*fmri_under_vol.vox2ras*[click_vertex_vox(:)' 1].';
+            click_vertex_point_mni=click_vertex_point_mni(1:3)';
+            fprintf('clicked surface voxel MNI305 coordinate = (%1.0f %1.0f %1.0f)\n',click_vertex_point_mni(1),click_vertex_point_mni(2),click_vertex_point_mni(3));
+            T_mni2tal = [0.88 0 0 -0.8;0 0.97 0 -3.32; 0 0.05 0.88 -0.44;0 0 0 1];
+            click_vertex_point_tal = T_mni2tal * [click_vertex_point_mni(:)' 1]';
+            fprintf('clicked surface voxel Talairach coordinate = (%1.0f %1.0f %1.0f)\n',click_vertex_point_tal(1),click_vertex_point_tal(2),click_vertex_point_tal(3));
+         
             if(~isempty(fmri_datamat)|~isempty(fmri_beta)|~isempty(fmri_over_data))
-                global fmri_fig_timeVec;
-                
-                if(~isempty(fmri_fig_timeVec))
-                    if(isvalid(fmri_fig_timeVec))
-                        figure(fmri_fig_timeVec);
-                    else
-                        fmri_fig_timeVec=figure;
-                    end;
-                else
-                    fmri_fig_timeVec=figure;
-                end;
-                set(fmri_fig_timeVec,'name','fmri_fig_timeVec');
-                pos1=get(fmri_fig_timeVec,'pos');
-                set(fmri_fig_timeVec,'pos',[pos(1)+pos(3),pos1(2),pos1(3),pos1(4)]);
-                set(fmri_fig_timeVec,'KeyPressFcn','fmri_overlay_handle(''kb'')');
-                set(fmri_fig_timeVec,'WindowButtonDownFcn','fmri_overlay_handle(''bd'')');
-                
-                if(fmri_pointer(2)<=size(fmri_under,1)&fmri_pointer(1)<=size(fmri_under,2)&fmri_pointer(3)<=size(fmri_under,3))
-                    tmp=sub2ind(size(fmri_under),fmri_pointer(2),fmri_pointer(1),fmri_pointer(3));
-                    tmp=find(fmri_coords==tmp);
-                    
-                    if(isempty(fmri_timeVec))
-                        if(isempty(fmri_over_data))
-                            fmri_timeVec=[1:size(fmri_hdr,1)];
-                        else
-                            fmri_timeVec=[1:size(fmri_over_data,4)];
-                        end;
-                    end;
-                    
-                    if(~isempty(fmri_over_data))
-                        plot(fmri_timeVec,squeeze(fmri_over_data(fmri_pointer(2),fmri_pointer(1),fmri_pointer(3),:)));
-                        
-                        ymax=max(get(gca,'ylim'));
-                        ymin=min(get(gca,'ylim'));
-                        
-                        try
-                            delete(fmri_timeVec_line);
-                        catch
-                            
-                        end;
-                        
-                        if(~isempty(fmri_timeVec_x_idx))
-                            fmri_timeVec_line=line([fmri_timeVec(fmri_timeVec_x_idx),fmri_timeVec(fmri_timeVec_x_idx)],[ymax,ymin]); set(fmri_timeVec_line,'color',[1 1 1].*0.5);
-                        end;
-                        
-                    else
-                        if(~isempty(tmp))
-                            if(~isempty(fmri_hdr))
-                                plot(fmri_timeVec,fmri_hdr*fmri_beta(1:size(fmri_hdr,2),tmp));
-                                
-                                ymax=max(get(gca,'ylim'));
-                                ymin=min(get(gca,'ylim'));
-                                
-                                try
-                                    delete(fmri_timeVec_line);
-                                catch
-                                    
-                                end;
-                                
-                                if(~isempty(fmri_timeVec_x_idx))
-                                    fmri_timeVec_line=line([fmri_timeVec(fmri_timeVec_x_idx),fmri_timeVec(fmri_timeVec_x_idx)],[ymax,ymin]); set(fmri_timeVec_line,'color',[1 1 1].*0.5);
-                                end;
-                            else
-                                fprintf('no <hdr> variable!\n');
-                            end;
-                        end;
-                    end;
-                end;
+                draw_timecourse;
             end;
             
             if(~isempty(fmri_fig_projection))
@@ -578,6 +512,19 @@ switch lower(param)
             
             
             draw_pointer;
+
+            surface_coord=fmri_under_vol.tkrvox2ras*inv(fmri_xfm)*[fmri_pointer(:); 1];
+            surface_coord=surface_coord(1:3);
+            tmp=inv(fmri_xfm)*[fmri_pointer(:); 1];
+            click_vertex_vox=tmp(1:3);
+%            click_vertex_point_tal=fmri_talxfm*fmri_under_vol.vox2ras*[click_vertex_vox(:)' 1].';
+            click_vertex_point_mni=fmri_talxfm*fmri_under_vol.vox2ras*[click_vertex_vox(:)' 1].';
+            click_vertex_point_mni=click_vertex_point_mni(1:3)';
+            fprintf('clicked surface voxel MNI305 coordinate = (%1.0f %1.0f %1.0f)\n',click_vertex_point_mni(1),click_vertex_point_mni(2),click_vertex_point_mni(3));
+            T_mni2tal = [0.88 0 0 -0.8;0 0.97 0 -3.32; 0 0.05 0.88 -0.44;0 0 0 1];
+            click_vertex_point_tal = T_mni2tal * [click_vertex_point_mni(:)' 1]';
+            fprintf('clicked surface voxel Talairach coordinate = (%1.0f %1.0f %1.0f)\n',click_vertex_point_tal(1),click_vertex_point_tal(2),click_vertex_point_tal(3));
+            
             
             if(fmri_pointer(3)>size(fmri_under,3))
                 fprintf('slice not existed in the original data!\n');
@@ -593,6 +540,11 @@ switch lower(param)
                 fprintf('selected overlay value = %4.4f\n',fmri_over(fmri_pointer(2),fmri_pointer(1),fmri_pointer(3)));
             end;
             fprintf('\n');
+            
+            if(~isempty(fmri_datamat)|~isempty(fmri_beta)|~isempty(fmri_over_data))
+                draw_timecourse;
+            end;
+
         end;
     case 'proj'
         draw_projection;
@@ -834,6 +786,90 @@ if(~isempty(fmri_fig_projection))
 end;
 return;
 
+function draw_timecourse()
+global fmri_fig_timeVec;
+global fmri_fig_overlay;
+global fmri_under_vol;
+global fmri_over_vol;
+global fmri_talxfm;
+global fmri_xfm; %the transformation applied to this program only
+global fmri_under;
+global fmri_over;
+global fmri_over_data;
+global fmri_pointer;
+global fmri_coords;
+global fmri_timeVec;
+global fmri_timeVec_x_idx;
+
+if(~isempty(fmri_fig_timeVec))
+    if(isvalid(fmri_fig_timeVec))
+        figure(fmri_fig_timeVec);
+    else
+        fmri_fig_timeVec=figure;
+    end;
+else
+    fmri_fig_timeVec=figure;
+end;
+set(fmri_fig_timeVec,'name','fmri_fig_timeVec');
+pos1=get(fmri_fig_timeVec,'pos');
+pos=get(fmri_fig_overlay,'pos');
+set(fmri_fig_timeVec,'pos',[pos(1)+pos(3),pos1(2),pos1(3),pos1(4)]);
+set(fmri_fig_timeVec,'KeyPressFcn','fmri_overlay_handle(''kb'')');
+set(fmri_fig_timeVec,'WindowButtonDownFcn','fmri_overlay_handle(''bd'')');
+
+if(fmri_pointer(2)<=size(fmri_under,1)&fmri_pointer(1)<=size(fmri_under,2)&fmri_pointer(3)<=size(fmri_under,3))
+    tmp=sub2ind(size(fmri_under),fmri_pointer(2),fmri_pointer(1),fmri_pointer(3));
+    tmp=find(fmri_coords==tmp);
+    
+    if(isempty(fmri_timeVec))
+        if(isempty(fmri_over_data))
+            fmri_timeVec=[1:size(fmri_hdr,1)];
+        else
+            fmri_timeVec=[1:size(fmri_over_data,4)];
+        end;
+    end;
+    
+    if(~isempty(fmri_over_data))
+        plot(fmri_timeVec,squeeze(fmri_over_data(fmri_pointer(2),fmri_pointer(1),fmri_pointer(3),:)));
+        
+        ymax=max(get(gca,'ylim'));
+        ymin=min(get(gca,'ylim'));
+        
+        try
+            delete(fmri_timeVec_line);
+        catch
+            
+        end;
+        
+        if(~isempty(fmri_timeVec_x_idx))
+            fmri_timeVec_line=line([fmri_timeVec(fmri_timeVec_x_idx),fmri_timeVec(fmri_timeVec_x_idx)],[ymax,ymin]); set(fmri_timeVec_line,'color',[1 1 1].*0.5);
+        end;
+        
+    else
+        if(~isempty(tmp))
+            if(~isempty(fmri_hdr))
+                plot(fmri_timeVec,fmri_hdr*fmri_beta(1:size(fmri_hdr,2),tmp));
+                
+                ymax=max(get(gca,'ylim'));
+                ymin=min(get(gca,'ylim'));
+                
+                try
+                    delete(fmri_timeVec_line);
+                catch
+                    
+                end;
+                
+                if(~isempty(fmri_timeVec_x_idx))
+                    fmri_timeVec_line=line([fmri_timeVec(fmri_timeVec_x_idx),fmri_timeVec(fmri_timeVec_x_idx)],[ymax,ymin]); set(fmri_timeVec_line,'color',[1 1 1].*0.5);
+                end;
+            else
+                fprintf('no <hdr> variable!\n');
+            end;
+        end;
+    end;
+end;
+return;
+                
 function draw_colorbar()
 
 
