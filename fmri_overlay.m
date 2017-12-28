@@ -24,7 +24,22 @@ function [datamat_select_idx,datamat_select_idx_value,varargout] = fmri_overlay(
 %
 % datamat
 %
-%image toolbox function 'imresize' is used.
+% image toolbox function 'imresize' is used.
+% 
+% -----------------------------------------------------------------------
+% Example of using this to show underlay/overlay/timecourse/MNI/Talairach
+% coordinates
+% 
+% under_vol=MRIread('fsaverage-tal.2mm.mgh');
+% 
+% over_easy_vol=MRIread('average_easy_drifter_120616_tal.2mm_dspm.mgh');
+% over_hard_vol=MRIread('average_hard_drifter_120616_tal.2mm_dspm.mgh');
+% 
+% talxfm=fmri_read_talxfm('subjects_dir','/Applications/freesurfer/subjects/','subject','fsaverage');
+% 
+% fmri_overlay('','','>',[3 5],'over_data',over,'over_vol',over_easy_vol,'under_vol',under_vol,'talxfm',talxfm);
+%
+% -----------------------------------------------------------------------
 %
 % written by fhlin@nov. 17,1999
 
