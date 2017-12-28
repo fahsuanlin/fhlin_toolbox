@@ -35,6 +35,14 @@ if(nargin < 4)
     return;
 end
 
+global fmri_xfm;
+
+global fmri_under_vol;
+fmri_under_vol=[];
+
+global fmri_over_vol;
+fmri_over_vol=[];
+
 global fmri_under;
 fmri_under=img;
 
@@ -96,6 +104,10 @@ global fmri_overlay_max;
 
 global fmri_colormap;
 
+global fmri_talxfm;
+fmri_talxfm=[];
+
+xfm=[]; %local transformation
 
 img0=img;
 overlay0=overlay;
@@ -123,11 +135,21 @@ flag_normalize_under=1;
 montage_config=[];
 ccmap=[];
 
+under_vol=[];
+over_vol=[];
 if(length(varargin)>0)
     for i=1:length(varargin)/2
         option=varargin{i*2-1};
         option_value=varargin{i*2};
         switch lower(option)
+            case 'xfm'
+                xfm=option_value;
+            case 'talxfm'
+                fmri_talxfm=option_value;
+            case 'under_vol'
+                under_vol=option_value;
+            case 'over_vol'
+                over_vol=option_value;
             case 'datamat'
                 fmri_datamat=option_value;
                 datamat_flag=1;
@@ -180,6 +202,37 @@ if(length(varargin)>0)
         end;
     end;
 end;
+
+if(isempty(xfm))
+    fmri_xfm=eye(4);
+else
+    fmri_xfm=xfm;
+end;
+
+if(isempty(img))
+    if(~isempty(under_vol))
+        img=under_vol.vol;
+        img0=img;
+        fmri_under=img;     
+    end;
+end;
+fmri_under_vol=under_vol;
+
+if(isempty(overlay))
+    if(~isempty(over_vol))
+        dim=size(over_vol.vol);
+        if(over_vol.nframes==dim(end)) %time series
+            overlay=over_vol.vol(1:prod(over_vol.volsize));
+            overlay=reshape(overlay,over_vol.volsize);
+        else
+            overlay=over_vol.vol;
+        end;
+        overlay0=overlay;
+        overlay_orig=overlay;
+        fmri_over=overlay;
+    end;
+end;
+fmri_over_vol=over_vol;
 
 overlay(find(isnan(overlay(:))))=min(overlay(:));
 

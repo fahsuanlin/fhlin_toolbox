@@ -1,5 +1,9 @@
 function fmri_overlay_handle(param)
 
+global fmri_under_vol;
+global fmri_over_vol;
+global fmri_talxfm;
+global fmri_xfm; %the transformation applied to this program only
 global fmri_under;
 global fmri_over;
 global fmri_over_data;
@@ -93,6 +97,13 @@ switch lower(param)
                         end;
                     end;
                     
+                    T=[0 0 1 0;
+                       1 0 0 0;
+                       0 1 0 0;
+                       0 0 0 1];
+                    
+                    fmri_xfm=T*fmri_xfm;
+                    
                     redraw_all;
                 end;
             case 'l'
@@ -114,6 +125,13 @@ switch lower(param)
                     end;
                     fmri_over=o;
                     clear o;
+                    
+                    T=[-1 0 0 size(fmri_under,2)+1;
+                        0 1 0 0;
+                        0 0 1 0;
+                        0 0 0 1];
+                    
+                    fmri_xfm=T*fmri_xfm;
                     
                     u=zeros(size(fmri_under,1),size(fmri_under,2),size(fmri_under,3));
                     for i=1:size(fmri_under,3)
@@ -151,6 +169,13 @@ switch lower(param)
                     end;
                     fmri_over=o;
                     clear o;
+                    
+                    T=[0 1 0 0;
+                      -1 0 0 size(fmri_under,2)+1;
+                       0 0 1 0;
+                       0 0 0 1];
+                    
+                    fmri_xfm=T*fmri_xfm;                    
                     
                     u=zeros(size(fmri_under,2),size(fmri_under,1),size(fmri_under,3));
                     for i=1:size(fmri_under,3)
@@ -196,6 +221,13 @@ switch lower(param)
                     end;
                     fmri_over=o;
                     clear o;
+                    
+                    T=[1 0 0 0;
+                       0 -1 0 size(fmri_under,1)+1;
+                       0 0 1 0;
+                       0 0 0 1];
+                    
+                    fmri_xfm=T*fmri_xfm;
                     
                     u=zeros(size(fmri_under,1),size(fmri_under,2),size(fmri_under,3));
                     for i=1:size(fmri_under,3)
@@ -351,6 +383,18 @@ switch lower(param)
             pos=get(gcf,'pos');
             fmri_pointer=etc_coords_convert([xx,yy],[size(fmri_under,2),size(fmri_under,1),size(fmri_under,3)],'flag_display',0);
             if(fmri_pointer(end)<1) fmri_pointer(end)=1; end;
+           
+            
+            surface_coord=fmri_under_vol.tkrvox2ras*inv(fmri_xfm)*[fmri_pointer(:); 1];
+            surface_coord=surface_coord(1:3);
+            tmp=inv(fmri_xfm)*[fmri_pointer(:); 1];
+            click_vertex_vox=tmp(1:3);
+%            click_vertex_point_tal=fmri_talxfm*fmri_under_vol.vox2ras*[click_vertex_vox(:)' 1].';
+            click_vertex_point_tal=fmri_talxfm*fmri_under_vol.vox2ras*[click_vertex_vox(:)' 1].';
+            click_vertex_point_tal=click_vertex_point_tal(1:3)';
+            fprintf('clicked surface voxel MNI305 coordinate = (%1.0f %1.0f %1.0f)\n',click_vertex_point_tal(1),click_vertex_point_tal(2),click_vertex_point_tal(3));
+        
+                    
             
             if(~isempty(fmri_datamat)|~isempty(fmri_beta)|~isempty(fmri_over_data))
                 global fmri_fig_timeVec;
@@ -595,6 +639,10 @@ return;
 
 
 function redraw_all()
+global fmri_under_vol;
+global fmri_over_vol;
+global fmri_talxfm;
+global fmri_xfm;
 global fmri_fig_overlay;
 global fmri_fig_profile;
 global fmri_fig_projection;
@@ -611,8 +659,14 @@ global fmri_beta;
 global fmri_over_data;
 global fmri_timeVec;
 
+fmri_fig_overlay_xlim=[];
+fmri_fig_overlay_ylim=[];
 if(~isempty(fmri_fig_overlay))
     flag_overlay=1;
+    tmp=get(fmri_fig_overlay,'child');
+    tmp0=find(isgraphics(tmp,'axes'));
+    fmri_fig_overlay_xlim=get(tmp(tmp0),'xlim');
+    fmri_fig_overlay_ylim=get(tmp(tmp0),'ylim');
 else
     flag_overlay=0;
 end;
@@ -645,7 +699,15 @@ close_all;
 
 %figure(fmri_fig_overlay);
 fmri_fig_overlay=figure;
-fmri_overlay(fmri_under,fmri_over,fmri_op,fmri_threshold,'cmap',fmri_colormap,'datamat',fmri_datamat,'beta',fmri_beta,'hdr',fmri_hdr,'over_data',fmri_over_data,'timeVec',fmri_timeVec);
+fmri_overlay(fmri_under,fmri_over,fmri_op,fmri_threshold,'cmap',fmri_colormap,'datamat',fmri_datamat,'beta',fmri_beta,'hdr',fmri_hdr,'over_data',fmri_over_data,'timeVec',fmri_timeVec,'under_vol',fmri_under_vol,'over_vol',fmri_over_vol,'talxfm',fmri_talxfm,'xfm',fmri_xfm);
+tmp=get(fmri_fig_overlay,'child');
+tmp0=find(isgraphics(tmp,'axes'));
+if(~isempty(fmri_fig_overlay_xlim))
+    set(tmp(tmp0),'xlim',fmri_fig_overlay_xlim);
+end;
+if(~isempty(fmri_fig_overlay_ylim))
+    set(tmp(tmp0),'ylim',fmri_fig_overlay_ylim);
+end;
 
 if(flag_profile)
     draw_profile;
