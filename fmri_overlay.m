@@ -37,7 +37,7 @@ function [datamat_select_idx,datamat_select_idx_value,varargout] = fmri_overlay(
 % 
 % talxfm=fmri_read_talxfm('subjects_dir','/Applications/freesurfer/subjects/','subject','fsaverage');
 % 
-% fmri_overlay('','','>',[3 5],'over_data',over,'over_vol',over_easy_vol,'under_vol',under_vol,'talxfm',talxfm);
+% fmri_overlay('','','>',[3 5],'over_vol',over_easy_vol,'under_vol',under_vol,'talxfm',talxfm);
 %
 % -----------------------------------------------------------------------
 %
@@ -239,6 +239,7 @@ if(isempty(overlay))
         if(over_vol.nframes==dim(end)) %time series
             overlay=over_vol.vol(1:prod(over_vol.volsize));
             overlay=reshape(overlay,over_vol.volsize);
+            fmri_over_data=over_vol.vol;
         else
             overlay=over_vol.vol;
         end;

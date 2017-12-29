@@ -15,6 +15,7 @@ global fmri_fig_overlay;
 global fmri_fig_profile;
 global fmri_fig_timeVec;
 global fmri_fig_projection
+global fmri_fig_overlay_coord_gui;
 global fmri_datamat;
 global fmri_beta;
 global fmri_hdr;
@@ -53,6 +54,7 @@ switch lower(param)
                 fprintf('t: rotate images 90-deg counterclockwise \n');
                 fprintf('s: sharpen overlay \n');
                 fprintf('p: projection plots \n');
+                fprintf('v: orthogonal slice view in projection plots \n');
                 fprintf('+: increase threshold by 10%\n');
                 fprintf('-: decrease threshold by 10%\n');
                 fprintf('d: interactive threshold change\n');
@@ -248,10 +250,6 @@ switch lower(param)
                 
             case 's'
                 fprintf('sharpening overlay...\n');
-                %overlay=fmri_over;
-                %mx=max(max(max(overlay)));
-                %mn=min(min(min(overlay)));
-                %fmri_over=fmri_scale((fmri_over).^1.1,mx,mn);
                 
                 fmri_threshold=fmri_threshold.*1.1;
                 
@@ -351,6 +349,13 @@ switch lower(param)
                     
                     figure(gcf_tmp);
                 end;
+            case 'w' %coordinate GUI
+                fprintf('\nCoordinate GUI...\n');
+                fmri_fig_overlay_coord_gui=fmri_overlay_coord_gui;
+                set(fmri_fig_overlay_coord_gui,'unit','pixel');
+                pos=get(fmri_fig_overlay_coord_gui,'pos');
+                pos_brain=get(fmri_fig_overlay,'pos');
+                set(fmri_fig_overlay_coord_gui,'pos',[pos_brain(1), pos_brain(2)-pos(4), pos(3), pos(4)]);
             case 'o'
                 fprintf('overlay...\n');
                 if(~isempty(fmri_fig_overlay))
@@ -385,18 +390,6 @@ switch lower(param)
             if(fmri_pointer(end)<1) fmri_pointer(end)=1; end;
            
             
-            surface_coord=fmri_under_vol.tkrvox2ras*inv(fmri_xfm)*[fmri_pointer(:); 1];
-            surface_coord=surface_coord(1:3);
-            tmp=inv(fmri_xfm)*[fmri_pointer(:); 1];
-            click_vertex_vox=tmp(1:3);
-%            click_vertex_point_tal=fmri_talxfm*fmri_under_vol.vox2ras*[click_vertex_vox(:)' 1].';
-            click_vertex_point_mni=fmri_talxfm*fmri_under_vol.vox2ras*[click_vertex_vox(:)' 1].';
-            click_vertex_point_mni=click_vertex_point_mni(1:3)';
-            fprintf('clicked surface voxel MNI305 coordinate = (%1.0f %1.0f %1.0f)\n',click_vertex_point_mni(1),click_vertex_point_mni(2),click_vertex_point_mni(3));
-            T_mni2tal = [0.88 0 0 -0.8;0 0.97 0 -3.32; 0 0.05 0.88 -0.44;0 0 0 1];
-            click_vertex_point_tal = T_mni2tal * [click_vertex_point_mni(:)' 1]';
-            fprintf('clicked surface voxel Talairach coordinate = (%1.0f %1.0f %1.0f)\n',click_vertex_point_tal(1),click_vertex_point_tal(2),click_vertex_point_tal(3));
-         
             if(~isempty(fmri_datamat)|~isempty(fmri_beta)|~isempty(fmri_over_data))
                 draw_timecourse;
             end;
@@ -417,7 +410,6 @@ switch lower(param)
                     fmri_fig_projection=[];
                 end;
             end;
-            
             
             
             draw_pointer;
@@ -510,22 +502,8 @@ switch lower(param)
                 end;
             end;
             
-            
             draw_pointer;
 
-            surface_coord=fmri_under_vol.tkrvox2ras*inv(fmri_xfm)*[fmri_pointer(:); 1];
-            surface_coord=surface_coord(1:3);
-            tmp=inv(fmri_xfm)*[fmri_pointer(:); 1];
-            click_vertex_vox=tmp(1:3);
-%            click_vertex_point_tal=fmri_talxfm*fmri_under_vol.vox2ras*[click_vertex_vox(:)' 1].';
-            click_vertex_point_mni=fmri_talxfm*fmri_under_vol.vox2ras*[click_vertex_vox(:)' 1].';
-            click_vertex_point_mni=click_vertex_point_mni(1:3)';
-            fprintf('clicked surface voxel MNI305 coordinate = (%1.0f %1.0f %1.0f)\n',click_vertex_point_mni(1),click_vertex_point_mni(2),click_vertex_point_mni(3));
-            T_mni2tal = [0.88 0 0 -0.8;0 0.97 0 -3.32; 0 0.05 0.88 -0.44;0 0 0 1];
-            click_vertex_point_tal = T_mni2tal * [click_vertex_point_mni(:)' 1]';
-            fprintf('clicked surface voxel Talairach coordinate = (%1.0f %1.0f %1.0f)\n',click_vertex_point_tal(1),click_vertex_point_tal(2),click_vertex_point_tal(3));
-            
-            
             if(fmri_pointer(3)>size(fmri_under,3))
                 fprintf('slice not existed in the original data!\n');
             else
@@ -549,6 +527,9 @@ switch lower(param)
     case 'proj'
         draw_projection;
         figure(fmri_fig_overlay);
+    case 'draw_pointer'
+        draw_pointer;
+        draw_timecourse;
 end;
 
 %figure(ff);
@@ -679,6 +660,9 @@ return;
 
 
 function draw_pointer()
+global fmri_under_vol;
+global fmri_xfm;
+global fmri_talxfm;
 global fmri_pointer;
 global fmri_fig_overlay;
 global fmri_fig_profile;
@@ -784,6 +768,79 @@ if(~isempty(fmri_fig_projection))
         set(fmri_cluster_box_orig_projection{3},'edgecolor',[0 1 1]);
     end;
 end;
+
+
+if(~isempty(fmri_pointer))
+    tmp=inv(fmri_xfm)*[fmri_pointer(:); 1];
+    click_vertex_vox=tmp(1:3);
+    fprintf('clicked voxel index = (%1.0f %1.0f %1.0f)\n',click_vertex_vox(1),click_vertex_vox(2),click_vertex_vox(3));
+else
+    click_vertex_vox=[];
+end;
+
+if(~isempty(fmri_talxfm)&&~isempty(fmri_pointer)&&~isempty(fmri_under_vol))
+    click_vertex_point_mni=fmri_talxfm*fmri_under_vol.vox2ras*[click_vertex_vox(:)' 1].';
+    click_vertex_point_mni=click_vertex_point_mni(1:3)';
+    T_mni2tal = [0.88 0 0 -0.8;0 0.97 0 -3.32; 0 0.05 0.88 -0.44;0 0 0 1];
+    fprintf('clicked voxel MNI305 coordinate = (%1.0f %1.0f %1.0f)\n',click_vertex_point_mni(1),click_vertex_point_mni(2),click_vertex_point_mni(3));
+    T_mni2tal = [0.88 0 0 -0.8;0 0.97 0 -3.32; 0 0.05 0.88 -0.44;0 0 0 1];
+    click_vertex_point_tal = T_mni2tal * [click_vertex_point_mni(:)' 1]';
+    fprintf('clicked voxel Talairach coordinate = (%1.0f %1.0f %1.0f)\n',click_vertex_point_tal(1),click_vertex_point_tal(2),click_vertex_point_tal(3));
+else
+    click_vertex_point_mni=[];
+    click_vertex_point_tal=[];
+end;
+
+
+if(~isempty(click_vertex_vox))
+    h=findobj('tag','edit_vox_x');
+    set(h,'String',num2str(click_vertex_vox(1),'%1.0f'));
+    h=findobj('tag','edit_vox_y');
+    set(h,'String',num2str(click_vertex_vox(2),'%1.0f'));
+    h=findobj('tag','edit_vox_z');
+    set(h,'String',num2str(click_vertex_vox(3),'%1.0f'));
+else
+    h=findobj('tag','edit_vox_x');
+    set(h,'String','');
+    h=findobj('tag','edit_vox_y');
+    set(h,'String','');
+    h=findobj('tag','edit_vox_z');
+    set(h,'String','');   
+end;
+
+
+if(~isempty(click_vertex_point_mni))
+    h=findobj('tag','edit_mni_x');
+    set(h,'String',num2str(click_vertex_point_mni(1),'%1.0f'));
+    h=findobj('tag','edit_mni_y');
+    set(h,'String',num2str(click_vertex_point_mni(2),'%1.0f'));
+    h=findobj('tag','edit_mni_z');
+    set(h,'String',num2str(click_vertex_point_mni(3),'%1.0f'));
+else
+    h=findobj('tag','edit_mni_x');
+    set(h,'String','');
+    h=findobj('tag','edit_mni_y');
+    set(h,'String','');
+    h=findobj('tag','edit_mni_z');
+    set(h,'String','');   
+end;
+
+if(~isempty(click_vertex_point_tal))
+    h=findobj('tag','edit_tal_x');
+    set(h,'String',num2str(click_vertex_point_tal(1),'%1.0f'));
+    h=findobj('tag','edit_tal_y');
+    set(h,'String',num2str(click_vertex_point_tal(2),'%1.0f'));
+    h=findobj('tag','edit_tal_z');
+    set(h,'String',num2str(click_vertex_point_tal(3),'%1.0f'));
+else
+    h=findobj('tag','edit_tal_x');
+    set(h,'String','');
+    h=findobj('tag','edit_tal_y');
+    set(h,'String','');
+    h=findobj('tag','edit_tal_z');
+    set(h,'String','');
+end;
+
 return;
 
 function draw_timecourse()
@@ -799,6 +856,7 @@ global fmri_over_data;
 global fmri_pointer;
 global fmri_coords;
 global fmri_timeVec;
+global fmri_timeVec_line;
 global fmri_timeVec_x_idx;
 
 if(~isempty(fmri_fig_timeVec))
