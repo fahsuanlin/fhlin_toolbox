@@ -34,6 +34,7 @@ global fmri_cluster_box_orig_projection;
 global fmri_cluster_halfrange;
 global fmri_timeVec_line;
 global fmri_timeVec_x_idx;
+global fmri_cluster_index;
 
 ff=gcf;
 cc=get(gcf,'currentchar');
@@ -55,12 +56,12 @@ switch lower(param)
                 fprintf('s: sharpen overlay \n');
                 fprintf('p: projection plots \n');
                 fprintf('v: orthogonal slice view in projection plots \n');
+                fprintf('w: show MNI/Talairach coordinate GUI \n');
                 fprintf('+: increase threshold by 10%\n');
                 fprintf('-: decrease threshold by 10%\n');
                 fprintf('d: interactive threshold change\n');
                 fprintf('c: switch on/off the colorbar\n');
                 fprintf('\n\n fhlin@jun 24, 2002\n');
-                
             case 'a'
                 fprintf('archiving...\n');
                 f = getframe(gcf);
@@ -72,7 +73,6 @@ switch lower(param)
             case 'q'
                 fprintf('\nterminating graph!\n');
                 close_all;
-                
             case 'r'
                 if(strcmp(get(gcf,'name'),'fmri_fig_overlay'))
                     fprintf('re-orienting...\n');
@@ -287,7 +287,8 @@ switch lower(param)
                     hr=str2num(answer{1});
                     fmri_cluster_halfrange=hr;
                     fprintf('clustering from center [%s]...\n',num2str(fmri_pointer,'%3d '));
-                    [output_center,max_mean_data3d]=fmri_locuscenter(fmri_over,[fmri_pointer(2),fmri_pointer(1),fmri_pointer(3)],'half_range',hr);
+                    %[output_center,max_mean_data3d]=fmri_locuscenter(fmri_over,[fmri_pointer(2),fmri_pointer(1),fmri_pointer(3)],'half_range',hr);
+                    output_center=[fmri_pointer(2) fmri_pointer(1) fmri_pointer(3)];
                 else
                     output_center=[];
                 end;
@@ -297,6 +298,12 @@ switch lower(param)
                 
                 if(~isempty(output_center))
                     gcf_tmp=gcf;
+                    if(~isempty(fmri_over_data))
+                        [xx,yy,zz]=meshgrid(output_center(2)-fmri_cluster_halfrange:output_center(2)+fmri_cluster_halfrange,output_center(1)-fmri_cluster_halfrange:output_center(1)+fmri_cluster_halfrange,output_center(3)-fmri_cluster_halfrange:output_center(3)+fmri_cluster_halfrange);
+                        fmri_cluster_index=sub2ind(size(fmri_over),yy(:),xx(:),zz(:));
+                        
+                        draw_timecourse();
+                    end;
                     
                     if(~isempty(fmri_cluster_box_projection))
                         for i=1:length(fmri_cluster_box_projection)
@@ -622,7 +629,9 @@ else
     flag_pointer_handle=0;
 end;
 
-if(~isempty(fmri_colorbar_handle))
+if(isempty(fmri_colorbar_handle))
+    flag_colorbar_handle=0;
+elseif(isvalid(fmri_colorbar_handle))
     flag_colorbar_handle=1;
 else
     flag_colorbar_handle=0;
@@ -632,7 +641,7 @@ close_all;
 
 %figure(fmri_fig_overlay);
 fmri_fig_overlay=figure;
-fmri_overlay(fmri_under,fmri_over,fmri_op,fmri_threshold,'cmap',fmri_colormap,'datamat',fmri_datamat,'beta',fmri_beta,'hdr',fmri_hdr,'over_data',fmri_over_data,'timeVec',fmri_timeVec,'under_vol',fmri_under_vol,'over_vol',fmri_over_vol,'talxfm',fmri_talxfm,'xfm',fmri_xfm);
+fmri_overlay(fmri_under,fmri_over,fmri_op,fmri_threshold,'cmap',fmri_colormap,'datamat',fmri_datamat,'beta',fmri_beta,'hdr',fmri_hdr,'over_data',fmri_over_data,'timeVec',fmri_timeVec,'under_vol',fmri_under_vol,'over_vol',fmri_over_vol,'talxfm',fmri_talxfm,'xfm',fmri_xfm,'colorbar',flag_colorbar_handle);
 tmp=get(fmri_fig_overlay,'child');
 tmp0=find(isgraphics(tmp,'axes'));
 if(~isempty(fmri_fig_overlay_xlim))
@@ -652,8 +661,14 @@ if(flag_pointer_handle)
     draw_pointer;
 end;
 
-if(flag_colorbar_handle)
-    draw_colorbar;
+if((~isempty(fmri_colorbar_handle)))
+    if(~isvalid(fmri_colorbar_handle))
+        try
+            delete(fmri_colorbar_handle)
+            draw_colorbar;
+        catch ME
+        end;
+    end;
 end;
 
 return;
@@ -858,6 +873,7 @@ global fmri_coords;
 global fmri_timeVec;
 global fmri_timeVec_line;
 global fmri_timeVec_x_idx;
+global fmri_cluster_index;
 
 if(~isempty(fmri_fig_timeVec))
     if(isvalid(fmri_fig_timeVec))
@@ -888,7 +904,7 @@ if(fmri_pointer(2)<=size(fmri_under,1)&fmri_pointer(1)<=size(fmri_under,2)&fmri_
     end;
     
     if(~isempty(fmri_over_data))
-        plot(fmri_timeVec,squeeze(fmri_over_data(fmri_pointer(2),fmri_pointer(1),fmri_pointer(3),:)));
+        plot(fmri_timeVec,squeeze(fmri_over_data(fmri_pointer(2),fmri_pointer(1),fmri_pointer(3),:))); %hold on;
         
         ymax=max(get(gca,'ylim'));
         ymin=min(get(gca,'ylim'));
@@ -901,6 +917,14 @@ if(fmri_pointer(2)<=size(fmri_under,1)&fmri_pointer(1)<=size(fmri_under,2)&fmri_
         
         if(~isempty(fmri_timeVec_x_idx))
             fmri_timeVec_line=line([fmri_timeVec(fmri_timeVec_x_idx),fmri_timeVec(fmri_timeVec_x_idx)],[ymax,ymin]); set(fmri_timeVec_line,'color',[1 1 1].*0.5);
+        end;
+        
+        if(~isempty(fmri_cluster_index))
+            tmp=reshape(fmri_over_data,[prod(size(fmri_over)), size(fmri_over_data,ndims(fmri_over_data))]);
+            fmri_roi_timecourse=squeeze(mean(tmp(fmri_cluster_index,:),1));
+            hold on; 
+            h=plot(fmri_timeVec,fmri_roi_timecourse); hold off;
+            set(h,'color','b');
         end;
         
     else
