@@ -20,6 +20,7 @@ flag_curv=1;
 hemi='lh'; %hemi={'lh','rh'}; for showing both hemispheres;
 curv=[];
 vol=[];
+vol_vox=[];
 talxfm=[];
 
 %color 
