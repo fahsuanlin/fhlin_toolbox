@@ -59,49 +59,102 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 global etc_render_fsbrain;
-h=findobj('tag','edit_surf_x');
-set(h,'String',num2str(etc_render_fsbrain.click_coord(1),'%1.1f'));
-h=findobj('tag','edit_surf_y');
-set(h,'String',num2str(etc_render_fsbrain.click_coord(2),'%1.1f'));
-h=findobj('tag','edit_surf_z');
-set(h,'String',num2str(etc_render_fsbrain.click_coord(3),'%1.1f'));
 
-h=findobj('tag','edit_surf_x_round');
-set(h,'String',num2str(etc_render_fsbrain.click_coord_round(1),'%1.1f'));
-h=findobj('tag','edit_surf_y_round');
-set(h,'String',num2str(etc_render_fsbrain.click_coord_round(2),'%1.1f'));
-h=findobj('tag','edit_surf_z_round');
-set(h,'String',num2str(etc_render_fsbrain.click_coord_round(3),'%1.1f'));
+try
+    h=findobj('tag','edit_surf_x');
+    set(h,'String',num2str(etc_render_fsbrain.click_coord(1),'%1.1f'));
+    h=findobj('tag','edit_surf_y');
+    set(h,'String',num2str(etc_render_fsbrain.click_coord(2),'%1.1f'));
+    h=findobj('tag','edit_surf_z');
+    set(h,'String',num2str(etc_render_fsbrain.click_coord(3),'%1.1f'));
+catch ME
+    h=findobj('tag','edit_surf_x');
+    set(h,'String','');
+    h=findobj('tag','edit_surf_y');
+    set(h,'String','');
+    h=findobj('tag','edit_surf_z');
+    set(h,'String','');
+end;
 
-h=findobj('tag','edit_vox_x');
-set(h,'String',num2str(etc_render_fsbrain.click_vertex_vox(1),'%1.0f'));
-h=findobj('tag','edit_vox_y');
-set(h,'String',num2str(etc_render_fsbrain.click_vertex_vox(2),'%1.0f'));
-h=findobj('tag','edit_vox_z');
-set(h,'String',num2str(etc_render_fsbrain.click_vertex_vox(3),'%1.0f'));
+try
+    h=findobj('tag','edit_surf_x_round');
+    set(h,'String',num2str(etc_render_fsbrain.click_coord_round(1),'%1.1f'));
+    h=findobj('tag','edit_surf_y_round');
+    set(h,'String',num2str(etc_render_fsbrain.click_coord_round(2),'%1.1f'));
+    h=findobj('tag','edit_surf_z_round');
+    set(h,'String',num2str(etc_render_fsbrain.click_coord_round(3),'%1.1f'));
+catch ME
+    h=findobj('tag','edit_surf_x_round');
+    set(h,'String','');
+    h=findobj('tag','edit_surf_y_round');
+    set(h,'String','');
+    h=findobj('tag','edit_surf_z_round');
+    set(h,'String','');
+end;
 
-h=findobj('tag','edit_vox_x_round');
-set(h,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(1),'%1.0f'));
-h=findobj('tag','edit_vox_y_round');
-set(h,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(2),'%1.0f'));
-h=findobj('tag','edit_vox_z_round');
-set(h,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(3),'%1.0f'));
+try
+    h=findobj('tag','edit_vox_x');
+    set(h,'String',num2str(etc_render_fsbrain.click_vertex_vox(1),'%1.0f'));
+    h=findobj('tag','edit_vox_y');
+    set(h,'String',num2str(etc_render_fsbrain.click_vertex_vox(2),'%1.0f'));
+    h=findobj('tag','edit_vox_z');
+    set(h,'String',num2str(etc_render_fsbrain.click_vertex_vox(3),'%1.0f'));
+catch ME
+    h=findobj('tag','edit_vox_x');
+    set(h,'String','');
+    h=findobj('tag','edit_vox_y');
+    set(h,'String','');
+    h=findobj('tag','edit_vox_z');
+    set(h,'String','');
+end;
 
+try
+    h=findobj('tag','edit_vox_x_round');
+    set(h,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(1),'%1.0f'));
+    h=findobj('tag','edit_vox_y_round');
+    set(h,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(2),'%1.0f'));
+    h=findobj('tag','edit_vox_z_round');
+    set(h,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(3),'%1.0f'));
+catch ME
+    h=findobj('tag','edit_vox_x_round');
+    set(h,'String','');
+    h=findobj('tag','edit_vox_y_round');
+    set(h,'String','');
+    h=findobj('tag','edit_vox_z_round');
+    set(h,'String','');
+end;
 
-h=findobj('tag','edit_mni_x');
-set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_tal(1),'%1.0f'));
-h=findobj('tag','edit_mni_y');
-set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_tal(2),'%1.0f'));
-h=findobj('tag','edit_mni_z');
-set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_tal(3),'%1.0f'));
+try
+    h=findobj('tag','edit_mni_x');
+    set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_tal(1),'%1.0f'));
+    h=findobj('tag','edit_mni_y');
+    set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_tal(2),'%1.0f'));
+    h=findobj('tag','edit_mni_z');
+    set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_tal(3),'%1.0f'));
+catch ME
+    h=findobj('tag','edit_mni_x');
+    set(h,'String','');
+    h=findobj('tag','edit_mni_y');
+    set(h,'String','');
+    h=findobj('tag','edit_mni_z');
+    set(h,'String','');
+end;
 
-h=findobj('tag','edit_mni_x_round');
-set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_round_tal(1),'%1.0f'));
-h=findobj('tag','edit_mni_y_round');
-set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_round_tal(2),'%1.0f'));
-h=findobj('tag','edit_mni_z_round');
-set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_round_tal(3),'%1.0f'));
-    
+try
+    h=findobj('tag','edit_mni_x_round');
+    set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_round_tal(1),'%1.0f'));
+    h=findobj('tag','edit_mni_y_round');
+    set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_round_tal(2),'%1.0f'));
+    h=findobj('tag','edit_mni_z_round');
+    set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_round_tal(3),'%1.0f'));
+catch ME
+    h=findobj('tag','edit_mni_x_round');
+    set(h,'String','');
+    h=findobj('tag','edit_mni_y_round');
+    set(h,'String','');
+    h=findobj('tag','edit_mni_z_round');
+    set(h,'String','');
+end;
 
 
 % UIWAIT makes etc_render_fsbrain_coord_gui wait for user response (see UIRESUME)
