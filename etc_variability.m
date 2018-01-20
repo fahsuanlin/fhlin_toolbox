@@ -5,6 +5,8 @@ n_bstp=100;
 flag_display=1;
 
 flag_normalize=1;
+normalize_baseline_idx=[];
+
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
@@ -15,6 +17,8 @@ for i=1:length(varargin)/2
             flag_display=option_value;
         case 'flag_normalize'
             flag_normalize=option_value; %normalize the data to be zero-mean and unit-variance
+        case 'normalize_baseline_idx'
+            normalize_baseline_idx=option_value; %indices for normalizing the data to be zero-mean and unit-variance
         otherwise
             fprintf('unknown option [%s]\n! error!\n', option);
             return;
@@ -25,9 +29,13 @@ end;
 [n_trial,n_data]=size(data);
 
 if(flag_normalize)
-    data=bsxfun(@minus,data,mean(data,2));
-    data=bsxfun(@rdivide,data,std(data,0,2));
+    if(isempty(normalize_baseline_idx))
+        normalize_baseline_idx=[1:size(data,2)];
+    end;
+    data=bsxfun(@minus,data,mean(data(:,normalize_baseline_idx),2));
+    data=bsxfun(@rdivide,data,std(data(:,normalize_baseline_idx),0,2));
 end;
+
 %grand average
 %[u,s,v]=svd(data,'econ');
 %s=diag(s).^2;
