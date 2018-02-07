@@ -336,6 +336,9 @@ etc_render_fsbrain.alpha=alpha;
 etc_render_fsbrain.fig_brain=gcf;
 etc_render_fsbrain.fig_stc=[];
 etc_render_fsbrain.fig_gui=[];
+etc_render_fsbrain.fig_vol=[];
+
+etc_render_fsbrain.vol_vox=[];
 
 etc_render_fsbrain.overlay_value=topo_value;
 etc_render_fsbrain.overlay_stc=topo_stc;

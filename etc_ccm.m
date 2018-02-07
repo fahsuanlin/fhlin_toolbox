@@ -1,16 +1,22 @@
-function [y_est, rho, W, U, D]=etc_ccm(x,y,varargin)
+function [y_est, rho, W, U, D, y_trim]=etc_ccm(x,y,varargin)
 % etc_ccm convergent cross mapping
 %
-% [y_est, rho, W, U, D]=etc_ccm(x,y,[option, option_value,...]);
+% [y_est, rho, W, U, D, y_trim]=etc_ccm(x,y,[option, option_value,...]);
 %
 % estimate  y (source) by cross mapping from x (target) (M_x)
 % y --> x gives high correlation coefficient (rho) between cross mapped y and y.
 %
+% y_est: the estimated time series y (the lenth of y_est is shorther than
+% the length of y because of data trimmed at shadowing manifold
+% construction).
 % rho: correlation coefficient between y and cross mapped y; high
 % correlation suggests y --> x
 % W: normalized cross mapping weights
 % U: cross mapping weights
 % D: cross mapping distances
+% y_trim: the trimmed original time series y (the lenth of y_trim is shorter
+% than the length of y because of data trimmed at shadowing manifold
+% construction).
 %
 % fhlin@dec. 20 2017
 %
@@ -60,8 +66,8 @@ flag_normalize=1;
 flag_display=1;
 flag_graphics=1;
 
-tau=1; %interval between time series; sample
-E=1; %dimension of manifold
+tau=1; %interval between time series; in sample
+E=1; %dimension of the shadowing manifold
 
 for i=1:length(varargin)/2
     option_name=varargin{i*2-1};
@@ -104,7 +110,7 @@ X=x(t)';
 
 [IDX,D] = knnsearch(X,X,'K',E+2); %find the E+2 nearest neighbors, including itself.
 
-%find E+1 nearest neighbors by removing each point from itself 
+%find E+1 nearest neighbors other than itself 
 IDX(:,1)=[];
 D(:,1)=[];
 
