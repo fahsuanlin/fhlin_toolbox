@@ -70,6 +70,11 @@ topo_aux2_point_coords_h=[];
 topo_aux2_point_name={};
 topo_aux2_point_name_h=[];
 
+%label (annotation)
+label_vertex=[];
+label_value=[];
+label_ctab=[];
+
 %stc time course
 flag_hold_fig_stc_timecourse=0;
 
@@ -170,6 +175,12 @@ for idx=1:length(varargin)/2
             topo_aux2_point_coords=option_value;
         case 'topo_aux2_point_name';
             topo_aux2_point_name=option_value;
+        case 'label_vertex'
+            label_vertex=option_value;
+        case 'label_value'
+            label_value=option_value;
+        case 'label_ctab'
+            label_ctab=option_value;
         otherwise
             fprintf('unknown option [%s]...\n',option);
             return;
@@ -465,6 +476,11 @@ if(~flag_redraw)
 end;
 
 
+%label annotation
+if(~isempty(label_vertex)&&~isempty(label_value)&&~isempty(label_ctab))
+    fprintf('annotated label loaded...\n');
+    
+end;
     
 %%%%%%%%%%%%%%%%%%%%%%%%
 %setup global object
@@ -500,6 +516,7 @@ etc_render_fsbrain.fig_stc=[];
 etc_render_fsbrain.fig_gui=[];
 etc_render_fsbrain.fig_vol=[];
 etc_render_fsbrain.fig_coord_gui=[];
+etc_render_fsbrain.fig_label_gui=[];
 
 etc_render_fsbrain.overlay_value=overlay_value;
 etc_render_fsbrain.overlay_stc=overlay_stc;
@@ -520,6 +537,12 @@ etc_render_fsbrain.overlay_value_flag_neg=overlay_value_flag_neg;
 etc_render_fsbrain.overlay_exclude=overlay_exclude;
 etc_render_fsbrain.overlay_include=overlay_include;
 etc_render_fsbrain.overlay_flag_render=overlay_flag_render;
+
+etc_render_fsbrain.label_vertex=label_vertex;
+etc_render_fsbrain.label_value=label_value;
+etc_render_fsbrain.label_ctab=label_ctab;
+etc_render_fsbrain.label_h=[]; %handle to the label points on the cortical surface
+etc_render_fsbrain.label_select_idx=-1; %the index to the selected label
 
 etc_render_fsbrain.flag_hold_fig_stc_timecourse=flag_hold_fig_stc_timecourse;
 etc_render_fsbrain.handle_fig_stc_timecourse=[];
