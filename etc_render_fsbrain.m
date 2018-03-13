@@ -74,6 +74,7 @@ topo_aux2_point_name_h=[];
 label_vertex=[];
 label_value=[];
 label_ctab=[];
+file_annot='';
 
 %stc time course
 flag_hold_fig_stc_timecourse=0;
@@ -181,6 +182,8 @@ for idx=1:length(varargin)/2
             label_value=option_value;
         case 'label_ctab'
             label_ctab=option_value;
+        case 'file_annot'
+            file_annot=option_value;
         otherwise
             fprintf('unknown option [%s]...\n',option);
             return;
@@ -477,6 +480,11 @@ end;
 
 
 %label annotation
+if(~isempty(file_annot))
+    [label_vertex label_value label_ctab] = read_annotation(file_annot);
+    fprintf('annotated label loaded from [%s]...\n',file_annot);
+
+end;
 if(~isempty(label_vertex)&&~isempty(label_value)&&~isempty(label_ctab))
     fprintf('annotated label loaded...\n');
     
