@@ -39,6 +39,7 @@ switch lower(param)
                 fprintf('a: archiving image (fmri_overlay.tif if no specified output file name)\n');
                 fprintf('g: open time course GUI \n');
                 fprintf('k: open registration GUI\n');
+                fprintf('l: open label GUI\n');
                 fprintf('w: open coordinates GUI\n');
                 fprintf('s: smooth overlay \n');
                 fprintf('d: interactive threshold change\n');
@@ -112,14 +113,29 @@ switch lower(param)
                 set(etc_render_fsbrain.fig_coord_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
             case 'l' %annotation/labels GUI
                 %fprintf('\nannotation/labels GUI...\n');
-                if(isfield(etc_render_fsbrain,'fig_label_gui'))
-                    etc_render_fsbrain.fig_label_gui=[];
+                global etc_render_fsbrain;
+                
+                if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
+                else
+                    [filename, pathname, filterindex] = uigetfile({'*.annot','FreeSufer annotation (*.annot)';}, 'Pick a file', 'lh.aparc.a2009s.annot');
+                    try
+                        file_annot=sprintf('%s/%s',pathname,filename);
+                        [etc_render_fsbrain.label_vertex etc_render_fsbrain.label_value etc_render_fsbrain.label_ctab] = read_annotation(file_annot);
+                    catch ME
+                    end;
                 end;
-                etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
-                set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
-                pos=get(etc_render_fsbrain.fig_label_gui,'pos');
-                pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
-                set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
+                
+                if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
+                    if(isfield(etc_render_fsbrain,'fig_label_gui'))
+                        etc_render_fsbrain.fig_label_gui=[];
+                    end;
+                    etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
+                    set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
+                    pos=get(etc_render_fsbrain.fig_label_gui,'pos');
+                    pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                    set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
+                end;
+                
             case 'c' %colorbar;
                 figure(etc_render_fsbrain.fig_brain);
                 if(isfield(etc_render_fsbrain,'h_colorbar_pos'))
@@ -502,7 +518,7 @@ if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_
     ctab_val=etc_render_fsbrain.label_ctab.table(:,5);
     ii=find(ctab_val==etc_render_fsbrain.label_value(min_dist_idx));
     fprintf('the nearest vertex is at label {%s}\n',etc_render_fsbrain.label_ctab.struct_names{ii});
-   
+    
     try
         if(~isempty(etc_render_fsbrain.fig_label_gui))
             handles=guidata(etc_render_fsbrain.fig_label_gui);
