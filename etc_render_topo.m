@@ -64,6 +64,12 @@ topo_exclude=[];
 topo_include_fstem='';
 topo_include=[];
 
+%label (annotation)
+label_vertex=[];
+label_value=[];
+label_ctab=[];
+file_annot='';
+
 %stc time course
 flag_hold_fig_stc_timecourse=0;
 
@@ -158,6 +164,14 @@ for idx=1:length(varargin)/2
             view_angle=option_value;
         case 'bg_color'
             bg_color=option_value;
+        case 'label_vertex'
+            label_vertex=option_value;
+        case 'label_value'
+            label_value=option_value;
+        case 'label_ctab'
+            label_ctab=option_value;
+        case 'file_annot'
+            file_annot=option_value;
         otherwise
             fprintf('unknown option [%s]...\n',option);
             return;
@@ -362,6 +376,12 @@ etc_render_fsbrain.flag_hold_fig_stc_timecourse=flag_hold_fig_stc_timecourse;
 etc_render_fsbrain.handle_fig_stc_timecourse=[];
 etc_render_fsbrain.handle_fig_stc_aux_timecourse=[];
 etc_render_fsbrain.overlay_flag_render=topo_flag_render;
+
+etc_render_fsbrain.label_vertex=label_vertex;
+etc_render_fsbrain.label_value=label_value;
+etc_render_fsbrain.label_ctab=label_ctab;
+etc_render_fsbrain.label_h=[]; %handle to the label points on the cortical surface
+etc_render_fsbrain.label_select_idx=-1; %the index to the selected label
 
 etc_render_fsbrain.h=h;
 etc_render_fsbrain.click_point=[];
