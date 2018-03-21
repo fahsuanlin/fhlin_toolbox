@@ -30,7 +30,7 @@ else
 
 end;
 
-scrambled=(ifft(fscrambled));
+scrambled=real(ifft(fscrambled)); %enforce real-valued output 
 scrambled=reshape(scrambled,[nl,nc]);
     
     
