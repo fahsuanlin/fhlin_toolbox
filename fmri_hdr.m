@@ -50,3 +50,8 @@ switch lower(hdr_type)
         a=6; b=1; 
         hdr=1./(gamma(a).*b.^a).*t.^(a-1).*exp(-t./b);
 end;
+
+base=find(t<0);
+hdr(base,:)=0;
+
+return;
