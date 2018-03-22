@@ -50,15 +50,17 @@ for idx=1:size(x,2)
     fscrambled=fx;
     
     if(mod(length(x),2)==1)
-        a=angle(fscrambled(2:(size(x,1)+1)/2));
-        tmp=randperm(length(a));
-        a=a(tmp); %randmized phase
+        %a=angle(fscrambled(2:(size(x,1)+1)/2));
+        a=rand(size(fscrambled(2:(size(x,1)+1)/2))).*2.*pi;
+        %tmp=randperm(length(a));
+        %a=a(tmp); %randmized phase
         b=-flipud(a);
         fscrambled(2:end)=abs(fscrambled(2:end)).*exp(sqrt(-1).*[a(:); b(:)]);
     else
-        a=angle(fscrambled(2:size(x,1)/2));
-        tmp=randperm(length(a));
-        a=a(tmp); %randmized phase
+        %a=angle(fscrambled(2:size(x,1)/2));
+        a=rand(size(fscrambled(2:size(x,1)/2))).*2.*pi;
+        %tmp=randperm(length(a));
+        %a=a(tmp); %randmized phase
         c=angle(fscrambled(size(x,1)/2+1));
         b=-flipud(a);
         fscrambled(2:end)=abs(fscrambled(2:end)).*exp(sqrt(-1).*[a(:); c; b(:)]);
