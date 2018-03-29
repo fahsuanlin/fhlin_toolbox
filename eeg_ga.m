@@ -150,7 +150,7 @@ if(sum(abs(eeg_trigger))>0)
             end;
             
         else %all trials
-            trial_select=[1,size(epoch_sum,2)];
+            trial_sel=[1,size(epoch_sum,2)];
         end;
         
         
@@ -233,7 +233,7 @@ if(sum(abs(eeg_trigger))>0)
                     end;
                 end;
             else %all trials
-                trial_select=[1,size(epoch_sum,2)];
+                trial_sel=[1,size(epoch_sum,2)];
             end;
             trial_sel=setdiff(trial_sel,tr_idx);
             
