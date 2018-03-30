@@ -95,6 +95,14 @@ for ch_idx=1:length(non_ecg_channel)
             m(trial_idx)=max(abs(bcg_all{non_ecg_channel(ch_idx)}(trial_idx,:)),[],2);
         end;
         bad_trial_idx=find(m>200); %threshold for rejecting bad trials: 200 muV
+        if(length(bad_trial_idx)/length(qrs_i_raw)<=0.02)
+            %less than 10% bad trial defined by max voltage = 200 muV
+        else
+            if(flag_display) fprintf('too many trials with max voltage > 200 muV [%d]|[%d]=[%1.1f%%] ...',length(bad_trial_idx), length(qrs_i_raw), length(bad_trial_idx)/length(qrs_i_raw).*100); end;
+            if(flag_display) fprintf('selecting only the most extreme 10% trials ...'); end;
+            [dummy, bad_trial_idx]=sort(m);
+            bad_trial_idx=bad_trial_idx(end-round(length(qrs_i_raw)/50)+1:end);
+        end;
         if(flag_display) fprintf('[%d] cardiac events out of [%d] rejected in BCG correction...',length(bad_trial_idx), length(qrs_i_raw)); end;
         bcg_all{non_ecg_channel(ch_idx)}(bad_trial_idx,:)=[];
     end;

@@ -239,7 +239,14 @@ if(sum(abs(eeg_trigger))>0)
             
             %estimate the GA template by moving average
             if(flag_ga_templage_avg)
-                ga_template=mean(epoch_shift(:,:,trial_sel),3).';
+                dd=epoch_shift(:,:,trial_sel);
+                for d_idx=1:size(dd,1)
+                    mm=squeeze(dd(d_idx,:,:)); %channel-specific data; time x trials
+                    cmm=corrcoef(mm);
+                    ww=(sum(cmm,1)-1).^2; %weights for different trials depends on the similarity between EEG; avoid outliers.
+                    ga_template(:,d_idx)=mm*ww'./sum(ww);
+                end;
+                %ga_template=mean(epoch_shift(:,:,trial_sel),3).';
             elseif(flag_ga_template_svd)
                 [u,s,v]=svd(squeeze(epoch_shift(ch_idx,:,trial_sel)),'econ');
                 ga_template=u(:,1:4);
@@ -247,7 +254,7 @@ if(sum(abs(eeg_trigger))>0)
             
             %tmp=eeg(ch_idx,trigger(tr_idx)-t_pre_n:trigger(tr_idx)+n_samp-1+t_post_n);
             tmp=squeeze(epoch(ch_idx,:,tr_idx));
-            
+           
             %AAS by regression
             %tt=etc_circshift(ga_template(ch_idx,:),shift(tr_idx));
             %D=[tt(:)];
