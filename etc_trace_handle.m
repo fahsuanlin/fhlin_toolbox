@@ -255,9 +255,22 @@ etc_trace_obj.axis_trace=tmp(end);
 cla(etc_trace_obj.axis_trace);
 
 %plot trace
-tmp=bsxfun(@plus, etc_trace_obj.data(:,etc_trace_obj.time_begin_idx:etc_trace_obj.time_end_idx)', diff(sort(etc_trace_obj.ylim)).*[1:size(etc_trace_obj.data,1)]);
-
+tmp=bsxfun(@plus, etc_trace_obj.data(:,etc_trace_obj.time_begin_idx:etc_trace_obj.time_end_idx)', diff(sort(etc_trace_obj.ylim)).*[0:size(etc_trace_obj.data,1)-1]);
 plot(etc_trace_obj.axis_trace, tmp,'color',[0    0.4470    0.7410]);
+
+if(isfield(etc_trace_obj,'aux_data'))
+    if(~isempty(etc_trace_obj.aux_data))
+        for ii=1:length(etc_trace_obj.aux_data)
+            tmp=bsxfun(@plus, etc_trace_obj.aux_data{ii}(:,etc_trace_obj.time_begin_idx:etc_trace_obj.time_end_idx)', diff(sort(etc_trace_obj.ylim)).*[0:size(etc_trace_obj.aux_data{ii},1)-1]);
+            hold(etc_trace_obj.axis_trace,'on');
+            plot(etc_trace_obj.axis_trace, tmp);
+        end;
+    end;
+end;
+
+tmp=bsxfun(@plus, etc_trace_obj.data(:,etc_trace_obj.time_begin_idx:etc_trace_obj.time_end_idx)', diff(sort(etc_trace_obj.ylim)).*[0:size(etc_trace_obj.data,1)-1]);
+plot(etc_trace_obj.axis_trace, tmp,'color',[0    0.4470    0.7410]);
+
 set(etc_trace_obj.axis_trace,'ylim',[min(etc_trace_obj.ylim) min(etc_trace_obj.ylim)+size(etc_trace_obj.data,1)*diff(sort(etc_trace_obj.ylim))]);
 set(etc_trace_obj.axis_trace,'xlim',[1 etc_trace_obj.time_duration_idx]);
 set(etc_trace_obj.axis_trace,'xtick',round([0:5]./5.*etc_trace_obj.time_duration_idx));
@@ -278,7 +291,7 @@ try
     
     idx=find((etc_trace_obj.trigger.time(trigger_idx)>=etc_trace_obj.time_begin_idx)&(etc_trace_obj.trigger.time(trigger_idx)<=etc_trace_obj.time_end_idx));
     
-    h=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.trigger.time(trigger_idx(idx))-etc_trace_obj.time_begin_idx,[2 1]),repmat(get(etc_trace_obj.axis_trace,'ylim')',[1 length(idx)]),'LineWidth',2,'LineStyle','-','Color',[1 0 0].*1.0);
+    h=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.trigger.time(trigger_idx(idx))-etc_trace_obj.time_begin_idx,[2 1]),repmat(get(etc_trace_obj.axis_trace,'ylim')',[1 length(idx)]),'LineWidth',2,'LineStyle','-','Color',[0 1 0].*1.0);
     
 catch ME
 end;

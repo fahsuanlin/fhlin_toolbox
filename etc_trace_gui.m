@@ -22,7 +22,7 @@ function varargout = etc_trace_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_gui
 
-% Last Modified by GUIDE v2.5 02-Apr-2018 10:03:07
+% Last Modified by GUIDE v2.5 02-Apr-2018 20:45:49
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -291,6 +291,13 @@ try
     trigger_time_idx=etc_trace_obj.trigger.time(trigger_idx);
     [tmp,mmidx]=min(abs(trigger_time_idx-etc_trace_obj.time_begin_idx));
     
+    %trigger time
+    etc_trace_obj.trigger_time_idx=trigger_time_idx(mmidx);
+    hObject=findobj('tag','edit_trigger_time_idx');
+    set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
+    hObject=findobj('tag','edit_trigger_time');
+    set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger_time_idx./etc_trace_obj.fs));
+    
     %a=trigger_time_idx(mmidx)-etc_trace_obj.fs+1;
     a=trigger_time_idx(mmidx)-round(etc_trace_obj.time_duration_idx/5)+1;
     b=a+etc_trace_obj.time_duration_idx;
@@ -553,6 +560,13 @@ try
     [tmp,mmidx]=min(abs(trigger_time_idx-etc_trace_obj.time_begin_idx-round(etc_trace_obj.time_duration_idx./5)));
     mmidx=mmidx-1;
     
+    %trigger time
+    etc_trace_obj.trigger_time_idx=trigger_time_idx(mmidx);
+    hObject=findobj('tag','edit_trigger_time_idx');
+    set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
+    hObject=findobj('tag','edit_trigger_time');
+    set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger_time_idx./etc_trace_obj.fs));
+
     if(mmidx>=1)
         
         a=trigger_time_idx(mmidx)-round(etc_trace_obj.time_duration_idx/5)+1;
@@ -597,7 +611,14 @@ try
     trigger_time_idx=etc_trace_obj.trigger.time(trigger_idx);
     [tmp,mmidx]=min(abs(trigger_time_idx-etc_trace_obj.time_begin_idx-round(etc_trace_obj.time_duration_idx./5)));
     mmidx=mmidx+1;
-    
+
+    %trigger time
+    etc_trace_obj.trigger_time_idx=trigger_time_idx(mmidx);
+    hObject=findobj('tag','edit_trigger_time_idx');
+    set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
+    hObject=findobj('tag','edit_trigger_time');
+    set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger_time_idx./etc_trace_obj.fs));
+
     if(mmidx<=length(trigger_time_idx))
         
         a=trigger_time_idx(mmidx)-round(etc_trace_obj.time_duration_idx/5)+1;
@@ -667,6 +688,52 @@ function listbox_time_duration_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_trigger_time_idx_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_trigger_time_idx (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_trigger_time_idx as text
+%        str2double(get(hObject,'String')) returns contents of edit_trigger_time_idx as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_trigger_time_idx_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_trigger_time_idx (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_trigger_time_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_trigger_time (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_trigger_time as text
+%        str2double(get(hObject,'String')) returns contents of edit_trigger_time as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_trigger_time_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_trigger_time (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');

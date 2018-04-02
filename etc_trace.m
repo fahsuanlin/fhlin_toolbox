@@ -7,6 +7,7 @@ duration=5; %second
 h=[];
 
 trigger=[];
+aux_data={};
 
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
@@ -20,6 +21,8 @@ for i=1:length(varargin)/2
             duration=option_value;
         case 'trigger'
             trigger=option_value;
+        case 'aux_data'
+            aux_data=option_value;
         otherwise
             fprintf('unkown option [%s]!\nerror!\n',option);
             return;
@@ -47,6 +50,7 @@ etc_trace_obj.time_end_idx=etc_trace_obj.time_begin_idx+etc_trace_obj.time_durat
 etc_trace_obj.trigger=trigger;
 
 etc_trace_obj.data=data;
+etc_trace_obj.aux_data=aux_data;
 
 etc_trace_obj.fig_trace=etc_trace_gui;
 
