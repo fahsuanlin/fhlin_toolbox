@@ -1,4 +1,4 @@
-function [eeg_bcg, qrs_i_raw, bcg_all, ecg_all]=eeg_bcg(eeg,ecg,fs,varargin)
+function [eeg_bcg, qrs_i_raw, bcg_all, ecg_all, bad_trials]=eeg_bcg(eeg,ecg,fs,varargin)
 
 %defaults
 %BCG_tPre=0.1; %s
@@ -41,6 +41,7 @@ for i=1:length(varargin)/2
     end;
 end;
 
+bad_trials=[];
 
 %----------------------------
 % BCG start;
