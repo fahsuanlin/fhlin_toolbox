@@ -13,6 +13,7 @@ n_ma_bcg=21;
 
 fig_bcg=[];
 flag_dyn_bcg=1;
+flag_post_ssp=0;
 
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
@@ -34,6 +35,8 @@ for i=1:length(varargin)/2
             flag_anchor_ends=option_value;
         case 'flag_badrejection'
             flag_badrejection=option_value;
+        case 'flag_post_ssp'
+            flag_post_ssp=option_value;
         otherwise
             fprintf('unknown option [%s]...\n',option);
             fprintf('error!\n');
@@ -105,11 +108,27 @@ for ch_idx=1:length(non_ecg_channel)
             bad_trial_idx=bad_trial_idx(end-round(length(qrs_i_raw)/50)+1:end);
         end;
         if(flag_display) fprintf('[%d] cardiac events out of [%d] rejected in BCG correction...',length(bad_trial_idx), length(qrs_i_raw)); end;
-        bcg_all{non_ecg_channel(ch_idx)}(bad_trial_idx,:)=[];
+        %bcg_all{non_ecg_channel(ch_idx)}(bad_trial_idx,:)=[];
     end;
-    bad_trials=zeros(1,length(qrs_i_raw));
-    bad_trials(bad_trial_idx)=1;
-    
+    bad_trials{non_ecg_channel(ch_idx)}=zeros(1,length(qrs_i_raw));
+    bad_trials{non_ecg_channel(ch_idx)}(bad_trial_idx)=1;
+end;
+
+%remove bad trials...
+bad_trials_idx_all=[];
+for ch_idx=1:length(non_ecg_channel)
+    if(ch_idx==1)
+        bad_trials_idx_all=find(bad_trials{non_ecg_channel(ch_idx)});
+    else
+        bad_trials_idx_all=union(bad_trials_idx_all,find(bad_trials{non_ecg_channel(ch_idx)}));
+    end;
+end;
+%for ch_idx=1:length(non_ecg_channel)
+%    bcg_all{non_ecg_channel(ch_idx)}(bad_trials_idx_all,:)=[];
+%end;
+
+residual=zeros(length(non_ecg_channel),length(qrs_i_raw),size(bcg_all{non_ecg_channel(1)},2));
+for ch_idx=1:length(non_ecg_channel)
     fprintf('#');
     
     if(~flag_dyn_bcg)
@@ -121,7 +140,7 @@ for ch_idx=1:length(non_ecg_channel)
         bcg_bnd_bases(:,2)=[1:size(vv,1)]'./size(vv,1); % confound
         
         for trial_idx=1:length(qrs_i_raw)
-            if(bad_trials(trial_idx))
+            if(bad_trials{non_ecg_channel(ch_idx)}(trial_idx))
                 eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)=nan; %bad trials; BCG artifact can propagate and thus mark data as NaN.
             else
                 if(((qrs_i_raw(trial_idx)-BCG_tPre_sample)>0)&((qrs_i_raw(trial_idx)+BCG_tPost_sample)<=size(eeg,2)))
@@ -135,6 +154,8 @@ for ch_idx=1:length(non_ecg_channel)
                         y=y-bcg_bnd_bases*inv(bcg_bnd_bases([1,end],:)'*bcg_bnd_bases([1,end],:))*(bcg_bnd_bases([1,end],:)'*(bnd1-bnd0)');
                     end;
                     eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)=y';
+                    
+                    residual(non_ecg_channel(ch_idx),trial_idx,:)=y(:);
                     
                     if(flag_display)
                         if(isempty(fig_bcg))
@@ -159,7 +180,7 @@ for ch_idx=1:length(non_ecg_channel)
         end;
     else
         for trial_idx=1:length(qrs_i_raw)
-            if(bad_trials(trial_idx))
+            if(bad_trials{non_ecg_channel(ch_idx)}(trial_idx))
                 eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)=nan; %bad trials; BCG artifact can propagate and thus mark data as NaN.
             else
                 if(((qrs_i_raw(trial_idx)-BCG_tPre_sample)>0)&((qrs_i_raw(trial_idx)+BCG_tPost_sample)<=size(eeg,2)))
@@ -207,6 +228,8 @@ for ch_idx=1:length(non_ecg_channel)
                     end;
                     eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)=y';
                     
+                    residual(non_ecg_channel(ch_idx),trial_idx,:)=y(:);
+
                     
                     if(flag_display)
                         if(isempty(fig_bcg))
@@ -231,7 +254,44 @@ for ch_idx=1:length(non_ecg_channel)
         end;
     end;
 end;
+
+
+if(flag_post_ssp)
+    fprintf('@@@');
+    tmp=[];
+    for ch_idx=1:length(non_ecg_channel)
+        d=squeeze(residual(non_ecg_channel(ch_idx),:,:));
+        d(bad_trials_idx_all,:)=[];
+        tmp(ch_idx,:)=d(:).';
+        E(ch_idx,:)=eeg(non_ecg_channel(ch_idx),:);
+    end;
+    D=tmp*tmp'./size(tmp,2); %data covariance matrix;
+    [uu,ss,vv]=svd(D);
+    
+    n_proj=2;
+    if(n_proj>0)
+        tmp=diag(ss);
+        %tmp(end-n_proj+1:end)=inf;
+        tmp(1:n_proj)=inf;
+        ss_C=tmp;
+        tmp1=diag(ss);
+        %tmp1(end-n_proj+1:end)=0;
+        tmp1(1:n_proj)=0;
+        ss_C1=tmp1;
+    else
+        ss_C=diag(ss_C);
+    end;
+    W=sqrt(diag(1./(ss_C)))*uu';
+    %W=diag(1./sqrt(diag(ss)))*inv(uu);
+    E_whitened=uu*diag(sqrt(ss_C1))*W*E;
+    
+    for ch_idx=1:length(non_ecg_channel)
+        eeg_bcg(non_ecg_channel(ch_idx),:)=E_whitened(ch_idx,:);
+    end;
+end;
+
 fprintf('\n');
+
 if(flag_display) fprintf('BCG correction done!\n'); end;
 
 %----------------------------

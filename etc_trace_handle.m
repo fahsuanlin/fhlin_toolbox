@@ -202,21 +202,32 @@ switch lower(param)
         
         if(gcf==etc_trace_obj.fig_trace)
             
-            %             xx=get(gca,'currentpoint');
-            %             xx=xx(1);
-            %             if(isempty(etc_trace_obj.overlay_stc_timeVec))
-            %                 etc_trace_obj.overlay_stc_timeVec_idx=round(xx);
-            %                 fprintf('showing STC at time index [%d] (sample)\n',etc_trace_obj.overlay_stc_timeVec_idx);
-            %             else
-            %                 [dummy,etc_trace_obj.overlay_stc_timeVec_idx]=min(abs(etc_trace_obj.overlay_stc_timeVec-xx));
-            %                 if(isempty(etc_trace_obj.overlay_stc_timeVec_unit))
-            %                     unt='sample';
-            %                 else
-            %                     unt=etc_trace_obj.overlay_stc_timeVec_unit;
-            %                 end;
-            %                 fprintf('showing STC at time [%2.2f] %s\n',etc_trace_obj.overlay_stc_timeVec(etc_trace_obj.overlay_stc_timeVec_idx),unt);
-            %             end;
-            %
+            xx=get(gca,'currentpoint');
+            xx=xx(1);
+            %if(isempty(etc_trace_obj.overlay_stc_timeVec))
+            etc_trace_obj.time_select_idx=round(xx)+etc_trace_obj.time_begin_idx-1;
+            fprintf('selected time <%3.3f> (s) [index [%d] (sample)]\n',etc_trace_obj.time_select_idx/etc_trace_obj.fs, etc_trace_obj.time_select_idx);
+            
+            if(isfield(etc_trace_obj,'time_select_line'))
+                try
+                    delete(etc_trace_obj.time_select_line);
+                catch
+                end;
+            end;
+            ylim=get(etc_trace_obj.axis_trace,'ylim');
+            hold on;
+            etc_trace_obj.time_select_line=plot([etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1 etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1],ylim,'m','linewidth',2);
+            
+            %else
+            %                             [dummy,etc_trace_obj.overlay_stc_timeVec_idx]=min(abs(etc_trace_obj.overlay_stc_timeVec-xx));
+            %                             if(isempty(etc_trace_obj.overlay_stc_timeVec_unit))
+            %                                 unt='sample';
+            %                             else
+            %                                 unt=etc_trace_obj.overlay_stc_timeVec_unit;
+            %                             end;
+            %                             fprintf('showing STC at time [%2.2f] %s\n',etc_trace_obj.overlay_stc_timeVec(etc_trace_obj.overlay_stc_timeVec_idx),unt);
+            %                         end;
+            
             %             if(~iscell(etc_trace_obj.overlay_value))
             %                 etc_trace_obj.overlay_value=etc_trace_obj.overlay_stc(:,etc_trace_obj.overlay_stc_timeVec_idx);
             %             else
@@ -292,6 +303,21 @@ try
     idx=find((etc_trace_obj.trigger.time(trigger_idx)>=etc_trace_obj.time_begin_idx)&(etc_trace_obj.trigger.time(trigger_idx)<=etc_trace_obj.time_end_idx));
     
     h=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.trigger.time(trigger_idx(idx))-etc_trace_obj.time_begin_idx,[2 1]),repmat(get(etc_trace_obj.axis_trace,'ylim')',[1 length(idx)]),'LineWidth',2,'LineStyle','-','Color',[0 1 0].*1.0);
+    
+catch ME
+end;
+
+%plot selected time
+try
+    if(isfield(etc_trace_obj,'time_select_line'))
+        try
+            delete(etc_trace_obj.time_select_line);
+        catch
+        end;
+    end;
+    ylim=get(etc_trace_obj.axis_trace,'ylim');
+    hold on;
+    etc_trace_obj.time_select_line=plot([etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1 etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1],ylim,'m','linewidth',2);
     
 catch ME
 end;
