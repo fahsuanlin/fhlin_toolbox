@@ -102,6 +102,10 @@ function pushbutton_rrfast_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global etc_trace_obj;
 
+if(isempty(etc_trace_obj))
+    return;
+end;
+
 if(etc_trace_obj.time_begin_idx-etc_trace_obj.time_duration_idx>1)
     etc_trace_obj.time_begin_idx=etc_trace_obj.time_begin_idx-etc_trace_obj.time_duration_idx; %5 s advance
     etc_trace_obj.time_end_idx=etc_trace_obj.time_end_idx-etc_trace_obj.time_duration_idx; %5 s advance
@@ -135,6 +139,10 @@ function pushbutton_rr_Callback(hObject, eventdata, handles)
 
 global etc_trace_obj;
 
+if(isempty(etc_trace_obj))
+    return;
+end;
+
 if(etc_trace_obj.time_begin_idx-etc_trace_obj.fs.*1>1)
     etc_trace_obj.time_begin_idx=etc_trace_obj.time_begin_idx-round(etc_trace_obj.time_duration_idx./5); %1 s advance
     etc_trace_obj.time_end_idx=etc_trace_obj.time_end_idx-round(etc_trace_obj.time_duration_idx./5); %1 s advance
@@ -167,6 +175,10 @@ function pushbutton_ff_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global etc_trace_obj;
 
+if(isempty(etc_trace_obj))
+    return;
+end;
+
 if(etc_trace_obj.time_end_idx+etc_trace_obj.fs.*1<size(etc_trace_obj.data,2))
     etc_trace_obj.time_begin_idx=etc_trace_obj.time_begin_idx+round(etc_trace_obj.time_duration_idx./5); %1 s advance
     etc_trace_obj.time_end_idx=etc_trace_obj.time_end_idx+round(etc_trace_obj.time_duration_idx./5); %1 s advance
@@ -198,6 +210,10 @@ function pushbutton_fffast_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global etc_trace_obj;
+
+if(isempty(etc_trace_obj))
+    return;
+end;
 
 if(etc_trace_obj.time_end_idx+etc_trace_obj.time_duration_idx<size(etc_trace_obj.data,2))
     etc_trace_obj.time_begin_idx=etc_trace_obj.time_begin_idx+etc_trace_obj.time_duration_idx; %5 s advance
@@ -235,6 +251,10 @@ function slider_time_idx_Callback(hObject, eventdata, handles)
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
 global etc_trace_obj;
+
+if(isempty(etc_trace_obj))
+    return;
+end;
 
 set(hObject,'enable','off');
 
@@ -281,6 +301,10 @@ function listbox_trigger_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns listbox_trigger contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from listbox_trigger
 global etc_trace_obj;
+
+if(isempty(etc_trace_obj))
+    return;
+end;
 
 contents = cellstr(get(hObject,'String'));
 select_idx=get(hObject,'Value');
@@ -353,6 +377,10 @@ function edit_time_begin_idx_Callback(hObject, eventdata, handles)
 
 global etc_trace_obj;
 
+if(isempty(etc_trace_obj))
+    return;
+end;
+
 a=str2double(get(hObject,'String'));
 b=str2double(get(hObject,'String'))+etc_trace_obj.time_duration_idx-1;
 
@@ -403,6 +431,10 @@ function edit_time_end_idx_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of edit_time_end_idx as a double
 
 global etc_trace_obj;
+
+if(isempty(etc_trace_obj))
+    return;
+end;
 
 a=str2double(get(hObject,'String'))-etc_trace_obj.time_duration_idx-1;
 b=str2double(get(hObject,'String'));
@@ -455,6 +487,10 @@ function edit_time_end_Callback(hObject, eventdata, handles)
 
 global etc_trace_obj;
 
+if(isempty(etc_trace_obj))
+    return;
+end;
+
 a=round(str2double(get(hObject,'String')).*etc_trace_obj.fs)-etc_trace_obj.time_duration_idx+1;
 b=round(str2double(get(hObject,'String')).*etc_trace_obj.fs)+1;
 if(a>=1&&b<=size(etc_trace_obj.data,2))
@@ -506,6 +542,10 @@ function edit_time_begin_Callback(hObject, eventdata, handles)
 
 global etc_trace_obj;
 
+if(isempty(etc_trace_obj))
+    return;
+end;
+
 a=round(str2double(get(hObject,'String')).*etc_trace_obj.fs)+1;
 b=round(str2double(get(hObject,'String')).*etc_trace_obj.fs)+etc_trace_obj.time_duration_idx+1;
 if(a>=1&&b<=size(etc_trace_obj.data,2))
@@ -553,6 +593,10 @@ function pushbutton_trigger_rr_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 global etc_trace_obj;
+
+if(isempty(etc_trace_obj))
+    return;
+end;
 
 try
     trigger_idx=find(etc_trace_obj.trigger.event==str2num(etc_trace_obj.trigger_now));
@@ -605,6 +649,10 @@ function pushbutton_trigger_ff_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 global etc_trace_obj;
+
+if(isempty(etc_trace_obj))
+    return;
+end;
 
 try
     trigger_idx=find(etc_trace_obj.trigger.event==str2num(etc_trace_obj.trigger_now));
@@ -660,6 +708,10 @@ function listbox_time_duration_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns listbox_time_duration contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from listbox_time_duration
 global etc_trace_obj;
+
+if(isempty(etc_trace_obj))
+    return;
+end;
 
 contents = cellstr(get(hObject,'String'));
 etc_trace_obj.time_duration_idx=round(str2num(contents{get(hObject,'Value')})*etc_trace_obj.fs);

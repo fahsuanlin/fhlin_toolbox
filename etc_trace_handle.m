@@ -2,6 +2,7 @@ function etc_trace_handle(param,varargin)
 
 global etc_trace_obj;
 
+
 cc=[];
 
 for i=1:length(varargin)/2
@@ -13,6 +14,10 @@ for i=1:length(varargin)/2
         case 'cc'
             cc=option;
     end;
+end;
+
+if(isempty(etc_trace_obj))
+    return;
 end;
 
 if(isempty(cc))
