@@ -60,6 +60,59 @@ switch lower(param)
             case 'r'
                 fprintf('\nredrawing...\n');
                 redraw;
+            case 'o' %draw ROI....
+                if(isfield(etc_render_fsbrain,'flag_collect_vertex'))
+                    etc_render_fsbrain.flag_collect_vertex=~etc_render_fsbrain.flag_collect_vertex;
+                    if(etc_render_fsbrain.flag_collect_vertex)
+                        fprintf('start collecting vertices for ROI definition...\n');
+                        etc_render_fsbrain.collect_vertex=[];
+                    else
+                        fprintf('stop collecting vertices for ROI definition...\n');
+                        etc_render_fsbrain.flag_collect_vertex=0;
+                        %etc_render_fsbrain.collect_vertex=[];
+                        
+                        if(length(etc_render_fsbrain.collect_vertex)>1)
+                            %complete a closed ROI...
+                            
+                            %dijkstra search finds vertices on the shortest path between
+                            %the last two selected vertices
+                            D=dijkstra(etc_render_fsbrain.dijk_A,etc_render_fsbrain.collect_vertex(end));
+                            paths=etc_distance2path(etc_render_fsbrain.collect_vertex(1),D,etc_render_fsbrain.faces_hemi+1);
+                            paths=flipud(paths);
+                            
+                            %connect vertices by traversing the shortest path
+                            for p_idx=2:length(paths)
+                                etc_render_fsbrain.collect_vertex_boundary=cat(1,etc_render_fsbrain.collect_vertex_boundary,paths(p_idx));
+                                etc_render_fsbrain.collect_vertex_boundary_point(end+1)=plot3(etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.collect_vertex_boundary(end),1),etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.collect_vertex_boundary(end),2),etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.collect_vertex_boundary(end),3),'.');
+                                set(etc_render_fsbrain.collect_vertex_boundary_point(end),'color',[0 1 1].*0.8,'markersize',10);
+                            end;
+                        end;
+                        
+                        mean_point=mean(etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.collect_vertex_boundary,:),1);
+                        dist=sum((etc_render_fsbrain.vertex_coords_hemi-repmat(mean_point,[size(etc_render_fsbrain.vertex_coords_hemi,1),1])).^2,2);
+                        [dummy,min_dist]=min(dist);
+                        roi_idx=etc_patchflood(etc_render_fsbrain.faces_hemi+1,min_dist,etc_render_fsbrain.collect_vertex_boundary);
+                        %ROI....
+                        etc_render_fsbrain.roi_points=plot3(etc_render_fsbrain.vertex_coords_hemi(roi_idx,1),etc_render_fsbrain.vertex_coords_hemi(roi_idx,2), etc_render_fsbrain.vertex_coords_hemi(roi_idx,3),'.');
+                        set(etc_render_fsbrain.roi_points,'color',[1 0 0].*1,'markersize',1);
+                        etc_render_fsbrain.roi=roi_idx;
+                        
+                        %clear boundary points and vertices
+                        delete(etc_render_fsbrain.collect_vertex_boundary_point(:));
+                        etc_render_fsbrain.collect_vertex_boundary_point=[];
+                        etc_render_fsbrain.collect_vertex_boundary=[];
+                        
+                        etc_render_fsbrain.collect_vertex=[];
+                        delete(etc_render_fsbrain.collect_vertex_point(:));
+                        etc_render_fsbrain.collect_vertex_point=[];
+                        
+                    end;
+                else
+                    etc_render_fsbrain.flag_collect_vertex=1;
+                    fprintf('\start collecting vertices for ROI definition...\n');
+                    etc_render_fsbrain.collect_vertex=[];
+                end;
+                
             case 'g'
                 %fprintf('\nGUI...\n');
                 if(isfield(etc_render_fsbrain,'fig_gui'))
@@ -512,6 +565,56 @@ etc_render_fsbrain.click_vertex=min_dist_idx;
 etc_render_fsbrain.click_vertex_point=plot3(vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3),'.');
 set(etc_render_fsbrain.click_vertex_point,'color',[0 1 1],'markersize',10);
 
+if(isfield(etc_render_fsbrain,'flag_collect_vertex'))
+    if(etc_render_fsbrain.flag_collect_vertex)
+        etc_render_fsbrain.collect_vertex=cat(1,etc_render_fsbrain.collect_vertex,etc_render_fsbrain.click_vertex);
+        
+        if(isfield(etc_render_fsbrain,'collect_vertex_point'))
+            etc_render_fsbrain.collect_vertex_point(end+1)=plot3(vv(etc_render_fsbrain.collect_vertex(end),1),vv(etc_render_fsbrain.collect_vertex(end),2),vv(etc_render_fsbrain.collect_vertex(end),3),'.');
+        else
+            etc_render_fsbrain.collect_vertex_point=plot3(vv(etc_render_fsbrain.collect_vertex(end),1),vv(etc_render_fsbrain.collect_vertex(end),2),vv(etc_render_fsbrain.collect_vertex(end),3),'.');
+        end;
+        set(etc_render_fsbrain.collect_vertex_point(end),'color',[0 1 1].*0.5,'markersize',10);
+        
+        fprintf('collected vertices: %s\n',mat2str(etc_render_fsbrain.collect_vertex));
+        
+        if(length(etc_render_fsbrain.collect_vertex)>1) %connecting selected vertices
+            
+            %dijkstra search preparation
+            if(~isfield(etc_render_fsbrain,'dijk_A'))
+                connection=etc_render_fsbrain.faces_hemi'+1;
+                d1=[connection(1,:);connection(2,:);ones(1,size(connection,2))]';
+                d2=[connection(2,:);connection(1,:);ones(1,size(connection,2))]';
+                d3=[connection(1,:);connection(3,:);ones(1,size(connection,2))]';
+                d4=[connection(3,:);connection(1,:);ones(1,size(connection,2))]';
+                d5=[connection(2,:);connection(3,:);ones(1,size(connection,2))]';
+                d6=[connection(3,:);connection(2,:);ones(1,size(connection,2))]';
+                dd=[d1;d2;d3;d4;d5;d6];
+                dd=unique(dd,'rows');
+                etc_render_fsbrain.dijk_A=spones(spconvert(dd));
+            end;
+            
+            %dijkstra search finds vertices on the shortest path between
+            %the last two selected vertices
+            D=dijkstra(etc_render_fsbrain.dijk_A,etc_render_fsbrain.collect_vertex(end-1));
+            paths=etc_distance2path(etc_render_fsbrain.collect_vertex(end),D,etc_render_fsbrain.faces_hemi+1);
+            paths=flipud(paths);
+
+            %connect vertices by traversing the shortest path
+            for p_idx=2:length(paths)
+                etc_render_fsbrain.collect_vertex_boundary=cat(1,etc_render_fsbrain.collect_vertex_boundary,paths(p_idx));
+                etc_render_fsbrain.collect_vertex_boundary_point(end+1)=plot3(vv(etc_render_fsbrain.collect_vertex_boundary(end),1),vv(etc_render_fsbrain.collect_vertex_boundary(end),2),vv(etc_render_fsbrain.collect_vertex_boundary(end),3),'.');
+                set(etc_render_fsbrain.collect_vertex_boundary_point(end),'color',[0 1 1].*0.8,'markersize',10);
+            end;
+        else
+            etc_render_fsbrain.collect_vertex_boundary=etc_render_fsbrain.collect_vertex(end);
+            etc_render_fsbrain.collect_vertex_boundary_point=plot3(vv(etc_render_fsbrain.collect_vertex_boundary(end),1),vv(etc_render_fsbrain.collect_vertex_boundary(end),2),vv(etc_render_fsbrain.collect_vertex_boundary(end),3),'.');
+            set(etc_render_fsbrain.collect_vertex_boundary_point(end),'color',[0 1 1].*0.8,'markersize',10);
+        end;
+    end;
+else
+    etc_render_fsbrain.flag_collect_vertex=0;
+end;
 
 %show label
 if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
