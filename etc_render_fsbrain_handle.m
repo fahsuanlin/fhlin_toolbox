@@ -84,7 +84,7 @@ switch lower(param)
                             for p_idx=2:length(paths)
                                 etc_render_fsbrain.collect_vertex_boundary=cat(1,etc_render_fsbrain.collect_vertex_boundary,paths(p_idx));
                                 etc_render_fsbrain.collect_vertex_boundary_point(end+1)=plot3(etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.collect_vertex_boundary(end),1),etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.collect_vertex_boundary(end),2),etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.collect_vertex_boundary(end),3),'.');
-                                set(etc_render_fsbrain.collect_vertex_boundary_point(end),'color',[0 1 1].*0.8,'markersize',10);
+                                set(etc_render_fsbrain.collect_vertex_boundary_point(end),'color',[0 1 1].*0.8,'markersize',1);
                             end;
                         end;
                         
@@ -97,6 +97,17 @@ switch lower(param)
                         set(etc_render_fsbrain.roi_points,'color',[1 0 0].*1,'markersize',1);
                         etc_render_fsbrain.roi=roi_idx;
                         
+                        %save the label?
+                        [file, path] = uiputfile({'*.label'});
+                        if isequal(file,0) || isequal(path,0)
+                        else
+                            fn=fullfile(path,file);
+                            disp(['User selected ',fullfile(path,file),...
+                                ' and then clicked Save.'])
+                            inverse_write_label(etc_render_fsbrain.roi(:),zeros(size(etc_render_fsbrain.roi(:))),zeros(size(etc_render_fsbrain.roi(:))),zeros(size(etc_render_fsbrain.roi(:))),ones(size(etc_render_fsbrain.roi(:))),fn);
+                            fprintf('ROI saved [%s].\n',fn);
+                        end
+
                         %clear boundary points and vertices
                         delete(etc_render_fsbrain.collect_vertex_boundary_point(:));
                         etc_render_fsbrain.collect_vertex_boundary_point=[];
@@ -111,6 +122,11 @@ switch lower(param)
                     etc_render_fsbrain.flag_collect_vertex=1;
                     fprintf('\start collecting vertices for ROI definition...\n');
                     etc_render_fsbrain.collect_vertex=[];
+                end;
+                
+                if(isfield(etc_render_fsbrain,'roi'))
+                    delete(etc_render_fsbrain.roi_points(:));
+                    etc_render_fsbrain.roi=[];
                 end;
                 
             case 'g'
@@ -168,25 +184,68 @@ switch lower(param)
                 %fprintf('\nannotation/labels GUI...\n');
                 global etc_render_fsbrain;
                 
-                if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
-                else
-                    [filename, pathname, filterindex] = uigetfile({'*.annot','FreeSufer annotation (*.annot)';}, 'Pick a file', 'lh.aparc.a2009s.annot');
+                %if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
+                %else
+                    [filename, pathname, filterindex] = uigetfile({'*.annot','FreeSufer annotation';'*.label','FreeSufer label'}, 'Pick a file', 'lh.aparc.a2009s.annot');
                     try
-                        file_annot=sprintf('%s/%s',pathname,filename);
-                        [etc_render_fsbrain.label_vertex etc_render_fsbrain.label_value etc_render_fsbrain.label_ctab] = read_annotation(file_annot);
+                        if(findstr(filename,'.annot'))
+                            file_annot=sprintf('%s/%s',pathname,filename);
+                            [etc_render_fsbrain.label_vertex etc_render_fsbrain.label_value etc_render_fsbrain.label_ctab] = read_annotation(file_annot);
+                        elseif(findstr(filename,'.label'))
+                            file_label=sprintf('%s/%s',pathname,filename);
+                            [ii,d0,d1,d2, vv] = inverse_read_label(file_label);
+                            
+                            if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
+                                etc_render_fsbrain.label_vertex(ii)=etc_render_fsbrain.label_ctab.numEntries+1;
+                                etc_render_fsbrain.label_value(ii)=etc_render_fsbrain.label_ctab.numEntries+1;
+                                etc_render_fsbrain.label_ctab.numEntries=etc_render_fsbrain.label_ctab.numEntries+1;
+                                etc_render_fsbrain.label_ctab.struct_names{end+1}=filename;
+                                etc_render_fsbrain.label_ctab.table(end+1,:)=[220          60         120          0        etc_render_fsbrain.label_ctab.numEntries];
+                            else
+                                etc_render_fsbrain.label_vertex=zeros(size(etc_render_fsbrain.vertex_coords_hemi,1),1);
+                                etc_render_fsbrain.label_vertex(ii)=1;
+                                etc_render_fsbrain.label_value=zeros(size(etc_render_fsbrain.vertex_coords_hemi,1),1);
+                                etc_render_fsbrain.label_value(ii)=1;
+                                s.numEntries=1;
+                                s.orig_tab='';
+                                s.struct_names={filename};
+                                s.table=[220          60         120          0        1];
+                                etc_render_fsbrain.label_ctab=s;
+                            end;
+                        end;
                     catch ME
                     end;
-                end;
+                %end;
                 
                 if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
                     if(isfield(etc_render_fsbrain,'fig_label_gui'))
-                        etc_render_fsbrain.fig_label_gui=[];
+                        if(~isempty(etc_render_fsbrain.fig_label_gui))
+                            if(isvalid(etc_render_fsbrain.fig_label_gui))
+                                %etc_render_fsbrain.fig_label_gui=[];
+                                handles=guidata(etc_render_fsbrain.fig_label_gui);
+                                set(handles.listbox_label,'string',{etc_render_fsbrain.label_ctab.struct_names{:}});
+                                set(handles.listbox_label,'value',1);
+                            else
+                                etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
+                                set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
+                                pos=get(etc_render_fsbrain.fig_label_gui,'pos');
+                                pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                                set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
+                            end;
+                        else
+                            etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
+                            set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
+                            pos=get(etc_render_fsbrain.fig_label_gui,'pos');
+                            pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                            set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
+                        end;
+                    else
+                        etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
+                        set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
+                        pos=get(etc_render_fsbrain.fig_label_gui,'pos');
+                        pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                        set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
                     end;
-                    etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
-                    set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
-                    pos=get(etc_render_fsbrain.fig_label_gui,'pos');
-                    pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
-                    set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
                 end;
                 
             case 'c' %colorbar;
@@ -574,7 +633,7 @@ if(isfield(etc_render_fsbrain,'flag_collect_vertex'))
         else
             etc_render_fsbrain.collect_vertex_point=plot3(vv(etc_render_fsbrain.collect_vertex(end),1),vv(etc_render_fsbrain.collect_vertex(end),2),vv(etc_render_fsbrain.collect_vertex(end),3),'.');
         end;
-        set(etc_render_fsbrain.collect_vertex_point(end),'color',[0 1 1].*0.5,'markersize',10);
+        set(etc_render_fsbrain.collect_vertex_point(end),'color',[0 1 1].*0.5,'markersize',1);
         
         fprintf('collected vertices: %s\n',mat2str(etc_render_fsbrain.collect_vertex));
         
@@ -604,12 +663,12 @@ if(isfield(etc_render_fsbrain,'flag_collect_vertex'))
             for p_idx=2:length(paths)
                 etc_render_fsbrain.collect_vertex_boundary=cat(1,etc_render_fsbrain.collect_vertex_boundary,paths(p_idx));
                 etc_render_fsbrain.collect_vertex_boundary_point(end+1)=plot3(vv(etc_render_fsbrain.collect_vertex_boundary(end),1),vv(etc_render_fsbrain.collect_vertex_boundary(end),2),vv(etc_render_fsbrain.collect_vertex_boundary(end),3),'.');
-                set(etc_render_fsbrain.collect_vertex_boundary_point(end),'color',[0 1 1].*0.8,'markersize',10);
+                set(etc_render_fsbrain.collect_vertex_boundary_point(end),'color',[0 1 1].*0.8,'markersize',1);
             end;
         else
             etc_render_fsbrain.collect_vertex_boundary=etc_render_fsbrain.collect_vertex(end);
             etc_render_fsbrain.collect_vertex_boundary_point=plot3(vv(etc_render_fsbrain.collect_vertex_boundary(end),1),vv(etc_render_fsbrain.collect_vertex_boundary(end),2),vv(etc_render_fsbrain.collect_vertex_boundary(end),3),'.');
-            set(etc_render_fsbrain.collect_vertex_boundary_point(end),'color',[0 1 1].*0.8,'markersize',10);
+            set(etc_render_fsbrain.collect_vertex_boundary_point(end),'color',[0 1 1].*0.8,'markersize',1);
         end;
     end;
 else
@@ -620,14 +679,15 @@ end;
 if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
     ctab_val=etc_render_fsbrain.label_ctab.table(:,5);
     ii=find(ctab_val==etc_render_fsbrain.label_value(min_dist_idx));
-    fprintf('the nearest vertex is at label {%s}\n',etc_render_fsbrain.label_ctab.struct_names{ii});
-    
-    try
-        if(~isempty(etc_render_fsbrain.fig_label_gui))
-            handles=guidata(etc_render_fsbrain.fig_label_gui);
-            set(handles.listbox_label,'value',ii);
+    if(~isempty(ii))
+        fprintf('the nearest vertex is at label {%s}\n',etc_render_fsbrain.label_ctab.struct_names{ii});
+        try
+            if(~isempty(etc_render_fsbrain.fig_label_gui))
+                handles=guidata(etc_render_fsbrain.fig_label_gui);
+                set(handles.listbox_label,'value',ii);
+            end;
+        catch ME
         end;
-    catch ME
     end;
 end;
 

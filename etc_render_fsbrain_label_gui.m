@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_label_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_label_gui
 
-% Last Modified by GUIDE v2.5 11-Mar-2018 20:14:14
+% Last Modified by GUIDE v2.5 13-Apr-2018 13:46:54
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -68,6 +68,9 @@ if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_
     guidata(hObject, handles);
 end;
 
+set(hObject,'KeyPressFcn',@etc_render_fsbrain_kbhandle);
+
+
 
 
 % --- Outputs from this function are returned to the command line.
@@ -89,6 +92,8 @@ function listbox_label_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns listbox_label contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from listbox_label
+
+
 global etc_render_fsbrain;
 if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
     contents = cellstr(get(hObject,'String'));
@@ -101,6 +106,9 @@ if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_
         
         if(~isempty(etc_render_fsbrain.label_h))
             delete(etc_render_fsbrain.label_h);
+            etc_render_fsbrain.label_idx=[];
+        else
+            etc_render_fsbrain.label_idx=vidx;
         end;
         
         if(etc_render_fsbrain.label_select_idx~=select_idx)
@@ -111,6 +119,7 @@ if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_
         else
             etc_render_fsbrain.label_select_idx=-1;
         end;
+        figure(etc_render_fsbrain.fig_label_gui);
        
     catch ME
     end;
@@ -127,3 +136,58 @@ function listbox_label_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on key press with focus on listbox_label and none of its controls.
+function listbox_label_KeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to listbox_label (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain;
+
+eventdata.Key;
+if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
+    contents = cellstr(get(hObject,'String'));
+    select_idx=get(hObject,'Value');
+    
+    if(~isempty(select_idx))
+        try
+            label_number=etc_render_fsbrain.label_ctab.table(select_idx,5);
+            vidx=find(etc_render_fsbrain.label_value==label_number);
+            etc_render_fsbrain.label_value(vidx)=0;
+            
+            
+            etc_render_fsbrain.label_ctab.numEntries=etc_render_fsbrain.label_ctab.numEntries-1;
+            etc_render_fsbrain.label_ctab.table(select_idx,:)=[];
+            etc_render_fsbrain.label_ctab.struct_names(select_idx)=[];
+            
+            
+            if(~isempty(etc_render_fsbrain.label_h))
+                delete(etc_render_fsbrain.label_h(:));
+                etc_render_fsbrain.label_h=[];
+            end;
+            
+            
+            set(handles.listbox_label,'string',{etc_render_fsbrain.label_ctab.struct_names{:}});
+            if(etc_render_fsbrain.label_ctab.numEntries>0)
+                if(select_idx>1)
+                    set(handles.listbox_label,'value',select_idx-1);
+                    etc_render_fsbrain.label_select_idx=select_idx-1;
+                else
+                    set(handles.listbox_label,'value',select_idx);
+                    etc_render_fsbrain.label_select_idx=select_idx;
+                end;
+            else
+                set(handles.listbox_label,'value',[]);
+            end;
+            guidata(hObject, handles);
+            
+            figure(etc_render_fsbrain.fig_label_gui);
+            
+        catch ME
+        end;
+    end;
+end;
