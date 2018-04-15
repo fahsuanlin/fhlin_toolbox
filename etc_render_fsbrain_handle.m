@@ -92,19 +92,24 @@ switch lower(param)
                         dist=sum((etc_render_fsbrain.vertex_coords_hemi-repmat(mean_point,[size(etc_render_fsbrain.vertex_coords_hemi,1),1])).^2,2);
                         [dummy,min_dist]=min(dist);
                         roi_idx=etc_patchflood(etc_render_fsbrain.faces_hemi+1,min_dist,etc_render_fsbrain.collect_vertex_boundary);
+                        
                         %ROI....
-                        etc_render_fsbrain.roi_points=plot3(etc_render_fsbrain.vertex_coords_hemi(roi_idx,1),etc_render_fsbrain.vertex_coords_hemi(roi_idx,2), etc_render_fsbrain.vertex_coords_hemi(roi_idx,3),'.');
-                        set(etc_render_fsbrain.roi_points,'color',[1 0 0].*1,'markersize',1);
-                        etc_render_fsbrain.roi=roi_idx;
+                        %etc_render_fsbrain.roi_points=plot3(etc_render_fsbrain.vertex_coords_hemi(roi_idx,1),etc_render_fsbrain.vertex_coords_hemi(roi_idx,2), etc_render_fsbrain.vertex_coords_hemi(roi_idx,3),'.');
+                        %set(etc_render_fsbrain.roi_points,'color',[1 0 0].*1,'markersize',1);
+                        %etc_render_fsbrain.roi=roi_idx;
+                        etc_render_fsbrain.label_idx=roi_idx;
+                        etc_render_fsbrain.label_h=plot3(etc_render_fsbrain.vertex_coords_hemi(roi_idx,1),etc_render_fsbrain.vertex_coords_hemi(roi_idx,2), etc_render_fsbrain.vertex_coords_hemi(roi_idx,3),'r.');
                         
                         %save the label?
                         [file, path] = uiputfile({'*.label'});
                         if isequal(file,0) || isequal(path,0)
+                            etc_render_fsbrain.label_idx=[];
+                            delete(etc_render_fsbrain.label_h);
                         else
                             fn=fullfile(path,file);
                             disp(['User selected ',fullfile(path,file),...
                                 ' and then clicked Save.'])
-                            inverse_write_label(etc_render_fsbrain.roi(:),zeros(size(etc_render_fsbrain.roi(:))),zeros(size(etc_render_fsbrain.roi(:))),zeros(size(etc_render_fsbrain.roi(:))),ones(size(etc_render_fsbrain.roi(:))),fn);
+                            inverse_write_label(etc_render_fsbrain.roi(:)-1,zeros(size(etc_render_fsbrain.roi(:))),zeros(size(etc_render_fsbrain.roi(:))),zeros(size(etc_render_fsbrain.roi(:))),ones(size(etc_render_fsbrain.roi(:))),fn);
                             fprintf('ROI saved [%s].\n',fn);
                         end
 
@@ -120,7 +125,7 @@ switch lower(param)
                     end;
                 else
                     etc_render_fsbrain.flag_collect_vertex=1;
-                    fprintf('\start collecting vertices for ROI definition...\n');
+                    fprintf('start collecting vertices for ROI definition...\n');
                     etc_render_fsbrain.collect_vertex=[];
                 end;
                 
@@ -196,16 +201,16 @@ switch lower(param)
                             [ii,d0,d1,d2, vv] = inverse_read_label(file_label);
                             
                             if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
-                                etc_render_fsbrain.label_vertex(ii)=etc_render_fsbrain.label_ctab.numEntries+1;
-                                etc_render_fsbrain.label_value(ii)=etc_render_fsbrain.label_ctab.numEntries+1;
+                                etc_render_fsbrain.label_vertex(ii+1)=etc_render_fsbrain.label_ctab.numEntries+1;
+                                etc_render_fsbrain.label_value(ii+1)=etc_render_fsbrain.label_ctab.numEntries+1;
                                 etc_render_fsbrain.label_ctab.numEntries=etc_render_fsbrain.label_ctab.numEntries+1;
                                 etc_render_fsbrain.label_ctab.struct_names{end+1}=filename;
                                 etc_render_fsbrain.label_ctab.table(end+1,:)=[220          60         120          0        etc_render_fsbrain.label_ctab.numEntries];
                             else
                                 etc_render_fsbrain.label_vertex=zeros(size(etc_render_fsbrain.vertex_coords_hemi,1),1);
-                                etc_render_fsbrain.label_vertex(ii)=1;
+                                etc_render_fsbrain.label_vertex(ii+1)=1;
                                 etc_render_fsbrain.label_value=zeros(size(etc_render_fsbrain.vertex_coords_hemi,1),1);
-                                etc_render_fsbrain.label_value(ii)=1;
+                                etc_render_fsbrain.label_value(ii+1)=1;
                                 s.numEntries=1;
                                 s.orig_tab='';
                                 s.struct_names={filename};
