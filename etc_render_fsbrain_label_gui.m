@@ -106,6 +106,7 @@ if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_
         
         if(~isempty(etc_render_fsbrain.label_h))
             delete(etc_render_fsbrain.label_h);
+            etc_render_fsbrain.label_h=[];
             etc_render_fsbrain.label_idx=[];
         else
             etc_render_fsbrain.label_idx=vidx;

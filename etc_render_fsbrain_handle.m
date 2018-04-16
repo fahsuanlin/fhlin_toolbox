@@ -75,7 +75,7 @@ switch lower(param)
                             %complete a closed ROI...
                             
                             %dijkstra search finds vertices on the shortest path between
-                            %the last two selected vertices
+                            %the last two selected vertices                            
                             D=dijkstra(etc_render_fsbrain.dijk_A,etc_render_fsbrain.collect_vertex(end));
                             paths=etc_distance2path(etc_render_fsbrain.collect_vertex(1),D,etc_render_fsbrain.faces_hemi+1);
                             paths=flipud(paths);
@@ -109,10 +109,10 @@ switch lower(param)
                             fn=fullfile(path,file);
                             disp(['User selected ',fullfile(path,file),...
                                 ' and then clicked Save.'])
-                            inverse_write_label(etc_render_fsbrain.roi(:)-1,zeros(size(etc_render_fsbrain.roi(:))),zeros(size(etc_render_fsbrain.roi(:))),zeros(size(etc_render_fsbrain.roi(:))),ones(size(etc_render_fsbrain.roi(:))),fn);
+                            inverse_write_label(etc_render_fsbrain.label_idx(:)-1,zeros(size(etc_render_fsbrain.label_idx(:))),zeros(size(etc_render_fsbrain.label_idx(:))),zeros(size(etc_render_fsbrain.label_idx(:))),ones(size(etc_render_fsbrain.label_idx(:))),fn);
                             fprintf('ROI saved [%s].\n',fn);
                         end
-
+                        
                         %clear boundary points and vertices
                         delete(etc_render_fsbrain.collect_vertex_boundary_point(:));
                         etc_render_fsbrain.collect_vertex_boundary_point=[];
@@ -191,35 +191,35 @@ switch lower(param)
                 
                 %if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
                 %else
-                    [filename, pathname, filterindex] = uigetfile({'*.annot','FreeSufer annotation';'*.label','FreeSufer label'}, 'Pick a file', 'lh.aparc.a2009s.annot');
-                    try
-                        if(findstr(filename,'.annot'))
-                            file_annot=sprintf('%s/%s',pathname,filename);
-                            [etc_render_fsbrain.label_vertex etc_render_fsbrain.label_value etc_render_fsbrain.label_ctab] = read_annotation(file_annot);
-                        elseif(findstr(filename,'.label'))
-                            file_label=sprintf('%s/%s',pathname,filename);
-                            [ii,d0,d1,d2, vv] = inverse_read_label(file_label);
-                            
-                            if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
-                                etc_render_fsbrain.label_vertex(ii+1)=etc_render_fsbrain.label_ctab.numEntries+1;
-                                etc_render_fsbrain.label_value(ii+1)=etc_render_fsbrain.label_ctab.numEntries+1;
-                                etc_render_fsbrain.label_ctab.numEntries=etc_render_fsbrain.label_ctab.numEntries+1;
-                                etc_render_fsbrain.label_ctab.struct_names{end+1}=filename;
-                                etc_render_fsbrain.label_ctab.table(end+1,:)=[220          60         120          0        etc_render_fsbrain.label_ctab.numEntries];
-                            else
-                                etc_render_fsbrain.label_vertex=zeros(size(etc_render_fsbrain.vertex_coords_hemi,1),1);
-                                etc_render_fsbrain.label_vertex(ii+1)=1;
-                                etc_render_fsbrain.label_value=zeros(size(etc_render_fsbrain.vertex_coords_hemi,1),1);
-                                etc_render_fsbrain.label_value(ii+1)=1;
-                                s.numEntries=1;
-                                s.orig_tab='';
-                                s.struct_names={filename};
-                                s.table=[220          60         120          0        1];
-                                etc_render_fsbrain.label_ctab=s;
-                            end;
+                [filename, pathname, filterindex] = uigetfile({'*.annot','FreeSufer annotation';'*.label','FreeSufer label'}, 'Pick a file', 'lh.aparc.a2009s.annot');
+                try
+                    if(findstr(filename,'.annot'))
+                        file_annot=sprintf('%s/%s',pathname,filename);
+                        [etc_render_fsbrain.label_vertex etc_render_fsbrain.label_value etc_render_fsbrain.label_ctab] = read_annotation(file_annot);
+                    elseif(findstr(filename,'.label'))
+                        file_label=sprintf('%s/%s',pathname,filename);
+                        [ii,d0,d1,d2, vv] = inverse_read_label(file_label);
+                        
+                        if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
+                            etc_render_fsbrain.label_vertex(ii+1)=etc_render_fsbrain.label_ctab.numEntries+1;
+                            etc_render_fsbrain.label_value(ii+1)=etc_render_fsbrain.label_ctab.numEntries+1;
+                            etc_render_fsbrain.label_ctab.numEntries=etc_render_fsbrain.label_ctab.numEntries+1;
+                            etc_render_fsbrain.label_ctab.struct_names{end+1}=filename;
+                            etc_render_fsbrain.label_ctab.table(end+1,:)=[220          60         120          0        etc_render_fsbrain.label_ctab.numEntries];
+                        else
+                            etc_render_fsbrain.label_vertex=zeros(size(etc_render_fsbrain.vertex_coords_hemi,1),1);
+                            etc_render_fsbrain.label_vertex(ii+1)=1;
+                            etc_render_fsbrain.label_value=zeros(size(etc_render_fsbrain.vertex_coords_hemi,1),1);
+                            etc_render_fsbrain.label_value(ii+1)=1;
+                            s.numEntries=1;
+                            s.orig_tab='';
+                            s.struct_names={filename};
+                            s.table=[220          60         120          0        1];
+                            etc_render_fsbrain.label_ctab=s;
                         end;
-                    catch ME
                     end;
+                catch ME
+                end;
                 %end;
                 
                 if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
@@ -450,20 +450,39 @@ switch lower(param)
                     answer=inputdlg('ROI radius (mm)',sprintf('current threshold = %s',mat2str(etc_render_fsbrain.roi_radius)),1,def);
                     if(~isempty(answer))
                         etc_render_fsbrain.roi_radius=str2num(answer{1});
-                        fprintf('updated ROI radius = %s\n',mat2str(etc_render_fsbrain.roi_radius));
+                        fprintf('ROI radius = %s\n',mat2str(etc_render_fsbrain.roi_radius));
                         
-                        
-                        [d]=inverse_search_dijk(etc_render_fsbrain.faces'+1,etc_render_fsbrain.click_vertex,'flag_base0',0);
-                        [ds,ds_dip_idx]=sort(d);
-                        dip_idx=find(ds<=etc_render_fsbrain.roi_radius);
-                        inverse_roi_dip_idx=ds_dip_idx(dip_idx);
-                        
-                        fprintf('[%d] dipoles in this ROI (global variable ''inverse_roi_dip_idx'')\n',length(inverse_roi_dip_idx));
-                        for j=1:length(inverse_roi_dip_idx)
-                            plot3(etc_render_fsbrain.vertex_coords(inverse_roi_dip_idx(j),1),etc_render_fsbrain.vertex_coords(inverse_roi_dip_idx(j),2),etc_render_fsbrain.vertex_coords(inverse_roi_dip_idx(j),3),'.','Color',[0 1 0].*0.9,'markersize',1); hold on;
+                        if(~isfield(etc_render_fsbrain,'dijk_A'))
+                            connection=etc_render_fsbrain.faces_hemi'+1;
+                            d1=[connection(1,:);connection(2,:);ones(1,size(connection,2))]';
+                            d2=[connection(2,:);connection(1,:);ones(1,size(connection,2))]';
+                            d3=[connection(1,:);connection(3,:);ones(1,size(connection,2))]';
+                            d4=[connection(3,:);connection(1,:);ones(1,size(connection,2))]';
+                            d5=[connection(2,:);connection(3,:);ones(1,size(connection,2))]';
+                            d6=[connection(3,:);connection(2,:);ones(1,size(connection,2))]';
+                            dd=[d1;d2;d3;d4;d5;d6];
+                            dd=unique(dd,'rows');
+                            etc_render_fsbrain.dijk_A=spones(spconvert(dd));
                         end;
-                        etc_render_fsbrain.roi_label=inverse_roi_dip_idx;
                         
+                        D=dijkstra(etc_render_fsbrain.dijk_A,etc_render_fsbrain.click_vertex);
+                        roi_idx=find(D<=etc_render_fsbrain.roi_radius);
+                        etc_render_fsbrain.label_idx=roi_idx;
+                        etc_render_fsbrain.label_h=plot3(etc_render_fsbrain.vertex_coords_hemi(roi_idx,1),etc_render_fsbrain.vertex_coords_hemi(roi_idx,2), etc_render_fsbrain.vertex_coords_hemi(roi_idx,3),'r.');
+                        
+                        %save the label?
+                        [file, path] = uiputfile({'*.label'});
+                        if isequal(file,0) || isequal(path,0)
+                            etc_render_fsbrain.label_idx=[];
+                            delete(etc_render_fsbrain.label_h);
+                        else
+                            fn=fullfile(path,file);
+                            disp(['User selected ',fullfile(path,file),...
+                                ' and then clicked Save.'])
+                            inverse_write_label(etc_render_fsbrain.label_idx(:)-1,zeros(size(etc_render_fsbrain.label_idx(:))),zeros(size(etc_render_fsbrain.label_idx(:))),zeros(size(etc_render_fsbrain.label_idx(:))),ones(size(etc_render_fsbrain.label_idx(:))),fn);
+                            fprintf('ROI saved [%s].\n',fn);
+                        end
+                                                    
                     end;
                 end;
             otherwise
@@ -663,7 +682,7 @@ if(isfield(etc_render_fsbrain,'flag_collect_vertex'))
             D=dijkstra(etc_render_fsbrain.dijk_A,etc_render_fsbrain.collect_vertex(end-1));
             paths=etc_distance2path(etc_render_fsbrain.collect_vertex(end),D,etc_render_fsbrain.faces_hemi+1);
             paths=flipud(paths);
-
+            
             %connect vertices by traversing the shortest path
             for p_idx=2:length(paths)
                 etc_render_fsbrain.collect_vertex_boundary=cat(1,etc_render_fsbrain.collect_vertex_boundary,paths(p_idx));
@@ -890,103 +909,156 @@ return;
 
 function draw_stc()
 global etc_render_fsbrain;
-
-if(~isempty(etc_render_fsbrain.fig_stc))
-    if(~isvalid(etc_render_fsbrain.fig_stc))
-        delete(etc_render_fsbrain.fig_stc);
-        etc_render_fsbrain.fig_stc=[];
+if(~isempty(etc_render_fsbrain.overlay_value))
+    fprintf('clicked overlay value = [%2.2f].\n',etc_render_fsbrain.overlay_value(etc_render_fsbrain.click_overlay_vertex));
+    if(isfield(etc_render_fsbrain,'label_idx'))
+        if(~isempty(etc_render_fsbrain.label_idx))
+            [dummy,itx_idx]=intersect(etc_render_fsbrain.overlay_vertex+1, etc_render_fsbrain.label_idx);
+            data=etc_render_fsbrain.overlay_value(itx_idx);
+            fprintf('overlay value in the selected ROI = %2.2f +/- %2.2f. (max = %2.2f; min = %2.2f)\n',mean(data),std(data),max(data),min(data));
+        end;
     end;
 end;
-
-if(~isempty(etc_render_fsbrain.click_overlay_vertex)&~isempty(etc_render_fsbrain.overlay_stc))
-    if(isempty(etc_render_fsbrain.fig_stc))
-        etc_render_fsbrain.fig_stc=figure;
-        pos=get(etc_render_fsbrain.fig_brain,'pos');
-        set(etc_render_fsbrain.fig_stc,'pos',[pos(1)-pos(3), pos(2), pos(3), pos(4)]);
-    else
-        figure(etc_render_fsbrain.fig_stc);
+if(~isempty(etc_render_fsbrain.overlay_stc))
+    if(~isempty(etc_render_fsbrain.fig_stc))
+        if(~isvalid(etc_render_fsbrain.fig_stc))
+            delete(etc_render_fsbrain.fig_stc);
+            etc_render_fsbrain.fig_stc=[];
+        end;
     end;
     
-    set(etc_render_fsbrain.fig_stc,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
-    set(etc_render_fsbrain.fig_stc,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
-    
-    
-    if(~isempty(etc_render_fsbrain.overlay_stc_timeVec_idx_line))
-        if(ishandle(etc_render_fsbrain.overlay_stc_timeVec_idx_line))
-            delete(etc_render_fsbrain.overlay_stc_timeVec_idx_line);
-        end;
-        etc_render_fsbrain.overlay_stc_timeVec_idx_line=[];
-    end;
-    
-    if(isempty(etc_render_fsbrain.overlay_stc_timeVec))
-        if(~etc_render_fsbrain.flag_hold_fig_stc_timecourse)
-            delete(etc_render_fsbrain.handle_fig_stc_timecourse)
-            delete(etc_render_fsbrain.handle_fig_stc_aux_timecourse);
-        end;
-        
-        etc_render_fsbrain.overlay_stc_timeVec=[1:size(etc_render_fsbrain.overlay_stc,2)];
-        
-        h_xline=line([1 size(etc_render_fsbrain.overlay_stc,2)],[0 0]); hold on;
-        set(h_xline,'linewidth',2,'color',[1 1 1].*0.5);
-        if(~isempty(etc_render_fsbrain.overlay_aux_stc))
-            h=plot(squeeze(etc_render_fsbrain.overlay_aux_stc(etc_render_fsbrain.click_overlay_vertex,:,:)));
-            cc=get(gca,'ColorOrder');
-            for ii=1:length(h)
-                set(h(ii),'linewidth',1,'color',cc(rem(ii,8),:));
-            end;
-            etc_render_fsbrain.handle_fig_stc_aux_timecourse=h;
-        end;
-        h=plot(etc_render_fsbrain.overlay_stc(etc_render_fsbrain.click_overlay_vertex,:));
-        set(h,'linewidth',2,'color','r'); hold off;
-        
-        if(~etc_render_fsbrain.flag_hold_fig_stc_timecourse)
-            etc_render_fsbrain.handle_fig_stc_timecourse=h;
+    if(~isempty(etc_render_fsbrain.click_overlay_vertex)&~isempty(etc_render_fsbrain.overlay_stc))
+        if(isempty(etc_render_fsbrain.fig_stc))
+            etc_render_fsbrain.fig_stc=figure;
+            pos=get(etc_render_fsbrain.fig_brain,'pos');
+            set(etc_render_fsbrain.fig_stc,'pos',[pos(1)-pos(3), pos(2), pos(3), pos(4)]);
         else
-            etc_render_fsbrain.handle_fig_stc_timecourse(end+1)=h;
+            figure(etc_render_fsbrain.fig_stc);
         end;
-    else
-        if(~etc_render_fsbrain.flag_hold_fig_stc_timecourse)
-            delete(etc_render_fsbrain.handle_fig_stc_timecourse);
-            delete(etc_render_fsbrain.handle_fig_stc_aux_timecourse);
-        end;
-        h_xline=line([min(etc_render_fsbrain.overlay_stc_timeVec) max(etc_render_fsbrain.overlay_stc_timeVec)],[0 0]); hold on;
-        set(h_xline,'linewidth',2,'color',[1 1 1].*0.5);
-        if(~isempty(etc_render_fsbrain.overlay_aux_stc))
-            h=plot(etc_render_fsbrain.overlay_stc_timeVec,squeeze(etc_render_fsbrain.overlay_aux_stc(etc_render_fsbrain.click_overlay_vertex,:,:)));
-            cc=get(gca,'ColorOrder');
-            for ii=1:length(h)
-                set(h(ii),'linewidth',1,'color',cc(rem(ii,8),:));
-            end;
-            etc_render_fsbrain.handle_fig_stc_aux_timecourse=h;
-        end;
-        h=plot(etc_render_fsbrain.overlay_stc_timeVec,etc_render_fsbrain.overlay_stc(etc_render_fsbrain.click_overlay_vertex,:));
-        set(h,'linewidth',2,'color','r'); hold off;
         
-        if(~etc_render_fsbrain.flag_hold_fig_stc_timecourse)
-            etc_render_fsbrain.handle_fig_stc_timecourse=h;
-        else
-            etc_render_fsbrain.handle_fig_stc_timecourse(end+1)=h;
+        set(etc_render_fsbrain.fig_stc,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
+        set(etc_render_fsbrain.fig_stc,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
+        
+        
+        if(~isempty(etc_render_fsbrain.overlay_stc_timeVec_idx_line))
+            if(ishandle(etc_render_fsbrain.overlay_stc_timeVec_idx_line))
+                delete(etc_render_fsbrain.overlay_stc_timeVec_idx_line);
+            end;
+            etc_render_fsbrain.overlay_stc_timeVec_idx_line=[];
         end;
+        
+        if(isempty(etc_render_fsbrain.overlay_stc_timeVec))
+            %if(~etc_render_fsbrain.flag_hold_fig_stc_timecourse)
+            try
+                delete(etc_render_fsbrain.handle_fig_stc_timecourse)
+                delete(etc_render_fsbrain.handle_fig_stc_aux_timecourse);
+                delete(etc_render_fsbrain.handle_fig_stc_roi_timecourse)
+                delete(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse);
+            catch ME
+            end;
+            %end;
+            
+            etc_render_fsbrain.overlay_stc_timeVec=[1:size(etc_render_fsbrain.overlay_stc,2)];
+            
+            h_xline=line([1 size(etc_render_fsbrain.overlay_stc,2)],[0 0]); hold on;
+            set(h_xline,'linewidth',2,'color',[1 1 1].*0.5);
+            if(~isempty(etc_render_fsbrain.overlay_aux_stc))
+                hold on; h=plot(squeeze(etc_render_fsbrain.overlay_aux_stc(etc_render_fsbrain.click_overlay_vertex,:,:))); 
+                cc=get(gca,'ColorOrder');
+                for ii=1:length(h)
+                    set(h(ii),'linewidth',1,'color',cc(rem(ii,8),:));
+                end;
+                etc_render_fsbrain.handle_fig_stc_aux_timecourse=h;
+            end;
+            hold on; h=plot(etc_render_fsbrain.overlay_stc(etc_render_fsbrain.click_overlay_vertex,:));
+            set(h,'linewidth',2,'color','r'); hold off;
+            
+            if(~etc_render_fsbrain.flag_hold_fig_stc_timecourse)
+                etc_render_fsbrain.handle_fig_stc_timecourse=h;
+            else
+                etc_render_fsbrain.handle_fig_stc_timecourse(end+1)=h;
+            end;
+            
+            if(isfield(etc_render_fsbrain,'label_idx'))
+                if(~isempty(etc_render_fsbrain.label_idx))
+                    [dummy,itx_idx]=intersect(etc_render_fsbrain.overlay_vertex+1, etc_render_fsbrain.label_idx);
+                    data=etc_render_fsbrain.overlay_stc(itx_idx,:);
+                    hold on; h=plot(mean(data,1));
+                    set(h,'linewidth',2,'color','r','linestyle',':'); hold off;
+                end;
+            end;          
+            
+            
+            %if(~etc_render_fsbrain.flag_hold_fig_stc_roi_timecourse)
+                etc_render_fsbrain.handle_fig_stc_roi_timecourse=h;
+            %else
+            %    etc_render_fsbrain.handle_fig_stc_roi_timecourse(end+1)=h;
+            %end;
+        else
+            %if(~etc_render_fsbrain.flag_hold_fig_stc_timecourse)
+            try
+                delete(etc_render_fsbrain.handle_fig_stc_timecourse);
+                delete(etc_render_fsbrain.handle_fig_stc_aux_timecourse);
+                delete(etc_render_fsbrain.handle_fig_stc_roi_timecourse);
+                delete(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse);
+            catch ME
+            end;
+            %end;
+            h_xline=line([min(etc_render_fsbrain.overlay_stc_timeVec) max(etc_render_fsbrain.overlay_stc_timeVec)],[0 0]); hold on;
+            set(h_xline,'linewidth',2,'color',[1 1 1].*0.5);
+            if(~isempty(etc_render_fsbrain.overlay_aux_stc))
+                hold on; h=plot(etc_render_fsbrain.overlay_stc_timeVec,squeeze(etc_render_fsbrain.overlay_aux_stc(etc_render_fsbrain.click_overlay_vertex,:,:)));
+                cc=get(gca,'ColorOrder');
+                for ii=1:length(h)
+                    set(h(ii),'linewidth',1,'color',cc(rem(ii,8),:));
+                end;
+                etc_render_fsbrain.handle_fig_stc_aux_timecourse=h;
+            end;
+            hold on; h=plot(etc_render_fsbrain.overlay_stc_timeVec,etc_render_fsbrain.overlay_stc(etc_render_fsbrain.click_overlay_vertex,:)); 
+            set(h,'linewidth',2,'color','r'); hold off;
+            
+            if(~etc_render_fsbrain.flag_hold_fig_stc_timecourse)
+                etc_render_fsbrain.handle_fig_stc_timecourse=h;
+            else
+                etc_render_fsbrain.handle_fig_stc_timecourse(end+1)=h;
+            end;
+            
+            if(isfield(etc_render_fsbrain,'label_idx'))
+                if(~isempty(etc_render_fsbrain.label_idx))
+                    [dummy,itx_idx]=intersect(etc_render_fsbrain.overlay_vertex+1, etc_render_fsbrain.label_idx);
+                    data=etc_render_fsbrain.overlay_stc(itx_idx,:);
+                    hold on; h=plot(etc_render_fsbrain.overlay_stc_timeVec,mean(data,1));
+                    set(h,'linewidth',2,'color','r','linestyle',':'); hold off;
+                end;
+            end;
+            
+            %if(~etc_render_fsbrain.flag_hold_fig_stc_roi_timecourse)
+                etc_render_fsbrain.handle_fig_stc_roi_timecourse=h;
+            %else
+            %    etc_render_fsbrain.handle_fig_stc_roi_timecourse(end+1)=h;
+            %end;
+            
+        end;
+        if(~isempty(etc_render_fsbrain.overlay_stc_lim))
+            set(gca,'ylim',etc_render_fsbrain.overlay_stc_lim);
+        end;
+        
+        if(~isempty(etc_render_fsbrain.overlay_stc_timeVec_idx))
+            yy=get(gca,'ylim');
+            etc_render_fsbrain.overlay_stc_timeVec_idx_line=line([etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx), etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx)],[yy(1), yy(2)]);
+            set(etc_render_fsbrain.overlay_stc_timeVec_idx_line,'color',[0.4 0.4 0.4]);
+        end;
+        
+        if(isempty(etc_render_fsbrain.overlay_stc_timeVec_unit))
+            etc_render_fsbrain.overlay_stc_timeVec_unit='sample';
+        end;
+        
+        
+        h=xlabel(sprintf('time [%s]',etc_render_fsbrain.overlay_stc_timeVec_unit)); set(h,'fontname','helvetica','fontsize',12);
+        
+        axis tight; set(gca,'fontname','helvetica','fontsize',12);
+        set(gcf,'color','w')
     end;
-    if(~isempty(etc_render_fsbrain.overlay_stc_lim))
-        set(gca,'ylim',etc_render_fsbrain.overlay_stc_lim);
-    end;
-    
-    if(~isempty(etc_render_fsbrain.overlay_stc_timeVec_idx))
-        yy=get(gca,'ylim');
-        etc_render_fsbrain.overlay_stc_timeVec_idx_line=line([etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx), etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx)],[yy(1), yy(2)]);
-        set(etc_render_fsbrain.overlay_stc_timeVec_idx_line,'color',[0.4 0.4 0.4]);
-    end;
-    
-    if(isempty(etc_render_fsbrain.overlay_stc_timeVec_unit))
-        etc_render_fsbrain.overlay_stc_timeVec_unit='sample';
-    end;
-    
-    
-    h=xlabel(sprintf('time [%s]',etc_render_fsbrain.overlay_stc_timeVec_unit)); set(h,'fontname','helvetica','fontsize',12);
-    
-    axis tight; set(gca,'fontname','helvetica','fontsize',12);
-    set(gcf,'color','w')
 end;
 return;
 
