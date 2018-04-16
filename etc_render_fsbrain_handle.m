@@ -42,6 +42,7 @@ switch lower(param)
                 fprintf('l: open label GUI\n');
                 fprintf('w: open coordinates GUI\n');
                 fprintf('s: smooth overlay \n');
+                fprintf('o: create ROI\n');
                 fprintf('d: interactive threshold change\n');
                 fprintf('c: switch on/off the colorbar\n');
                 fprintf('u: show cluster labels from files\n');
@@ -75,7 +76,7 @@ switch lower(param)
                             %complete a closed ROI...
                             
                             %dijkstra search finds vertices on the shortest path between
-                            %the last two selected vertices                            
+                            %the last two selected vertices
                             D=dijkstra(etc_render_fsbrain.dijk_A,etc_render_fsbrain.collect_vertex(end));
                             paths=etc_distance2path(etc_render_fsbrain.collect_vertex(1),D,etc_render_fsbrain.faces_hemi+1);
                             paths=flipud(paths);
@@ -94,9 +95,6 @@ switch lower(param)
                         roi_idx=etc_patchflood(etc_render_fsbrain.faces_hemi+1,min_dist,etc_render_fsbrain.collect_vertex_boundary);
                         
                         %ROI....
-                        %etc_render_fsbrain.roi_points=plot3(etc_render_fsbrain.vertex_coords_hemi(roi_idx,1),etc_render_fsbrain.vertex_coords_hemi(roi_idx,2), etc_render_fsbrain.vertex_coords_hemi(roi_idx,3),'.');
-                        %set(etc_render_fsbrain.roi_points,'color',[1 0 0].*1,'markersize',1);
-                        %etc_render_fsbrain.roi=roi_idx;
                         etc_render_fsbrain.label_idx=roi_idx;
                         etc_render_fsbrain.label_h=plot3(etc_render_fsbrain.vertex_coords_hemi(roi_idx,1),etc_render_fsbrain.vertex_coords_hemi(roi_idx,2), etc_render_fsbrain.vertex_coords_hemi(roi_idx,3),'r.');
                         
@@ -431,7 +429,7 @@ switch lower(param)
                         fprintf('updated smoothing steps = %s\n',mat2str(etc_render_fsbrain.overlay_smooth));
                         
                         redraw;
-                    end;
+                    end
                     
                     if(ishandle(etc_render_fsbrain.fig_gui))
                         set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_smooth'),'string',sprintf('%1.0f',etc_render_fsbrain.overlay_smooth));
@@ -482,7 +480,7 @@ switch lower(param)
                             inverse_write_label(etc_render_fsbrain.label_idx(:)-1,zeros(size(etc_render_fsbrain.label_idx(:))),zeros(size(etc_render_fsbrain.label_idx(:))),zeros(size(etc_render_fsbrain.label_idx(:))),ones(size(etc_render_fsbrain.label_idx(:))),fn);
                             fprintf('ROI saved [%s].\n',fn);
                         end
-                                                    
+                        
                     end;
                 end;
             otherwise
@@ -552,7 +550,7 @@ switch lower(param)
             
             if(~isempty(etc_render_fsbrain.overlay_stc))
                 draw_stc;
-            end;
+            end
             
             if(ishandle(etc_render_fsbrain.fig_gui))
                 set(findobj(etc_render_fsbrain.fig_gui,'tag','slider_timeVec'),'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
@@ -624,7 +622,7 @@ if(ishandle(etc_render_fsbrain.h)&isempty(pt))
     pt=inverse_select3d(etc_render_fsbrain.h);
     if(isempty(pt))
         return;
-    end;
+    end
 else
 end;
 
@@ -948,7 +946,6 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
         end;
         
         if(isempty(etc_render_fsbrain.overlay_stc_timeVec))
-            %if(~etc_render_fsbrain.flag_hold_fig_stc_timecourse)
             try
                 delete(etc_render_fsbrain.handle_fig_stc_timecourse)
                 delete(etc_render_fsbrain.handle_fig_stc_aux_timecourse);
@@ -956,14 +953,13 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
                 delete(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse);
             catch ME
             end;
-            %end;
             
             etc_render_fsbrain.overlay_stc_timeVec=[1:size(etc_render_fsbrain.overlay_stc,2)];
             
             h_xline=line([1 size(etc_render_fsbrain.overlay_stc,2)],[0 0]); hold on;
             set(h_xline,'linewidth',2,'color',[1 1 1].*0.5);
             if(~isempty(etc_render_fsbrain.overlay_aux_stc))
-                hold on; h=plot(squeeze(etc_render_fsbrain.overlay_aux_stc(etc_render_fsbrain.click_overlay_vertex,:,:))); 
+                hold on; h=plot(squeeze(etc_render_fsbrain.overlay_aux_stc(etc_render_fsbrain.click_overlay_vertex,:,:)));
                 cc=get(gca,'ColorOrder');
                 for ii=1:length(h)
                     set(h(ii),'linewidth',1,'color',cc(rem(ii,8),:));
@@ -983,19 +979,23 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
                 if(~isempty(etc_render_fsbrain.label_idx))
                     [dummy,itx_idx]=intersect(etc_render_fsbrain.overlay_vertex+1, etc_render_fsbrain.label_idx);
                     data=etc_render_fsbrain.overlay_stc(itx_idx,:);
-                    hold on; h=plot(mean(data,1));
-                    set(h,'linewidth',2,'color','r','linestyle',':'); hold off;
+                    hold on; etc_render_fsbrain.handle_fig_stc_roi_timecourse=plot(mean(data,1));
+                    set(etc_render_fsbrain.handle_fig_stc_roi_timecourse,'linewidth',2,'color','r','linestyle',':'); hold off;
+                    
+                    
+                    if(~isempty(etc_render_fsbrain.overlay_aux_stc))
+                        data=etc_render_fsbrain.overlay_aux_stc(itx_idx,:,:);
+                        hold on; etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse=plot(squeeze(mean(data,1)));
+                        cc=get(gca,'ColorOrder');
+                        for ii=1:length(h)
+                            set(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse(ii),'linewidth',1,'color',cc(rem(ii,8),:),'linestyle',':');
+                        end;
+                    end;
                 end;
-            end;          
+            end;
             
-            
-            %if(~etc_render_fsbrain.flag_hold_fig_stc_roi_timecourse)
-                etc_render_fsbrain.handle_fig_stc_roi_timecourse=h;
-            %else
-            %    etc_render_fsbrain.handle_fig_stc_roi_timecourse(end+1)=h;
-            %end;
+            hold off;
         else
-            %if(~etc_render_fsbrain.flag_hold_fig_stc_timecourse)
             try
                 delete(etc_render_fsbrain.handle_fig_stc_timecourse);
                 delete(etc_render_fsbrain.handle_fig_stc_aux_timecourse);
@@ -1003,7 +1003,6 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
                 delete(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse);
             catch ME
             end;
-            %end;
             h_xline=line([min(etc_render_fsbrain.overlay_stc_timeVec) max(etc_render_fsbrain.overlay_stc_timeVec)],[0 0]); hold on;
             set(h_xline,'linewidth',2,'color',[1 1 1].*0.5);
             if(~isempty(etc_render_fsbrain.overlay_aux_stc))
@@ -1014,7 +1013,7 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
                 end;
                 etc_render_fsbrain.handle_fig_stc_aux_timecourse=h;
             end;
-            hold on; h=plot(etc_render_fsbrain.overlay_stc_timeVec,etc_render_fsbrain.overlay_stc(etc_render_fsbrain.click_overlay_vertex,:)); 
+            hold on; h=plot(etc_render_fsbrain.overlay_stc_timeVec,etc_render_fsbrain.overlay_stc(etc_render_fsbrain.click_overlay_vertex,:));
             set(h,'linewidth',2,'color','r'); hold off;
             
             if(~etc_render_fsbrain.flag_hold_fig_stc_timecourse)
@@ -1027,16 +1026,21 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
                 if(~isempty(etc_render_fsbrain.label_idx))
                     [dummy,itx_idx]=intersect(etc_render_fsbrain.overlay_vertex+1, etc_render_fsbrain.label_idx);
                     data=etc_render_fsbrain.overlay_stc(itx_idx,:);
-                    hold on; h=plot(etc_render_fsbrain.overlay_stc_timeVec,mean(data,1));
-                    set(h,'linewidth',2,'color','r','linestyle',':'); hold off;
+                    hold on; etc_render_fsbrain.handle_fig_stc_roi_timecourse=plot(etc_render_fsbrain.overlay_stc_timeVec,mean(data,1));
+                    set(etc_render_fsbrain.handle_fig_stc_roi_timecourse,'linewidth',2,'color','r','linestyle',':'); hold off;
+                    
+                    if(~isempty(etc_render_fsbrain.overlay_aux_stc))
+                        data=etc_render_fsbrain.overlay_aux_stc(itx_idx,:,:);
+                        hold on; etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse=plot(etc_render_fsbrain.overlay_stc_timeVec, squeeze(mean(data,1)));
+                        cc=get(gca,'ColorOrder');
+                        for ii=1:length(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse)
+                            set(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse(ii),'linewidth',1,'color',cc(rem(ii,8),:),'linestyle',':');
+                        end;
+                    end;
                 end;
             end;
             
-            %if(~etc_render_fsbrain.flag_hold_fig_stc_roi_timecourse)
-                etc_render_fsbrain.handle_fig_stc_roi_timecourse=h;
-            %else
-            %    etc_render_fsbrain.handle_fig_stc_roi_timecourse(end+1)=h;
-            %end;
+            hold off;
             
         end;
         if(~isempty(etc_render_fsbrain.overlay_stc_lim))
