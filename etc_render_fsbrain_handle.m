@@ -39,6 +39,7 @@ switch lower(param)
                 fprintf('a: archiving image (fmri_overlay.tif if no specified output file name)\n');
                 fprintf('g: open time course GUI \n');
                 fprintf('k: open registration GUI\n');
+                fprintf('f: load overlay (w/stc) file\n');
                 fprintf('l: open label GUI\n');
                 fprintf('w: open coordinates GUI\n');
                 fprintf('s: smooth overlay \n');
@@ -61,6 +62,42 @@ switch lower(param)
             case 'r'
                 fprintf('\nredrawing...\n');
                 redraw;
+            case 'f'
+                fprintf('\nload overlay...\n');
+                [filename, pathname, filterindex] = uigetfile({'*.stc','STC file (space x time)';'*.w','w file (space x 1)'}, 'Pick an overlay file');
+                if(findstr(filename,'.stc')) %stc file
+                    [stc,vv,d0,d1,timeVec]=inverse_read_stc(sprintf('%s/%s',pathname,filename));
+                    if(findstr(filename,'-lh'))
+                        hemi='lh';
+                    else
+                        hemi='rh';
+                    end;
+                    etc_render_fsbrain.overlay_stc=stc;
+                    etc_render_fsbrain.overlay_vertex=vv;
+                    etc_render_fsbrain.overlay_stc_timeVec=timeVec;
+                    etc_render_fsbrain.stc_hemi=hemi;
+
+                    [tmp,etc_render_fsbrain.overlay_stc_timeVec_idx]=max(sum(etc_render_fsbrain.overlay_stc.^2,1));
+                    etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
+                    etc_render_fsbrain.overlay_stc_hemi=etc_render_fsbrain.overlay_stc;
+        
+                    etc_render_fsbrain.overlay_flag_render=1;
+                elseif(findstr(filename,'.w')) %w file
+                    [ww,vv]=inverse_read_wfile(sprintf('%s/%s',pathname,filename));
+                    if(findstr(filename,'-lh'))
+                        hemi='lh';
+                    else
+                        hemi='rh';
+                    end;
+                    etc_render_fsbrain.overlay_value=ww;
+                    etc_render_fsbrain.overlay_vertex=vv;
+                    etc_render_fsbrain.stc_hemi=hemi;
+
+                    etc_render_fsbrain.overlay_flag_render=1;
+
+                end;
+                redraw;
+                    
             case 'o' %draw ROI....
                 if(isfield(etc_render_fsbrain,'flag_collect_vertex'))
                     etc_render_fsbrain.flag_collect_vertex=~etc_render_fsbrain.flag_collect_vertex;

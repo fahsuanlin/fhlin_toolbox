@@ -64,6 +64,8 @@ topo_exclude=[];
 topo_include_fstem='';
 topo_include=[];
 
+topo=[]; %topology structure; with "vertex", "face", "ch_names", "electrode_idx" 4 fields.
+
 %label (annotation)
 label_vertex=[];
 label_value=[];
@@ -96,6 +98,8 @@ for idx=1:length(varargin)/2
             vol_vertex=option_value;
         case 'vol_vertex_hemi'
             vol_vertex_hemi=option_value;
+        case 'topo'
+            topo=option_value;
         case 'topo_vertex'
             topo_vertex=option_value;
         case 'topo_flag_render'
@@ -407,6 +411,9 @@ etc_render_fsbrain.aux2_point_name_h=topo_aux2_point_name_h;
 
 etc_render_fsbrain.register_rotate_angle=3; %default: 3 degrees
 etc_render_fsbrain.register_translate_dist=1e-3; %default: 1 mm
+
+etc_render_fsbrain.topo=topo;
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 %setup call-back function

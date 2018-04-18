@@ -76,7 +76,7 @@ end;
 
 duration=[0.1 0.5 1 2 5 10 30];
 set(handles.listbox_time_duration,'string',{duration(:)});
-set(handles.listbox_time_duration,'value',4); %default: 5 s
+set(handles.listbox_time_duration,'value',5); %default: 5 s
 guidata(hObject, handles);
 
 
