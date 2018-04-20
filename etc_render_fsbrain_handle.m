@@ -803,10 +803,10 @@ if(~isempty(etc_render_fsbrain.vol_vox))
     fprintf('clicked surface voxel = [%1.1f %1.1f %1.1f]\n',etc_render_fsbrain.click_vertex_vox(1),etc_render_fsbrain.click_vertex_vox(2),etc_render_fsbrain.click_vertex_vox(3));
     fprintf('the closest voxel to the clicked surface voxel = [%d %d %d]\n',etc_render_fsbrain.click_vertex_vox_round(1),etc_render_fsbrain.click_vertex_vox_round(2),etc_render_fsbrain.click_vertex_vox_round(3));
     if(~isempty(etc_render_fsbrain.talxfm))
-        etc_render_fsbrain.click_vertex_point_tal=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol.vox2ras*[etc_render_fsbrain.click_vertex_vox 1].';
+        etc_render_fsbrain.click_vertex_point_tal=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*[etc_render_fsbrain.click_vertex_vox 1].';
         etc_render_fsbrain.click_vertex_point_tal=etc_render_fsbrain.click_vertex_point_tal(1:3)';
         fprintf('clicked surface voxel MNI305 coordinate = (%1.0f %1.0f %1.0f)\n',etc_render_fsbrain.click_vertex_point_tal(1),etc_render_fsbrain.click_vertex_point_tal(2),etc_render_fsbrain.click_vertex_point_tal(3));
-        etc_render_fsbrain.click_vertex_point_round_tal=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol.vox2ras*[etc_render_fsbrain.click_vertex_vox_round 1].';
+        etc_render_fsbrain.click_vertex_point_round_tal=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*[etc_render_fsbrain.click_vertex_vox_round 1].';
         etc_render_fsbrain.click_vertex_point_round_tal=etc_render_fsbrain.click_vertex_point_round_tal(1:3)';
         fprintf('the closest voxel to the clicked surface voxel MNI305 coordinate = (%1.0f %1.0f %1.0f)\n',etc_render_fsbrain.click_vertex_point_round_tal(1),etc_render_fsbrain.click_vertex_point_round_tal(2),etc_render_fsbrain.click_vertex_point_round_tal(3));
     end;
@@ -817,6 +817,7 @@ if(~isempty(etc_render_fsbrain.vol_vox))
         img_ax=squeeze(etc_render_fsbrain.vol.vol(round(etc_render_fsbrain.click_vertex_vox(2)),:,:));
         etc_render_fsbrain.vol_img=[img_cor img_ax; img_sag, zeros(size(img_cor))];
         imagesc(etc_render_fsbrain.vol_img);
+        set(gca,'pos',[0 0 1 1]);
         etc_render_fsbrain.vol_img_h=gca;
         axis off image; colormap(gray);
         if(~isempty(xlim)) set(etc_render_fsbrain.vol_img_h,'xlim',xlim); end;

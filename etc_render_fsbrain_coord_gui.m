@@ -253,7 +253,7 @@ function edit_mni_z_Callback(hObject, eventdata, handles)
 global etc_render_fsbrain;
 
 mni=[etc_render_fsbrain.click_vertex_point_tal(1) etc_render_fsbrain.click_vertex_point_tal(2)  str2double(get(hObject,'String')) 1]';
-click_vertex_vox=inv(etc_render_fsbrain.vol.vox2ras)*inv(etc_render_fsbrain.talxfm)*mni;
+click_vertex_vox=inv(etc_render_fsbrain.vol.vox2ras)*inv(etc_render_fsbrain.vol_pre_xfm)*inv(etc_render_fsbrain.talxfm)*mni;
 click_vertex_vox=click_vertex_vox(1:3)';
 
 surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[click_vertex_vox(:); 1];
@@ -291,7 +291,7 @@ function edit_mni_y_Callback(hObject, eventdata, handles)
 global etc_render_fsbrain;
 
 mni=[etc_render_fsbrain.click_vertex_point_tal(1) str2double(get(hObject,'String')) etc_render_fsbrain.click_vertex_point_tal(3) 1]';
-click_vertex_vox=inv(etc_render_fsbrain.vol.vox2ras)*inv(etc_render_fsbrain.talxfm)*mni;
+click_vertex_vox=inv(etc_render_fsbrain.vol.vox2ras)*inv(etc_render_fsbrain.vol_pre_xfm)*inv(etc_render_fsbrain.talxfm)*mni;
 click_vertex_vox=click_vertex_vox(1:3)';
 
 surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[click_vertex_vox(:); 1];
@@ -329,7 +329,7 @@ function edit_mni_x_Callback(hObject, eventdata, handles)
 global etc_render_fsbrain;
 
 mni=[str2double(get(hObject,'String')) etc_render_fsbrain.click_vertex_point_tal(2)  etc_render_fsbrain.click_vertex_point_tal(3) 1]';
-click_vertex_vox=inv(etc_render_fsbrain.vol.vox2ras)*inv(etc_render_fsbrain.talxfm)*mni;
+click_vertex_vox=inv(etc_render_fsbrain.vol.vox2ras)*inv(etc_render_fsbrain.vol_pre_xfm)*inv(etc_render_fsbrain.talxfm)*mni;
 click_vertex_vox=click_vertex_vox(1:3)';
 
 surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[click_vertex_vox(:); 1];
@@ -368,7 +368,7 @@ global etc_render_fsbrain;
 
 click_vertex_vox=[str2double(get(hObject,'String')) etc_render_fsbrain.click_vertex_vox(2)  etc_render_fsbrain.click_vertex_vox(3)];
 tmp=[click_vertex_vox 1]';
-mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol.vox2ras*tmp;
+mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*tmp;
 mni=min(1:3)';
 
 surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[click_vertex_vox(:); 1];
@@ -407,7 +407,7 @@ global etc_render_fsbrain;
 
 click_vertex_vox=[etc_render_fsbrain.click_vertex_vox(1)  str2double(get(hObject,'String')) etc_render_fsbrain.click_vertex_vox(3)];
 tmp=[click_vertex_vox 1]';
-mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol.vox2ras*tmp;
+mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*tmp;
 mni=min(1:3)';
 
 surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[click_vertex_vox(:); 1];
@@ -446,7 +446,7 @@ global etc_render_fsbrain;
 
 click_vertex_vox=[etc_render_fsbrain.click_vertex_vox(1) etc_render_fsbrain.click_vertex_vox(2) str2double(get(hObject,'String'))];
 tmp=[click_vertex_vox 1]';
-mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol.vox2ras*tmp;
+mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*tmp;
 mni=min(1:3)';
 
 surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[click_vertex_vox(:); 1];

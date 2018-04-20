@@ -21,6 +21,7 @@ hemi='lh'; %hemi={'lh','rh'}; for showing both hemispheres;
 curv=[];
 vol=[];
 vol_vox=[];
+vol_pre_xfm=eye(4);
 talxfm=[];
 
 %color 
@@ -104,6 +105,8 @@ for idx=1:length(varargin)/2
             surf=option_value;
         case 'vol'
             vol=option_value;
+        case 'vol_pre_xfm'
+            vol_pre_xfm=option_value;
         case 'talxfm'
             talxfm=option_value;
         case 'flag_curv'
@@ -500,6 +503,7 @@ etc_render_fsbrain.brain_axis=gca;
 
 etc_render_fsbrain.vol=vol;
 etc_render_fsbrain.vol_vox=vol_vox;
+etc_render_fsbrain.vol_pre_xfm=vol_pre_xfm;
 etc_render_fsbrain.talxfm=talxfm;
 etc_render_fsbrain.faces=faces;
 etc_render_fsbrain.vertex_coords=vertex_coords;
