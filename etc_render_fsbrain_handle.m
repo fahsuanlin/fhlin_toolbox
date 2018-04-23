@@ -538,7 +538,7 @@ switch lower(param)
             tmp=ceil([xx(1)./mm, xx(2)./mm]);
            
             if(min(tmp(:))>=1&max(tmp(:))<=2)
-                ind=sub2ind([2 2],tmp(1),tmp(2))
+                ind=sub2ind([2 2],tmp(1),tmp(2));
                 
                 
                 vox=etc_render_fsbrain.click_vertex_vox;
