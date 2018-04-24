@@ -816,11 +816,20 @@ if(~isempty(etc_render_fsbrain.vol_vox))
         etc_render_fsbrain.click_vertex_point_round_tal=etc_render_fsbrain.click_vertex_point_round_tal(1:3)';
         fprintf('the closest voxel to the clicked surface voxel MNI305 coordinate = (%1.0f %1.0f %1.0f)\n',etc_render_fsbrain.click_vertex_point_round_tal(1),etc_render_fsbrain.click_vertex_point_round_tal(2),etc_render_fsbrain.click_vertex_point_round_tal(3));
     end;
-    clf;
     try
         img_cor=squeeze(etc_render_fsbrain.vol.vol(:,:,round(etc_render_fsbrain.click_vertex_vox(3))));
         img_sag=squeeze(etc_render_fsbrain.vol.vol(:,round(etc_render_fsbrain.click_vertex_vox(1)),:));
         img_ax=squeeze(etc_render_fsbrain.vol.vol(round(etc_render_fsbrain.click_vertex_vox(2)),:,:));
+        
+        if(~isempty(etc_render_fsbrain.overlay_vol))
+            img_cor_overlay=squeeze(etc_render_fsbrain.overlay_vol.vol(:,:,round(etc_render_fsbrain.click_vertex_vox(3))));
+            img_sag_overlay=squeeze(etc_render_fsbrain.overlay_vol.vol(:,round(etc_render_fsbrain.click_vertex_vox(1)),:));
+            img_ax_overlay=squeeze(etc_render_fsbrain.overlay_vol.vol(round(etc_render_fsbrain.click_vertex_vox(2)),:,:));
+        else
+            img_cor_overlay=[];
+            img_ax_overlay=[];
+            img_sag_overlay=[];
+        end;
         
         [zz,xx,yy]=size(etc_render_fsbrain.vol.vol);
         mm=max([zz yy xx]);
@@ -829,6 +838,13 @@ if(~isempty(etc_render_fsbrain.vol_vox))
             n2=mm-zz-n1;
             img_cor=cat(1,zeros(n1,size(img_cor,2)),img_cor,zeros(n2,size(img_cor,2)));
             img_sag=cat(1,zeros(n1,size(img_sag,2)),img_sag,zeros(n2,size(img_sag,2)));
+            
+            if(~isempty(img_cor_overlay))
+                img_cor_overlay=cat(1,zeros(n1,size(img_cor_overlay,2)),img_cor_overlay,zeros(n2,size(img_cor_overlay,2)));
+            end;
+            if(~isempty(img_sag_overlay))
+                img_sag_overlay=cat(1,zeros(n1,size(img_sag_overlay,2)),img_sag_overlay,zeros(n2,size(img_sag_overlay,2)));
+            end;
             
             etc_render_fsbrain.img_cor_pady=n1;
             etc_render_fsbrain.img_sag_pady=n1;
@@ -843,30 +859,76 @@ if(~isempty(etc_render_fsbrain.vol_vox))
             img_sag=cat(2,zeros(size(img_sag,1),n1),img_sag,zeros(size(img_sag,1),n2));
             img_ax=cat(2,zeros(size(img_ax,1),n1),img_ax,zeros(size(img_ax,1),n2));
             
+            if(~isempty(img_sag_overlay))
+                img_sag_overlay=cat(2,zeros(size(img_sag_overlay,1),n1),img_sag_overlay,zeros(size(img_sag_overlay,1),n2));
+            end;
+            if(~isempty(img_ax_overlay))
+                img_ax_overlay=cat(2,zeros(size(img_ax_overlay,1),n1),img_ax_overlay,zeros(size(img_ax_overlay,1),n2));
+            end;
+            
             etc_render_fsbrain.img_sag_padx=n1;
             etc_render_fsbrain.img_ax_padx=n1;
         else
             etc_render_fsbrain.img_sag_padx=0;
             etc_render_fsbrain.img_ax_padx=0;
         end;
+        
         if(xx<mm)
             n1=floor((mm-xx)/2);
             n2=mm-xx-n1;
             img_cor=cat(2,zeros(size(img_cor,1),n1),img_cor,zeros(size(img_cor,1),n2));
             img_ax=cat(1,zeros(n1,size(img_ax,2)),img_ax,zeros(n2,size(img_ax,2)));
             
+            if(~isempty(img_cor_overlay))
+                img_cor_overlay=cat(2,zeros(size(img_cor_overlay,1),n1),img_cor_overlay,zeros(size(img_cor_overlay,1),n2));
+            end;
+            if(~isempty(img_ax_overlay))
+                img_ax_overlay=cat(1,zeros(n1,size(img_ax_overlay,2)),img_ax_overlay,zeros(n2,size(img_ax_overlay,2)));
+            end;
+            
             etc_render_fsbrain.img_cor_padx=n1;
             etc_render_fsbrain.img_ax_pady=n1;
+            
         else
             etc_render_fsbrain.img_cor_padx=0;
             etc_render_fsbrain.img_ax_pady=0;            
         end;
             
         etc_render_fsbrain.vol_img=[img_cor img_ax; img_sag, zeros(size(img_cor))];
-        imagesc(etc_render_fsbrain.vol_img);
+        if(~isempty(etc_render_fsbrain.overlay_vol))
+            etc_render_fsbrain.overlay_vol_img=[img_cor_overlay img_ax_overlay; img_sag_overlay, zeros(size(img_cor_overlay))];
+        else
+            etc_render_fsbrain.overlay_vol_img=[];
+        end;
+        
+        if(~isempty(etc_render_fsbrain.overlay_vol))
+            etc_render_fsbrain.overlay_vol_img(find(etc_render_fsbrain.overlay_vol_img>max(etc_render_fsbrain.overlay_threshold)))=max(etc_render_fsbrain.overlay_threshold);
+            
+            idx_scale=find(etc_render_fsbrain.overlay_vol_img>=(min(etc_render_fsbrain.overlay_threshold)+eps));
+            idx_replace=find(etc_render_fsbrain.overlay_vol_img<min(etc_render_fsbrain.overlay_threshold));
+            
+            
+            img_depth=128;				%default: 128 gray level underlay
+            overlay_depth=128;		    %default: 128 color level overlay
+
+            %overlay(idx_scale)=  (overlay_depth-1) * (overlay(idx_scale) - fmri_overlay_min)/ (fmri_overlay_max-fmri_overlay_min) + (img_depth+1);
+            etc_render_fsbrain.overlay_vol_img(idx_scale)=fmri_scale(etc_render_fsbrain.overlay_vol_img(idx_scale),overlay_depth+img_depth,img_depth+eps);           
+            etc_render_fsbrain.overlay_vol_img(idx_replace)=fmri_scale(etc_render_fsbrain.vol_img(idx_replace),img_depth,0);
+
+            etc_render_fsbrain.overlay_vol_img_cmap(1:img_depth,:) =gray(img_depth);
+            etc_render_fsbrain.overlay_vol_img_cmap(img_depth+1:img_depth+overlay_depth,:) = autumn(overlay_depth);
+        else
+            etc_render_fsbrain.overlay_vol_img=etc_render_fsbrain.vol_img;
+            etc_render_fsbrain.overlay_vol_img_cmap=gray(64);
+        end;
+
+        clf;
+        %imagesc(etc_render_fsbrain.vol_img);
+        image(etc_render_fsbrain.overlay_vol_img);
+        colormap(etc_render_fsbrain.overlay_vol_img_cmap);
         set(gca,'pos',[0 0 1 1]);
         etc_render_fsbrain.vol_img_h=gca;
-        axis off image; colormap(gray);
+        axis off image;
         if(~isempty(xlim)) set(etc_render_fsbrain.vol_img_h,'xlim',xlim); end;
         if(~isempty(ylim)) set(etc_render_fsbrain.vol_img_h,'ylim',ylim); end;
         
@@ -952,34 +1014,39 @@ end;
 
 %overlay
 if(~isempty(etc_render_fsbrain.overlay_vertex))
-    if(~iscell(etc_render_fsbrain.overlay_vertex))
-        vv=etc_render_fsbrain.vertex_coords;
-        vv=vv(etc_render_fsbrain.overlay_vertex+1,:);
-    else
-        vv=[];
-        for h_idx=1:length(etc_render_fsbrain.overlay_vertex)
-            tmp=etc_render_fsbrain.vertex_coords_hemi{h_idx}(etc_render_fsbrain.overlay_vertex{h_idx}+1,:);
-            %tmp(:,1)=tmp(:,1)+(-1).^(h_idx).*50;
-            vv=cat(1,vv,tmp);
-        end;
-    end;
-    dist=sqrt(sum((vv-repmat([pt(1),pt(2),pt(3)],[size(vv,1),1])).^2,2));
-    [min_overlay_dist,min_overlay_dist_idx]=min(dist);
-    if(~iscell(etc_render_fsbrain.overlay_vertex))
-        fprintf('the nearest overlay vertex: location=[%d]::<%2.2f> (%2.2f %2.2f %2.2f) \n',min_overlay_dist_idx,etc_render_fsbrain.overlay_value(min_overlay_dist_idx),vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3));
-    else
-        if(min_overlay_dist_idx>length(etc_render_fsbrain.overlay_vertex{1}))
-            offset=length(etc_render_fsbrain.overlay_vertex{1});
-            hemi_idx=2;
+    try
+        figure(etc_render_fsbrain.fig_brain);
+        
+        if(~iscell(etc_render_fsbrain.overlay_vertex))
+            vv=etc_render_fsbrain.vertex_coords;
+            vv=vv(etc_render_fsbrain.overlay_vertex+1,:);
         else
-            offset=0;
-            hemi_idx=1;
+            vv=[];
+            for h_idx=1:length(etc_render_fsbrain.overlay_vertex)
+                tmp=etc_render_fsbrain.vertex_coords_hemi{h_idx}(etc_render_fsbrain.overlay_vertex{h_idx}+1,:);
+                %tmp(:,1)=tmp(:,1)+(-1).^(h_idx).*50;
+                vv=cat(1,vv,tmp);
+            end;
         end;
-        fprintf('the nearest overlay vertex: hemi{%d} location=[%d]::<%2.2f> @ (%2.2f %2.2f %2.2f) \n',hemi_idx,min_overlay_dist_idx-offset,etc_render_fsbrain.overlay_value{hemi_idx}(min_overlay_dist_idx-offset),vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3));
+        dist=sqrt(sum((vv-repmat([pt(1),pt(2),pt(3)],[size(vv,1),1])).^2,2));
+        [min_overlay_dist,min_overlay_dist_idx]=min(dist);
+        if(~iscell(etc_render_fsbrain.overlay_vertex))
+            fprintf('the nearest overlay vertex: location=[%d]::<%2.2f> (%2.2f %2.2f %2.2f) \n',min_overlay_dist_idx,etc_render_fsbrain.overlay_value(min_overlay_dist_idx),vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3));
+        else
+            if(min_overlay_dist_idx>length(etc_render_fsbrain.overlay_vertex{1}))
+                offset=length(etc_render_fsbrain.overlay_vertex{1});
+                hemi_idx=2;
+            else
+                offset=0;
+                hemi_idx=1;
+            end;
+            fprintf('the nearest overlay vertex: hemi{%d} location=[%d]::<%2.2f> @ (%2.2f %2.2f %2.2f) \n',hemi_idx,min_overlay_dist_idx-offset,etc_render_fsbrain.overlay_value{hemi_idx}(min_overlay_dist_idx-offset),vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3));
+        end;
+        etc_render_fsbrain.click_overlay_vertex=min_overlay_dist_idx;
+        etc_render_fsbrain.click_overlay_vertex_point=plot3(vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3),'.');
+        set(etc_render_fsbrain.click_overlay_vertex_point,'color',[0 1 0]);
+    catch ME
     end;
-    etc_render_fsbrain.click_overlay_vertex=min_overlay_dist_idx;
-    etc_render_fsbrain.click_overlay_vertex_point=plot3(vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3),'.');
-    set(etc_render_fsbrain.click_overlay_vertex_point,'color',[0 1 0]);
 else
     etc_render_fsbrain.click_overlay_vertex=[];
     etc_render_fsbrain.click_overlay_vertex_point=[];

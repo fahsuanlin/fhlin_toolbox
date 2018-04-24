@@ -35,6 +35,7 @@ overlay_cmap_neg=winter(80); %overlay colormap;
 overlay_cmap_neg(:,3)=1;
 
 %overlay
+overlay_vol=[];
 overlay_value=[];
 overlay_stc=[];
 overlay_aux_stc=[];
@@ -117,6 +118,8 @@ for idx=1:length(varargin)/2
             curv_pos_color=option_value;
         case 'curv_neg_color'
             curv_neg_color=option_value;
+        case 'overlay_vol'
+            overlay_vol=option_value;
         case 'overlay_flag_render'
             overlay_flag_render=option_value;
         case 'overlay_value'
@@ -536,6 +539,7 @@ etc_render_fsbrain.fig_vol=[];
 etc_render_fsbrain.fig_coord_gui=[];
 etc_render_fsbrain.fig_label_gui=[];
 
+etc_render_fsbrain.overlay_vol=overlay_vol;
 etc_render_fsbrain.overlay_value=overlay_value;
 etc_render_fsbrain.overlay_stc=overlay_stc;
 etc_render_fsbrain.overlay_aux_stc=overlay_aux_stc;
