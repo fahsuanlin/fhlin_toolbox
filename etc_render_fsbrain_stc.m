@@ -10,6 +10,7 @@ time_idx=1;
 flag_colorbar=1;
 flag_overlay_pos_only=0;
 flag_overlay_neg_only=0;
+flag_1minus=0;
 overlay_exclude_fstem='';
 overlay_smooth=5;
 overlay_value=[];
@@ -55,6 +56,8 @@ for idx=1:length(varargin)/2
             flag_colorbar=option_value;
         case 'flag_curv'
             flag_curv=option_value;
+        case 'flag_1minus'
+            flag_1minus=option_value;
         case 'time_idx'
             time_idx=option_value;
         case 'surf'
@@ -107,6 +110,11 @@ end;
         
         v_lh=overlay_vertex{1};
         v_rh=overlay_vertex{2};
+    end;
+    
+    if(flag_1minus)
+        stc_lh=1-stc_lh;
+        stc_rh=1-stc_rh;
     end;
     
     if(flag_overlay_neg_only)

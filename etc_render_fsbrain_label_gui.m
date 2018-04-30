@@ -95,35 +95,38 @@ function listbox_label_Callback(hObject, eventdata, handles)
 
 
 global etc_render_fsbrain;
-if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
-    contents = cellstr(get(hObject,'String'));
-    select_idx=get(hObject,'Value');
-    
-    try
-        label_number=etc_render_fsbrain.label_ctab.table(select_idx,5);
-        vidx=find(etc_render_fsbrain.label_value==label_number);
-        figure(etc_render_fsbrain.fig_brain);
+try
+    if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
+        contents = cellstr(get(hObject,'String'));
+        select_idx=get(hObject,'Value');
         
-        if(~isempty(etc_render_fsbrain.label_h))
-            delete(etc_render_fsbrain.label_h);
-            etc_render_fsbrain.label_h=[];
-            etc_render_fsbrain.label_idx=[];
-        else
-            etc_render_fsbrain.label_idx=vidx;
+        try
+            label_number=etc_render_fsbrain.label_ctab.table(select_idx,5);
+            vidx=find(etc_render_fsbrain.label_value==label_number);
+            figure(etc_render_fsbrain.fig_brain);
+            
+            if(~isempty(etc_render_fsbrain.label_h))
+                delete(etc_render_fsbrain.label_h);
+                etc_render_fsbrain.label_h=[];
+                etc_render_fsbrain.label_idx=[];
+            else
+                etc_render_fsbrain.label_idx=vidx;
+            end;
+            
+            if(etc_render_fsbrain.label_select_idx~=select_idx)
+                etc_render_fsbrain.label_h=plot3(etc_render_fsbrain.vertex_coords(vidx,1),etc_render_fsbrain.vertex_coords(vidx,2),etc_render_fsbrain.vertex_coords(vidx,3),'.');
+                cc=etc_render_fsbrain.label_ctab.table(select_idx,1:3)./255;
+                set(etc_render_fsbrain.label_h,'color',cc);
+                etc_render_fsbrain.label_select_idx=select_idx;
+            else
+                etc_render_fsbrain.label_select_idx=-1;
+            end;
+            figure(etc_render_fsbrain.fig_label_gui);
+            
+        catch ME
         end;
-        
-        if(etc_render_fsbrain.label_select_idx~=select_idx)
-            etc_render_fsbrain.label_h=plot3(etc_render_fsbrain.vertex_coords(vidx,1),etc_render_fsbrain.vertex_coords(vidx,2),etc_render_fsbrain.vertex_coords(vidx,3),'.');
-            cc=etc_render_fsbrain.label_ctab.table(select_idx,1:3)./255;
-            set(etc_render_fsbrain.label_h,'color',cc);
-            etc_render_fsbrain.label_select_idx=select_idx;
-        else
-            etc_render_fsbrain.label_select_idx=-1;
-        end;
-        figure(etc_render_fsbrain.fig_label_gui);
-       
-    catch ME
     end;
+catch ME
 end;
 
 % --- Executes during object creation, after setting all properties.
