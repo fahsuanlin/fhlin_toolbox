@@ -919,7 +919,7 @@ if(~isempty(etc_render_fsbrain.vol_vox))
             etc_render_fsbrain.overlay_vol_img_cmap(img_depth+1:img_depth+overlay_depth,:) = autumn(overlay_depth);
         else
             etc_render_fsbrain.overlay_vol_img=etc_render_fsbrain.vol_img;
-            etc_render_fsbrain.overlay_vol_img_cmap=gray(64);
+            etc_render_fsbrain.overlay_vol_img_cmap=gray(max(etc_render_fsbrain.vol_img(:)));
         end;
 
         clf;
