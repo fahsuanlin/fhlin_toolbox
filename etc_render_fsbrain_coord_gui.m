@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_coord_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_coord_gui
 
-% Last Modified by GUIDE v2.5 11-Dec-2017 22:40:19
+% Last Modified by GUIDE v2.5 01-May-2018 19:59:25
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -727,3 +727,20 @@ function edit_surf_z_round_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on mouse press over figure background.
+function figure1_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes when user attempts to close figure1.
+function figure1_CloseRequestFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: delete(hObject) closes the figure
+delete(hObject);

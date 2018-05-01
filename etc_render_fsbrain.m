@@ -580,6 +580,8 @@ etc_render_fsbrain.roi_radius=[];
 
 etc_render_fsbrain.cluster_file=cluster_file;
 
+etc_render_fsbrain.fig_register=[];
+
 etc_render_fsbrain.aux(1).data=topo_label;
 etc_render_fsbrain.aux(1).tag='topo_label';
 etc_render_fsbrain.aux_point_coords=topo_aux_point_coords;
@@ -599,6 +601,8 @@ etc_render_fsbrain.register_translate_dist=1e-3; %default: 1 mm
 %setup call-back function
 %%%%%%%%%%%%%%%%%%%%%%%%
 set(gcf,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
+set(gcf,'DeleteFcn','etc_render_fsbrain_handle(''del'')');
+
 %set(gcf,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
 set(gcf,'KeyPressFcn',@etc_render_fsbrain_kbhandle);
 set(gcf,'invert','off');

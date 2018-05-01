@@ -523,6 +523,16 @@ switch lower(param)
             otherwise
                 %fprintf('pressed [%c]!\n',cc);
         end;
+    case 'del'
+        try
+            delete(etc_render_fsbrain.fig_register);
+            delete(etc_render_fsbrain.fig_stc);
+            delete(etc_render_fsbrain.fig_coord_gui);
+            delete(etc_render_fsbrain.fig_gui);           
+            delete(etc_render_fsbrain.fig_vol);
+            delete(etc_render_fsbrain.fig_brain);           
+        catch ME
+        end;
     case 'bd'
         if(gcf==etc_render_fsbrain.fig_brain)
             draw_pointer;
