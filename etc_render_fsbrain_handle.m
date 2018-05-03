@@ -563,8 +563,8 @@ switch lower(param)
                         v=[];
                 end;
                 if(~isempty(v))
-                    %surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[v(:); 1];
-                    surface_coord=etc_render_fsbrain.vol.vox2ras*[v(:); 1];
+                    %surface_coord=etc_render_fsbrain.vol.vox2ras*[v(:); 1];
+                    surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[v(:); 1];
                     surface_coord=surface_coord(1:3);
                     click_vertex_vox=v;
                     
@@ -820,9 +820,11 @@ if(~isempty(etc_render_fsbrain.vol_vox))
     fprintf('the closest voxel to the clicked surface voxel = [%d %d %d]\n',etc_render_fsbrain.click_vertex_vox_round(1),etc_render_fsbrain.click_vertex_vox_round(2),etc_render_fsbrain.click_vertex_vox_round(3));
     if(~isempty(etc_render_fsbrain.talxfm))
         etc_render_fsbrain.click_vertex_point_tal=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*[etc_render_fsbrain.click_vertex_vox 1].';
+        %etc_render_fsbrain.click_vertex_point_tal=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.tkrvox2ras*[etc_render_fsbrain.click_vertex_vox 1].';
         etc_render_fsbrain.click_vertex_point_tal=etc_render_fsbrain.click_vertex_point_tal(1:3)';
         fprintf('clicked surface voxel MNI305 coordinate = (%1.0f %1.0f %1.0f)\n',etc_render_fsbrain.click_vertex_point_tal(1),etc_render_fsbrain.click_vertex_point_tal(2),etc_render_fsbrain.click_vertex_point_tal(3));
         etc_render_fsbrain.click_vertex_point_round_tal=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*[etc_render_fsbrain.click_vertex_vox_round 1].';
+        %etc_render_fsbrain.click_vertex_point_round_tal=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.tkrvox2ras*[etc_render_fsbrain.click_vertex_vox_round 1].';
         etc_render_fsbrain.click_vertex_point_round_tal=etc_render_fsbrain.click_vertex_point_round_tal(1:3)';
         fprintf('the closest voxel to the clicked surface voxel MNI305 coordinate = (%1.0f %1.0f %1.0f)\n',etc_render_fsbrain.click_vertex_point_round_tal(1),etc_render_fsbrain.click_vertex_point_round_tal(2),etc_render_fsbrain.click_vertex_point_round_tal(3));
     end;
