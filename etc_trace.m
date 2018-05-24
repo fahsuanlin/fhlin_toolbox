@@ -14,6 +14,7 @@ ch_names={};
 topo=[]; %topology structure; with "vertex", "face", "ch_names", "electrode_idx" 4 fields.
 flag_mark=0;
 
+select=[];
 montage=[];
 scaling=[];
 
@@ -37,8 +38,14 @@ for i=1:length(varargin)/2
             aux_data=option_value;
         case 'flag_mark'
             flag_mark=option_value;
+        case 'select'
+            select=option_value;
+        case 'select_name'
+            select_name=option_value;
         case 'montage'
             montage=option_value;
+        case 'montage_name'
+            montage_name=option_value;
         case 'scaling'
             scaling=option_value;
         case 'topo'
@@ -79,9 +86,19 @@ etc_trace_obj.ch_names=ch_names;
 
 if(isempty(montage))
     montage=eye(size(data,1));
+    montage_name='orig';
 end;
-etc_trace_obj.montage=[montage, zeros(size(montage,1),1)
+etc_trace_obj.montage{1}=[montage, zeros(size(montage,1),1)
                        zeros(1,size(montage,2)), 1];
+etc_trace_obj.montage_name{1}=montage_name;        
+                   
+if(isempty(select))
+    select=eye(size(data,1));
+    select_name='all';
+end;
+etc_trace_obj.select{1}=[select, zeros(size(select,1),1)
+                       zeros(1,size(select,2)), 1];
+etc_trace_obj.select_name{1}=select_name;        
                    
 if(isempty(scaling))
     scaling=eye(size(data,1));

@@ -192,7 +192,7 @@ switch lower(param)
                 set(etc_trace_obj.fig_montage_listbox,'Name','montages');
                 set(etc_trace_obj.fig_montage_listbox,'Resize','off');
                 
-                etc_trace_obj.fig_montage_listbox=uicontrol('Style', 'listbox','Position',[1 1 200 200],'string',etc_trace_obj.montage_name,'Callback',@etc_trace_montage_listbox_callback);
+                etc_trace_obj.montage_listbox=uicontrol('Style', 'listbox','Position',[1 1 200 200],'string',etc_trace_obj.montage_name(:),'Callback',@etc_trace_montage_listbox_callback);
                 
 %                 if(isfield(etc_trace_obj,'trace_selected_idx'))
 %                     if(~isempty(etc_trace_obj.trace_selected_idx))
@@ -395,10 +395,14 @@ end;
 tmp=etc_trace_obj.data(:,etc_trace_obj.time_begin_idx:etc_trace_obj.time_end_idx);
 tmp=cat(1,tmp,ones(1,size(tmp,2)));
 
-%montage;
+%select channels;
+tmp=etc_trace_obj.select*tmp;
+
+
+%montage channels;
 tmp=etc_trace_obj.montage*tmp;
 
-%scaling
+%scaling channels;
 s=diag(etc_trace_obj.scaling);
 s=s(1:end-1);
 if(isfield(etc_trace_obj,'trace_selected_idx'))
@@ -552,11 +556,11 @@ function etc_trace_montage_listbox_callback(hObj,event)
 
 global etc_trace_obj;
 
-Index=get(hObj,'value');
-fprintf('[%s] selected in the list box\n',etc_trace_obj.ch_names{Index});
-etc_trace_obj.trace_selected_idx=Index;
+%Index=get(hObj,'value');
+%fprintf('[%s] selected in the list box\n',etc_trace_obj.ch_names{Index});
+%etc_trace_obj.trace_selected_idx=Index;
 
-redraw;
+%redraw;
 
 return;
 
