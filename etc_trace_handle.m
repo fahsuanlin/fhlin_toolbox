@@ -36,6 +36,7 @@ switch lower(param)
         try
             delete(etc_trace_obj.fig_topology);
             delete(etc_trace_obj.fig_trigger);
+            delete(etc_trace_obj.fig_montage);
             delete(etc_trace_obj.fig_trace);
         catch ME
         end;
@@ -196,21 +197,17 @@ switch lower(param)
                 else
                 end;
             case 'm' %a list box of montages
-                if(isfield(etc_trace_obj,'fig_montage_listbox'))
-                    if(isvalid(etc_trace_obj.fig_montage_listbox))
-                        
-                        figure(etc_trace_obj.fig_montage_listbox)
-                    else
-                        etc_trace_obj.fig_montage_listbox = figure('Visible','off');
-                    end;
+                if(isvalid(etc_trace_obj.fig_montage))
+                    
+                    figure(etc_trace_obj.fig_montage)
                 else
-                    etc_trace_obj.fig_montage_listbox = figure('Visible','off');
+                    etc_trace_obj.fig_montage = etc_trace_montage_gui;
                 end;
-                set(etc_trace_obj.fig_montage_listbox,'pos',[200 600 200 200]);
-                set(etc_trace_obj.fig_montage_listbox,'Name','montages');
-                set(etc_trace_obj.fig_montage_listbox,'Resize','off');
                 
-                etc_trace_obj.montage_listbox=uicontrol('Style', 'listbox','Position',[1 1 200 200],'string',etc_trace_obj.montage_name(:),'Callback',@etc_trace_montage_listbox_callback);
+                set(etc_trace_obj.fig_montage,'Name','montages');
+                set(etc_trace_obj.fig_montage,'Resize','off');
+                
+%                etc_trace_obj.montage_listbox=uicontrol('Style', 'listbox','Position',[1 1 200 200],'string',etc_trace_obj.montage_name(:),'Callback',@etc_trace_montage_listbox_callback);
                 
 %                 if(isfield(etc_trace_obj,'trace_selected_idx'))
 %                     if(~isempty(etc_trace_obj.trace_selected_idx))
@@ -222,7 +219,7 @@ switch lower(param)
 %                     etc_trace_obj.electrode_listbox=uicontrol('Style', 'listbox','Position',[1 1 200 200],'string',etc_trace_obj.ch_names,'Callback',@etc_trace_electrode_listbox_callback);
 %                 end;
                 
-                set(etc_trace_obj.fig_montage_listbox, 'Visible','on');                
+                set(etc_trace_obj.fig_montage, 'Visible','on');                
                 
             case 'l' %a list box of all electrodes
                 if(isfield(etc_trace_obj,'fig_electrode_listbox'))
@@ -252,21 +249,27 @@ switch lower(param)
                 set(etc_trace_obj.fig_electrode_listbox, 'Visible','on');
                 
             case 'd' %change overlay threshold or time course limits
+%                 etc_trace_obj.trace_selected_idx
+%                 if(~isempty(etc_trace_obj.trace_selected_idx))
+%                     fprintf('change threshold for [%s]...\n',etc_trace_obj.ch_names{etc_trace_obj.trace_selected_idx});
+%                 else
+%                     fprintf('changel threshold for all electrodes...\n');
+%                 end;
+                
                 if(isfield(etc_trace_obj,'trace_selected_idx'))
                     if(~isempty(etc_trace_obj.trace_selected_idx))
-                        if(~isfield(etc_trace_obj,'ylim_single'))
-                            etc_trace_obj.ylim_single=etc_trace_obj.ylim;
-                        end;
-                        fprintf('change y limits for a single channel...\n');
-                        if(isempty(etc_trace_obj.ylim_single))
-                            etc_trace_obj.ylim_single=get(gca,'ylim');
-                        end;
-                        fprintf('current limits = %s\n',mat2str(etc_trace_obj.ylim_single));
-                        def={num2str(etc_trace_obj.ylim_single)};
-                        answer=inputdlg('change limits for a single channel',sprintf('current threshold = %s',mat2str(etc_trace_obj.ylim)),1,def);
+                        fprintf('change y limits for [%s]...\n',etc_trace_obj.ch_names{etc_trace_obj.trace_selected_idx});
+                        ss=diag(etc_trace_obj.scaling{etc_trace_obj.montage_idx});
+                        ss=ss(1:end-1);
+                        fprintf('current limits = %s\n',mat2str(etc_trace_obj.ylim./ss(etc_trace_obj.trace_selected_idx)));
+                        def={num2str(etc_trace_obj.ylim./ss(etc_trace_obj.trace_selected_idx))};
+                        answer=inputdlg(sprintf('change limits for [%s]',etc_trace_obj.ch_names{etc_trace_obj.trace_selected_idx}),sprintf('current threshold = %s',mat2str(etc_trace_obj.ylim)),1,def);
                         if(~isempty(answer))
-                            etc_trace_obj.ylim_single=str2num(answer{1});
-                            fprintf('updated time course limits = %s\n',mat2str(etc_trace_obj.ylim_single));
+                            nn=str2num(answer{1});
+                            ss=abs(diff(etc_trace_obj.ylim))./abs(diff(nn));
+                            etc_trace_obj.scaling{etc_trace_obj.montage_idx}(etc_trace_obj.trace_selected_idx,etc_trace_obj.trace_selected_idx)=ss;
+                            fprintf('updated time course limits = %s\n',mat2str(etc_trace_obj.ylim.*ss));
+                            
                             redraw;
                         end;
                     else
@@ -407,9 +410,6 @@ etc_trace_obj.axis_trace=tmp(end);
 cla(etc_trace_obj.axis_trace);
 
 %plot trace
-% tmp=bsxfun(@plus, etc_trace_obj.data(:,etc_trace_obj.time_begin_idx:etc_trace_obj.time_end_idx)', diff(sort(etc_trace_obj.ylim)).*[0:size(etc_trace_obj.data,1)-1]);
-% h=plot(etc_trace_obj.axis_trace, tmp,'color',[0    0.4470    0.7410]);
-
 if(isfield(etc_trace_obj,'aux_data'))
     if(~isempty(etc_trace_obj.aux_data))
         for ii=1:length(etc_trace_obj.aux_data)
@@ -434,21 +434,11 @@ tmp=cat(1,tmp,ones(1,size(tmp,2)));
 %select channels;
 tmp=etc_trace_obj.select*tmp;
 
-
 %montage channels;
-tmp=etc_trace_obj.montage{etc_trace_obj.montage_idx}*tmp;
+tmp=etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix*tmp;
 
 %scaling channels;
-s=diag(etc_trace_obj.scaling);
-s=s(1:end-1);
-if(isfield(etc_trace_obj,'trace_selected_idx'))
-    if(~isempty(etc_trace_obj.trace_selected_idx))
-        s(etc_trace_obj.trace_selected_idx)=abs(diff(etc_trace_obj.ylim))./abs(diff(etc_trace_obj.ylim_single));
-    end;
-end;
-s(end+1)=1;
-etc_trace_obj.scaling=diag(s);
-tmp=etc_trace_obj.scaling*tmp;
+tmp=etc_trace_obj.scaling{etc_trace_obj.montage_idx}*tmp;
 
 %vertical shift for display 
 S=eye(size(tmp,1));
@@ -461,7 +451,33 @@ tmp=S*tmp;
 tmp=tmp(1:end-1,:);
 tmp=tmp';
 hh=plot(etc_trace_obj.axis_trace, tmp,'color',[0    0.4470    0.7410]);
-for idx=1:length(hh) set(hh(idx),'tag',etc_trace_obj.ch_names{idx}); end;
+%assign a tag for each trace
+for idx=1:length(hh) 
+    m=etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix(idx,:);
+    ii=find(m>eps);
+    if(~isempty(ii))
+        ss=etc_trace_obj.ch_names{ii(1)};
+        if(length(ii)>1)
+            for ii_idx=2:length(ii)
+                ss=sprintf('%s+%1.0f%s',ss,m(ii(ii_idx)),etc_trace_obj.ch_names{ii(ii_idx)});
+            end;
+        end;
+    end;
+    
+    ii=find(-m>eps);
+    if(~isempty(ii))
+        ss=sprintf('%s%1.0f%s',ss,m(ii(1)),etc_trace_obj.ch_names{ii(1)});
+        if(length(ii)>1)
+            for ii_idx=2:length(ii)
+                ss=sprintf('%s-%1.0f%s',ss,-m(ii(ii_idx)),etc_trace_obj.ch_names{ii(ii_idx)});
+            end;
+        end;
+    end;
+    etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names{idx}=ss;
+    %set(hh(idx),'tag',etc_trace_obj.ch_names{idx}); 
+    set(hh(idx),'tag',ss); 
+end;
+set(hh,'ButtonDownFcn',@etc_trace_callback);
 
 %highlight selected trace
 if(isfield(etc_trace_obj,'trace_selected_idx'))
@@ -481,17 +497,19 @@ if(isfield(etc_trace_obj,'trace_selected_idx'))
 else
 end;
 
-set(etc_trace_obj.axis_trace,'ylim',[min(etc_trace_obj.ylim) min(etc_trace_obj.ylim)+size(etc_trace_obj.data,1)*diff(sort(etc_trace_obj.ylim))]);
+%set(etc_trace_obj.axis_trace,'ylim',[min(etc_trace_obj.ylim) min(etc_trace_obj.ylim)+size(etc_trace_obj.data,1)*diff(sort(etc_trace_obj.ylim))]);
+set(etc_trace_obj.axis_trace,'ylim',[min(etc_trace_obj.ylim) min(etc_trace_obj.ylim)+(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-1)*diff(sort(etc_trace_obj.ylim))]);
 set(etc_trace_obj.axis_trace,'xlim',[1 etc_trace_obj.time_duration_idx]);
 set(etc_trace_obj.axis_trace,'xtick',round([0:5]./5.*etc_trace_obj.time_duration_idx));
 xx=(etc_trace_obj.time_begin_idx+round([0:5]./5.*etc_trace_obj.time_duration_idx))-1;
 set(etc_trace_obj.axis_trace,'xticklabel',cellstr(num2str((xx./etc_trace_obj.fs)')));
-set(hh,'ButtonDownFcn',@etc_trace_callback);
+
 
 %plot electrode names
-set(etc_trace_obj.axis_trace,'ytick',diff(sort(etc_trace_obj.ylim)).*[0:size(etc_trace_obj.data,1)-1]);
-set(etc_trace_obj.axis_trace,'yticklabels',etc_trace_obj.ch_names);
-
+%set(etc_trace_obj.axis_trace,'ytick',diff(sort(etc_trace_obj.ylim)).*[0:size(etc_trace_obj.data,1)-1]);
+set(etc_trace_obj.axis_trace,'ytick',diff(sort(etc_trace_obj.ylim)).*[0:(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-1)-1]);
+%set(etc_trace_obj.axis_trace,'yticklabels',etc_trace_obj.ch_names);
+set(etc_trace_obj.axis_trace,'yticklabels',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
 %plot trigger
 try
     %all triggers
@@ -501,7 +519,7 @@ try
     
     
     %current selected trigger
-    trigger_idx=find(etc_trace_obj.trigger.event==str2num(etc_trace_obj.trigger_now));
+    trigger_idx=find(etc_trace_obj.trigger.event==etc_trace_obj.trigger_now);
     trigger_time_idx=etc_trace_obj.trigger.time(trigger_idx);
     
     idx=find((etc_trace_obj.trigger.time(trigger_idx)>=etc_trace_obj.time_begin_idx)&(etc_trace_obj.trigger.time(trigger_idx)<=etc_trace_obj.time_end_idx));
@@ -543,25 +561,15 @@ global etc_trace_obj;
 
 fprintf('[%s] was selected\n',src.Tag);
 
-Index = find(strcmp(etc_trace_obj.ch_names,src.Tag));
+%Index = find(strcmp(etc_trace_obj.ch_names,src.Tag));
+Index = find(strcmp(etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names, src.Tag));
 
 if(isfield(etc_trace_obj,'trace_selected_idx'))
     if(~isempty(etc_trace_obj.trace_selected_idx))
         if(Index==etc_trace_obj.trace_selected_idx)
-            etc_trace_obj.trace_selected_idx=[];
-            
-            %set scaling back to other channels
-            etc_trace_obj.scaling=eye(size(etc_trace_obj.scaling));
+            etc_trace_obj.trace_selected_idx=[];            
         else
             etc_trace_obj.trace_selected_idx=Index;
-            
-            %set scaling of the new selected channel
-            etc_trace_obj.scaling=eye(size(etc_trace_obj.scaling));
-            s=diag(etc_trace_obj.scaling);
-            s=s(1:end-1);
-            s(etc_trace_obj.trace_selected_idx)=abs(diff(etc_trace_obj.ylim))./abs(diff(etc_trace_obj.ylim_single));
-            s(end+1)=1;
-            etc_trace_obj.scaling=diag(s);
         end;
     else
         etc_trace_obj.trace_selected_idx=Index;
@@ -587,17 +595,5 @@ redraw;
 
 return;
 
-
-function etc_trace_montage_listbox_callback(hObj,event)
-
-global etc_trace_obj;
-
-%Index=get(hObj,'value');
-%fprintf('[%s] selected in the list box\n',etc_trace_obj.ch_names{Index});
-%etc_trace_obj.trace_selected_idx=Index;
-
-%redraw;
-
-return;
 
 

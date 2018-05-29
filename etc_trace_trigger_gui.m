@@ -149,6 +149,15 @@ try
         a=trigger_time_idx(mmidx)-round(etc_trace_obj.time_duration_idx/5)+1;
         b=a+etc_trace_obj.time_duration_idx;
         
+        if(a<1) 
+            a=1;
+            b=a+etc_trace_obj.time_duration_idx;
+        end;
+        if(b>size(etc_trace_obj.data,2))
+            a=size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx;
+            b=size(etc_trace_obj.data,2);
+        end;
+                    
         if(a>=1&&b<=size(etc_trace_obj.data,2))
             etc_trace_obj.time_begin_idx=a;
             etc_trace_obj.time_end_idx=b;
@@ -242,6 +251,15 @@ try
         
         a=trigger_time_idx(mmidx)-round(etc_trace_obj.time_duration_idx/5)+1;
         b=a+etc_trace_obj.time_duration_idx;
+        
+        if(a<1) 
+            a=1;
+            b=a+etc_trace_obj.time_duration_idx;
+        end;
+        if(b>size(etc_trace_obj.data,2))
+            a=size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx;
+            b=size(etc_trace_obj.data,2);
+        end;
         
         if(a>=1&&b<=size(etc_trace_obj.data,2))
             etc_trace_obj.time_begin_idx=a;
@@ -351,8 +369,8 @@ try
         end;
         
         if(~found)
-            fprintf('adding...\n');
-            
+            fprintf('adding [%d] (sample) in class <%d>...\n',time_idx_now,class_now);
+
             if(isempty(etc_trace_obj.trigger))
                 etc_trace_obj.trigger.time=time_idx_now
                 etc_trace_obj.trigger.event=class_now;                

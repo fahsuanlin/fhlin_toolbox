@@ -22,7 +22,7 @@ function varargout = etc_trace_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_gui
 
-% Last Modified by GUIDE v2.5 02-Apr-2018 20:45:49
+% Last Modified by GUIDE v2.5 29-May-2018 18:10:39
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -666,6 +666,7 @@ try
             set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
             
             etc_trace_handle('redraw');
+            etc_trace_handle('bd','time_idx',etc_trace_obj.trigger_time_idx);
         end;
     end;
     
@@ -737,6 +738,8 @@ try
             set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
             
             etc_trace_handle('redraw');
+            etc_trace_handle('bd','time_idx',etc_trace_obj.trigger_time_idx);
+
         end;
     end;
     
