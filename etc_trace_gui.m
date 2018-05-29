@@ -68,10 +68,11 @@ if(~isempty(etc_trace_obj.trigger))
     fprintf('trigger loaded...\n');
     tmp=sort(etc_trace_obj.trigger.event);
     trigger_type=tmp([find(diff(sort(tmp))) length(tmp)]);
-    
     set(handles.listbox_trigger,'string',{trigger_type(:)});
-    guidata(hObject, handles);
+else
+    set(handles.listbox_trigger,'string',{});
 end;
+guidata(hObject, handles);
 
 
 duration=[0.1 0.5 1 2 5 10 30];

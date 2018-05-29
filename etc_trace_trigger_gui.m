@@ -61,24 +61,38 @@ guidata(hObject, handles);
 % UIWAIT makes etc_trace_trigger_gui wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 global etc_trace_obj;
-fprintf('trigger loaded...\n');
-set(handles.listbox_time,'string',{etc_trace_obj.trigger.time(:)});
-set(handles.listbox_class,'string',{etc_trace_obj.trigger.event(:)});
-guidata(hObject, handles);
-
-%update trace window
-hObject=findobj('tag','listbox_time');
-all_trigger =cellfun(@str2num,get(hObject,'String'));
-idx=find(all_trigger==etc_trace_obj.trigger_time_idx);
-set(hObject,'Value',idx);
-
-hObject=findobj('tag','listbox_class');
-set(hObject,'Value',idx);
-
-set(handles.edit_time,'Value',etc_trace_obj.trigger_time_idx);
-set(handles.edit_class,'Value',etc_trace_obj.trigger_now);
-set(handles.edit_time,'String',etc_trace_obj.trigger_time_idx);
-set(handles.edit_class,'String',etc_trace_obj.trigger_now);
+if(~isempty(etc_trace_obj.trigger))
+    fprintf('events loaded...\n');
+    set(handles.listbox_time,'string',{etc_trace_obj.trigger.time(:)});
+    set(handles.listbox_class,'string',{etc_trace_obj.trigger.event(:)});
+    guidata(hObject, handles);
+    
+    %update trace window
+    hObject=findobj('tag','listbox_time');
+    if(~isempty(get(hObject,'String')))
+        all_trigger=cellfun(@str2num,get(hObject,'String'));
+    else
+        all_trigger=[];
+    end;
+    
+    if(isfield(etc_trace_obj,'trigger_time_idx'))
+        if(~isempty(etc_trace_obj.trigger_time_idx))
+            idx=find(all_trigger==etc_trace_obj.trigger_time_idx);
+            set(hObject,'Value',idx);
+            hObject=findobj('tag','listbox_class');
+            set(hObject,'Value',idx);
+            
+            set(handles.edit_time,'Value',etc_trace_obj.trigger_time_idx);
+            set(handles.edit_class,'Value',etc_trace_obj.trigger_now);
+            set(handles.edit_time,'String',etc_trace_obj.trigger_time_idx);
+            set(handles.edit_class,'String',etc_trace_obj.trigger_now);
+        end;
+    end;
+else
+    set(handles.listbox_time,'string',{});
+    set(handles.listbox_class,'string',{});
+    guidata(hObject, handles);
+end;
 
 % --- Outputs from this function are returned to the command line.
 function varargout = etc_trace_trigger_gui_OutputFcn(hObject, eventdata, handles) 
@@ -307,13 +321,27 @@ try
         hObject=findobj('tag','edit_time');
         time_idx_now=str2num(get(hObject,'String'));
         hObject=findobj('tag','edit_class');
-        class_now=str2num(get(hObject,'String')); 
+        str=get(hObject,'String');
+        if(iscell(str))
+            class_now=str2num(str{1}); 
+        else
+            class_now=str2num(str);
+        end;
         
         obj_time=findobj('tag','listbox_time');
         obj_class=findobj('tag','listbox_class');
         
-        all_time_idx =cellfun(@str2num,get(obj_time,'String'));
-        all_class =cellfun(@str2num,get(obj_class,'String'));
+        if(~isempty(get(obj_time,'String')))
+            all_time_idx =cellfun(@str2num,get(obj_time,'String'));
+        else
+            all_time_idx=[];
+        end;
+        if(~isempty(get(obj_class,'String')))
+            all_class=cellfun(@str2num,get(obj_class,'String'));
+        else
+            all_class=[];
+        end;
+        
         idx=find(all_time_idx==time_idx_now);
         found=0;
         if(~isempty(idx))
@@ -325,8 +353,13 @@ try
         if(~found)
             fprintf('adding...\n');
             
-            etc_trace_obj.trigger.time=cat(2,time_idx_now, etc_trace_obj.trigger.time);
-            etc_trace_obj.trigger.event=cat(2,class_now, etc_trace_obj.trigger.event);
+            if(isempty(etc_trace_obj.trigger))
+                etc_trace_obj.trigger.time=time_idx_now
+                etc_trace_obj.trigger.event=class_now;                
+            else
+                etc_trace_obj.trigger.time=cat(2,time_idx_now, etc_trace_obj.trigger.time);
+                etc_trace_obj.trigger.event=cat(2,class_now, etc_trace_obj.trigger.event);
+            end;
             set(obj_time,'string',{etc_trace_obj.trigger.time(:)});
             set(obj_class,'string',{etc_trace_obj.trigger.event(:)});
             
@@ -387,9 +420,14 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
             etc_trace_obj.trigger.event(select_idx)=[];
             etc_trace_obj.trigger.time(select_idx)=[];
             
-            set(handles.listbox_time,'string',{etc_trace_obj.trigger.time(:)});
-            set(handles.listbox_class,'string',{etc_trace_obj.trigger.event(:)});
-    
+            if(~isempty(etc_trace_obj.trigger.time(:)))
+                set(handles.listbox_time,'string',{etc_trace_obj.trigger.time(:)});
+                set(handles.listbox_class,'string',{etc_trace_obj.trigger.event(:)});
+            else
+                set(handles.listbox_time,'string',{});
+                set(handles.listbox_class,'string',{});
+            end;
+            
             guidata(hObject, handles);
             
             %update trace window
@@ -470,9 +508,13 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
             etc_trace_obj.trigger.event(select_idx)=[];
             etc_trace_obj.trigger.time(select_idx)=[];
             
-            set(handles.listbox_time,'string',{etc_trace_obj.trigger.time(:)});
-            set(handles.listbox_class,'string',{etc_trace_obj.trigger.event(:)});
-    
+            if(~isempty(etc_trace_obj.trigger.time(:)))
+                set(handles.listbox_time,'string',{etc_trace_obj.trigger.time(:)});
+                set(handles.listbox_class,'string',{etc_trace_obj.trigger.event(:)});
+            else
+                set(handles.listbox_time,'string',{});
+                set(handles.listbox_class,'string',{});
+            end;
             guidata(hObject, handles);
             
             %update trace window

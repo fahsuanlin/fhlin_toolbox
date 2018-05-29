@@ -92,11 +92,18 @@ switch lower(param)
                 end;
                 etc_trace_obj.flag_mark=~etc_trace_obj.flag_mark;
             case 'v' 
-                fprintf('show trigger....\n');
+                fprintf('show events....\n');
                 if(isfield(etc_trace_obj,'fig_trigger'))
                     etc_trace_obj.fig_trigger=[];
                 end;
                 etc_trace_obj.fig_trigger=etc_trace_trigger_gui;
+                
+                pp0=get(etc_trace_obj.fig_trigger,'pos');
+                pp1=get(etc_trace_obj.fig_trace,'pos');
+                set(etc_trace_obj.fig_trigger,'pos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
+                set(etc_trace_obj.fig_trigger,'Name','events');
+                set(etc_trace_obj.fig_trigger,'Resize','off');
+                
             case 't'
                 fprintf('show topology....\n');
                 
@@ -313,8 +320,12 @@ switch lower(param)
                 %update trigger GUI
                 hObject=findobj('tag','edit_time');
                 set(hObject,'String',num2str(etc_trace_obj.time_select_idx));
-                hObject=findobj('tag','edit_class');
-                set(hObject,'String',num2str(etc_trace_obj.trigger_now));
+                if(isfield(etc_trace_obj,'trigger_now'))
+                    if(~isempty(etc_trace_obj.trigger_now))
+                        hObject=findobj('tag','edit_class');
+                        set(hObject,'String',num2str(etc_trace_obj.trigger_now));
+                    end;
+                end;
                 
                 %update topology
                 data=etc_trace_obj.data(:,etc_trace_obj.time_select_idx);
