@@ -2,8 +2,7 @@ function h=etc_trace(data,varargin)
 
 fs=1; %sampling rate; Hz
 
-ylim=[-100 100];
-ylim_single=[-100 100];
+ylim=[-50 50];
 duration=5; %second
 h=[];
 
@@ -26,8 +25,6 @@ for i=1:length(varargin)/2
             fs=option_value;
         case 'ylim'
             ylim=option_value;
-        case 'ylim_single'
-            ylim_single=option_value;
         case 'duration'
             duration=option_value;
         case 'trigger'
@@ -74,7 +71,6 @@ global etc_trace_obj;
 
 etc_trace_obj.fs=fs;
 etc_trace_obj.ylim=ylim;
-etc_trace_obj.ylim_single=ylim_single;
 
 etc_trace_obj.time_duration_idx=round(duration.*fs);
 etc_trace_obj.time_begin_idx=1;
@@ -86,15 +82,12 @@ etc_trace_obj.ch_names=ch_names;
 
 if(isempty(montage))
     montage=eye(size(data,1));
-    montage_name='orig';
+    montage_name='original';
     
     config={};
     for idx=1:length(etc_trace_obj.ch_names);
-        %if(strcmp(lower(etc_trace_obj.ch_names{idx}),'ecg')|strcmp(lower(etc_trace_obj.ch_names{idx}),'ekg'))
-        %else
-            config{end+1,1}=etc_trace_obj.ch_names{idx};
-            config{end,2}='';
-        %end;
+        config{end+1,1}=etc_trace_obj.ch_names{idx};
+        config{end,2}='';
     end;
 end;
 etc_trace_obj.montage{1}.config_matrix=[montage, zeros(size(montage,1),1)
