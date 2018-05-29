@@ -310,7 +310,7 @@ contents = cellstr(get(hObject,'String'));
 select_idx=get(hObject,'Value');
 
 try
-    etc_trace_obj.trigger_now=contents{select_idx};
+    etc_trace_obj.trigger_now=str2num(contents{select_idx});
     trigger_idx=find(etc_trace_obj.trigger.event==str2num(contents{select_idx}));
     trigger_time_idx=etc_trace_obj.trigger.time(trigger_idx);
     [tmp,mmidx]=min(abs(trigger_time_idx-etc_trace_obj.time_begin_idx));
@@ -322,7 +322,22 @@ try
     hObject=findobj('tag','edit_trigger_time');
     set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger_time_idx./etc_trace_obj.fs));
     
-    %a=trigger_time_idx(mmidx)-etc_trace_obj.fs+1;
+    %update trigger gui
+    hObject=findobj('tag','listbox_time');
+    all_time =cellfun(@str2num,get(hObject,'String'));
+    hObject=findobj('tag','listbox_class');
+    all_class =cellfun(@str2num,get(hObject,'String'));
+    vv=find((all_time==etc_trace_obj.trigger_time_idx)&(all_class==etc_trace_obj.trigger_now));
+    hObject=findobj('tag','listbox_time');
+    set(hObject,'Value',vv);
+    hObject=findobj('tag','listbox_class');
+    set(hObject,'Value',vv);
+    
+    hObject=findobj('tag','edit_time');
+    set(hObject,'String',num2str(etc_trace_obj.trigger_time_idx));
+    hObject=findobj('tag','edit_class');
+    set(hObject,'String',num2str(etc_trace_obj.trigger_now));
+    
     a=trigger_time_idx(mmidx)-round(etc_trace_obj.time_duration_idx/5)+1;
     b=a+etc_trace_obj.time_duration_idx;
     
@@ -599,9 +614,10 @@ if(isempty(etc_trace_obj))
 end;
 
 try
-    trigger_idx=find(etc_trace_obj.trigger.event==str2num(etc_trace_obj.trigger_now));
+    trigger_idx=find(etc_trace_obj.trigger.event==etc_trace_obj.trigger_now);
     trigger_time_idx=etc_trace_obj.trigger.time(trigger_idx);
-    [tmp,mmidx]=min(abs(trigger_time_idx-etc_trace_obj.time_begin_idx-round(etc_trace_obj.time_duration_idx./5)));
+    edit_trigger_time_idx_now=str2num(get(findobj('tag','edit_trigger_time_idx'),'String'));
+    [tmp,mmidx]=min(abs(trigger_time_idx-edit_trigger_time_idx_now));
     mmidx=mmidx-1;
     
     %trigger time
@@ -610,7 +626,20 @@ try
     set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
     hObject=findobj('tag','edit_trigger_time');
     set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger_time_idx./etc_trace_obj.fs));
-
+    
+    if(isvalid(etc_trace_obj.fig_trigger))
+        %update trigger gui
+        hObject=findobj('tag','listbox_time');
+        all_time =cellfun(@str2num,get(hObject,'String'));
+        set(hObject,'Value',find(all_time==etc_trace_obj.trigger_time_idx));
+        hObject=findobj('tag','listbox_class');
+        set(hObject,'Value',find(all_time==etc_trace_obj.trigger_time_idx));
+        
+        hObject=findobj('tag','edit_time');
+        set(hObject,'String',num2str(etc_trace_obj.trigger_time_idx));
+        hObject=findobj('tag','edit_class');
+        set(hObject,'String',num2str(etc_trace_obj.trigger_now));
+    end;
     if(mmidx>=1)
         
         a=trigger_time_idx(mmidx)-round(etc_trace_obj.time_duration_idx/5)+1;
@@ -655,9 +684,10 @@ if(isempty(etc_trace_obj))
 end;
 
 try
-    trigger_idx=find(etc_trace_obj.trigger.event==str2num(etc_trace_obj.trigger_now));
+    trigger_idx=find(etc_trace_obj.trigger.event==etc_trace_obj.trigger_now);
     trigger_time_idx=etc_trace_obj.trigger.time(trigger_idx);
-    [tmp,mmidx]=min(abs(trigger_time_idx-etc_trace_obj.time_begin_idx-round(etc_trace_obj.time_duration_idx./5)));
+    edit_trigger_time_idx_now=str2num(get(findobj('tag','edit_trigger_time_idx'),'String'));
+    [tmp,mmidx]=min(abs(trigger_time_idx-edit_trigger_time_idx_now));
     mmidx=mmidx+1;
 
     %trigger time
@@ -667,6 +697,20 @@ try
     hObject=findobj('tag','edit_trigger_time');
     set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger_time_idx./etc_trace_obj.fs));
 
+    if(isvalid(etc_trace_obj.fig_trigger))
+        %update trigger gui
+        hObject=findobj('tag','listbox_time');
+        all_time =cellfun(@str2num,get(hObject,'String'));
+        set(hObject,'Value',find(all_time==etc_trace_obj.trigger_time_idx));
+        hObject=findobj('tag','listbox_class');
+        set(hObject,'Value',find(all_time==etc_trace_obj.trigger_time_idx));
+        
+        hObject=findobj('tag','edit_time');
+        set(hObject,'String',num2str(etc_trace_obj.trigger_time_idx));
+        hObject=findobj('tag','edit_class');
+        set(hObject,'String',num2str(etc_trace_obj.trigger_now));
+    end;
+    
     if(mmidx<=length(trigger_time_idx))
         
         a=trigger_time_idx(mmidx)-round(etc_trace_obj.time_duration_idx/5)+1;
