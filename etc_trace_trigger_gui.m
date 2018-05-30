@@ -74,6 +74,18 @@ if(~isempty(etc_trace_obj.trigger))
     else
         all_trigger=[];
     end;
+    obj_time=findobj('Tag','listbox_time');
+    contents_time = cellstr(get(obj_time,'String'));
+    time_idx_now=str2num(contents_time{1});
+
+    obj_class=findobj('Tag','listbox_class');
+    contents_class = cellstr(get(obj_class,'String'));
+    class_now=str2num(contents_class{1});
+
+    set(handles.edit_time,'Value',time_idx_now);
+    set(handles.edit_class,'Value',class_now);
+    set(handles.edit_time,'String',time_idx_now);
+    set(handles.edit_class,'String',class_now);
     
     if(isfield(etc_trace_obj,'trigger_time_idx'))
         if(~isempty(etc_trace_obj.trigger_time_idx))
