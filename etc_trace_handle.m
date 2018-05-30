@@ -140,7 +140,7 @@ switch lower(param)
                                     
                                     global etc_render_fsbrain;
                                     if(isempty(etc_render_fsbrain))
-                                        etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',10,'topo_threshold',etc_trace_obj.ylim,'flag_camlight',flag_camlight);
+                                        etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',10,'topo_threshold',[abs(diff(etc_trace_obj.ylim))/4 abs(diff(etc_trace_obj.ylim))/2 ],'flag_camlight',flag_camlight);
                                     else
                                         delete(etc_render_fsbrain.click_point);
                                         delete(etc_render_fsbrain.click_vertex_point);
@@ -167,7 +167,7 @@ switch lower(param)
                             
                             global etc_render_fsbrain;
                             if(isempty(etc_render_fsbrain))
-                                etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',10,'topo_threshold',etc_trace_obj.ylim,'flag_camlight',flag_camlight);
+                                etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',10,'topo_threshold',[abs(diff(etc_trace_obj.ylim))/4 abs(diff(etc_trace_obj.ylim))/2 ],'flag_camlight',flag_camlight);
                             else
                                 delete(etc_render_fsbrain.click_point);
                                 delete(etc_render_fsbrain.click_vertex_point);
