@@ -124,6 +124,8 @@ etc_trace_obj.topo=topo;
 
 etc_trace_obj.flag_mark=flag_mark;
 
+etc_trace_obj.trace_selected_idx=[];
+
 set(etc_trace_obj.fig_trace,'WindowButtonDownFcn','etc_trace_handle(''bd'')');
 set(etc_trace_obj.fig_trace,'KeyPressFcn','etc_trace_handle(''kb'')');
 set(etc_trace_obj.fig_trace,'invert','off');

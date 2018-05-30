@@ -325,7 +325,62 @@ function edit_time_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of edit_time as text
 %        str2double(get(hObject,'String')) returns contents of edit_time as a double
+global etc_trace_obj;
 
+if(isempty(etc_trace_obj))
+    return;
+end;
+                
+etc_trace_obj.time_select_idx =str2double(get(hObject,'String'));
+
+
+%figure(etc_trace_obj.fig_trace);
+
+try
+    trigger_time_idx=etc_trace_obj.time_select_idx;
+    [tmp,mmidx]=min(abs(trigger_time_idx-etc_trace_obj.time_begin_idx-round(etc_trace_obj.time_duration_idx./5)));
+    
+    if(mmidx>=1)
+        a=trigger_time_idx-round(etc_trace_obj.time_duration_idx/5)+1;
+        b=a+etc_trace_obj.time_duration_idx;
+        
+        if(a<1) 
+            a=1;
+            b=a+etc_trace_obj.time_duration_idx;
+        end;
+        if(b>size(etc_trace_obj.data,2))
+            a=size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx;
+            b=size(etc_trace_obj.data,2);
+        end;
+                    
+        if(a>=1&&b<=size(etc_trace_obj.data,2))
+            etc_trace_obj.time_begin_idx=a;
+            etc_trace_obj.time_end_idx=b;
+            
+            %time slider
+            hObject_slider=findobj('tag','slider_time_idx');
+            v=(etc_trace_obj.time_begin_idx-1)/(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx);
+            set(hObject_slider,'value',v);
+            
+            %time edit
+            hObject=findobj('tag','edit_time_begin_idx');
+            set(hObject,'String',sprintf('%d',etc_trace_obj.time_begin_idx));
+            hObject=findobj('tag','edit_time_end_idx');
+            set(hObject,'String',sprintf('%d',etc_trace_obj.time_end_idx));
+            hObject=findobj('tag','edit_time_begin');
+            set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_begin_idx-1))./etc_trace_obj.fs));
+            hObject=findobj('tag','edit_time_end');
+            set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
+            
+            etc_trace_handle('redraw');
+        end;
+    end;
+    etc_trace_handle('bd','time_idx',trigger_time_idx);
+    
+%    figure(etc_trace_obj.fig_trigger);
+   
+catch ME
+end;
 
 % --- Executes during object creation, after setting all properties.
 function edit_time_CreateFcn(hObject, eventdata, handles)

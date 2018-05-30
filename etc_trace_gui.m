@@ -22,7 +22,7 @@ function varargout = etc_trace_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_gui
 
-% Last Modified by GUIDE v2.5 29-May-2018 18:10:39
+% Last Modified by GUIDE v2.5 30-May-2018 17:44:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -79,6 +79,13 @@ duration=[0.1 0.5 1 2 5 10 30];
 set(handles.listbox_time_duration,'string',{duration(:)});
 set(handles.listbox_time_duration,'value',5); %default: 5 s
 guidata(hObject, handles);
+
+%update trace GUI
+hObject=findobj('tag','edit_time_now_idx');
+set(hObject,'String','');
+hObject=findobj('tag','edit_time_now');
+set(hObject,'String','');
+
 
 
 % UIWAIT makes etc_trace_gui wait for user response (see UIRESUME)
@@ -330,9 +337,9 @@ try
     all_class =cellfun(@str2num,get(hObject,'String'));
     vv=find((all_time==etc_trace_obj.trigger_time_idx)&(all_class==etc_trace_obj.trigger_now));
     hObject=findobj('tag','listbox_time');
-    set(hObject,'Value',vv);
+    set(hObject,'Value',vv(1));
     hObject=findobj('tag','listbox_class');
-    set(hObject,'Value',vv);
+    set(hObject,'Value',vv(1));
     
     hObject=findobj('tag','edit_time');
     set(hObject,'String',num2str(etc_trace_obj.trigger_time_idx));
@@ -669,7 +676,7 @@ try
             etc_trace_handle('bd','time_idx',etc_trace_obj.trigger_time_idx);
         end;
     end;
-    
+    figure(etc_trace_obj.fig_trace);    
 catch ME
 end;
 
@@ -742,7 +749,7 @@ try
 
         end;
     end;
-    
+    figure(etc_trace_obj.fig_trace);
 catch ME
 end;
 
@@ -830,6 +837,162 @@ function edit_trigger_time_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function edit_trigger_time_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to edit_trigger_time (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_time_now_idx_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_time_now_idx (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_time_now_idx as text
+%        str2double(get(hObject,'String')) returns contents of edit_time_now_idx as a double
+global etc_trace_obj;
+
+if(isempty(etc_trace_obj))
+    return;
+end;
+                
+etc_trace_obj.time_select_idx =str2double(get(hObject,'String'));
+
+
+%figure(etc_trace_obj.fig_trace);
+
+try
+    trigger_time_idx=etc_trace_obj.time_select_idx;
+    [tmp,mmidx]=min(abs(trigger_time_idx-etc_trace_obj.time_begin_idx-round(etc_trace_obj.time_duration_idx./5)));
+    
+    if(mmidx>=1)
+        a=trigger_time_idx-round(etc_trace_obj.time_duration_idx/5)+1;
+        b=a+etc_trace_obj.time_duration_idx;
+        
+        if(a<1) 
+            a=1;
+            b=a+etc_trace_obj.time_duration_idx;
+        end;
+        if(b>size(etc_trace_obj.data,2))
+            a=size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx;
+            b=size(etc_trace_obj.data,2);
+        end;
+                    
+        if(a>=1&&b<=size(etc_trace_obj.data,2))
+            etc_trace_obj.time_begin_idx=a;
+            etc_trace_obj.time_end_idx=b;
+            
+            %time slider
+            hObject_slider=findobj('tag','slider_time_idx');
+            v=(etc_trace_obj.time_begin_idx-1)/(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx);
+            set(hObject_slider,'value',v);
+            
+            %time edit
+            hObject=findobj('tag','edit_time_begin_idx');
+            set(hObject,'String',sprintf('%d',etc_trace_obj.time_begin_idx));
+            hObject=findobj('tag','edit_time_end_idx');
+            set(hObject,'String',sprintf('%d',etc_trace_obj.time_end_idx));
+            hObject=findobj('tag','edit_time_begin');
+            set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_begin_idx-1))./etc_trace_obj.fs));
+            hObject=findobj('tag','edit_time_end');
+            set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
+            
+            etc_trace_handle('redraw');
+        end;
+    end;
+    etc_trace_handle('bd','time_idx',trigger_time_idx);
+    
+%    figure(etc_trace_obj.fig_trigger);
+   
+catch ME
+end;
+
+% --- Executes during object creation, after setting all properties.
+function edit_time_now_idx_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_time_now_idx (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_time_now_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_time_now (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_time_now as text
+%        str2double(get(hObject,'String')) returns contents of edit_time_now as a double
+global etc_trace_obj;
+
+if(isempty(etc_trace_obj))
+    return;
+end;
+                
+etc_trace_obj.time_select_idx =round(str2double(get(hObject,'String')).*etc_trace_obj.fs);
+
+
+%figure(etc_trace_obj.fig_trace);
+
+try
+    trigger_time_idx=etc_trace_obj.time_select_idx;
+    [tmp,mmidx]=min(abs(trigger_time_idx-etc_trace_obj.time_begin_idx-round(etc_trace_obj.time_duration_idx./5)));
+    
+    if(mmidx>=1)
+        a=trigger_time_idx-round(etc_trace_obj.time_duration_idx/5)+1;
+        b=a+etc_trace_obj.time_duration_idx;
+        
+        if(a<1) 
+            a=1;
+            b=a+etc_trace_obj.time_duration_idx;
+        end;
+        if(b>size(etc_trace_obj.data,2))
+            a=size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx;
+            b=size(etc_trace_obj.data,2);
+        end;
+                    
+        if(a>=1&&b<=size(etc_trace_obj.data,2))
+            etc_trace_obj.time_begin_idx=a;
+            etc_trace_obj.time_end_idx=b;
+            
+            %time slider
+            hObject_slider=findobj('tag','slider_time_idx');
+            v=(etc_trace_obj.time_begin_idx-1)/(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx);
+            set(hObject_slider,'value',v);
+            
+            %time edit
+            hObject=findobj('tag','edit_time_begin_idx');
+            set(hObject,'String',sprintf('%d',etc_trace_obj.time_begin_idx));
+            hObject=findobj('tag','edit_time_end_idx');
+            set(hObject,'String',sprintf('%d',etc_trace_obj.time_end_idx));
+            hObject=findobj('tag','edit_time_begin');
+            set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_begin_idx-1))./etc_trace_obj.fs));
+            hObject=findobj('tag','edit_time_end');
+            set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
+            
+            etc_trace_handle('redraw');
+        end;
+    end;
+    etc_trace_handle('bd','time_idx',trigger_time_idx);
+    
+%    figure(etc_trace_obj.fig_trigger);
+   
+catch ME
+end;
+
+% --- Executes during object creation, after setting all properties.
+function edit_time_now_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_time_now (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

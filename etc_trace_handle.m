@@ -66,14 +66,12 @@ switch lower(param)
             case 'g'
             case 'k'
             case 's' %mark triggers/events
-                if(etc_trace_obj.flag_mark)
-                    fprintf('start making triggers/events...\n');
-                    
-                else
-                    fprintf('stop making triggers/events...\n');
-                    
-                end;
-                etc_trace_obj.flag_mark=~etc_trace_obj.flag_mark;
+                %if(etc_trace_obj.flag_mark)
+                %    fprintf('start making triggers/events...\n');
+                %else
+                %    fprintf('stop making triggers/events...\n');
+                %end;
+                %etc_trace_obj.flag_mark=~etc_trace_obj.flag_mark;
             case 'v' 
                 fprintf('show events....\n');
                 if(isfield(etc_trace_obj,'fig_trigger'))
@@ -291,6 +289,12 @@ switch lower(param)
                 else
                     etc_trace_obj.time_select_line=plot([etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1 etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1],ylim,'r','linewidth',2);
                 end;
+                
+                %update trace GUI
+                hObject=findobj('tag','edit_time_now_idx');
+                set(hObject,'String',num2str(etc_trace_obj.time_select_idx));
+                hObject=findobj('tag','edit_time_now');
+                set(hObject,'String',num2str(etc_trace_obj.time_select_idx/etc_trace_obj.fs));
                 
                 %update trigger GUI
                 hObject=findobj('tag','edit_time');
