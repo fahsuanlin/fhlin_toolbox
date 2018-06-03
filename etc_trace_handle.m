@@ -433,7 +433,7 @@ if(isfield(etc_trace_obj,'aux_data'))
             
             tmp=tmp(1:end-1,:);
             tmp=tmp';
-            
+             
             hh=plot(etc_trace_obj.axis_trace, tmp,'color',cc(ii,:));
             hold(etc_trace_obj.axis_trace,'on');
         end;
