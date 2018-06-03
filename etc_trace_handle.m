@@ -394,17 +394,48 @@ cla(etc_trace_obj.axis_trace);
 %plot trace
 if(isfield(etc_trace_obj,'aux_data'))
     if(~isempty(etc_trace_obj.aux_data))
+        cc=[
+    0.8500    0.3250    0.0980
+    0.9290    0.6940    0.1250
+    0.4940    0.1840    0.5560
+    0.4660    0.6740    0.1880
+    0.3010    0.7450    0.9330
+    0.6350    0.0780    0.1840
+    0    0.4470    0.7410
+]; %color order
+
         for ii=1:length(etc_trace_obj.aux_data)
             %%scaling 
             %tmp=etc_trace_obj.S*tmp;
 
-            tmp=bsxfun(@plus, etc_trace_obj.aux_data{ii}(:,etc_trace_obj.time_begin_idx:etc_trace_obj.time_end_idx)', diff(sort(etc_trace_obj.ylim)).*[0:size(etc_trace_obj.aux_data{ii},1)-1]);
+            %tmp=bsxfun(@plus, etc_trace_obj.aux_data{ii}(:,etc_trace_obj.time_begin_idx:etc_trace_obj.time_end_idx)', diff(sort(etc_trace_obj.ylim)).*[0:size(etc_trace_obj.aux_data{ii},1)-1]);
             
             %%montage 
             %tmp=etc_trace_obj.M*tmp;
 
+            tmp=etc_trace_obj.aux_data{ii}(:,etc_trace_obj.time_begin_idx:etc_trace_obj.time_end_idx);
+            tmp=cat(1,tmp,ones(1,size(tmp,2)));
+            
+            %select channels;
+            tmp=etc_trace_obj.select*tmp;
+            
+            %montage channels;
+            tmp=etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix*tmp;
+            
+            %scaling channels;
+            tmp=etc_trace_obj.scaling{etc_trace_obj.montage_idx}*tmp;
+            
+            %vertical shift for display
+            S=eye(size(tmp,1));
+            S(1:(size(tmp,1)-1),end)=(diff(sort(etc_trace_obj.ylim)).*[0:size(tmp,1)-2])';
+            tmp=S*tmp;
+            
+            
+            tmp=tmp(1:end-1,:);
+            tmp=tmp';
+            
+            hh=plot(etc_trace_obj.axis_trace, tmp,'color',cc(ii,:));
             hold(etc_trace_obj.axis_trace,'on');
-            h=plot(etc_trace_obj.axis_trace, tmp);
         end;
     end;
 end;
@@ -426,7 +457,6 @@ S=eye(size(tmp,1));
 S(1:(size(tmp,1)-1),end)=(diff(sort(etc_trace_obj.ylim)).*[0:size(tmp,1)-2])';
 tmp=S*tmp;
 
-%tmp=bsxfun(@plus, etc_trace_obj.data(:,etc_trace_obj.time_begin_idx:etc_trace_obj.time_end_idx)', diff(sort(etc_trace_obj.ylim)).*[0:size(etc_trace_obj.data,1)-1]);
 
 
 tmp=tmp(1:end-1,:);
