@@ -224,7 +224,7 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
         etc_render_fsbrain.overlay_stc_timeVec=[1:size(etc_render_fsbrain.overlay_stc,2)];
     end;
     set(hObject,'String',sprintf('%1.0f',min(etc_render_fsbrain.overlay_stc_timeVec)));
-    set(hObject,'visible',1);
+    set(hObject,'visible','on');
 else
     set(hObject,'enable','off');
 end;
@@ -241,7 +241,7 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
         etc_render_fsbrain.overlay_stc_timeVec=[1:size(etc_render_fsbrain.overlay_stc,2)];
     end;
     set(hObject,'String',sprintf('%1.0f',max(etc_render_fsbrain.overlay_stc_timeVec)));
-    set(hObject,'visible',1);
+    set(hObject,'visible','on');
 else
     set(hObject,'enable','off');
 end;
