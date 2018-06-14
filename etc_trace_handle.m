@@ -307,7 +307,10 @@ switch lower(param)
                 end;
                 
                 %update topology
-                data=etc_trace_obj.data(:,etc_trace_obj.time_select_idx);
+                try
+                    data=etc_trace_obj.data(:,etc_trace_obj.time_select_idx);
+                catch ME
+                end;
                 if(isfield(etc_trace_obj,'fig_topology'))
                     if(isvalid(etc_trace_obj.fig_topology))
                         figure(etc_trace_obj.fig_topology);

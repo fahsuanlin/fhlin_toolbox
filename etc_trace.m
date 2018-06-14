@@ -131,6 +131,7 @@ set(etc_trace_obj.fig_trace,'KeyPressFcn','etc_trace_handle(''kb'')');
 set(etc_trace_obj.fig_trace,'invert','off');
 set(etc_trace_obj.fig_trace,'Name','');
 set(etc_trace_obj.fig_trace,'DeleteFcn','etc_trace_handle(''del'')');
+set(etc_trace_obj.fig_trace,'CloseRequestFcn','etc_trace_handle(''del'')');
 
 etc_trace_obj.fig_topology=figure('visible','off');
 delete(etc_trace_obj.fig_topology); %make it invalid

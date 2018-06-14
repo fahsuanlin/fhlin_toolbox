@@ -22,7 +22,7 @@ function varargout = etc_trace_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_gui
 
-% Last Modified by GUIDE v2.5 30-May-2018 17:44:55
+% Last Modified by GUIDE v2.5 14-Jun-2018 16:27:56
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
