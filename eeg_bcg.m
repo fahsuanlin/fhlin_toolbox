@@ -14,6 +14,9 @@ n_ma_bcg=21;
 fig_bcg=[];
 flag_dyn_bcg=1;
 flag_post_ssp=0;
+flag_bcgmc=0;
+
+trigger=[];
 
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
@@ -37,6 +40,10 @@ for i=1:length(varargin)/2
             flag_badrejection=option_value;
         case 'flag_post_ssp'
             flag_post_ssp=option_value;
+        case 'flag_bcgmc'
+            flag_bcgmc=option_value;
+        case 'trigger'
+            trigger=option_value;
         otherwise
             fprintf('unknown option [%s]...\n',option);
             fprintf('error!\n');
@@ -60,6 +67,16 @@ BCG_tPost_sample=round(BCG_tPost.*fs);
 eeg_bcg=eeg;
 
 non_ecg_channel=[1:size(eeg,1)];
+
+if(flag_bcgmc)
+    trigger_pre=round(0.05.*fs); %0.05 s before trigger
+    trigger_post=round(0.2.*fs); %0.2 s after trigger
+    
+    for trigger_idx=1:length(trigger.time)
+        eeg(:,trigger.time(trigger_idx)-trigger_pre:trigger.time(trigger_idx)+trigger_post)=nan;
+    end;
+end;
+
 for ch_idx=1:length(non_ecg_channel)
     %if(flag_display) fprintf('*'); end;
     fprintf('*');
@@ -197,6 +214,19 @@ for ch_idx=1:length(non_ecg_channel)
                             trial_sel=[trial_idx-round((n_ma_bcg-1)/2):trial_idx+round((n_ma_bcg-1)/2)];
                         end;
                     end;
+                    
+                    if(flag_bcgmc) %restore matrix 
+                        x=bcg_all{non_ecg_channel(ch_idx)};
+                        sz=size(x);
+                        IDX=find(~isnan(x(:)));
+                        M = opRestriction(prod(sz), IDX);
+                        % Sampled data
+                        y = M(x(:),1);
+                        x1=IST_MC(y,M,sz);
+                        bcg_all{non_ecg_channel(ch_idx)}=x1;
+                        [U,S,V,numiter] = SVT([sz(1) sz(2)],IDX,x(IDX),5*sqrt(prod(sz)),1.2/(length(IDX)/prod(sz)));
+                    end;
+                    
                     [uu,ss,vv]=svd(bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:),'econ');
                     %            tt=cumsum(diag(ss).^2);
                     %            tt=tt./tt(end);
@@ -227,7 +257,7 @@ for ch_idx=1:length(non_ecg_channel)
                         y=y-bcg_bnd_bases*inv(bcg_bnd_bases([1,end],:)'*bcg_bnd_bases([1,end],:))*(bcg_bnd_bases([1,end],:)'*(bnd1-bnd0)');
                     end;
                     eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)=y';
-                    
+                                       
                     residual(non_ecg_channel(ch_idx),trial_idx,:)=y(:);
 
                     

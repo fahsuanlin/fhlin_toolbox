@@ -87,7 +87,7 @@ if(~isempty(ii))
     tpr(ii)=[];
 end;
 
-ROC_Y=interp1(flipud(fpr(:)),flipud(tpr(:)),ROC_X(:),'cubic','extrap');
+ROC_Y=interp1(flipud(fpr(:)),flipud(tpr(:)),ROC_X(:),'PCHIP','extrap');
 
 nan_idx=find(isnan(ROC_Y));
 ROC_Y(nan_idx)=[];
