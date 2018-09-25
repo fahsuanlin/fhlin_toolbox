@@ -30,7 +30,7 @@ if(isempty(kernel))
 		vox=ones([1 ndims(data)]);
 	end;
 
-	[xx,yy,zz]=meshgrid([1:size(data,1)]-round(size(data,1)/2)-1,[1:size(data,2)]-round(size(data,2)/2)-1,[1:size(data,3)]-round(size(data,3)/2)-1);
+	[xx,yy,zz]=meshgrid([1:size(data,2)]-round(size(data,2)/2)-1,[1:size(data,1)]-round(size(data,1)/2)-1,[1:size(data,3)]-round(size(data,3)/2)-1);
 
 	xc=size(data,1)-round(size(data,1)/2)-1;
 	yc=size(data,2)-round(size(data,2)/2)-1;

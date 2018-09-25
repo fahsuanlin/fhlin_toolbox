@@ -136,7 +136,7 @@ end;
         view(-90,0);
         cp=campos;
         cp=cp./norm(cp);
-        campos(1600.*cp);
+        campos(1900.*cp);
         camlight;
         
         hh=axes('ActivePositionProperty','pos','pos',[1/4,0,1/4,1]);
@@ -146,7 +146,7 @@ end;
         view(90,0);
         cp=campos;
         cp=cp./norm(cp);
-        campos(1600.*cp);
+        campos(1900.*cp);
         camlight;
         
         hh=axes('pos',[2/4,0,1/4,1]);
@@ -156,7 +156,7 @@ end;
         view(-90,0);
         cp=campos;
         cp=cp./norm(cp);
-        campos(1600.*cp);
+        campos(1900.*cp);
         camlight;
         
         hh=axes('pos',[3/4,0,1/4,1]);
@@ -166,7 +166,7 @@ end;
         view(90,0);        
         cp=campos;
         cp=cp./norm(cp);
-        campos(1600.*cp);
+        campos(1900.*cp);
         camlight;
 
     elseif(flag_view_default6)
@@ -288,6 +288,12 @@ if(flag_colorbar)
     %overlay_cmap=autumn(80); %overlay colormap;
     %overlay_cmap_neg=winter(80); %overlay colormap;
     %overlay_cmap_neg(:,3)=1;
+    if(flag_overlay_pos_only)
+        overlay_cmap_neg=[];
+    end;
+    if(flag_overlay_neg_only)
+        overlay_cmap_pos=[];
+    end;
     
     cm=[];
     cm_pos=[];

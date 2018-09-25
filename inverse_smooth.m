@@ -1,4 +1,4 @@
-function [smooth_value,vertex]=inverse_smooth(file_asc_surf,varargin)
+function [smooth_value,vertex,w_regrid]=inverse_smooth(file_asc_surf,varargin)
 %
 % inverse_smooth	smoothing surface values 
 %
@@ -16,11 +16,14 @@ function [smooth_value,vertex]=inverse_smooth(file_asc_surf,varargin)
 wfile='';
 stcfile='';
 value=[];
+value_idx=[];
 step=5;
 vertex=[];
 face=[];
 nv=[];
 nf=[];
+
+w_regrid=[];
 
 exc_vertex=[];
 inc_vertex=[];
@@ -40,6 +43,8 @@ for i=1:length(varargin)/2
             stcfile=option_value;
         case 'value'
             value=option_value;
+        case 'value_idx'
+            value_idx=option_value;
         case 'step'
             step=option_value;
         case 'vertex'
@@ -120,8 +125,8 @@ if(min(size(value))==1)
 	value=reshape(value,[length(value),1]);
 end;
 
-smooth_value=zeros(size(value));
-dd=zeros(size(value,2),step);
+%smooth_value=zeros(size(value));
+%dd=zeros(size(value,2),step);
 
 %inclusive label
 if(~isempty(inc_vertex))
@@ -135,21 +140,27 @@ for tt=1:size(value,2)
     end;
     w=value(:,tt);
 	w0=w;
-	%pidx=find(w0>max(w0).*0.99);
-	%nidx=find(w0<min(w0).*0.5);
 	pidx=find(w0>eps);
 	nidx=find(w0<-eps);
 	
     if(flag_regrid)
-        if(~flag_regrid_zero)
-            non_zero=find(abs(w)>eps);
-            if(flag_display)
-                fprintf('gridding...');
+        if(isempty(value_idx))
+            if(~flag_regrid_zero)
+                non_zero=find(abs(w)>eps);
+                if(flag_display)
+                    fprintf('gridding...');
+                end;
+                w=griddatan(vertex(1:3,non_zero)',w(non_zero),vertex(1:3,:)','nearest');
+            else
+                non_zero=[1:length(w)];
+                w=griddatan(vertex(1:3,non_zero)',w(non_zero),vertex(1:3,:)','nearest');
             end;
-            w=griddatan(vertex(1:3,non_zero)',w(non_zero),vertex(1:3,:)','nearest');
         else
             non_zero=[1:length(w)];
-            w=griddatan(vertex(1:3,non_zero)',w(non_zero),vertex(1:3,:)','nearest');
+            [uv,uv_idx]=unique(vertex(1:3,value_idx+1)','rows'); %remove duplicate rows
+            w=griddatan(uv,w(uv_idx),vertex(1:3,:)','nearest');
+            w_regrid=w;
+            %w=griddatan(vertex(1:3,value_idx+1)',w(:),vertex(1:3,:)','nearest');
         end;
 
         scale_idx=find(abs(w)>eps);
@@ -159,27 +170,40 @@ for tt=1:size(value,2)
         end;
     end;
 
+    if(tt==1)
+        smooth_value=zeros(length(w),size(value,2));
+    end;
+    
+    
+    if(~isempty(value_idx))
+        non_zero_full=value_idx+1;
+    else
+        non_zero_full=non_zero;
+    end;
+    
     for ss=1:step
 		
-		%w=(A*(mean(w(connection),1))')./xx;
-		%w=mean([w,w0],2);
-
-		%paint(:,ss)=w(neighbor);
-		
 		w=B*w./yy;
-		
-		%w(pidx)=max([w(pidx) w0(pidx)],[],2);
-		%w(nidx)=min([w(nidx) w0(nidx)],[],2);
+		ww(:,ss)=w(:);
+                
         if(flag_fixval)
             if(flag_display) fprintf('.'); end;
 
-            w(pidx)=w0(pidx);
-            w(nidx)=w0(nidx);
+            if(~isempty(value_idx))
+                w(value_idx+1)=w0;
+            else
+                w(pidx)=w0(pidx);
+                w(nidx)=w0(nidx);
+            end;
         else
             if(flag_display) fprintf('#'); end;
-            w=fmri_scale(w,max(w0),min(w0));
         end;
-		%dd(tt,ss)=sum(abs(w-w0).^2);
+            
+        mmin=min(w(non_zero_full));
+        mmax=max(w(non_zero_full));
+        mmin0=min(w0(non_zero));
+        mmax0=max(w0(non_zero));
+        w=w.*(mmax0-mmin0)./(mmax-mmin);
 		
         w(exc_vertex)=0;
 	end;
@@ -188,7 +212,13 @@ for tt=1:size(value,2)
     if(~isempty(exc_vertex))
                 w(exc_vertex)=nan;
     end;
-	smooth_value(scale_idx,tt)=fmri_scale(w(scale_idx),max(w0(non_zero)),min(w0(non_zero)));
+    
+    mmin=min(w(non_zero_full));
+    mmax=max(w(non_zero_full));
+    mmin0=min(w0(non_zero));
+    mmax0=max(w0(non_zero));
+	smooth_value(:,tt)=w.*(mmax0-mmin0)./(mmax-mmin);
+	%smooth_value(scale_idx,tt)=fmri_scale(w(scale_idx),max(w0(non_zero)),min(w0(non_zero)));
 end;
 
 return;

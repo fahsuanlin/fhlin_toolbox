@@ -69,6 +69,10 @@ global etc_trace_obj;
      end;
  end;
 
+ if(size(data,2)/fs<duration)
+    duration=size(data,2)/fs/2;
+ end;
+ 
 etc_trace_obj.fs=fs;
 etc_trace_obj.ylim=ylim;
 
