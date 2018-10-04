@@ -10,6 +10,7 @@ flag_display=1;
 flag_anchor_ends=0; %ensure keeping the same values at beginning and end of an interval in BCG removal
 flag_badrejection=1;
 bcg_nsvd=4;
+bcg_post_nsvd=2;
 n_ma_bcg=21;
 
 fig_bcg=[];
@@ -26,6 +27,8 @@ for i=1:length(varargin)/2
     switch lower(option)
         case 'bcg_nsvd'
             bcg_nsvd=option_value;
+        case 'bcg_post_nsvd'
+            bcg_post_nsvd=option_value;
         case 'bcg_tpre'
             BCG_tPre=option_value;
         case 'bcg_noise_tpre'
@@ -312,11 +315,7 @@ if(flag_post_ssp)
     if(flag_bcg_nsvd_auto)
         n_proj=n_proj_auto;
     else
-        if(isempty(bcg_nsvd))
-            n_proj=2;
-        else
-            n_proj=bcg_nsvd;
-        end;
+        n_proj=bcg_post_nsvd;
     end;
 
     if(n_proj>0)
