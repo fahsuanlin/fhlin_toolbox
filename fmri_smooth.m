@@ -1,9 +1,13 @@
 function [output,kernel]=fmri_smooth(data,fwhm,varargin)
 % fmri_smooth	3D smoothing of data
 %
-% [output,kernel]=fmri_smooth(data,fwhm);
+% [output,kernel]=fmri_smooth(data,fwhm,[option1, option1_value, ....]);
 %
-%
+% options:
+% 'vox': a 1-by-3 vectror about image voxel size in mm
+% 'kernel': a n-d matrix of the same size of input "data". This describes
+% the smoothing kernel to be applied.
+% 
  
 output=[];
 kernel=[];

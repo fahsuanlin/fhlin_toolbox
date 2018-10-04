@@ -1,4 +1,13 @@
 function etc_tar_file(source_file,tar_file)
+% etc_tar_file     wrap all called functions into a tar ball
+%
+% etc_tar_file(source_file,tar_file)
+% source_file: the source matlab m-file
+% tar_file: the file name of the tar ball
+%
+% fhlin@oct 3 2018
+%
+
 fprintf('analyzing [%s]...\n',source_file);
 [fList,pList] = matlab.codetools.requiredFilesAndProducts(source_file);
 
