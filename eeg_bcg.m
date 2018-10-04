@@ -3,8 +3,9 @@ function [eeg_bcg, qrs_i_raw, bcg_all, ecg_all, bad_trials]=eeg_bcg(eeg,ecg,fs,v
 %defaults
 %BCG_tPre=0.1; %s
 %BCG_tPost=0.6; %s
-BCG_tPre=0.5; %s
-BCG_tPost=0.5; %s
+BCG_tPre=0.5; %s; before QRS
+BCG_noise_tPre=0.2; %s; the interval [BCG_tPre-BCG_noise_tPre : BCG_tPre] is considered as baseline noise
+BCG_tPost=0.5; %s; after QRS
 flag_display=1;
 flag_anchor_ends=0; %ensure keeping the same values at beginning and end of an interval in BCG removal
 flag_badrejection=1;
@@ -15,6 +16,7 @@ fig_bcg=[];
 flag_dyn_bcg=1;
 flag_post_ssp=0;
 flag_bcgmc=0;
+flag_bcg_nsvd_auto=0;
 
 trigger=[];
 
@@ -26,6 +28,8 @@ for i=1:length(varargin)/2
             bcg_nsvd=option_value;
         case 'bcg_tpre'
             BCG_tPre=option_value;
+        case 'bcg_noise_tpre'
+            BCG_noise_tPre=option_value;
         case 'bcg_tpost'
             BCG_tPost=option_value;
         case 'n_ma_bcg'
@@ -42,6 +46,8 @@ for i=1:length(varargin)/2
             flag_post_ssp=option_value;
         case 'flag_bcgmc'
             flag_bcgmc=option_value;
+        case 'flag_bcg_nsvd_auto'
+            flag_bcg_nsvd_auto=option_value;
         case 'trigger'
             trigger=option_value;
         otherwise
@@ -63,6 +69,7 @@ if(flag_display) fprintf('detecting EKG peaks...\n'); end;
 
 BCG_tPre_sample=round(BCG_tPre.*fs);
 BCG_tPost_sample=round(BCG_tPost.*fs);
+BCG_noise_tPre_sample=round(BCG_noise_tPre.*fs);
 
 eeg_bcg=eeg;
 
@@ -240,8 +247,7 @@ for ch_idx=1:length(non_ecg_channel)
                     
                     bcg_approx=uu(:,1:bcg_nsvd)*ss(1:bcg_nsvd,1:bcg_nsvd)*vv(:,1:bcg_nsvd)';
                     bcg_residual=bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:)-bcg_approx;
-                    
-                    bcg_bases=vv(:,1:bcg_nsvd);
+                                       bcg_bases=vv(:,1:bcg_nsvd);
                     
                     bcg_bnd_bases=zeros(size(bcg_bases,1),2);
                     bcg_bnd_bases(:,1)=1; % confound
@@ -295,10 +301,24 @@ if(flag_post_ssp)
         tmp(ch_idx,:)=d(:).';
         E(ch_idx,:)=eeg(non_ecg_channel(ch_idx),:);
     end;
+
     D=tmp*tmp'./size(tmp,2); %data covariance matrix;
+
     [uu,ss,vv]=svd(D);
-    
-    n_proj=2;
+    css=cumsum(diag(ss).^2)./sum(diag(ss).^2);
+    n_proj_auto=find(css>0.8);
+    n_proj_auto=n_proj_auto(1); %automatically determining how many components to be truncated
+
+    if(flag_bcg_nsvd_auto)
+        n_proj=n_proj_auto;
+    else
+        if(isempty(bcg_nsvd))
+            n_proj=2;
+        else
+            n_proj=bcg_nsvd;
+        end;
+    end;
+
     if(n_proj>0)
         tmp=diag(ss);
         %tmp(end-n_proj+1:end)=inf;
