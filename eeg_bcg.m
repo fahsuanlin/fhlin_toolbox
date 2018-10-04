@@ -318,6 +318,7 @@ if(flag_post_ssp)
         n_proj=bcg_post_nsvd;
     end;
 
+
     if(n_proj>0)
         tmp=diag(ss);
         %tmp(end-n_proj+1:end)=inf;
