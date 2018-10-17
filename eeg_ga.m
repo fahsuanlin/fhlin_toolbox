@@ -302,7 +302,7 @@ if(sum(abs(eeg_trigger))>0)
                 end;
                 subplot(211);
                 tt=[epoch_onset(tr_idx):epoch_offset(tr_idx)]./fs;
-                plot(tt,squeeze(epoch(ch_idx,:,tr_idx))); hold on; set(gca,'ylim',[-1000 1000]); title(sprintf('trials [%04d|%4d]',tr_idx,size(epoch,3)));
+                plot(tt,squeeze(epoch(ch_idx,:,tr_idx))); hold on; set(gca,'ylim',[-2000 2000]); title(sprintf('trials [%04d|%4d]',tr_idx,size(epoch,3)));
                 h=plot(tt,buffer(:,tr_idx));  hold off; set(h,'linewidth',3,'color','r');
                 subplot(212);
                 plot(tt,squeeze(epoch(ch_idx,:,tr_idx))); hold on; set(gca,'ylim',[-100 100]); title(sprintf('trials [%04d|%4d]',tr_idx,size(epoch,3)));

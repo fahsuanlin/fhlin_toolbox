@@ -399,6 +399,7 @@ etc_render_fsbrain.cluster_file=cluster_file;
 
 etc_render_fsbrain.aux(1).data=topo_label;
 etc_render_fsbrain.aux(1).tag='topo_label';
+etc_render_fsbrain.aux_point_coords_orig=topo_aux_point_coords;
 etc_render_fsbrain.aux_point_coords=topo_aux_point_coords;
 etc_render_fsbrain.aux_point_coords_h=topo_aux_point_coords_h;
 etc_render_fsbrain.aux_point_name=topo_aux_point_name;

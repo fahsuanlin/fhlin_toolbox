@@ -265,7 +265,7 @@ if(~isempty(etc_render_fsbrain.click_vertex))
     dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
     [min_dist,min_dist_idx]=min(dist);
     %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
-    c
+    
     etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
 end;
 
