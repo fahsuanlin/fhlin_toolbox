@@ -279,13 +279,23 @@ sr=0.005;
 %     end;
 % end;
 
-xx=[]; yy=[]; zz=[];
+xx=[]; yy=[]; zz=[]; hold on;
 for idx=1:size(topo_aux_point_coords,1)
-    xx=cat(1,xx,sx.*sr+topo_aux_point_coords(idx,1));
-    yy=cat(1,yy,sy.*sr+topo_aux_point_coords(idx,2));
-    zz=cat(1,zz,sz.*sr+topo_aux_point_coords(idx,3));
+    if(strcmp(topo_aux_point_name{idx},'.'))
+        xx=cat(1,xx,sx.*sr./3+topo_aux_point_coords(idx,1));
+        yy=cat(1,yy,sy.*sr./3+topo_aux_point_coords(idx,2));
+        zz=cat(1,zz,sz.*sr./3+topo_aux_point_coords(idx,3));
+    else
+        xx=cat(1,xx,sx.*sr+topo_aux_point_coords(idx,1));
+        yy=cat(1,yy,sy.*sr+topo_aux_point_coords(idx,2));
+        zz=cat(1,zz,sz.*sr+topo_aux_point_coords(idx,3));
+    end;
     if(~isempty(topo_aux_point_name))
-        topo_aux_point_name_h(idx)=text(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3),topo_aux_point_name{idx}); hold on;
+        if(strcmp(topo_aux_point_name{idx},'.'))
+            topo_aux_point_name_h(idx)=text(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3),''); hold on;
+        else
+            topo_aux_point_name_h(idx)=text(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3),topo_aux_point_name{idx}); hold on;
+        end;
     end;
 end;
 topo_aux_point_coords_h(1)=surf(xx,yy,zz);

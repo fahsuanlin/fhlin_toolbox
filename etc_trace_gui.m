@@ -22,7 +22,7 @@ function varargout = etc_trace_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_gui
 
-% Last Modified by GUIDE v2.5 14-Jun-2018 16:27:56
+% Last Modified by GUIDE v2.5 19-Oct-2018 10:09:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -332,19 +332,21 @@ try
     
     %update trigger gui
     hObject=findobj('tag','listbox_time');
-    all_time =cellfun(@str2num,get(hObject,'String'));
-    hObject=findobj('tag','listbox_class');
-    all_class =cellfun(@str2num,get(hObject,'String'));
-    vv=find((all_time==etc_trace_obj.trigger_time_idx)&(all_class==etc_trace_obj.trigger_now));
-    hObject=findobj('tag','listbox_time');
-    set(hObject,'Value',vv(1));
-    hObject=findobj('tag','listbox_class');
-    set(hObject,'Value',vv(1));
-    
-    hObject=findobj('tag','edit_time');
-    set(hObject,'String',num2str(etc_trace_obj.trigger_time_idx));
-    hObject=findobj('tag','edit_class');
-    set(hObject,'String',num2str(etc_trace_obj.trigger_now));
+    if(~isempty(hObject))
+        all_time =cellfun(@str2num,get(hObject,'String'));
+        hObject=findobj('tag','listbox_class');
+        all_class =cellfun(@str2num,get(hObject,'String'));
+        vv=find((all_time==etc_trace_obj.trigger_time_idx)&(all_class==etc_trace_obj.trigger_now));
+        hObject=findobj('tag','listbox_time');
+        set(hObject,'Value',vv(1));
+        hObject=findobj('tag','listbox_class');
+        set(hObject,'Value',vv(1));
+        
+        hObject=findobj('tag','edit_time');
+        set(hObject,'String',num2str(etc_trace_obj.trigger_time_idx));
+        hObject=findobj('tag','edit_class');
+        set(hObject,'String',num2str(etc_trace_obj.trigger_now));
+    end;
     
     a=trigger_time_idx(mmidx)-round(etc_trace_obj.time_duration_idx/5)+1;
     b=a+etc_trace_obj.time_duration_idx;
@@ -1001,3 +1003,13 @@ function edit_time_now_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes when user attempts to close figure1.
+function figure1_CloseRequestFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: delete(hObject) closes the figure
+delete(hObject);

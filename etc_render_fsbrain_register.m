@@ -247,8 +247,16 @@ function pushbutton_export_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global etc_render_fsbrain
 
-assignin('base','points',etc_render_fsbrain.aux_point_coords);
-fprintf('variable "points" exported\n');
+points_all=etc_render_fsbrain.aux_point_coords;
+points=points_all;
+
+%remove auxillary points
+idx=find(strcmp(etc_render_fsbrain.aux_point_name,'.'));
+points(idx,:)=[];
+
+assignin('base','points',points);
+assignin('base','points_all',points_all);
+fprintf('variables "points" and "points_all" exported\n');
 
 
 
@@ -329,7 +337,12 @@ global etc_render_fsbrain
 assignin('base','points',etc_render_fsbrain.aux_point_coords);
 filename = uigetfile;
 if(filename)
-    points=etc_render_fsbrain.aux_point_coords;
-    save(filename,'-append','points');
-    fprintf('variable "points" exported and saved in [%s]\n',filename);
+    points_all=etc_render_fsbrain.aux_point_coords;
+    points=points_all;
+    %remove auxillary points
+    idx=find(strcmp(etc_render_fsbrain.aux_point_name,'.'));
+    points(idx,:)=[];
+    
+    save(filename,'-append','points','points_all');
+    fprintf('variable "points" and "points_all" exported and saved in [%s]\n',filename);
 end;

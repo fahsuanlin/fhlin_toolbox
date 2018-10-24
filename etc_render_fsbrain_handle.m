@@ -1347,11 +1347,21 @@ if(isfield(etc_render_fsbrain,'aux_point_coords'))
         sr=0.005;
         xx=[]; yy=[]; zz=[];
         for idx=1:size(etc_render_fsbrain.aux_point_coords,1)
-            xx=cat(1,xx,sx.*sr+etc_render_fsbrain.aux_point_coords(idx,1));
-            yy=cat(1,yy,sy.*sr+etc_render_fsbrain.aux_point_coords(idx,2));
-            zz=cat(1,zz,sz.*sr+etc_render_fsbrain.aux_point_coords(idx,3));
+            if(strcmp(etc_render_fsbrain.aux_point_name{idx},'.'))
+                xx=cat(1,xx,sx.*sr./3+etc_render_fsbrain.aux_point_coords(idx,1));
+                yy=cat(1,yy,sy.*sr./3+etc_render_fsbrain.aux_point_coords(idx,2));
+                zz=cat(1,zz,sz.*sr./3+etc_render_fsbrain.aux_point_coords(idx,3));
+            else
+                xx=cat(1,xx,sx.*sr+etc_render_fsbrain.aux_point_coords(idx,1));
+                yy=cat(1,yy,sy.*sr+etc_render_fsbrain.aux_point_coords(idx,2));
+                zz=cat(1,zz,sz.*sr+etc_render_fsbrain.aux_point_coords(idx,3));
+            end;
             if(~isempty(etc_render_fsbrain.aux_point_name))
-                etc_render_fsbrain.aux_point_name_h(idx)=text(etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3),etc_render_fsbrain.aux_point_name{idx}); hold on;
+                if(strcmp(etc_render_fsbrain.aux_point_name{idx},'.'))
+                    etc_render_fsbrain.aux_point_name_h(idx)=text(etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3),''); hold on;
+                else
+                    etc_render_fsbrain.aux_point_name_h(idx)=text(etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3),etc_render_fsbrain.aux_point_name{idx}); hold on;
+                end;
             end;
         end;
         etc_render_fsbrain.aux_point_coords_h(1)=surf(xx,yy,zz);
