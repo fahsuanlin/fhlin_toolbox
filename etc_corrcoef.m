@@ -11,7 +11,7 @@ function cc=etc_corrcoef(para,data)
 % fhlin@mar 18, 2003
 para_c=para-repmat(mean(para),[length(para),1]);
 data_c=data-repmat(mean(data,1),[size(data,1),1]);
-
+    
 %calculating covariance
 covv=para_c'*data_c./(size(data,1));
 

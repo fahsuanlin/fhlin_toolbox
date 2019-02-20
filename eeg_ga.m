@@ -14,6 +14,8 @@ aas_svd_threshold=0.95;
 
 flag_anchor_bnd=1;
 
+flag_post_ga=0; %regression across channels after AAS
+
 flag_ga_obs=0;
 n_ga_obs=4; %# of GA OBS basis
 
@@ -28,6 +30,8 @@ for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
     switch lower(option)
+        case 'flag_post_ga'
+            flag_post_ga=option_value;
         case 'flag_display'
             flag_display=option_value;
         case 'flag_ma_aas'
@@ -206,8 +210,6 @@ if(sum(abs(eeg_trigger))>0)
     eeg_aas=eeg;
     for ch_idx=1:size(epoch,1)
         buffer=zeros(size(epoch,2),size(epoch,3));
-        buffer1=zeros(size(epoch,2),size(epoch,3));
-        buffer2=zeros(size(epoch,2),size(epoch,3));
         
         aas_bnd_bases=zeros(size(buffer,1),2);
         aas_bnd_bases(:,1)=1; % confound
@@ -241,8 +243,10 @@ if(sum(abs(eeg_trigger))>0)
             if(flag_ga_templage_avg)
                 dd=epoch_shift(:,:,trial_sel);
                 for d_idx=1:size(dd,1)
-                    mm=squeeze(dd(d_idx,:,:)); %channel-specific data; time x trials
-                    cmm=corrcoef(mm);
+                    %mm=squeeze(dd(d_idx,:,:)); %channel-specific data; time x trials
+                    mm=permute(dd(d_idx,:,:),[2 3 1]); %channel-specific data; time x trials
+                    %cmm=corrcoef(mm);
+                    cmm=cov(mm);
                     ww=(sum(cmm,1)-1).^2; %weights for different trials depends on the similarity between EEG; avoid outliers.
                     ga_template(:,d_idx)=mm*ww'./sum(ww);
                 end;
@@ -309,6 +313,14 @@ if(sum(abs(eeg_trigger))>0)
                 h=plot(tt,buffer(:,tr_idx));  hold off; set(h,'linewidth',3,'color','r');
                 pause(0.01); drawnow;
             end;
+        end;
+    end;
+    
+    
+    %regression across channels AFTER AAS
+    if(flag_post_ga)
+        for tr_idx=1:size(epoch,3)
+            tmp=eeg_aas(:,epoch_onset(tr_idx):epoch_offset(tr_idx));
         end;
     end;
 else
