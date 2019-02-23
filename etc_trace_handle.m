@@ -84,7 +84,20 @@ switch lower(param)
                 set(etc_trace_obj.fig_trigger,'pos',[pp1(1)-pp0(3), pp1(2),pp0(3), pp0(4)]);
                 set(etc_trace_obj.fig_trigger,'Name','events');
                 set(etc_trace_obj.fig_trigger,'Resize','off');
+ 
+            case 'f' 
+                fprintf('show configuration....\n');
+                if(isfield(etc_trace_obj,'fig_config'))
+                    etc_trace_obj.fig_config=[];
+                end;
+                etc_trace_obj.fig_config=etc_trace_config_gui;
                 
+                pp0=get(etc_trace_obj.fig_config,'pos');
+                pp1=get(etc_trace_obj.fig_trace,'pos');
+                set(etc_trace_obj.fig_config,'pos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
+                set(etc_trace_obj.fig_config,'Name','events');
+                set(etc_trace_obj.fig_config,'Resize','off');
+
             case 't'
                 fprintf('show topology....\n');
                 
@@ -286,6 +299,7 @@ switch lower(param)
                 
                 if(~etc_trace_obj.flag_mark)
                     etc_trace_obj.time_select_line=plot([etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1 etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1],ylim,'m','linewidth',2);
+                    set(etc_trace_obj.time_select_line,'color',etc_trace_obj.config_current_time_color);
                 else
                     etc_trace_obj.time_select_line=plot([etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1 etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1],ylim,'r','linewidth',2);
                 end;
@@ -464,7 +478,9 @@ tmp=S*tmp;
 
 tmp=tmp(1:end-1,:);
 tmp=tmp';
-hh=plot(etc_trace_obj.axis_trace, tmp,'color',[0    0.4470    0.7410]);
+hh=plot(etc_trace_obj.axis_trace, tmp,'color',etc_trace_obj.config_trace_color);
+set(hh,'linewidth',etc_trace_obj.config_trace_width);
+
 %assign a tag for each trace
 for idx=1:length(hh) 
     m=etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix(idx,:);
@@ -537,7 +553,7 @@ try
     
     idx=find((etc_trace_obj.trigger.time(trigger_idx)>=etc_trace_obj.time_begin_idx)&(etc_trace_obj.trigger.time(trigger_idx)<=etc_trace_obj.time_end_idx));
     
-    h=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.trigger.time(trigger_idx(idx))-etc_trace_obj.time_begin_idx,[2 1]),repmat(get(etc_trace_obj.axis_trace,'ylim')',[1 length(idx)]),'LineWidth',2,'LineStyle','-','Color',[0 1 0].*1.0);
+    h=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.trigger.time(trigger_idx(idx))-etc_trace_obj.time_begin_idx,[2 1]),repmat(get(etc_trace_obj.axis_trace,'ylim')',[1 length(idx)]),'LineWidth',2,'LineStyle','-','Color',etc_trace_obj.config_current_trigger_color);
     
 catch ME
 end;
@@ -552,7 +568,7 @@ try
     end;
     ylim=get(etc_trace_obj.axis_trace,'ylim');
     if(~etc_trace_obj.flag_mark)
-        etc_trace_obj.time_select_line=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1,[2 1]),get(etc_trace_obj.axis_trace,'ylim')','LineWidth',2,'LineStyle','-','Color','m');
+        etc_trace_obj.time_select_line=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1,[2 1]),get(etc_trace_obj.axis_trace,'ylim')','LineWidth',2,'LineStyle','-','Color',etc_trace_obj.config_current_time_color);
     else
         etc_trace_obj.time_select_line=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1,[2 1]),get(etc_trace_obj.axis_trace,'ylim')','LineWidth',2,'LineStyle','-','Color','r');
     end;

@@ -69,6 +69,8 @@ if(~isempty(etc_trace_obj.montage))
         str{idx}=etc_trace_obj.montage{idx}.name;
     end;
     set(handles.listbox_montage,'string',str);
+    set(handles.listbox_montage,'value',etc_trace_obj.montage_idx);
+
     guidata(hObject, handles);
 end;
 

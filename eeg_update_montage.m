@@ -1,22 +1,43 @@
-function eeg_update_montage(montage)
+function eeg_update_montage(montage,varargin)
 
 global etc_trace_obj;
+
+flag_add_bcg=1;
+
+for i=1:length(varargin)/2
+    option=varargin{i*2-1};
+    option_value=varargin{i*2};
+    switch lower(option)
+        case 'ch_names'
+            etc_trace_obj.ch_names=option_value;
+        case 'flag_add_bcg'
+            flag_add_bcg=option_value;
+        otherwise
+            fprintf('unkown option [%s].\nerror!\n',option);
+            return;
+    end;
+end;
 
 try
     %montage=[];
     %load(sprintf('%s/%s',pathname,filename));
     %load(filename);
     
-    for idx=1:length(montage)
+    for midx=1:length(montage)
         found=0;
-        for ii=1:length(etc_trace_obj.montage)
-            if(strcmp(etc_trace_obj.montage{ii}.name,montage{idx}.name))
-                found=1;
+        if(isfield(etc_trace_obj,'montage'))
+            for ii=1:length(etc_trace_obj.montage)
+                if(strcmp(etc_trace_obj.montage{ii}.name,montage{midx}.name))
+                    found=1;
+                end;
             end;
         end;
         if(~found)
-            etc_trace_obj.montage{end+1}=montage{idx};
-            
+            if(~isfield(etc_trace_obj,'montage'))
+                etc_trace_obj.montage{1}=montage{midx};
+            else
+                etc_trace_obj.montage{end+1}=montage{midx};
+            end;
             %creating montage matrix
             M=[];
             ecg_idx=[];
@@ -36,7 +57,10 @@ try
                 end;
                 M=cat(1,M,m);
             end;
-            M(end+1,end+1)=1;
+            
+            if(flag_add_bcg)
+                M(end+1,end+1)=1;
+            end;
             
             etc_trace_obj.montage{end}.config_matrix=M;
             
@@ -47,8 +71,8 @@ try
     end;
     
     str={};
-    for idx=1:length(etc_trace_obj.montage)
-        str{idx}=etc_trace_obj.montage{idx}.name;
+    for midx=1:length(etc_trace_obj.montage)
+        str{midx}=etc_trace_obj.montage{midx}.name;
     end;
     
 catch ME

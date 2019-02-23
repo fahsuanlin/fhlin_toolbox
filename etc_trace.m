@@ -17,6 +17,12 @@ select=[];
 montage=[];
 scaling=[];
 
+config_trace_center_frac=0.5;
+config_trace_width=1;
+config_trace_color=[0    0.4470    0.7410];
+config_current_time_color=[1 0 1]; %magenta
+config_current_trigger_color=[1 0 1]; %magenta
+
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
@@ -47,6 +53,16 @@ for i=1:length(varargin)/2
             scaling=option_value;
         case 'topo'
             topo=option_value;
+        case 'config_trace_center_frac'
+            config_trace_center_frac=option_value;
+        case 'config_trace_width'
+            config_trace_width=option_value;
+        case 'config_trace_color'
+            config_trace_color=option_value;
+        case 'config_current_time_color'
+            config_current_time_color=option_value;
+        case 'config_current_trigger_color'
+            config_current_trigger_color=option_value;
         otherwise
             fprintf('unkown option [%s]!\nerror!\n',option);
             return;
@@ -172,6 +188,12 @@ etc_trace_obj.topo=topo;
 etc_trace_obj.flag_mark=flag_mark;
 
 etc_trace_obj.trace_selected_idx=[];
+
+etc_trace_obj.config_trace_center_frac=config_trace_center_frac;
+etc_trace_obj.config_trace_width=config_trace_width;
+etc_trace_obj.config_trace_color=config_trace_color;
+etc_trace_obj.config_current_time_color=config_current_time_color;
+etc_trace_obj.config_current_trigger_color=config_current_trigger_color;
 
 set(etc_trace_obj.fig_trace,'WindowButtonDownFcn','etc_trace_handle(''bd'')');
 set(etc_trace_obj.fig_trace,'KeyPressFcn','etc_trace_handle(''kb'')');

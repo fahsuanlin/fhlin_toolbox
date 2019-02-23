@@ -22,7 +22,7 @@ function varargout = etc_trace_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_gui
 
-% Last Modified by GUIDE v2.5 19-Oct-2018 10:09:16
+% Last Modified by GUIDE v2.5 23-Feb-2019 00:59:43
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -652,7 +652,7 @@ try
     end;
     if(mmidx>=1)
         
-        a=trigger_time_idx(mmidx)-round(etc_trace_obj.time_duration_idx/5)+1;
+        a=trigger_time_idx(mmidx)-round(etc_trace_obj.time_duration_idx/(1/etc_trace_obj.config_trace_center_frac))+1;
         b=a+etc_trace_obj.time_duration_idx;
         
         if(a>=1&&b<=size(etc_trace_obj.data,2))
@@ -724,7 +724,7 @@ try
     
     if(mmidx<=length(trigger_time_idx))
         
-        a=trigger_time_idx(mmidx)-round(etc_trace_obj.time_duration_idx/5)+1;
+        a=trigger_time_idx(mmidx)-round(etc_trace_obj.time_duration_idx/(1/etc_trace_obj.config_trace_center_frac))+1;
         b=a+etc_trace_obj.time_duration_idx;
         
         if(a>=1&&b<=size(etc_trace_obj.data,2))
@@ -870,10 +870,10 @@ etc_trace_obj.time_select_idx =str2double(get(hObject,'String'));
 
 try
     trigger_time_idx=etc_trace_obj.time_select_idx;
-    [tmp,mmidx]=min(abs(trigger_time_idx-etc_trace_obj.time_begin_idx-round(etc_trace_obj.time_duration_idx./5)));
+    [tmp,mmidx]=min(abs(trigger_time_idx-etc_trace_obj.time_begin_idx-round(etc_trace_obj.time_duration_idx./(1/etc_trace_obj.config_trace_center_frac))));
     
     if(mmidx>=1)
-        a=trigger_time_idx-round(etc_trace_obj.time_duration_idx/5)+1;
+        a=trigger_time_idx-round(etc_trace_obj.time_duration_idx/(1/etc_trace_obj.config_trace_center_frac))+1;
         b=a+etc_trace_obj.time_duration_idx;
         
         if(a<1) 
@@ -948,10 +948,10 @@ etc_trace_obj.time_select_idx =round(str2double(get(hObject,'String')).*etc_trac
 
 try
     trigger_time_idx=etc_trace_obj.time_select_idx;
-    [tmp,mmidx]=min(abs(trigger_time_idx-etc_trace_obj.time_begin_idx-round(etc_trace_obj.time_duration_idx./5)));
+    [tmp,mmidx]=min(abs(trigger_time_idx-etc_trace_obj.time_begin_idx-round(etc_trace_obj.time_duration_idx./(1/etc_trace_obj.config_trace_center_frac))));
     
     if(mmidx>=1)
-        a=trigger_time_idx-round(etc_trace_obj.time_duration_idx/5)+1;
+        a=trigger_time_idx-round(etc_trace_obj.time_duration_idx/(1/etc_trace_obj.config_trace_center_frac))+1;
         b=a+etc_trace_obj.time_duration_idx;
         
         if(a<1) 
