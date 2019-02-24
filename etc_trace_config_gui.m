@@ -22,7 +22,7 @@ function varargout = etc_trace_config_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_config_gui
 
-% Last Modified by GUIDE v2.5 23-Feb-2019 21:55:13
+% Last Modified by GUIDE v2.5 24-Feb-2019 07:58:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -205,9 +205,15 @@ set(findobj(hObject,'tag','edit_config_trace_center_frac'),'String',sprintf('%2.
 %set(hObject,'String',sprintf('%d',etc_trace_obj.config_trace_width));
 set(findobj(hObject,'tag','edit_config_trace_width'),'String',sprintf('%d',etc_trace_obj.config_trace_width));
 
+set(findobj(hObject,'tag','edit_config_aux_trace_width'),'String',sprintf('%d',etc_trace_obj.config_aux_trace_width));
+
 %hObject=findobj(gca,'tag','pushbutton_config_trace_color');
 %set(hObject,'BackgroundColor',etc_trace_obj.config_trace_color);
 set(findobj(hObject,'tag','pushbutton_config_trace_color'),'BackgroundColor',etc_trace_obj.config_trace_color);
+
+set(findobj(hObject,'tag','pushbutton_config_aux_trace_color'),'BackgroundColor',etc_trace_obj.config_aux_trace_color);
+
+set(findobj(hObject,'tag','checkbox_config_aux_trace'),'value',etc_trace_obj.config_aux_trace_flag);
 
 %hObject=findobj(gca,'tag','pushbutton_config_trace_color');
 %set(hObject,'BackgroundColor',etc_trace_obj.config_current_time_color);
@@ -246,3 +252,60 @@ global etc_trace_obj;
 
 etc_trace_obj.config_current_time_flag=get(hObject,'Value');
 etc_trace_handle('redraw');
+
+
+
+function edit_config_aux_trace_width_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_config_aux_trace_width (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_config_aux_trace_width as text
+%        str2double(get(hObject,'String')) returns contents of edit_config_aux_trace_width as a double
+global etc_trace_obj;
+
+etc_trace_obj.config_aux_trace_width=round(str2double(get(hObject,'String')));
+etc_trace_handle('redraw');
+
+% --- Executes during object creation, after setting all properties.
+function edit_config_aux_trace_width_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_config_aux_trace_width (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pushbutton_config_aux_trace_color.
+function pushbutton_config_aux_trace_color_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_config_aux_trace_color (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+color = uisetcolor(etc_trace_obj.config_aux_trace_color);
+
+if((length(color)==1)&&(color<eps))
+else
+    obj=findobj('tag','pushbutton_config_aux_trace_color');
+    set(obj,'backgroundcolor',color);
+    etc_trace_obj.config_aux_trace_color=color;
+    etc_trace_handle('redraw');
+end;
+
+
+% --- Executes on button press in checkbox_config_aux_trace.
+function checkbox_config_aux_trace_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_config_aux_trace (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_config_aux_trace
+global etc_trace_obj;
+
+etc_trace_obj.config_aux_trace_flag=get(hObject,'Value');
+etc_trace_handle('redraw')

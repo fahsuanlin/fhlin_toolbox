@@ -455,7 +455,11 @@ if(isfield(etc_trace_obj,'aux_data'))
             tmp=tmp(1:end-1,:);
             tmp=tmp';
              
-            hh=plot(etc_trace_obj.axis_trace, tmp,'color',cc(ii,:));
+            %hh=plot(etc_trace_obj.axis_trace, tmp,'color',cc(ii,:));
+            if(etc_trace_obj.config_aux_trace_flag)
+                hh=plot(etc_trace_obj.axis_trace, tmp,'color',etc_trace_obj.config_aux_trace_color);
+                set(hh,'linewidth',etc_trace_obj.config_aux_trace_width);
+            end;
             hold(etc_trace_obj.axis_trace,'on');
         end;
     end;
