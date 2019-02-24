@@ -348,8 +348,16 @@ try
         set(hObject,'String',num2str(etc_trace_obj.trigger_now));
     end;
     
-    a=trigger_time_idx(mmidx)-round(etc_trace_obj.time_duration_idx/5)+1;
+    a=trigger_time_idx(mmidx)-round(etc_trace_obj.time_duration_idx/(1/etc_trace_obj.config_trace_center_frac))+1;
     b=a+etc_trace_obj.time_duration_idx;
+    if(a<1)
+        a=1;
+        b=a+etc_trace_obj.time_duration_idx;
+    end;
+    if(b>size(etc_trace_obj.data,2))
+        a=size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx;
+        b=size(etc_trace_obj.data,2);
+    end;
     
     if(a>=1&&b<=size(etc_trace_obj.data,2))
         etc_trace_obj.time_begin_idx=a;
@@ -654,6 +662,14 @@ try
         
         a=trigger_time_idx(mmidx)-round(etc_trace_obj.time_duration_idx/(1/etc_trace_obj.config_trace_center_frac))+1;
         b=a+etc_trace_obj.time_duration_idx;
+        if(a<1) 
+            a=1;
+            b=a+etc_trace_obj.time_duration_idx;
+        end;
+        if(b>size(etc_trace_obj.data,2))
+            a=size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx;
+            b=size(etc_trace_obj.data,2);
+        end;
         
         if(a>=1&&b<=size(etc_trace_obj.data,2))
             etc_trace_obj.time_begin_idx=a;
@@ -726,6 +742,14 @@ try
         
         a=trigger_time_idx(mmidx)-round(etc_trace_obj.time_duration_idx/(1/etc_trace_obj.config_trace_center_frac))+1;
         b=a+etc_trace_obj.time_duration_idx;
+        if(a<1) 
+            a=1;
+            b=a+etc_trace_obj.time_duration_idx;
+        end;
+        if(b>size(etc_trace_obj.data,2))
+            a=size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx;
+            b=size(etc_trace_obj.data,2);
+        end;
         
         if(a>=1&&b<=size(etc_trace_obj.data,2))
             etc_trace_obj.time_begin_idx=a;

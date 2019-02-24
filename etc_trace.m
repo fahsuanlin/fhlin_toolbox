@@ -21,7 +21,9 @@ config_trace_center_frac=0.5;
 config_trace_width=1;
 config_trace_color=[0    0.4470    0.7410];
 config_current_time_color=[1 0 1]; %magenta
-config_current_trigger_color=[1 0 1]; %magenta
+config_current_trigger_color=[1 1 1].*0.6; %gray
+config_current_trigger_flag=1;
+config_current_time_flag=1;
 
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
@@ -63,6 +65,10 @@ for i=1:length(varargin)/2
             config_current_time_color=option_value;
         case 'config_current_trigger_color'
             config_current_trigger_color=option_value;
+        case 'config_current_trigger_flag'
+            config_current_trigger_flag=option_value;
+        case 'config_current_time_flag'
+            config_current_time_flag=option_value;
         otherwise
             fprintf('unkown option [%s]!\nerror!\n',option);
             return;
@@ -194,6 +200,8 @@ etc_trace_obj.config_trace_width=config_trace_width;
 etc_trace_obj.config_trace_color=config_trace_color;
 etc_trace_obj.config_current_time_color=config_current_time_color;
 etc_trace_obj.config_current_trigger_color=config_current_trigger_color;
+etc_trace_obj.config_current_trigger_flag=config_current_trigger_flag;
+etc_trace_obj.config_current_time_flag=config_current_time_flag;
 
 set(etc_trace_obj.fig_trace,'WindowButtonDownFcn','etc_trace_handle(''bd'')');
 set(etc_trace_obj.fig_trace,'KeyPressFcn','etc_trace_handle(''kb'')');

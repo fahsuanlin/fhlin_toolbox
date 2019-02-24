@@ -22,7 +22,7 @@ function varargout = etc_trace_config_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_config_gui
 
-% Last Modified by GUIDE v2.5 23-Feb-2019 07:41:42
+% Last Modified by GUIDE v2.5 23-Feb-2019 21:55:13
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -203,7 +203,7 @@ set(findobj(hObject,'tag','edit_config_trace_center_frac'),'String',sprintf('%2.
 
 %hObject=findobj(gca,'tag','edit_config_trace_width');
 %set(hObject,'String',sprintf('%d',etc_trace_obj.config_trace_width));
-set(findobj(hObject,'tag','edit_config_trace_width'),'String',sprintf('%2.2f',etc_trace_obj.config_trace_width));
+set(findobj(hObject,'tag','edit_config_trace_width'),'String',sprintf('%d',etc_trace_obj.config_trace_width));
 
 %hObject=findobj(gca,'tag','pushbutton_config_trace_color');
 %set(hObject,'BackgroundColor',etc_trace_obj.config_trace_color);
@@ -216,3 +216,33 @@ set(findobj(hObject,'tag','pushbutton_config_current_time_color'),'BackgroundCol
 %hObject=findobj(gca,'tag','pushbutton_config_trigger_color');
 %set(hObject,'BackgroundColor',etc_trace_obj.config_current_trigger_color);
 set(findobj(hObject,'tag','pushbutton_config_current_trigger_color'),'BackgroundColor',etc_trace_obj.config_current_trigger_color);
+
+
+set(findobj(hObject,'tag','checkbox_config_current_trigger'),'value',etc_trace_obj.config_current_trigger_flag);
+
+set(findobj(hObject,'tag','checkbox_config_current_time'),'value',etc_trace_obj.config_current_time_flag);
+
+% --- Executes on button press in checkbox_config_current_trigger.
+function checkbox_config_current_trigger_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_config_current_trigger (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_config_current_trigger
+global etc_trace_obj;
+
+etc_trace_obj.config_current_trigger_flag=get(hObject,'Value');
+etc_trace_handle('redraw');
+
+
+% --- Executes on button press in checkbox_config_current_time.
+function checkbox_config_current_time_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_config_current_time (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_config_current_time
+global etc_trace_obj;
+
+etc_trace_obj.config_current_time_flag=get(hObject,'Value');
+etc_trace_handle('redraw');
