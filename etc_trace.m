@@ -20,6 +20,7 @@ scaling=[];
 config_trace_center_frac=0.5;
 config_trace_width=1;
 config_trace_color=[0    0.4470    0.7410];
+config_trace_flag=1;
 config_aux_trace_width=1;
 config_aux_trace_color=[0.8500    0.3250    0.0980];
 config_aux_trace_flag=1;
@@ -64,6 +65,8 @@ for i=1:length(varargin)/2
             config_trace_width=option_value;
         case 'config_trace_color'
             config_trace_color=option_value;
+        case 'config_trace_flag'
+            config_trace_flag=option_value;
         case 'config_aux_trace_width'
             config_aux_trace_width=option_value;
         case 'config_aux_trace_color'
@@ -207,6 +210,7 @@ etc_trace_obj.trace_selected_idx=[];
 etc_trace_obj.config_trace_center_frac=config_trace_center_frac;
 etc_trace_obj.config_trace_width=config_trace_width;
 etc_trace_obj.config_trace_color=config_trace_color;
+etc_trace_obj.config_trace_flag=config_trace_flag;
 etc_trace_obj.config_aux_trace_width=config_trace_width;
 etc_trace_obj.config_aux_trace_color=config_aux_trace_color;
 etc_trace_obj.config_aux_trace_flag=config_aux_trace_flag;

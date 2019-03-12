@@ -486,36 +486,37 @@ tmp=S*tmp;
 
 tmp=tmp(1:end-1,:);
 tmp=tmp';
-hh=plot(etc_trace_obj.axis_trace, tmp,'color',etc_trace_obj.config_trace_color);
-set(hh,'linewidth',etc_trace_obj.config_trace_width);
-
-%assign a tag for each trace
-for idx=1:length(hh) 
-    m=etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix(idx,:);
-    ii=find(m>eps);
-    if(~isempty(ii))
-        ss=etc_trace_obj.ch_names{ii(1)};
-        if(length(ii)>1)
-            for ii_idx=2:length(ii)
-                ss=sprintf('%s+%1.0fx%s',ss,m(ii(ii_idx)),etc_trace_obj.ch_names{ii(ii_idx)});
+if(etc_trace_obj.config_trace_flag)
+    hh=plot(etc_trace_obj.axis_trace, tmp,'color',etc_trace_obj.config_trace_color);
+    set(hh,'linewidth',etc_trace_obj.config_trace_width);
+    %assign a tag for each trace
+    for idx=1:length(hh)
+        m=etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix(idx,:);
+        ii=find(m>eps);
+        if(~isempty(ii))
+            ss=etc_trace_obj.ch_names{ii(1)};
+            if(length(ii)>1)
+                for ii_idx=2:length(ii)
+                    ss=sprintf('%s+%1.0fx%s',ss,m(ii(ii_idx)),etc_trace_obj.ch_names{ii(ii_idx)});
+                end;
             end;
         end;
-    end;
-    
-    ii=find(-m>eps);
-    if(~isempty(ii))
-        ss=sprintf('%s%1.0fx%s',ss,m(ii(1)),etc_trace_obj.ch_names{ii(1)});
-        if(length(ii)>1)
-            for ii_idx=2:length(ii)
-                ss=sprintf('%s-%1.0fx%s',ss,-m(ii(ii_idx)),etc_trace_obj.ch_names{ii(ii_idx)});
+        
+        ii=find(-m>eps);
+        if(~isempty(ii))
+            ss=sprintf('%s%1.0fx%s',ss,m(ii(1)),etc_trace_obj.ch_names{ii(1)});
+            if(length(ii)>1)
+                for ii_idx=2:length(ii)
+                    ss=sprintf('%s-%1.0fx%s',ss,-m(ii(ii_idx)),etc_trace_obj.ch_names{ii(ii_idx)});
+                end;
             end;
         end;
+        etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names{idx}=ss;
+        %set(hh(idx),'tag',etc_trace_obj.ch_names{idx});
+        set(hh(idx),'tag',ss);
     end;
-    etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names{idx}=ss;
-    %set(hh(idx),'tag',etc_trace_obj.ch_names{idx}); 
-    set(hh(idx),'tag',ss); 
+    set(hh,'ButtonDownFcn',@etc_trace_callback);
 end;
-set(hh,'ButtonDownFcn',@etc_trace_callback);
 
 %highlight selected trace
 if(isfield(etc_trace_obj,'trace_selected_idx'))

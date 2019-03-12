@@ -22,7 +22,7 @@ function varargout = etc_trace_config_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_config_gui
 
-% Last Modified by GUIDE v2.5 24-Feb-2019 07:58:42
+% Last Modified by GUIDE v2.5 26-Feb-2019 10:05:29
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -211,6 +211,8 @@ set(findobj(hObject,'tag','edit_config_aux_trace_width'),'String',sprintf('%d',e
 %set(hObject,'BackgroundColor',etc_trace_obj.config_trace_color);
 set(findobj(hObject,'tag','pushbutton_config_trace_color'),'BackgroundColor',etc_trace_obj.config_trace_color);
 
+set(findobj(hObject,'tag','checkbox_config_trace'),'value',etc_trace_obj.config_trace_flag);
+
 set(findobj(hObject,'tag','pushbutton_config_aux_trace_color'),'BackgroundColor',etc_trace_obj.config_aux_trace_color);
 
 set(findobj(hObject,'tag','checkbox_config_aux_trace'),'value',etc_trace_obj.config_aux_trace_flag);
@@ -308,4 +310,17 @@ function checkbox_config_aux_trace_Callback(hObject, eventdata, handles)
 global etc_trace_obj;
 
 etc_trace_obj.config_aux_trace_flag=get(hObject,'Value');
+etc_trace_handle('redraw')
+
+
+% --- Executes on button press in checkbox_config_trace.
+function checkbox_config_trace_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_config_trace (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_config_trace
+global etc_trace_obj;
+
+etc_trace_obj.config_trace_flag=get(hObject,'Value');
 etc_trace_handle('redraw')

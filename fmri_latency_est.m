@@ -237,6 +237,29 @@ else
         onset=-beta(2)/beta(1);
         
         
+        %"off" time-to-half; find timing indices after peak
+        [dummy,max_idx]=max(fitted);
+        tmp=fitted;
+        tmp(1:max_idx)=dummy;
+        [dummy,min_idx]=min(tmp);
+        
+        tt=timeVec(max_idx:min_idx);
+        if(isempty(tt))
+            latency=nan;
+        else
+            dd=fitted(max_idx:min_idx);
+            
+            xx=diff(sign(dd-max(dd)/2));
+            latency_idx=find(xx<-1);
+            if(isempty(latency_idx))
+                latency_off=nan;
+            else
+                latency_idx=latency_idx(1);
+                %[dummy,latency_idx]=min(abs(dd-0.5));
+                latency_off=tt(latency_idx);
+            end;
+        end;
+        
     end;
 end;
 return;
