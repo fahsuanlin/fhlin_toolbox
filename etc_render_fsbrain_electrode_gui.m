@@ -299,6 +299,7 @@ if(etc_render_fsbrain.electrode_add_gui_ok)
     if(length(etc_render_fsbrain.electrode)==1)
         etc_render_fsbrain.electrode_idx=1;
         etc_render_fsbrain.electrode_contact_idx=1;
+        etc_render_fsbrain.electrode_update_contact_view_flag=0;
     end;
     
     %initialize new electrode and update its contact coordinates
@@ -341,15 +342,16 @@ if(etc_render_fsbrain.electrode_add_gui_ok)
         str{e_idx}=etc_render_fsbrain.electrode(e_idx).name;
     end;
     set(handles.listbox_electrode,'string',str);
-    
-    %     %update contact list in the GUI
-    %     %etc_render_fsbrain.electrode_contact_idx=1;
-    %     str={};
-    %     for c_idx=1:etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact
-    %         str{c_idx}=sprintf('%d',c_idx);
-    %     end;
-    %     set(handles.listbox_contact,'string',str);
-
+    set(handles.listbox_electrode,'value',etc_render_fsbrain.electrode_idx);
+   
+    %update contact list in the GUI
+    %etc_render_fsbrain.electrode_contact_idx=1;
+    str={};
+    for c_idx=1:etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact
+        str{c_idx}=sprintf('%d',c_idx);
+    end;
+    set(handles.listbox_contact,'string',str);
+    set(handles.listbox_contact,'value',etc_render_fsbrain.electrode_contact_idx);
     guidata(hObject, handles);
 end;
     
