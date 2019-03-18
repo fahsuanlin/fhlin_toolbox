@@ -71,6 +71,8 @@ topo_aux2_point_coords=[];
 topo_aux2_point_coords_h=[];
 topo_aux2_point_name={};
 topo_aux2_point_name_h=[];
+%electrode
+electrode=[];
 
 %label (annotation)
 label_vertex=[];
@@ -190,6 +192,8 @@ for idx=1:length(varargin)/2
             label_ctab=option_value;
         case 'file_annot'
             file_annot=option_value;
+        case 'electrode'
+            electrode=option_value;
         otherwise
             fprintf('unknown option [%s]...\n',option);
             return;
@@ -596,6 +600,9 @@ etc_render_fsbrain.aux2_point_name_h=topo_aux2_point_name_h;
 
 etc_render_fsbrain.register_rotate_angle=3; %default: 3 degrees
 etc_render_fsbrain.register_translate_dist=1e-3; %default: 1 mm
+
+
+etc_render_fsbrain.electrode=electrode;
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 %setup call-back function

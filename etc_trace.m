@@ -221,6 +221,7 @@ etc_trace_obj.config_current_time_flag=config_current_time_flag;
 
 set(etc_trace_obj.fig_trace,'WindowButtonDownFcn','etc_trace_handle(''bd'')');
 set(etc_trace_obj.fig_trace,'KeyPressFcn','etc_trace_handle(''kb'')');
+set(etc_trace_obj.fig_trace,'HandleVisibility','on')
 set(etc_trace_obj.fig_trace,'invert','off');
 set(etc_trace_obj.fig_trace,'Name','');
 set(etc_trace_obj.fig_trace,'DeleteFcn','etc_trace_handle(''del'')');
