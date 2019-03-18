@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_gui
 
-% Last Modified by GUIDE v2.5 27-Dec-2016 16:39:15
+% Last Modified by GUIDE v2.5 18-Mar-2019 11:51:56
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -55,6 +55,23 @@ function etc_render_fsbrain_gui_OpeningFcn(hObject, eventdata, handles, varargin
 % Choose default command line output for etc_render_fsbrain_gui
 handles.output = hObject;
 
+global etc_render_fsbrain;
+
+%surface opacity slider
+set(handles.slider_alpha,'value',get(etc_render_fsbrain.h,'facealpha'));
+
+%colorbar check box
+set(handles.checkbox_show_colorbar,'value',0);
+if(isfield(etc_render_fsbrain,'h_colorbar_pos'))
+    if(isempty(etc_render_fsbrain.h_colorbar_pos))
+        set(handles.checkbox_show_colorbar,'value',1);
+    end;
+end;
+if(get(handles.checkbox_show_colorbar,'value'))
+    set(handles.checkbox_show_colorbar,'enable','on');
+else
+    set(handles.checkbox_show_colorbar,'enable','off');
+end;
 % Update handles structure
 guidata(hObject, handles);
 
@@ -338,18 +355,18 @@ function checkbox_show_colorbar_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to checkbox_show_colorbar (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
-global etc_render_fsbrain
-
-if(~isempty(etc_render_fsbrain.overlay_stc)|~isempty(etc_render_fsbrain.overlay_value))
-    set(hObject,'value',1);
-    if(isfield(etc_render_fsbrain,'h_colorbar_pos'))
-        if(isempty(etc_render_fsbrain.h_colorbar_pos))
-            set(hObject,'value',0);
-        end;
-    end;
-else
-    set(hObject,'enable','off');
-end;
+% global etc_render_fsbrain
+% 
+% if(~isempty(etc_render_fsbrain.overlay_stc)|~isempty(etc_render_fsbrain.overlay_value))
+%     set(hObject,'value',1);
+%     if(isfield(etc_render_fsbrain,'h_colorbar_pos'))
+%         if(isempty(etc_render_fsbrain.h_colorbar_pos))
+%             set(hObject,'value',0);
+%         end;
+%     end;
+% else
+%     set(hObject,'enable','off');
+% end;
 
 
 
@@ -381,3 +398,29 @@ if(~isempty(etc_render_fsbrain.overlay_stc)|~isempty(etc_render_fsbrain.overlay_
 else
     set(hObject,'enable','off');
 end;
+
+
+% --- Executes on slider movement.
+function slider_alpha_Callback(hObject, eventdata, handles)
+% hObject    handle to slider_alpha (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+global etc_render_fsbrain;
+
+set(etc_render_fsbrain.h,'facealpha',get(hObject,'Value'));
+etc_render_fsbrain.alpha=get(hObject,'Value');
+guidata(hObject, handles);
+
+% --- Executes during object creation, after setting all properties.
+function slider_alpha_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to slider_alpha (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end

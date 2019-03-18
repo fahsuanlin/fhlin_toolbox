@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_label_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_label_gui
 
-% Last Modified by GUIDE v2.5 13-Apr-2018 13:46:54
+% Last Modified by GUIDE v2.5 18-Mar-2019 11:42:37
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
