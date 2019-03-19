@@ -609,7 +609,7 @@ etc_render_fsbrain.electrode=electrode;
 %%%%%%%%%%%%%%%%%%%%%%%%
 set(gcf,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
 set(gcf,'DeleteFcn','etc_render_fsbrain_handle(''del'')');
-set(gcf,'CloseRequestFcn','etc_render_fsbrain_handle(''del'')');
+set(gcf,'CloseRequestFcn','etc_render_fsbrain_handle(''del'')'); 
 
 %set(gcf,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
 set(gcf,'KeyPressFcn',@etc_render_fsbrain_kbhandle);
