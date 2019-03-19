@@ -594,9 +594,11 @@ switch lower(param)
                     vv=etc_render_fsbrain.orig_vertex_coords;
                     dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
                     [min_dist,min_dist_idx]=min(dist);
-                    surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+                    %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
                     
-                    draw_pointer('pt',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+                    %draw_pointer('pt',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+                    draw_pointer('pt',surface_coord,'min_dist_idx',[],'click_vertex_vox',click_vertex_vox);
+                
                 end;
             end;
         elseif(gcf==etc_render_fsbrain.fig_stc)
@@ -709,7 +711,7 @@ end;
 etc_render_fsbrain.click_coord=pt;
 etc_render_fsbrain.click_point=plot3(pt(1),pt(2),pt(3),'.');
 fprintf('\nsurface coordinate of the selected point ={%s}\n',num2str(pt','%2.2f '));
-set(etc_render_fsbrain.click_point,'color',[1 0 1],'markersize',24);
+set(etc_render_fsbrain.click_point,'color',[1 0 1],'markersize',28);
 
 vv=etc_render_fsbrain.vertex_coords;
 if(isempty(min_dist_idx))
@@ -719,8 +721,10 @@ end;
 fprintf('the nearest vertex: IDX=[%d] {%2.2f %2.2f %2.2f} \n',min_dist_idx,vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3));
 etc_render_fsbrain.click_coord_round=[vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3)];
 etc_render_fsbrain.click_vertex=min_dist_idx;
-etc_render_fsbrain.click_vertex_point=plot3(vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3),'.');
-set(etc_render_fsbrain.click_vertex_point,'color',[0 1 1],'markersize',12);
+if(etc_render_fsbrain.show_nearest_brain_surface_location_flag)
+    etc_render_fsbrain.click_vertex_point=plot3(vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3),'.');
+    set(etc_render_fsbrain.click_vertex_point,'color',[0 1 1],'markersize',24);
+end;
 
 if(isfield(etc_render_fsbrain,'flag_collect_vertex'))
     if(etc_render_fsbrain.flag_collect_vertex)
@@ -971,9 +975,11 @@ if(~isempty(etc_render_fsbrain.vol_vox))
         etc_render_fsbrain.vol_img_h_ax=text(mm+etc_render_fsbrain.img_ax_padx+etc_render_fsbrain.click_vertex_vox(3), etc_render_fsbrain.img_ax_pady+etc_render_fsbrain.click_vertex_vox(1),'x'); set(etc_render_fsbrain.vol_img_h_ax,'color','m','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',12);
         etc_render_fsbrain.vol_img_h_sag=text(etc_render_fsbrain.img_sag_padx+etc_render_fsbrain.click_vertex_vox(3), mm+etc_render_fsbrain.img_sag_pady+etc_render_fsbrain.click_vertex_vox(2),'x'); set(etc_render_fsbrain.vol_img_h_sag,'color','m','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',12);
         
-        etc_render_fsbrain.vol_img_h_round_cor=text(etc_render_fsbrain.img_cor_padx+etc_render_fsbrain.click_vertex_vox_round(1), etc_render_fsbrain.img_cor_pady+etc_render_fsbrain.click_vertex_vox_round(2),'o'); set(etc_render_fsbrain.vol_img_h_round_cor,'color','c','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',12);
-        etc_render_fsbrain.vol_img_h_round_ax=text(mm+etc_render_fsbrain.img_ax_padx+etc_render_fsbrain.click_vertex_vox_round(3), etc_render_fsbrain.img_ax_pady+etc_render_fsbrain.click_vertex_vox_round(1),'o'); set(etc_render_fsbrain.vol_img_h_round_ax,'color','c','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',12);
-        etc_render_fsbrain.vol_img_h_round_sag=text(etc_render_fsbrain.img_sag_padx+etc_render_fsbrain.click_vertex_vox_round(3), mm+etc_render_fsbrain.img_sag_pady+etc_render_fsbrain.click_vertex_vox_round(2),'o'); set(etc_render_fsbrain.vol_img_h_round_sag,'color','c','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',12);
+        if(etc_render_fsbrain.show_nearest_brain_surface_location_flag)
+            etc_render_fsbrain.vol_img_h_round_cor=text(etc_render_fsbrain.img_cor_padx+etc_render_fsbrain.click_vertex_vox_round(1), etc_render_fsbrain.img_cor_pady+etc_render_fsbrain.click_vertex_vox_round(2),'o'); set(etc_render_fsbrain.vol_img_h_round_cor,'color','c','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',12);
+            etc_render_fsbrain.vol_img_h_round_ax=text(mm+etc_render_fsbrain.img_ax_padx+etc_render_fsbrain.click_vertex_vox_round(3), etc_render_fsbrain.img_ax_pady+etc_render_fsbrain.click_vertex_vox_round(1),'o'); set(etc_render_fsbrain.vol_img_h_round_ax,'color','c','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',12);
+            etc_render_fsbrain.vol_img_h_round_sag=text(etc_render_fsbrain.img_sag_padx+etc_render_fsbrain.click_vertex_vox_round(3), mm+etc_render_fsbrain.img_sag_pady+etc_render_fsbrain.click_vertex_vox_round(2),'o'); set(etc_render_fsbrain.vol_img_h_round_sag,'color','c','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',12);
+        end;
     catch ME
     end;
     

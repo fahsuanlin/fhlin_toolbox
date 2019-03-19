@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_electrode_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_electrode_gui
 
-% Last Modified by GUIDE v2.5 18-Mar-2019 13:33:00
+% Last Modified by GUIDE v2.5 19-Mar-2019 14:32:41
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -63,6 +63,7 @@ guidata(hObject, handles);
 global etc_render_fsbrain;
 
 set(handles.slider_alpha,'value',get(etc_render_fsbrain.h,'facealpha'));
+set(handles.checkbox_nearest_brain_surface,'value',etc_render_fsbrain.show_nearest_brain_surface_location_flag);
 
 if(~isempty(etc_render_fsbrain.electrode))
     fprintf('electrodes specified...\n');
@@ -975,14 +976,14 @@ click_vertex_vox=round(v(1:3))';
 
 etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
                     
-vv=etc_render_fsbrain.orig_vertex_coords;
-dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
-[min_dist,min_dist_idx]=min(dist);
-surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+%vv=etc_render_fsbrain.orig_vertex_coords;
+%dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+%[min_dist,min_dist_idx]=min(dist);
+%surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
 
 %update figure;
 if(etc_render_fsbrain.electrode_update_contact_view_flag)
-    etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+    etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',[],'click_vertex_vox',click_vertex_vox);
 end;
 
 etc_render_fsbrain_handle('redraw');
@@ -1188,15 +1189,15 @@ click_vertex_vox=round(v(1:3))';
 
 etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
                     
-vv=etc_render_fsbrain.orig_vertex_coords;
-dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
-[min_dist,min_dist_idx]=min(dist);
-surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
-
+%vv=etc_render_fsbrain.orig_vertex_coords;
+%dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+%[min_dist,min_dist_idx]=min(dist);
+%surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+surface_coord=etc_render_fsbrain.click_coord; %clicked surface coord
 
 
 %update figure;
-etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',[],'click_vertex_vox',click_vertex_vox);
 
 etc_render_fsbrain_handle('redraw');
 
@@ -1263,4 +1264,60 @@ etc_render_fsbrain.electrode_update_contact_view_flag=get(hObject,'Value');
 
     
     
+
+
+% --- Executes on button press in pushbutton_save.
+function pushbutton_save_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_save (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global etc_render_fsbrain
+
+tstr=datestr(datetime('now'),'mmddyy_HHMMss');
+fn=sprintf('electrode_%s.txt',tstr);
+fprintf('saving [%s]...',fn);
+fp=fopen(fn,'w');
+
+for e_idx=1:length(etc_render_fsbrain.electrode)
     
+    for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
+        
+        surface_coord=etc_render_fsbrain.electrode(e_idx).coord(c_idx,:);
+        click_vertex_vox_now=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+        click_vertex_vox_now=round(click_vertex_vox_now(1:3))';
+        
+        if(e_idx==1&&c_idx==1)
+            fprintf(fp,'name\trow\tcol\tsli\t\t');
+            if(~isempty(etc_render_fsbrain.talxfm))
+                fprintf(fp,'tal_x(mm)\ttal_y(mm)\ttal_z(mm)\t\t');
+            end;
+            fprintf(fp,'\n');
+        end;
+        fprintf(fp,'%s_%d\t%1.0f\t%1.0f\t%1.0f\t\t',etc_render_fsbrain.electrode(e_idx).name,c_idx,click_vertex_vox_now(1), click_vertex_vox_now(2), click_vertex_vox_now(3));
+        if(~isempty(etc_render_fsbrain.talxfm))
+            click_vertex_point_tal=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*[click_vertex_vox_now 1].';
+            fprintf(fp,'%1.0f\t%1.0f\t%1.0f\t\t',click_vertex_point_tal(1), click_vertex_point_tal(2), click_vertex_point_tal(3));
+        end;
+        fprintf(fp,'\n');
+    end;
+    
+end;
+fclose(fp);
+fprintf('done!\n');
+
+% --- Executes on button press in checkbox_nearest_brain_surface.
+function checkbox_nearest_brain_surface_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_nearest_brain_surface (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_nearest_brain_surface
+
+
+global etc_render_fsbrain
+
+etc_render_fsbrain.show_nearest_brain_surface_location_flag=get(hObject,'Value');
+
+
+
