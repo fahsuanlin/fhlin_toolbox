@@ -580,7 +580,9 @@ dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[s
 surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
 
 %update figure;
-etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+if(etc_render_fsbrain.electrode_update_contact_view_flag)
+    etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+end;
 
 etc_render_fsbrain_handle('redraw');
 
@@ -646,8 +648,9 @@ dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[s
 surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
 
 %update figure;
-etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
-
+if(etc_render_fsbrain.electrode_update_contact_view_flag)
+    etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+end;
 etc_render_fsbrain_handle('redraw');
 
 % --- Executes on button press in pushbutton_move_up.
@@ -701,7 +704,9 @@ dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[s
 surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
 
 %update figure;
-etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+if(etc_render_fsbrain.electrode_update_contact_view_flag)
+    etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+end;
 
 etc_render_fsbrain_handle('redraw');
 
@@ -756,7 +761,9 @@ dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[s
 surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
 
 %update figure;
-etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+if(etc_render_fsbrain.electrode_update_contact_view_flag)
+    etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+end;
 
 etc_render_fsbrain_handle('redraw');
 
@@ -812,7 +819,9 @@ dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[s
 surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
 
 %update figure;
-etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+if(etc_render_fsbrain.electrode_update_contact_view_flag)
+    etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+end;
 
 etc_render_fsbrain_handle('redraw');
 
@@ -868,7 +877,9 @@ dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[s
 surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
 
 %update figure;
-etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+if(etc_render_fsbrain.electrode_update_contact_view_flag)
+    etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+end;
 
 etc_render_fsbrain_handle('redraw');
 
@@ -1221,7 +1232,7 @@ if(~isempty(etc_render_fsbrain.vol))
             click_vertex_vox_now=round(click_vertex_vox_now(1:3))';
             
             if(e_idx==1&&c_idx==1)
-                fprintf('name\tx(mm)\ty(mm)\tz(mm)\t\t');
+                fprintf('name\trow\tcol\tsli\t\t');
                 if(~isempty(etc_render_fsbrain.talxfm))
                     fprintf('tal_x(mm)\ttal_y(mm)\ttal_z(mm)\t\t');
                 end;
