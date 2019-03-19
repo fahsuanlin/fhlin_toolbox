@@ -338,7 +338,9 @@ if(~isempty(vol))
     %voxel coordinates
     right_column = [ ones( size(orig_vertex_coords,1), 1 ); 0 ];
     SurfVertices = [ [orig_vertex_coords; 0 0 0]  right_column ];
+    %convert the surface coordinate (x,y,z) into CRS of the volume!
     vol_vox=(inv(vol.tkrvox2ras)*(SurfVertices.')).';
+    
     %vol_vox=(inv(vol.vox2ras)*(SurfVertices.')).';
     vol_vox = vol_vox(1:size(orig_vertex_coords,1),1:3);
     

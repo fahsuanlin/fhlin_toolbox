@@ -1233,7 +1233,7 @@ if(~isempty(etc_render_fsbrain.vol))
             click_vertex_vox_now=round(click_vertex_vox_now(1:3))';
             
             if(e_idx==1&&c_idx==1)
-                fprintf('name\trow\tcol\tsli\t\t');
+                fprintf('name\tC\tR\tS\t\t');
                 if(~isempty(etc_render_fsbrain.talxfm))
                     fprintf('tal_x(mm)\ttal_y(mm)\ttal_z(mm)\t\t');
                 end;
@@ -1288,7 +1288,7 @@ for e_idx=1:length(etc_render_fsbrain.electrode)
         click_vertex_vox_now=round(click_vertex_vox_now(1:3))';
         
         if(e_idx==1&&c_idx==1)
-            fprintf(fp,'name\trow\tcol\tsli\t\t');
+            fprintf(fp,'name\tC\tR\tS\t\t');
             if(~isempty(etc_render_fsbrain.talxfm))
                 fprintf(fp,'tal_x(mm)\ttal_y(mm)\ttal_z(mm)\t\t');
             end;
