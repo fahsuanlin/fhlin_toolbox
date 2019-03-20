@@ -1328,6 +1328,7 @@ global etc_render_fsbrain
 
 etc_render_fsbrain.show_nearest_brain_surface_location_flag=get(hObject,'Value');
 
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
 
 % --- Executes on button press in checkbox_show_contact_names.
 function checkbox_show_contact_names_Callback(hObject, eventdata, handles)
