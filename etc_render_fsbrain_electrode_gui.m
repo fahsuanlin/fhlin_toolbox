@@ -1367,28 +1367,52 @@ if(etc_render_fsbrain.electrode_add_gui_ok)
     
     %check if contact spacing is different
     if(abs(etc_render_fsbrain.new_electrode.spacing-etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).spacing)>eps)
-        fprintf('as the contact spacing changes from [%1.0f] to [%1.0f], contact coordintes are reset.\n',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).spacing, etc_render_fsbrain.new_electrode.spacing);
+        fprintf('as the contact spacing changes from [%1.0f] to [%1.0f], all contact coordintes are reset.\n',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).spacing, etc_render_fsbrain.new_electrode.spacing);
+        %update contact spacing
+        etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).spacing=etc_render_fsbrain.new_electrode.spacing;
+
+        %update contact coordinates
+        etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).coord=[];
+        etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact=etc_render_fsbrain.new_electrode.n_contact;
         for c_idx=1:etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact
             etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).coord(c_idx,1)=0;
             etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).coord(c_idx,2)=etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).spacing.*(c_idx-1).*1;
-            etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).coord(c_idx,3)=etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).spacing.*(e_idx-1).*1;
+            etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).coord(c_idx,3)=etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).spacing.*(etc_render_fsbrain.electrode_idx-1).*1;
+        end;
+    else
+        if(abs(etc_render_fsbrain.new_electrode.n_contact-etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact)>eps)
+            fprintf('# of contact changes.\n');
+            
+            if(etc_render_fsbrain.new_electrode.n_contact<etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact)
+                fprintf('reduce the number of contact from [%d] to [%d]. remove the last [%d] contact(s)\n',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact, etc_render_fsbrain.new_electrode.n_contact, etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact-etc_render_fsbrain.new_electrode.n_contact);
+                etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).coord(etc_render_fsbrain.new_electrode.n_contact+1:end,:)=[];                
+            end;
+            if(etc_render_fsbrain.new_electrode.n_contact>etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact)
+                fprintf('increase the number of contact from [%d] to [%d].\n',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact, etc_render_fsbrain.new_electrode.n_contact);               
+                if(etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact==1)
+                    for c_idx=etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact+1:etc_render_fsbrain.new_electrode.n_contact
+                        etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).coord(c_idx,1)=etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).coord(1,1);
+                        etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).coord(c_idx,2)=etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).coord(1,2);
+                        etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).coord(c_idx,3)=etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).coord(1,3)+etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).spacing.*(c_idx-etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact);
+                    end;
+                else
+                    p1=etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).coord(1,:);
+                    p2=etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).coord(end,:);
+                    v=(p2-p1)./(etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact-1);
+                        
+                    for c_idx=etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact+1:etc_render_fsbrain.new_electrode.n_contact
+                        etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).coord(c_idx,:)=etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).coord(c_idx-1,:)+v;
+                    end;
+                end;
+            end;
+            etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact=etc_render_fsbrain.new_electrode.n_contact;
         end;
     end;
-    etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).spacing=etc_render_fsbrain.new_electrode.spacing;
-    
-    %check if # of contact is different
-    if(abs(etc_render_fsbrain.new_electrode.n_contact-etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact)>eps)
-        if(etc_render_fsbrain.new_electrode.n_contact<etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact)
-            fprintf('reduce the number of contact from [%d] to [%d].\n',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact, etc_render_fsbrain.new_electrode.n_contact);
-        end;
-        if(etc_render_fsbrain.new_electrode.n_contact>etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact)
-            fprintf('increase the number of contact from [%d] to [%d].\n',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact, etc_render_fsbrain.new_electrode.n_contact);
-        end;
-    end;
-    etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact=etc_render_fsbrain.new_electrode.n_contact;
     
     
     %update electrode contact coordinates
+    etc_render_fsbrain.aux2_point_coords=[];
+    etc_render_fsbrain.aux2_point_name={};
     count=1;
     for e_idx=1:length(etc_render_fsbrain.electrode)
         for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
@@ -1398,17 +1422,16 @@ if(etc_render_fsbrain.electrode_add_gui_ok)
             count=count+1;
         end;
     end;
-%             
-%     
-%     %update contact mask
-%     etc_render_fsbrain.electrode_mask=zeros(length(etc_render_fsbrain.electrode),size(etc_render_fsbrain.aux2_point_coords,1));
-%     count=1;
-%     for e_idx=1:length(etc_render_fsbrain.electrode)
-%         for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
-%             etc_render_fsbrain.electrode_mask(e_idx,count)=1;
-%             count=count+1;
-%         end;
-%     end;    
+    
+    %update contact mask
+    etc_render_fsbrain.electrode_mask=zeros(length(etc_render_fsbrain.electrode),size(etc_render_fsbrain.aux2_point_coords,1));
+    count=1;
+    for e_idx=1:length(etc_render_fsbrain.electrode)
+        for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
+            etc_render_fsbrain.electrode_mask(e_idx,count)=1;
+            count=count+1;
+        end;
+    end;    
 
     %update electrode list in the GUI
     str={};
