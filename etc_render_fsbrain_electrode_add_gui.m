@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_electrode_add_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_electrode_add_gui
 
-% Last Modified by GUIDE v2.5 18-Mar-2019 14:13:37
+% Last Modified by GUIDE v2.5 19-Mar-2019 23:32:54
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -60,7 +60,8 @@ global etc_render_fsbrain;
 if(isfield(etc_render_fsbrain,'electrode_modify_flag'))
     if(etc_render_fsbrain.electrode_modify_flag)
         %initialization as an existed electrode
-        set(handles.edit_spacing,'string',sprintf('%f',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).spacing)); 
+        set(handles.figure_electrode_add_gui,'name','modify an electrode');
+        set(handles.edit_spacing,'string',sprintf('%1.1f',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).spacing)); 
         set(handles.edit_name,'string',sprintf('%s',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).name)); 
         set(handles.edit_n_contact,'string',sprintf('%d',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact)); 
     end;
@@ -74,7 +75,7 @@ end;
 guidata(hObject, handles);
 
 % UIWAIT makes etc_render_fsbrain_electrode_add_gui wait for user response (see UIRESUME)
-% uiwait(handles.figure1);
+% uiwait(handles.figure_electrode_add_gui);
 
 
 
