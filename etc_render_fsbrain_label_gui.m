@@ -105,19 +105,37 @@ try
             vidx=find(etc_render_fsbrain.label_value==label_number);
             figure(etc_render_fsbrain.fig_brain);
             
-            if(~isempty(etc_render_fsbrain.label_h))
-                delete(etc_render_fsbrain.label_h);
-                etc_render_fsbrain.label_h=[];
-                etc_render_fsbrain.label_idx=[];
+            %lia=ismember(etc_render_fsbrain.h.Faces,vidx);
+            %fvcdata_orig=etc_render_fsbrain.h.FaceVertexCData;
+            %fvcdata_label=fvcdata_orig;
+            
+            if(isfield(etc_render_fsbrain,'label_h'))
+                if(~isempty(etc_render_fsbrain.label_h))
+                    delete(etc_render_fsbrain.label_h);
+                    etc_render_fsbrain.label_h=[];
+                
+                    etc_render_fsbrain.label_idx=[];
+                
+                    etc_render_fsbrain.h.FaceVertexCData=etc_render_fsbrain.fvcdata_old;
+                else                   
+                    etc_render_fsbrain.label_idx=vidx;
+
+                    etc_render_fsbrain.h.FaceVertexCData=etc_render_fsbrain.fvcdata_old;
+                end;
             else
                 etc_render_fsbrain.label_idx=vidx;
+
             end;
             
             if(etc_render_fsbrain.label_select_idx~=select_idx)
-                etc_render_fsbrain.label_h=plot3(etc_render_fsbrain.vertex_coords(vidx,1),etc_render_fsbrain.vertex_coords(vidx,2),etc_render_fsbrain.vertex_coords(vidx,3),'.');
+                %etc_render_fsbrain.label_h=plot3(etc_render_fsbrain.vertex_coords(vidx,1),etc_render_fsbrain.vertex_coords(vidx,2),etc_render_fsbrain.vertex_coords(vidx,3),'.');
                 cc=etc_render_fsbrain.label_ctab.table(select_idx,1:3)./255;
-                set(etc_render_fsbrain.label_h,'color',cc);
+                %set(etc_render_fsbrain.label_h,'color',cc);
                 etc_render_fsbrain.label_select_idx=select_idx;
+                
+                etc_render_fsbrain.fvcdata_old=etc_render_fsbrain.h.FaceVertexCData;
+                etc_render_fsbrain.h.FaceVertexCData(vidx,:)=repmat(cc(:)',[length(vidx),1]);
+                
             else
                 etc_render_fsbrain.label_select_idx=-1;
             end;
