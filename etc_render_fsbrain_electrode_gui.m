@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_electrode_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_electrode_gui
 
-% Last Modified by GUIDE v2.5 19-Mar-2019 14:32:41
+% Last Modified by GUIDE v2.5 19-Mar-2019 20:13:22
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -59,11 +59,12 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 % UIWAIT makes etc_render_fsbrain_electrode_gui wait for user response (see UIRESUME)
-% uiwait(handles.figure1);
+% uiwait(handles.fig_electrode_gui);
 global etc_render_fsbrain;
 
 set(handles.slider_alpha,'value',get(etc_render_fsbrain.h,'facealpha'));
 set(handles.checkbox_nearest_brain_surface,'value',etc_render_fsbrain.show_nearest_brain_surface_location_flag);
+set(handles.checkbox_show_contact_names,'value',etc_render_fsbrain.show_contact_names_flag);
 
 if(~isempty(etc_render_fsbrain.electrode))
     fprintf('electrodes specified...\n');
@@ -242,12 +243,14 @@ v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
 click_vertex_vox=round(v(1:3))';
 
 etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
-                    
+
 vv=etc_render_fsbrain.orig_vertex_coords;
 dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
 [min_dist,min_dist_idx]=min(dist);
 surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
-etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+if(etc_render_fsbrain.electrode_update_contact_view_flag)
+    etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+end;
 
 etc_render_fsbrain_handle('redraw');
 
@@ -1068,7 +1071,9 @@ dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[s
 surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
 
 %update figure;
-etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+if(etc_render_fsbrain.electrode_update_contact_view_flag)
+    etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+end;
 
 etc_render_fsbrain_handle('redraw');
 
@@ -1123,7 +1128,9 @@ dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[s
 surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
 
 %update figure;
-etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+if(etc_render_fsbrain.electrode_update_contact_view_flag)
+    etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+end;
 
 etc_render_fsbrain_handle('redraw');
 
@@ -1197,7 +1204,9 @@ surface_coord=etc_render_fsbrain.click_coord; %clicked surface coord
 
 
 %update figure;
-etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',[],'click_vertex_vox',click_vertex_vox);
+if(etc_render_fsbrain.electrode_update_contact_view_flag)
+    etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',[],'click_vertex_vox',click_vertex_vox);
+end;
 
 etc_render_fsbrain_handle('redraw');
 
@@ -1320,4 +1329,108 @@ global etc_render_fsbrain
 etc_render_fsbrain.show_nearest_brain_surface_location_flag=get(hObject,'Value');
 
 
+% --- Executes on button press in checkbox_show_contact_names.
+function checkbox_show_contact_names_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_show_contact_names (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
 
+% Hint: get(hObject,'Value') returns toggle state of checkbox_show_contact_names
+global etc_render_fsbrain
+
+etc_render_fsbrain.show_contact_names_flag=get(hObject,'Value');
+
+etc_render_fsbrain_handle('redraw');
+
+
+% --- Executes on button press in pushbutton_electrode_modify.
+function pushbutton_electrode_modify_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_electrode_modify (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global etc_render_fsbrain;
+
+etc_render_fsbrain.electrode_add_gui_ok=0;
+
+%specifiy that the electrode is to be modified.
+etc_render_fsbrain.electrode_modify_flag=1;
+
+etc_render_fsbrain.electrode_add_gui_h=etc_render_fsbrain_electrode_add_gui;
+uiwait(etc_render_fsbrain.electrode_add_gui_h);
+delete(etc_render_fsbrain.electrode_add_gui_h);
+
+if(etc_render_fsbrain.electrode_add_gui_ok)
+
+    %update
+    etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).name=etc_render_fsbrain.new_electrode.name;
+    
+    %check if contact spacing is different
+    if(abs(etc_render_fsbrain.new_electrode.spacing-etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).spacing)>eps)
+        fprintf('as the contact spacing changes from [%1.0f] to [%1.0f], contact coordintes are reset.\n',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).spacing, etc_render_fsbrain.new_electrode.spacing);
+        for c_idx=1:etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact
+            etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).coord(c_idx,1)=0;
+            etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).coord(c_idx,2)=etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).spacing.*(c_idx-1).*1;
+            etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).coord(c_idx,3)=etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).spacing.*(e_idx-1).*1;
+        end;
+    end;
+    etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).spacing=etc_render_fsbrain.new_electrode.spacing;
+    
+    %check if # of contact is different
+    if(abs(etc_render_fsbrain.new_electrode.n_contact-etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact)>eps)
+        if(etc_render_fsbrain.new_electrode.n_contact<etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact)
+            fprintf('reduce the number of contact from [%d] to [%d].\n',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact, etc_render_fsbrain.new_electrode.n_contact);
+        end;
+        if(etc_render_fsbrain.new_electrode.n_contact>etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact)
+            fprintf('increase the number of contact from [%d] to [%d].\n',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact, etc_render_fsbrain.new_electrode.n_contact);
+        end;
+    end;
+    etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact=etc_render_fsbrain.new_electrode.n_contact;
+    
+    
+    %update electrode contact coordinates
+    count=1;
+    for e_idx=1:length(etc_render_fsbrain.electrode)
+        for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
+            
+            etc_render_fsbrain.aux2_point_coords(count,:)=etc_render_fsbrain.electrode(e_idx).coord(c_idx,:);
+            etc_render_fsbrain.aux2_point_name{count}=sprintf('%s_%d',etc_render_fsbrain.electrode(e_idx).name, c_idx);;
+            count=count+1;
+        end;
+    end;
+%             
+%     
+%     %update contact mask
+%     etc_render_fsbrain.electrode_mask=zeros(length(etc_render_fsbrain.electrode),size(etc_render_fsbrain.aux2_point_coords,1));
+%     count=1;
+%     for e_idx=1:length(etc_render_fsbrain.electrode)
+%         for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
+%             etc_render_fsbrain.electrode_mask(e_idx,count)=1;
+%             count=count+1;
+%         end;
+%     end;    
+
+    %update electrode list in the GUI
+    str={};
+    for e_idx=1:length(etc_render_fsbrain.electrode)
+        str{e_idx}=etc_render_fsbrain.electrode(e_idx).name;
+    end;
+    set(handles.listbox_electrode,'string',str);
+    set(handles.listbox_electrode,'value',etc_render_fsbrain.electrode_idx);
+   
+    %update contact list in the GUI
+    str={};
+    for c_idx=1:etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact
+        str{c_idx}=sprintf('%d',c_idx);
+    end;
+    set(handles.listbox_contact,'string',str);
+    set(handles.listbox_contact,'value',etc_render_fsbrain.electrode_contact_idx);
+    guidata(hObject, handles);
+    
+    %update figure;
+    %if(etc_render_fsbrain.electrode_update_contact_view_flag)
+    %    etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',[],'click_vertex_vox',click_vertex_vox);
+    %end;
+    
+    etc_render_fsbrain_handle('redraw');
+end;

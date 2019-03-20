@@ -55,11 +55,21 @@ function etc_render_fsbrain_electrode_add_gui_OpeningFcn(hObject, eventdata, han
 % Choose default command line output for etc_render_fsbrain_electrode_add_gui
 handles.output = hObject;
 
-%initialization
-set(handles.edit_spacing,'string','5'); 
-set(handles.edit_name,'string',''); 
-set(handles.edit_n_contact,'string','8'); 
+global etc_render_fsbrain;
 
+if(isfield(etc_render_fsbrain,'electrode_modify_flag'))
+    if(etc_render_fsbrain.electrode_modify_flag)
+        %initialization as an existed electrode
+        set(handles.edit_spacing,'string',sprintf('%f',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).spacing)); 
+        set(handles.edit_name,'string',sprintf('%s',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).name)); 
+        set(handles.edit_n_contact,'string',sprintf('%d',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact)); 
+    end;
+else
+    %initialization as a new electrode to be added
+    set(handles.edit_spacing,'string','5'); 
+    set(handles.edit_name,'string',''); 
+    set(handles.edit_n_contact,'string','8'); 
+end;
 % Update handles structure
 guidata(hObject, handles);
 
@@ -157,30 +167,77 @@ global etc_render_fsbrain;
 
 etc_render_fsbrain.electrode_add_gui_ok=1;
 
-etc_render_fsbrain.new_electrode.name=get(handles.edit_name,'String');
 
-%check if electrode name empty
-if(isempty(etc_render_fsbrain.new_electrode.name))
-    etc_render_fsbrain.electrode_add_gui_ok=0; 
-    fprintf('electrode name cannot be empty!\n');
-end;
-
-%check if electrode name duplicates
-flag_duplicate=0;
-for e_idx=1:length(etc_render_fsbrain.electrode)
-    if(strcmp(etc_render_fsbrain.electrode(e_idx).name,etc_render_fsbrain.new_electrode.name))
-        flag_duplicate=1;
+if(isfield(etc_render_fsbrain,'electrode_modify_flag'))
+    if(etc_render_fsbrain.electrode_modify_flag)
+        etc_render_fsbrain.new_electrode.name=get(handles.edit_name,'String');
+        
+        %check if electrode name empty
+        if(isempty(etc_render_fsbrain.new_electrode.name))
+            etc_render_fsbrain.electrode_add_gui_ok=0;
+            fprintf('electrode name cannot be empty!\n');
+        end;
+        
+        %check if electrode name duplicates
+        flag_duplicate=0;
+        for e_idx=1:length(etc_render_fsbrain.electrode)
+            if(e_idx~=etc_render_fsbrain.electrode_idx)
+                if(strcmp(etc_render_fsbrain.electrode(e_idx).name,etc_render_fsbrain.new_electrode.name))
+                    flag_duplicate=1;
+                end;
+            end;
+        end;
+        if(flag_duplicate)
+            etc_render_fsbrain.electrode_add_gui_ok=0;
+            fprintf('electrode [%s] is in the list already!\n',etc_render_fsbrain.new_electrode.name);
+        end;
+        
+        tmp=str2double(get(handles.edit_n_contact,'String'));
+        if(tmp>0)
+            etc_render_fsbrain.new_electrode.n_contact=tmp;
+        else
+            etc_render_fsbrain.electrode_add_gui_ok=0;
+            fprintf('# of contact must be > 0.\n');
+        end;
+        
+        
+        tmp=str2double(get(handles.edit_spacing,'String'));
+        if(tmp>0)
+            etc_render_fsbrain.new_electrode.spacing=tmp;
+        else
+            etc_render_fsbrain.electrode_add_gui_ok=0;
+            fprintf('contact spacing must be > 0.\n');
+        end;
+        
+        uiresume(etc_render_fsbrain.electrode_add_gui_h);
+        
     end;
+else
+    etc_render_fsbrain.new_electrode.name=get(handles.edit_name,'String');
+    
+    %check if electrode name empty
+    if(isempty(etc_render_fsbrain.new_electrode.name))
+        etc_render_fsbrain.electrode_add_gui_ok=0;
+        fprintf('electrode name cannot be empty!\n');
+    end;
+    
+    %check if electrode name duplicates
+    flag_duplicate=0;
+    for e_idx=1:length(etc_render_fsbrain.electrode)
+        if(strcmp(etc_render_fsbrain.electrode(e_idx).name,etc_render_fsbrain.new_electrode.name))
+            flag_duplicate=1;
+        end;
+    end;
+    if(flag_duplicate)
+        etc_render_fsbrain.electrode_add_gui_ok=0;
+        fprintf('electrode [%s] is in the list already!\n',etc_render_fsbrain.new_electrode.name);
+    end;
+    
+    etc_render_fsbrain.new_electrode.n_contact=str2double(get(handles.edit_n_contact,'String'));
+    etc_render_fsbrain.new_electrode.spacing=str2double(get(handles.edit_spacing,'String'));
+    
+    uiresume(etc_render_fsbrain.electrode_add_gui_h);
 end;
-if(flag_duplicate) 
-    etc_render_fsbrain.electrode_add_gui_ok=0; 
-    fprintf('electrode [%s] is in the list already!\n',etc_render_fsbrain.new_electrode.name);
-end;
-
-etc_render_fsbrain.new_electrode.n_contact=str2double(get(handles.edit_n_contact,'String'));
-etc_render_fsbrain.new_electrode.spacing=str2double(get(handles.edit_spacing,'String'));
-
-uiresume(etc_render_fsbrain.electrode_add_gui_h);
 
 % --- Executes on button press in pushbutton_cancel.
 function pushbutton_cancel_Callback(hObject, eventdata, handles)

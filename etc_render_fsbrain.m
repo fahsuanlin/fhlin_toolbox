@@ -94,6 +94,7 @@ flag_redraw=0;
 flag_camlight=1;
 flag_colorbar=0;
 show_nearest_brain_surface_location_flag=1;
+show_contact_names_flag=1;
 
 for idx=1:length(varargin)/2
     option=varargin{idx*2-1};
@@ -173,6 +174,8 @@ for idx=1:length(varargin)/2
             flag_hold_fig_stc_timecourse=option_value;
         case 'show_nearest_brain_surface_location_flag'
             show_nearest_brain_surface_location_flag=option_value;
+        case 'show_contact_names_flag'
+            show_contact_names_flag=option_value;
         case 'view_angle'
             view_angle=option_value;
         case 'bg_color'
@@ -548,6 +551,7 @@ etc_render_fsbrain.fig_vol=[];
 etc_render_fsbrain.fig_coord_gui=[];
 etc_render_fsbrain.fig_label_gui=[];
 etc_render_fsbrain.show_nearest_brain_surface_location_flag=show_nearest_brain_surface_location_flag;
+etc_render_fsbrain.show_contact_names_flag=show_contact_names_flag;
 
 etc_render_fsbrain.overlay_vol=overlay_vol;
 etc_render_fsbrain.overlay_value=overlay_value;

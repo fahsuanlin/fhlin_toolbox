@@ -992,7 +992,7 @@ if(~isempty(etc_render_fsbrain.vol_vox))
         if(etc_render_fsbrain.show_nearest_brain_surface_location_flag)
             etc_render_fsbrain.vol_img_h_round_cor=text(etc_render_fsbrain.img_cor_padx+etc_render_fsbrain.click_vertex_vox_round(1), etc_render_fsbrain.img_cor_pady+etc_render_fsbrain.click_vertex_vox_round(2),'o'); set(etc_render_fsbrain.vol_img_h_round_cor,'color','c','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',12);
             %etc_render_fsbrain.vol_img_h_round_ax=text(mm+etc_render_fsbrain.img_ax_padx+etc_render_fsbrain.click_vertex_vox_round(3), etc_render_fsbrain.img_ax_pady+etc_render_fsbrain.click_vertex_vox_round(1),'o'); set(etc_render_fsbrain.vol_img_h_round_ax,'color','c','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',12);
-            etc_render_fsbrain.vol_img_h_round_ax=text(mm+etc_render_fsbrain.img_ax_padx+etc_render_fsbrain.click_vertex_vox_round(3), etc_render_fsbrain.img_ax_pady+etc_render_fsbrain.click_vertex_vox_round(1),'o'); set(etc_render_fsbrain.vol_img_h_round_ax,'color','c','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',12);
+            etc_render_fsbrain.vol_img_h_round_ax=text(mm+etc_render_fsbrain.img_ax_padx+etc_render_fsbrain.click_vertex_vox_round(1), mm-(etc_render_fsbrain.img_ax_pady+etc_render_fsbrain.click_vertex_vox_round(3)),'o'); set(etc_render_fsbrain.vol_img_h_round_ax,'color','c','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',12);
             etc_render_fsbrain.vol_img_h_round_sag=text(etc_render_fsbrain.img_sag_padx+etc_render_fsbrain.click_vertex_vox_round(3), mm+etc_render_fsbrain.img_sag_pady+etc_render_fsbrain.click_vertex_vox_round(2),'o'); set(etc_render_fsbrain.vol_img_h_round_sag,'color','c','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',12);
         end;
     catch ME
@@ -1442,13 +1442,16 @@ try
                 yy=cat(1,yy,etc_render_fsbrain.aux2_point_coords(idx,2));
                 zz=cat(1,zz,etc_render_fsbrain.aux2_point_coords(idx,3));
                 if(~isempty(etc_render_fsbrain.aux2_point_name))
-                    etc_render_fsbrain.aux2_point_name_h(idx)=text(etc_render_fsbrain.aux2_point_coords(idx,1),etc_render_fsbrain.aux2_point_coords(idx,2),etc_render_fsbrain.aux2_point_coords(idx,3),etc_render_fsbrain.aux2_point_name{idx}); hold on;
+                    if(etc_render_fsbrain.show_contact_names_flag)
+                        etc_render_fsbrain.aux2_point_name_h(idx)=text(etc_render_fsbrain.aux2_point_coords(idx,1),etc_render_fsbrain.aux2_point_coords(idx,2),etc_render_fsbrain.aux2_point_coords(idx,3),etc_render_fsbrain.aux2_point_name{idx}); hold on;
+                    end;
                 end;
             end;
             etc_render_fsbrain.aux2_point_coords_h=plot3(xx,yy,zz,'r.');
             set(etc_render_fsbrain.aux2_point_coords_h,'color',[1 0 0].*0.5,'markersize',16);
         end;
         
+        %highlight the selected contact
         if(isfield(etc_render_fsbrain,'electrode'))
             try
                 idx=0;
