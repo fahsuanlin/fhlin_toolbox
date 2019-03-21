@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_electrode_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_electrode_gui
 
-% Last Modified by GUIDE v2.5 19-Mar-2019 20:13:22
+% Last Modified by GUIDE v2.5 20-Mar-2019 22:06:22
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -183,7 +183,7 @@ if(isempty(etc_render_fsbrain.electrode))
     c=struct2cell(handles);
     for i=1:length(c)
         if(strcmp(c{i}.Type,'uicontrol'))
-            if(strcmp(c{i}.Tag,'button_electrode_add'))
+            if(strcmp(c{i}.Tag,'button_electrode_add')|strcmp(c{i}.Tag,'button_electrode_load'))
                 c{i}.Enable='on';
             else
                 c{i}.Enable='off';
@@ -424,7 +424,7 @@ switch answer
                 c=struct2cell(handles);
                 for i=1:length(c)
                     if(strcmp(c{i}.Type,'uicontrol'))
-                        if(strcmp(c{i}.Tag,'button_electrode_add'))
+                        if(strcmp(c{i}.Tag,'button_electrode_add')|strcmp(c{i}.Tag,'button_electrode_load'))
                             c{i}.Enable='on';
                         else
                             c{i}.Enable='off';
@@ -461,9 +461,9 @@ switch answer
             etc_render_fsbrain.aux2_point_coords=[];
             for e_idx=1:length(etc_render_fsbrain.electrode)
                 for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
-                    etc_render_fsbrain.electrode(e_idx).coord(c_idx,1)=0;
-                    etc_render_fsbrain.electrode(e_idx).coord(c_idx,2)=etc_render_fsbrain.electrode(e_idx).spacing.*(c_idx-1).*1;
-                    etc_render_fsbrain.electrode(e_idx).coord(c_idx,3)=etc_render_fsbrain.electrode(e_idx).spacing.*(e_idx-1).*1;
+                    %etc_render_fsbrain.electrode(e_idx).coord(c_idx,1)=0;
+                    %etc_render_fsbrain.electrode(e_idx).coord(c_idx,2)=etc_render_fsbrain.electrode(e_idx).spacing.*(c_idx-1).*1;
+                    %etc_render_fsbrain.electrode(e_idx).coord(c_idx,3)=etc_render_fsbrain.electrode(e_idx).spacing.*(e_idx-1).*1;
                     
                     etc_render_fsbrain.aux2_point_coords(count,:)=etc_render_fsbrain.electrode(e_idx).coord(c_idx,:);
                     etc_render_fsbrain.aux2_point_name{count}=sprintf('%s_%d',etc_render_fsbrain.electrode(e_idx).name, c_idx);;
@@ -1315,6 +1315,13 @@ end;
 fclose(fp);
 fprintf('done!\n');
 
+fn=sprintf('electrode_%s.mat',tstr);
+fprintf('saving [%s]...',fn);
+electrode=etc_render_fsbrain.electrode;
+save(fn,'electrode');
+
+fprintf('done!\n');
+
 % --- Executes on button press in checkbox_nearest_brain_surface.
 function checkbox_nearest_brain_surface_Callback(hObject, eventdata, handles)
 % hObject    handle to checkbox_nearest_brain_surface (see GCBO)
@@ -1344,9 +1351,9 @@ etc_render_fsbrain.show_contact_names_flag=get(hObject,'Value');
 etc_render_fsbrain_handle('redraw');
 
 
-% --- Executes on button press in pushbutton_electrode_modify.
-function pushbutton_electrode_modify_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton_electrode_modify (see GCBO)
+% --- Executes on button press in button_electrode_modify.
+function button_electrode_modify_Callback(hObject, eventdata, handles)
+% hObject    handle to button_electrode_modify (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
@@ -1457,4 +1464,85 @@ if(etc_render_fsbrain.electrode_add_gui_ok)
     %end;
     
     etc_render_fsbrain_handle('redraw');
+end;
+
+
+% --- Executes on button press in button_electrode_load.
+function button_electrode_load_Callback(hObject, eventdata, handles)
+% hObject    handle to button_electrode_load (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global etc_render_fsbrain;
+
+[filename, pathname, filterindex] = uigetfile({'*.mat'}, 'Pick the Matlab mat file with saved "electrode"');
+
+if(filename~=0)
+    
+    tmp=load(filename);
+    if(isfield(tmp,'electrode'))
+        etc_render_fsbrain.electrode=tmp.electrode;
+        
+        etc_render_fsbrain.electrode_idx=1;
+        etc_render_fsbrain.electrode_contact_idx=1;
+        
+        %update electrode contact coordinates
+        etc_render_fsbrain.aux2_point_coords=[];
+        etc_render_fsbrain.aux2_point_name={};
+        count=1;
+        for e_idx=1:length(etc_render_fsbrain.electrode)
+            for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
+                
+                etc_render_fsbrain.aux2_point_coords(count,:)=etc_render_fsbrain.electrode(e_idx).coord(c_idx,:);
+                etc_render_fsbrain.aux2_point_name{count}=sprintf('%s_%d',etc_render_fsbrain.electrode(e_idx).name, c_idx);;
+                count=count+1;
+            end;
+        end;
+        
+        %update contact mask
+        etc_render_fsbrain.electrode_mask=zeros(length(etc_render_fsbrain.electrode),size(etc_render_fsbrain.aux2_point_coords,1));
+        count=1;
+        for e_idx=1:length(etc_render_fsbrain.electrode)
+            for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
+                etc_render_fsbrain.electrode_mask(e_idx,count)=1;
+                count=count+1;
+            end;
+        end;
+        
+        %update electrode list in the GUI
+        str={};
+        for e_idx=1:length(etc_render_fsbrain.electrode)
+            str{e_idx}=etc_render_fsbrain.electrode(e_idx).name;
+        end;
+        set(handles.listbox_electrode,'string',str);
+        set(handles.listbox_electrode,'value',etc_render_fsbrain.electrode_idx);
+        
+        %update contact list in the GUI
+        str={};
+        for c_idx=1:etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact
+            str{c_idx}=sprintf('%d',c_idx);
+        end;
+        set(handles.listbox_contact,'string',str);
+        set(handles.listbox_contact,'value',etc_render_fsbrain.electrode_contact_idx);
+        guidata(hObject, handles);
+        
+        %update figure;
+        %if(etc_render_fsbrain.electrode_update_contact_view_flag)
+        %    etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',[],'click_vertex_vox',click_vertex_vox);
+        %end;
+        
+        %enable all uicontrols
+        c=struct2cell(handles);
+        for i=1:length(c)
+            if(strcmp(c{i}.Type,'uicontrol'))
+                c{i}.Enable='on';
+            end;
+        end;
+        
+        etc_render_fsbrain_handle('redraw');
+    else
+        fprintf('no variable "electrode" defined in the Matlab file [%s]!\nerror!\n',filename);
+        return;
+    end;
+    
 end;

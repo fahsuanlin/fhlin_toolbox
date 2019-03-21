@@ -120,7 +120,7 @@ try
                 else                   
                     etc_render_fsbrain.label_idx=vidx;
 
-                    etc_render_fsbrain.h.FaceVertexCData=etc_render_fsbrain.fvcdata_old;
+                    etc_render_fsbrain.fvcdata_old=etc_render_fsbrain.h.FaceVertexCData;
                 end;
             else
                 etc_render_fsbrain.label_idx=vidx;
@@ -128,9 +128,9 @@ try
             end;
             
             if(etc_render_fsbrain.label_select_idx~=select_idx)
-                %etc_render_fsbrain.label_h=plot3(etc_render_fsbrain.vertex_coords(vidx,1),etc_render_fsbrain.vertex_coords(vidx,2),etc_render_fsbrain.vertex_coords(vidx,3),'.');
+                etc_render_fsbrain.label_h=plot3(etc_render_fsbrain.vertex_coords(vidx,1),etc_render_fsbrain.vertex_coords(vidx,2),etc_render_fsbrain.vertex_coords(vidx,3),'.');
                 cc=etc_render_fsbrain.label_ctab.table(select_idx,1:3)./255;
-                %set(etc_render_fsbrain.label_h,'color',cc);
+                set(etc_render_fsbrain.label_h,'color',cc,'MarkerSize',1,'Visible','off');
                 etc_render_fsbrain.label_select_idx=select_idx;
                 
                 etc_render_fsbrain.fvcdata_old=etc_render_fsbrain.h.FaceVertexCData;
