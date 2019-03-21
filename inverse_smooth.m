@@ -168,6 +168,8 @@ for tt=1:size(value,2)
         if(flag_display)
             fprintf('done!\n');
         end;
+    else
+        non_zero=[1:length(w)];        
     end;
 
     if(tt==1)
