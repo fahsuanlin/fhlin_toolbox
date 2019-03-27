@@ -1020,16 +1020,18 @@ if(~isempty(etc_render_fsbrain.vol_vox))
                 etc_render_fsbrain.aux2_point_mri_cor_h(v_idx)=scatter(etc_render_fsbrain.img_cor_padx+click_vertex_vox(1), etc_render_fsbrain.img_cor_pady+click_vertex_vox(2),80,[0.8500 0.3250 0.0980],'.');
                 set(etc_render_fsbrain.aux2_point_mri_cor_h(v_idx),'MarkerEdgeColor',[0.8500 0.3250 0.0980]);
                 set(etc_render_fsbrain.aux2_point_mri_cor_h(v_idx),'MarkerEdgeAlpha',exp(-(abs(click_vertex_vox(3)-round(etc_render_fsbrain.click_vertex_vox(3))))/D));
+                set(etc_render_fsbrain.aux2_point_mri_cor_h(v_idx),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
                 
                 etc_render_fsbrain.aux2_point_mri_ax_h(v_idx)=scatter(mm+etc_render_fsbrain.img_ax_padx+click_vertex_vox(1), mm-(etc_render_fsbrain.img_ax_pady+click_vertex_vox(3)),80,[0.8500 0.3250 0.0980],'.');
                 set(etc_render_fsbrain.aux2_point_mri_ax_h(v_idx),'MarkerEdgeColor',[0.8500 0.3250 0.0980]);
                 set(etc_render_fsbrain.aux2_point_mri_ax_h(v_idx),'MarkerEdgeAlpha',exp(-(abs(click_vertex_vox(2)-round(etc_render_fsbrain.click_vertex_vox(2))))/D));
+                set(etc_render_fsbrain.aux2_point_mri_ax_h(v_idx),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
                 
                 
                 etc_render_fsbrain.aux2_point_mri_sag_h(v_idx)=scatter(etc_render_fsbrain.img_sag_padx+click_vertex_vox(3), mm+etc_render_fsbrain.img_sag_pady+click_vertex_vox(2),80,[0.8500 0.3250 0.0980],'.');
                 set(etc_render_fsbrain.aux2_point_mri_sag_h(v_idx),'MarkerEdgeColor',[0.8500 0.3250 0.0980]);
                 set(etc_render_fsbrain.aux2_point_mri_sag_h(v_idx),'MarkerEdgeAlpha',exp(-(abs(click_vertex_vox(1)-round(etc_render_fsbrain.click_vertex_vox(1))))/D));
-                
+                set(etc_render_fsbrain.aux2_point_mri_sag_h(v_idx),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
             end;
         end;
         
