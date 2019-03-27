@@ -977,17 +977,61 @@ if(~isempty(etc_render_fsbrain.vol_vox))
         
         clf;
         %imagesc(etc_render_fsbrain.vol_img);
-        image(etc_render_fsbrain.overlay_vol_img);
+        image(etc_render_fsbrain.overlay_vol_img); hold on;
         colormap(etc_render_fsbrain.overlay_vol_img_cmap);
         set(gca,'pos',[0 0 1 1]);
         etc_render_fsbrain.vol_img_h=gca;
         axis off image;
         if(~isempty(xlim)) set(etc_render_fsbrain.vol_img_h,'xlim',xlim); end;
         if(~isempty(ylim)) set(etc_render_fsbrain.vol_img_h,'ylim',ylim); end;
-        etc_render_fsbrain.vol_img_h_cor=text(etc_render_fsbrain.img_cor_padx+etc_render_fsbrain.click_vertex_vox(1), etc_render_fsbrain.img_cor_pady+etc_render_fsbrain.click_vertex_vox(2),'x'); set(etc_render_fsbrain.vol_img_h_cor,'color','m','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',12);
+        %etc_render_fsbrain.vol_img_h_cor=text(etc_render_fsbrain.img_cor_padx+etc_render_fsbrain.click_vertex_vox(1), etc_render_fsbrain.img_cor_pady+etc_render_fsbrain.click_vertex_vox(2),'x'); set(etc_render_fsbrain.vol_img_h_cor,'color','m','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',12);
+        etc_render_fsbrain.vol_img_h_cor=plot(etc_render_fsbrain.img_cor_padx+etc_render_fsbrain.click_vertex_vox(1), etc_render_fsbrain.img_cor_pady+etc_render_fsbrain.click_vertex_vox(2),'.'); 
+        set(etc_render_fsbrain.vol_img_h_cor,'color','m','MarkerSize',20,'AlignVertexCenters','on');
         %etc_render_fsbrain.vol_img_h_ax=text(mm+etc_render_fsbrain.img_ax_padx+etc_render_fsbrain.click_vertex_vox(3), etc_render_fsbrain.img_ax_pady+etc_render_fsbrain.click_vertex_vox(1),'x'); set(etc_render_fsbrain.vol_img_h_ax,'color','m','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',12);
-        etc_render_fsbrain.vol_img_h_ax=text(mm+etc_render_fsbrain.img_ax_padx+etc_render_fsbrain.click_vertex_vox(1), mm-(etc_render_fsbrain.img_ax_pady+etc_render_fsbrain.click_vertex_vox(3)),'x'); set(etc_render_fsbrain.vol_img_h_ax,'color','m','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',12);
-        etc_render_fsbrain.vol_img_h_sag=text(etc_render_fsbrain.img_sag_padx+etc_render_fsbrain.click_vertex_vox(3), mm+etc_render_fsbrain.img_sag_pady+etc_render_fsbrain.click_vertex_vox(2),'x'); set(etc_render_fsbrain.vol_img_h_sag,'color','m','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',12);
+        %etc_render_fsbrain.vol_img_h_ax=text(mm+etc_render_fsbrain.img_ax_padx+etc_render_fsbrain.click_vertex_vox(1), mm-(etc_render_fsbrain.img_ax_pady+etc_render_fsbrain.click_vertex_vox(3)),'x'); set(etc_render_fsbrain.vol_img_h_ax,'color','m','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',12);
+        etc_render_fsbrain.vol_img_h_ax=plot(mm+etc_render_fsbrain.img_ax_padx+etc_render_fsbrain.click_vertex_vox(1), mm-(etc_render_fsbrain.img_ax_pady+etc_render_fsbrain.click_vertex_vox(3)),'.'); 
+        set(etc_render_fsbrain.vol_img_h_ax,'color','m','MarkerSize',20,'AlignVertexCenters','on');
+        %etc_render_fsbrain.vol_img_h_sag=text(etc_render_fsbrain.img_sag_padx+etc_render_fsbrain.click_vertex_vox(3), mm+etc_render_fsbrain.img_sag_pady+etc_render_fsbrain.click_vertex_vox(2),'x'); set(etc_render_fsbrain.vol_img_h_sag,'color','m','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',12);
+        etc_render_fsbrain.vol_img_h_sag=plot(etc_render_fsbrain.img_sag_padx+etc_render_fsbrain.click_vertex_vox(3), mm+etc_render_fsbrain.img_sag_pady+etc_render_fsbrain.click_vertex_vox(2),'.'); 
+        set(etc_render_fsbrain.vol_img_h_sag,'color','m','MarkerSize',20,'AlignVertexCenters','on');
+        
+        %showing locations of other electrode contacts
+        try
+            delete(etc_render_fsbrain.aux2_point_mri_ax_h(:));
+            delete(etc_render_fsbrain.aux2_point_mri_cor_h(:));
+            delete(etc_render_fsbrain.aux2_point_mri_sag_h(:));
+        catch ME
+        end;
+        
+        if(etc_render_fsbrain.show_all_contacts_mri_flag)
+            for v_idx=1:size(etc_render_fsbrain.aux2_point_coords,1)
+                surface_coord=etc_render_fsbrain.aux2_point_coords(v_idx,:);
+                v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+                click_vertex_vox=(v(1:3))';
+                
+                
+%         img_cor=squeeze(etc_render_fsbrain.vol.vol(:,:,round(etc_render_fsbrain.click_vertex_vox(3))));
+%         img_sag=squeeze(etc_render_fsbrain.vol.vol(:,round(etc_render_fsbrain.click_vertex_vox(1)),:));
+%         %img_ax=squeeze(etc_render_fsbrain.vol.vol(round(etc_render_fsbrain.click_vertex_vox(2)),:,:));
+%         img_ax=rot90(squeeze(etc_render_fsbrain.vol.vol(round(etc_render_fsbrain.click_vertex_vox(2)),:,:)));
+  
+                D=2;
+                
+                etc_render_fsbrain.aux2_point_mri_cor_h(v_idx)=scatter(etc_render_fsbrain.img_cor_padx+click_vertex_vox(1), etc_render_fsbrain.img_cor_pady+click_vertex_vox(2),80,[0.8500 0.3250 0.0980],'.');
+                set(etc_render_fsbrain.aux2_point_mri_cor_h(v_idx),'MarkerEdgeColor',[0.8500 0.3250 0.0980]);
+                set(etc_render_fsbrain.aux2_point_mri_cor_h(v_idx),'MarkerEdgeAlpha',exp(-(abs(click_vertex_vox(3)-round(etc_render_fsbrain.click_vertex_vox(3))))/D));
+                
+                etc_render_fsbrain.aux2_point_mri_ax_h(v_idx)=scatter(mm+etc_render_fsbrain.img_ax_padx+click_vertex_vox(1), mm-(etc_render_fsbrain.img_ax_pady+click_vertex_vox(3)),80,[0.8500 0.3250 0.0980],'.');
+                set(etc_render_fsbrain.aux2_point_mri_ax_h(v_idx),'MarkerEdgeColor',[0.8500 0.3250 0.0980]);
+                set(etc_render_fsbrain.aux2_point_mri_ax_h(v_idx),'MarkerEdgeAlpha',exp(-(abs(click_vertex_vox(2)-round(etc_render_fsbrain.click_vertex_vox(2))))/D));
+                
+                
+                etc_render_fsbrain.aux2_point_mri_sag_h(v_idx)=scatter(etc_render_fsbrain.img_sag_padx+click_vertex_vox(3), mm+etc_render_fsbrain.img_sag_pady+click_vertex_vox(2),80,[0.8500 0.3250 0.0980],'.');
+                set(etc_render_fsbrain.aux2_point_mri_sag_h(v_idx),'MarkerEdgeColor',[0.8500 0.3250 0.0980]);
+                set(etc_render_fsbrain.aux2_point_mri_sag_h(v_idx),'MarkerEdgeAlpha',exp(-(abs(click_vertex_vox(1)-round(etc_render_fsbrain.click_vertex_vox(1))))/D));
+                
+            end;
+        end;
         
         if(etc_render_fsbrain.show_nearest_brain_surface_location_flag)
             etc_render_fsbrain.vol_img_h_round_cor=text(etc_render_fsbrain.img_cor_padx+etc_render_fsbrain.click_vertex_vox_round(1), etc_render_fsbrain.img_cor_pady+etc_render_fsbrain.click_vertex_vox_round(2),'o'); set(etc_render_fsbrain.vol_img_h_round_cor,'color','c','HorizontalAlignment','center','VerticalAlignment','middle','fontsize',12);
@@ -1326,7 +1370,7 @@ if(etc_render_fsbrain.overlay_flag_render)
             ov(etc_render_fsbrain.overlay_vertex+1)=etc_render_fsbrain.overlay_value;
             
             if(~isempty(etc_render_fsbrain.overlay_smooth))
-                ovs=inverse_smooth('','vertex',etc_render_fsbrain.vertex_coords','face',etc_render_fsbrain.faces','value',ov,'step',etc_render_fsbrain.overlay_smooth,'flag_fixval',0,'exc_vertex',etc_render_fsbrain.overlay_exclude);
+                ovs=inverse_smooth('','vertex',etc_render_fsbrain.vertex_coords','face',etc_render_fsbrain.faces','value',ov,'step',etc_render_fsbrain.overlay_smooth,'flag_fixval',etc_render_fsbrain.overlay_fixval_flag,'exc_vertex',etc_render_fsbrain.overlay_exclude,'inc_vertex',etc_render_fsbrain.overlay_include,'flag_regrid',etc_render_fsbrain.overlay_regrid_flag,'flag_regrid_zero',etc_render_fsbrain.overlay_regrid_zero_flag);
             else
                 ovs=ov;
             end;
@@ -1340,7 +1384,7 @@ if(etc_render_fsbrain.overlay_flag_render)
                 ov(etc_render_fsbrain.overlay_vertex{h_idx}+1)=etc_render_fsbrain.overlay_value{h_idx};
                 
                 if(~isempty(etc_render_fsbrain.overlay_smooth))
-                    ovs=cat(1,ovs,inverse_smooth('','vertex',etc_render_fsbrain.vertex_coords_hemi{h_idx}','face',etc_render_fsbrain.faces_hemi{h_idx}','value',ov,'step',etc_render_fsbrain.overlay_smooth,'flag_fixval',0,'exc_vertex',etc_render_fsbrain.overlay_exclude{h_idx}));
+                    ovs=cat(1,ovs,inverse_smooth('','vertex',etc_render_fsbrain.vertex_coords_hemi{h_idx}','face',etc_render_fsbrain.faces_hemi{h_idx}','value',ov,'step',etc_render_fsbrain.overlay_smooth,'flag_fixval',etc_render_fsbrain.overlay_fixval_flag,'exc_vertex',etc_render_fsbrain.overlay_exclude{h_idx},'inc_vertex',etc_render_fsbrain.overlay_include{h_idx},'flag_regrid',etc_render_fsbrain.overlay_regrid_flag,'flag_regrid_zero',etc_render_fsbrain.overlay_regrid_zero_flag));
                 else
                     ovs=cat(1,ovs,ov);
                 end;

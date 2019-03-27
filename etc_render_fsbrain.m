@@ -53,6 +53,7 @@ overlay_value_flag_neg=0;
 overlay_regrid_flag=1;
 overlay_regrid_zero_flag=0;
 overlay_flag_render=1;
+overlay_fixval_flag=0;
 
 overlay_exclude_fstem='';
 overlay_exclude=[];
@@ -95,6 +96,7 @@ flag_camlight=1;
 flag_colorbar=0;
 show_nearest_brain_surface_location_flag=1;
 show_contact_names_flag=1;
+show_all_contacts_mri_flag=1;
 electrode_update_contact_view_flag=0;
 
 for idx=1:length(varargin)/2
@@ -155,6 +157,8 @@ for idx=1:length(varargin)/2
             overlay_regrid_flag=option_value;
         case 'overlay_regrid_zero_flag'
             overlay_regrid_zero_flag=option_value;
+        case 'overlay_fixval_flag'
+            overlay_fixval_flag=option_value;
         case 'overlay_threshold'
             overlay_threshold=option_value;
         case 'overlay_cmap'
@@ -177,6 +181,8 @@ for idx=1:length(varargin)/2
             show_nearest_brain_surface_location_flag=option_value;
         case 'show_contact_names_flag'
             show_contact_names_flag=option_value;
+        case 'show_all_contacts_mri_flag'
+            show_all_contacts_mri_flag=option_value;
         case 'electrode_update_contact_view_flag'
             electrode_update_contact_view_flag=option_value;
         case 'view_angle'
@@ -428,10 +434,12 @@ if(~isempty(overlay_value))
         ov(overlay_vertex+1)=overlay_value;
         
         if(~isempty(overlay_smooth))
-            ovs=inverse_smooth('','vertex',vertex_coords','face',faces','value',ov,'step',overlay_smooth,'flag_fixval',0,'exc_vertex',overlay_exclude,'inc_vertex',overlay_include,'flag_regrid',overlay_regrid_flag,'flag_regrid_zero',overlay_regrid_zero_flag);
+            ovs=inverse_smooth('','vertex',vertex_coords','face',faces','value',ov,'step',overlay_smooth,'flag_fixval',overlay_fixval_flag,'exc_vertex',overlay_exclude,'inc_vertex',overlay_include,'flag_regrid',overlay_regrid_flag,'flag_regrid_zero',overlay_regrid_zero_flag);
         else
             ovs=ov;
         end;
+        %%update the overlay value by the smoothed one
+        %overlay_value=ovs;
         
         overlay_flag_render=1;
         if(~isempty(find(overlay_value>0))) overlay_value_flag_pos=1; end;
@@ -443,10 +451,13 @@ if(~isempty(overlay_value))
             ov(overlay_vertex{h_idx}+1)=overlay_value{h_idx};
 
             if(~isempty(overlay_smooth))
-                ovs=cat(1,ovs,inverse_smooth('','vertex',vertex_coords_hemi{h_idx}','face',faces_hemi{h_idx}','value',ov,'step',overlay_smooth,'flag_fixval',0,'exc_vertex',overlay_exclude{h_idx},'inc_vertex',overlay_include{h_idx},'flag_regrid',overlay_regrid_flag,'flag_regrid_zero',overlay_regrid_zero_flag));
+                ovs=cat(1,ovs,inverse_smooth('','vertex',vertex_coords_hemi{h_idx}','face',faces_hemi{h_idx}','value',ov,'step',overlay_smooth,'flag_fixval',overlay_fixval_flag,'exc_vertex',overlay_exclude{h_idx},'inc_vertex',overlay_include{h_idx},'flag_regrid',overlay_regrid_flag,'flag_regrid_zero',overlay_regrid_zero_flag));
             else
                 ovs=cat(1,ovs,ov);
             end;
+            
+            %%update the overlay value by the smoothed ones
+            %overlay_value{h_idx}=ovs;
         end;
         
         overlay_flag_render=1;
@@ -538,7 +549,6 @@ etc_render_fsbrain.orig_vertex_coords_hemi=orig_vertex_coords_hemi;
 etc_render_fsbrain.fvdata=fvdata;
 etc_render_fsbrain.curv=curv;
 %etc_render_fsbrain.curv_hemi=curv_hemi;
-etc_render_fsbrain.overlay_value=overlay_value;
 
 etc_render_fsbrain.view_angle=view_angle;
 etc_render_fsbrain.bg_color=bg_color;
@@ -556,6 +566,7 @@ etc_render_fsbrain.fig_label_gui=[];
 etc_render_fsbrain.show_nearest_brain_surface_location_flag=show_nearest_brain_surface_location_flag;
 etc_render_fsbrain.show_contact_names_flag=show_contact_names_flag;
 etc_render_fsbrain.electrode_update_contact_view_flag=electrode_update_contact_view_flag;
+etc_render_fsbrain.show_all_contacts_mri_flag=show_all_contacts_mri_flag;
 
 etc_render_fsbrain.overlay_vol=overlay_vol;
 etc_render_fsbrain.overlay_value=overlay_value;
@@ -577,6 +588,11 @@ etc_render_fsbrain.overlay_value_flag_neg=overlay_value_flag_neg;
 etc_render_fsbrain.overlay_exclude=overlay_exclude;
 etc_render_fsbrain.overlay_include=overlay_include;
 etc_render_fsbrain.overlay_flag_render=overlay_flag_render;
+etc_render_fsbrain.overlay_fixval_flag=overlay_fixval_flag;
+etc_render_fsbrain.overlay_regrid_flag=overlay_regrid_flag;
+etc_render_fsbrain.overlay_regrid_zero_flag=overlay_regrid_zero_flag;
+
+
 
 etc_render_fsbrain.label_vertex=label_vertex;
 etc_render_fsbrain.label_value=label_value;

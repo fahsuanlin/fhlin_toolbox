@@ -93,7 +93,9 @@ d2=[connection(2,:);[1:nf];ones(1,size(connection,2))]';
 d3=[connection(3,:);[1:nf];ones(1,size(connection,2))]';
 A=spones(spconvert([d1;d2;d3]));
 xx=sum(A,2);
-B=spones(A*A'+speye(size(A,1),size(A,1)));
+%B=spones(A*A'+speye(size(A,1),size(A,1)));
+B=spones(A*A').*0.5+speye(size(A,1),size(A,1)).*0.5;
+%B=B*B*B*B*B;
 yy=sum(B,2);
 
 %yy1=sum(spones(A*A'+speye(size(A,1),size(A,1))),2);
@@ -104,6 +106,17 @@ yy=sum(B,2);
 % keyboard;
 % neighbor=find(B(:,52363));
 
+%prepare a graph if regridding is enabled
+if(flag_regrid|flag_fixval)
+    dd1=[connection(1,:);connection(2,:)]';
+    dd2=[connection(2,:);connection(3,:)]';
+    dd3=[connection(3,:);connection(1,:)]';
+    dd=[dd1;dd2;dd3];
+    dd=unique(sort(dd,2),'rows');
+    G=graph(dd(:,1)',dd(:,2)',ones(1,size(dd,1)));
+end;
+               
+                
 if(~isempty(wfile))
 	[dvalue,dec_dip] = inverse_read_wfile(wfile);
 	value=zeros(nv,size(dvalue,2));
@@ -134,6 +147,11 @@ if(~isempty(inc_vertex))
     exc_vertex=union(exc_vertex,tmp);    
 end;
 
+v_min=min(value(:));
+v_max=max(value(:));
+
+nn={};
+D=[];
 for tt=1:size(value,2)
     if(flag_display)
     	fprintf('smoothing [%d|%d]',tt,size(value,2));
@@ -146,19 +164,80 @@ for tt=1:size(value,2)
     if(flag_regrid)
         if(isempty(value_idx))
             if(~flag_regrid_zero)
-                non_zero=find(abs(w)>eps);
+                non_zero=find(abs(w)>100.*eps);
+                nnon_zero=find(abs(w)>0.5);
+                idx_zero=setdiff([1:length(w)],non_zero);
+                %non_zero=[1:length(w)];
                 if(flag_display)
                     fprintf('gridding...');
                 end;
-                w=griddatan(vertex(1:3,non_zero)',w(non_zero),vertex(1:3,:)','nearest');
+
+        
+                %regrdding from graph
+                count=0;
+                for n_idx=1:length(non_zero)
+                    nn{n_idx}=nearest(G,non_zero(n_idx),5);
+                    count=count+length(nn{n_idx}(:));
+                end;
+                
+                D=zeros(count+length(non_zero),3);
+                count=1;
+                for n_idx=1:length(non_zero)
+                    D(count,:)=[non_zero(n_idx) non_zero(n_idx) 1];
+                    count=count+1;
+                    D(count:count+length(nn{n_idx})-1,:)=[nn{n_idx}(:), ones(length(nn{n_idx}(:)),1).*non_zero(n_idx), ones(length(nn{n_idx}(:)),1)];
+                    count=count+length(nn{n_idx});
+                end;
+                Ds=spconvert(D);
+                Dsn=sum(Ds,2);
+                w=(Ds*w(non_zero))./Dsn;
+                
+%         figure;
+%         etc_render_fsbrain('overlay_value',w,'overlay_vertex',[1:length(w)]-1,'overlay_threshold',[2 4],'overlay_smooth',[],'hemi','rh','surf','pial');
+%         %hold on;
+%         %plot3(vertex(1,non_zero),vertex(2,non_zero),vertex(3,non_zero),'g.');
+%         keyboard;    
+
+
+                
+%                w=griddatan(vertex(1:3,non_zero)',w(non_zero),vertex(1:3,:)','nearest');
+%                M=vertex(:,non_zero)';
+%                M=unique(M,'rows');
+%                F = scatteredInterpolant(M,w(non_zero),'nearest');
+%                w=F(vertex');
+                w(find(w(:)>v_max))=v_max;
+                w(find(w(:)<v_min))=v_min;
+
             else
                 non_zero=[1:length(w)];
-                w=griddatan(vertex(1:3,non_zero)',w(non_zero),vertex(1:3,:)','nearest');
-            end;
+                
+                %regrdding from graph
+                for n_idx=1:length(non_zero)
+                    nn=nearest(G,non_zero(n_idx),5);
+                    w(nn)=w(non_zero(n_idx));
+                end;
+                
+%                w=griddatan(vertex(1:3,non_zero)',w(non_zero),vertex(1:3,:)','nearest');
+%                M=vertex(:,non_zero)';
+%                M=unique(M,'rows');;
+%                F = scatteredInterpolant(M,w(non_zero),'nearest');
+%                w=F(vertex');
+                w(find(w(:)>v_max))=v_max;
+                w(find(w(:)<v_min))=v_min;
+                
+                
+%                close;
+%                etc_render_fsbrain('overlay_value',w,'overlay_vertex',[1:length(w)]-1,'overlay_threshold',[2 4],'overlay_smooth',[],'hemi','rh','surf','pial');
+%                keyboard;
+           end;
         else
             non_zero=[1:length(w)];
             [uv,uv_idx]=unique(vertex(1:3,value_idx+1)','rows'); %remove duplicate rows
             w=griddatan(uv,w(uv_idx),vertex(1:3,:)','nearest');
+            %F = scatteredInterpolant(uv,w(uv_idx),'linear');
+            %w=F(vertex(1:3,:)');
+            %w(find(w(:)>v_max))=v_max;
+            %w(find(w(:)<v_min))=v_min;
             w_regrid=w;
             %w=griddatan(vertex(1:3,value_idx+1)',w(:),vertex(1:3,:)','nearest');
         end;
@@ -175,6 +254,9 @@ for tt=1:size(value,2)
     if(tt==1)
         smooth_value=zeros(length(w),size(value,2));
     end;
+
+    
+%    w0=w;
     
     
     if(~isempty(value_idx))
@@ -183,31 +265,112 @@ for tt=1:size(value,2)
         non_zero_full=non_zero;
     end;
     
+
+    
+    %mmin0=min(w0(non_zero));
+    %mmax0=max(w0(non_zero));
+    mmin0=min(w0(:));
+    mmax0=max(w0(:));
+
+    if(isempty(nn))
+        if(flag_regrid|flag_fixval)
+            %regrdding from graph
+            clear nn;
+            for n_idx=1:length(non_zero)
+                nn{n_idx}=nearest(G,non_zero(n_idx),5);
+            end;
+        end;
+    end;
+    
+    if(isempty(D))
+        
+        D=zeros(count+length(non_zero),3);
+        count=1;
+        for n_idx=1:length(non_zero)
+            D(count,:)=[non_zero(n_idx) non_zero(n_idx) 1];
+            count=count+1;
+            D(count:count+length(nn{n_idx})-1,:)=[nn{n_idx}(:), ones(length(nn{n_idx}(:)),1).*non_zero(n_idx), ones(length(nn{n_idx}(:)),1)];
+            count=count+length(nn{n_idx});
+        end;
+        Ds=spconvert(D);
+        Dsn=sum(Ds,2);
+    end;
+    
     for ss=1:step
-		
-		w=B*w./yy;
-		ww(:,ss)=w(:);
-                
+        
+
+%         close;
+%         etc_render_fsbrain('overlay_value',w,'overlay_vertex',[1:length(w)]-1,'overlay_threshold',[2 4],'overlay_smooth',[],'hemi','rh','surf','pial');
+%         %hold on;
+%         %plot3(vertex(1,non_zero),vertex(2,non_zero),vertex(3,non_zero),'g.');
+%         keyboard;    
+
+        
         if(flag_fixval)
             if(flag_display) fprintf('.'); end;
-
-            if(~isempty(value_idx))
-                w(value_idx+1)=w0;
-            else
-                w(pidx)=w0(pidx);
-                w(nidx)=w0(nidx);
-            end;
+            
+            
+                tmp=(Ds*w(non_zero))./Dsn;
+                w(non_zero)=tmp(non_zero);
+%             if(~isempty(value     _idx))
+%                 w(value_idx+1)=w0;
+%             else
+%                 w(pidx)=w0(pidx);
+%                 w(nidx)=w0(nidx);
+%             end;
+%            for n_idx=1:length(non_zero)
+%                w(nn{n_idx})=w0(non_zero(n_idx));
+%            end;
         else
             if(flag_display) fprintf('#'); end;
         end;
-            
-        mmin=min(w(non_zero_full));
-        mmax=max(w(non_zero_full));
-        mmin0=min(w0(non_zero));
-        mmax0=max(w0(non_zero));
-        w=w.*(mmax0-mmin0)./(mmax-mmin);
-		
-        w(exc_vertex)=0;
+        
+        
+%         figure;
+%         etc_render_fsbrain('overlay_value',w,'overlay_vertex',[1:length(w)]-1,'overlay_threshold',[2 4],'overlay_smooth',[],'hemi','rh','surf','pial');
+%         %hold on;
+%         %vv=find(abs(w0(:))>1e-3);
+%         %plot3(vertex(1,vv),vertex(2,vv),vertex(3,vv),'g.');
+%         keyboard;    
+        
+        
+        w=(Ds*w(non_zero))./Dsn;
+        %w=B*w./yy;
+        
+%         close;
+%         etc_render_fsbrain('overlay_value',w,'overlay_vertex',[1:length(w)]-1,'overlay_threshold',[2 4],'overlay_smooth',[],'hemi','rh','surf','pial');
+%         %hold on;
+%         %plot3(vertex(1,non_zero),vertex(2,non_zero),vertex(3,non_zero),'g.');
+%         keyboard;    
+        
+        
+%         mmin=min(w(non_zero_full));
+%         mmax=max(w(non_zero_full));
+%         mmin0=min(w0(non_zero));
+%         mmax0=max(w0(non_zero));
+%         w=w.*(mmax0-mmin0)./(mmax-mmin);
+        
+		ww(:,ss)=w(:);
+               
+        
+%         close;
+%         etc_render_fsbrain('overlay_value',w,'overlay_vertex',[1:length(w)]-1,'overlay_threshold',[2 4],'overlay_smooth',[],'hemi','rh','surf','pial');
+%         hold on;
+%         plot3(vertex(1,non_zero),vertex(2,non_zero),vertex(3,non_zero),'g.');
+%         keyboard;
+        
+        %mmin=min(w(non_zero));
+        %mmax=max(w(non_zero));
+        
+        mmin=min(w(:));
+        mmax=max(w(:));
+        
+        %mmin0=min(w0(non_zero));
+        %mmax0=max(w0(non_zero));
+        %w=w.*(mmax0-mmin0)./(mmax-mmin);
+		w=(w-mmin).*(mmax0-mmin0)./(mmax-mmin)+mmin0;
+        
+        w(exc_vertex)=0;        
 	end;
 	if(flag_display) fprintf('\n'); end;
 
@@ -215,12 +378,31 @@ for tt=1:size(value,2)
                 w(exc_vertex)=nan;
     end;
     
-    mmin=min(w(non_zero_full));
-    mmax=max(w(non_zero_full));
-    mmin0=min(w0(non_zero));
-    mmax0=max(w0(non_zero));
-	smooth_value(:,tt)=w.*(mmax0-mmin0)./(mmax-mmin);
-	%smooth_value(scale_idx,tt)=fmri_scale(w(scale_idx),max(w0(non_zero)),min(w0(non_zero)));
+    %mmin=min(w(non_zero));
+    %mmax=max(w(non_zero));
+        
+    mmin=min(w(:));
+    mmax=max(w(:));
+
+    %mmin0=min(w0(non_zero));
+    %mmax0=max(w0(non_zero));
+    %    mmin=min(w);
+    %    mmax=max(w);
+    
+%     close;
+%     etc_render_fsbrain('overlay_value',w,'overlay_vertex',[1:length(w)]-1,'overlay_threshold',[2 4],'overlay_smooth',[],'hemi','rh','surf','pial');
+%     keyboard;
+    
+    smooth_value(:,tt)=(w-mmin).*(mmax0-mmin0)./(mmax-mmin)+mmin0;
+    %smooth_value(scale_idx,tt)=fmri_scale(w(scale_idx),max(w0(non_zero)),min(w0(non_zero)));
+    
+%         close;
+%         etc_render_fsbrain('overlay_value',smooth_value(:,tt),'overlay_vertex',[1:length(w)]-1,'overlay_threshold',[2 4],'overlay_smooth',[],'hemi','rh','surf','pial');
+%         %hold on;
+%         %plot3(vertex(1,non_zero),vertex(2,non_zero),vertex(3,non_zero),'g.');
+%         keyboard;    
+    
+
 end;
 
 return;

@@ -26,6 +26,8 @@ overlay_smooth=5;
 exc_vertex='';
 
 flag_fixval=0;
+flag_regrid=1;
+flag_regrid_zero=0;
 
 for idx=1:length(varargin)/2
     option=varargin{idx*2-1};
@@ -49,6 +51,10 @@ for idx=1:length(varargin)/2
             exc_vertex=option_value;            
         case 'flag_fixval'
             flag_fixval=option_value;
+        case 'flag_regrid_zero'
+            flag_regrid_zero=option_value;
+        case'flag_regrid'
+            flag_regrid=option_value;
         otherwise
             fprintf('unknown option [%s]...\n',option);
             return;
@@ -65,7 +71,7 @@ ov=zeros(size(vertex_coords,1),1);
 
 ov(overlay_vertex+1)=overlay_value;
 
-ovs=inverse_smooth('','vertex',vertex_coords','face',faces','value',ov,'step',overlay_smooth,'flag_fixval',flag_fixval,'exc_vertex',exc_vertex);
+ovs=inverse_smooth('','vertex',vertex_coords','face',faces','value',ov,'step',overlay_smooth,'flag_fixval',flag_fixval,'exc_vertex',exc_vertex,'flag_regrid_zero',flag_regrid_zero,'flag_regrid',flag_regrid);
 
 
 

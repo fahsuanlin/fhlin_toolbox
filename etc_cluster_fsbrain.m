@@ -14,6 +14,8 @@ threshold_min=min(threshold);
 threshold_max=max(threshold);
 
 flag_fixval=0;
+flag_regrid=1;
+flag_regrid_zero=0;
 
 overlay_exclude_fstem='';
 
@@ -36,6 +38,10 @@ for i=1:length(varargin)/2
             minarea=option_value;
         case 'flag_fixval'
             flag_fixval=option_value;
+        case 'flag_regrid_zero'
+            flag_regrid_zero=option_value;
+        case 'flag_regrid'
+            flag_regrid=option_value;
         case 'overlay_smooth'
             overlay_smooth=option_value;
         case 'overlay_exclude_fstem'
@@ -77,7 +83,7 @@ for f_idx=1:length(file_stc)
         
         stc(find(isnan(stc(:))))=0;
         
-        [stcs]=etc_smooth_fsbrain(stc(:,time_idx_pick),v_idx,'hemi',hemi,'flag_fixval',0,'exc_vertex',overlay_exclude,'overlay_smooth',overlay_smooth);
+        [stcs]=etc_smooth_fsbrain(stc(:,time_idx_pick),v_idx,'hemi',hemi,'exc_vertex',overlay_exclude,'overlay_smooth',overlay_smooth,'flag_fixval',0,'flag_regrid_zero',flag_regrid_zero,'flag_regrid',flag_regrid);
                     
         inverse_write_wfile(sprintf('tmp-%s.w',hemi),stcs(:),[1:size(stcs,1)]-1);
         

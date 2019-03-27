@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_electrode_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_electrode_gui
 
-% Last Modified by GUIDE v2.5 20-Mar-2019 22:06:22
+% Last Modified by GUIDE v2.5 27-Mar-2019 14:34:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -65,6 +65,7 @@ global etc_render_fsbrain;
 set(handles.slider_alpha,'value',get(etc_render_fsbrain.h,'facealpha'));
 set(handles.checkbox_nearest_brain_surface,'value',etc_render_fsbrain.show_nearest_brain_surface_location_flag);
 set(handles.checkbox_show_contact_names,'value',etc_render_fsbrain.show_contact_names_flag);
+set(handles.checkbox_mri_view,'value',etc_render_fsbrain.show_all_contacts_mri_flag);
 
 if(~isempty(etc_render_fsbrain.electrode))
     fprintf('electrodes specified...\n');
@@ -1546,3 +1547,17 @@ if(filename~=0)
     end;
     
 end;
+
+
+% --- Executes on button press in checkbox_mri_view.
+function checkbox_mri_view_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_mri_view (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_mri_view
+global etc_render_fsbrain
+
+etc_render_fsbrain.show_all_contacts_mri_flag=get(hObject,'Value');
+
+etc_render_fsbrain_handle('redraw');
