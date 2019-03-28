@@ -165,8 +165,6 @@ for tt=1:size(value,2)
         if(isempty(value_idx))
             if(~flag_regrid_zero)
                 non_zero=find(abs(w)>100.*eps);
-                nnon_zero=find(abs(w)>0.5);
-                idx_zero=setdiff([1:length(w)],non_zero);
                 %non_zero=[1:length(w)];
                 if(flag_display)
                     fprintf('gridding...');
@@ -185,10 +183,12 @@ for tt=1:size(value,2)
                 for n_idx=1:length(non_zero)
                     D(count,:)=[non_zero(n_idx) non_zero(n_idx) 1];
                     count=count+1;
-                    D(count:count+length(nn{n_idx})-1,:)=[nn{n_idx}(:), ones(length(nn{n_idx}(:)),1).*non_zero(n_idx), ones(length(nn{n_idx}(:)),1)];
+                    %D(count:count+length(nn{n_idx})-1,:)=[nn{n_idx}(:), ones(length(nn{n_idx}(:)),1).*non_zero(n_idx), ones(length(nn{n_idx}(:)),1)];
+                    D(count:count+length(nn{n_idx})-1,:)=[nn{n_idx}(:), ones(length(nn{n_idx}(:)),1).*n_idx, ones(length(nn{n_idx}(:)),1)];
                     count=count+length(nn{n_idx});
                 end;
                 Ds=spconvert(D);
+                Ds=Ds(:,non_zero);
                 Dsn=sum(Ds,2);
                 w=(Ds*w(non_zero))./Dsn;
                 
