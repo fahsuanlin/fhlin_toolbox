@@ -75,6 +75,13 @@ if(isempty(etc_render_fsbrain.aux_point_coords))
             c{i}.Enable='off';
         end;
     end;
+else
+    c=struct2cell(handles);
+    for i=1:length(c)
+        if(strcmp(c{i}.Type,'uicontrol'))
+            c{i}.Enable='on';
+        end;
+    end;
 end;
 
 

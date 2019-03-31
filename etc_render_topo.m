@@ -47,6 +47,7 @@ topo_value_flag_neg=0;
 topo_regrid_flag=1;
 topo_regrid_zero_flag=0;
 topo_flag_render=0;
+topo_fixval_flag=0;
 
 topo_aux_point_coords=[];
 topo_aux_point_coords_h=[];
@@ -85,6 +86,11 @@ view_angle=[];
 flag_redraw=0;
 flag_camlight=1;
 flag_colorbar=0;
+show_nearest_brain_surface_location_flag=1;
+show_contact_names_flag=1;
+show_all_contacts_mri_flag=1;
+electrode_update_contact_view_flag=0;
+
 
 for idx=1:length(varargin)/2
     option=varargin{idx*2-1};
@@ -150,6 +156,8 @@ for idx=1:length(varargin)/2
             topo_aux2_point_coords=option_value;
         case 'topo_aux2_point_name';
             topo_aux2_point_name=option_value;
+        case 'topo_fixval_flag'
+            topo_fixval_flag=option_value;
         case 'default_solid_color'
             default_solid_color=option_value;
         case 'cluster_file'
@@ -164,6 +172,14 @@ for idx=1:length(varargin)/2
             flag_colorbar=option_value;
         case 'flag_hold_fig_stc_timecourse'
             flag_hold_fig_stc_timecourse=option_value;
+        case 'show_nearest_brain_surface_location_flag'
+            show_nearest_brain_surface_location_flag=option_value;
+        case'show_contact_names_flag'
+            show_contact_names_flag=option_value;
+        case'show_all_contacts_mri_flag'
+            show_all_contacts_mri_flag=option_value;
+        case 'electrode_update_contact_view_flag'
+            electrode_update_contact_view_flag=option_value;
         case 'view_angle'
             view_angle=option_value;
         case 'bg_color'
@@ -295,11 +311,14 @@ for idx=1:size(topo_aux_point_coords,1)
             topo_aux_point_name_h(idx)=text(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3),''); hold on;
         else
             topo_aux_point_name_h(idx)=text(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3),topo_aux_point_name{idx}); hold on;
+            set(topo_aux_point_name_h(idx),'ButtonDownFcn',@aux_point_Callback,'PickableParts','all');
         end;
     end;
 end;
 topo_aux_point_coords_h(1)=surf(xx,yy,zz);
 set(topo_aux_point_coords_h(1),'facecolor','r','edgecolor','none');
+%set(topo_aux_point_coords_h(1),'facecolor','r','edgecolor','none','ButtonDownFcn',@(~,~)disp('click!\n'),'PickableParts','all');
+%set(topo_aux_point_coords_h(1),'facecolor','r','edgecolor','none','ButtonDownFcn',@aux_point_Callback,'PickableParts','all');
 
 
 xx=[]; yy=[]; zz=[];
@@ -365,6 +384,12 @@ etc_render_fsbrain.fig_brain=gcf;
 etc_render_fsbrain.fig_stc=[];
 etc_render_fsbrain.fig_gui=[];
 etc_render_fsbrain.fig_vol=[];
+etc_render_fsbrain.fig_coord_gui=[];
+etc_render_fsbrain.fig_label_gui=[];
+etc_render_fsbrain.show_nearest_brain_surface_location_flag=show_nearest_brain_surface_location_flag;
+etc_render_fsbrain.show_contact_names_flag=show_contact_names_flag;
+etc_render_fsbrain.electrode_update_contact_view_flag=electrode_update_contact_view_flag;
+etc_render_fsbrain.show_all_contacts_mri_flag=show_all_contacts_mri_flag;
 
 etc_render_fsbrain.vol_vox=[];
 
@@ -390,6 +415,9 @@ etc_render_fsbrain.flag_hold_fig_stc_timecourse=flag_hold_fig_stc_timecourse;
 etc_render_fsbrain.handle_fig_stc_timecourse=[];
 etc_render_fsbrain.handle_fig_stc_aux_timecourse=[];
 etc_render_fsbrain.overlay_flag_render=topo_flag_render;
+etc_render_fsbrain.overlay_fixval_flag=topo_fixval_flag;
+etc_render_fsbrain.overlay_regrid_flag=topo_regrid_flag;
+etc_render_fsbrain.overlay_regrid_zero_flag=topo_regrid_zero_flag;
 
 etc_render_fsbrain.label_vertex=label_vertex;
 etc_render_fsbrain.label_value=label_value;
@@ -442,4 +470,11 @@ end;
 if(flag_colorbar)
     etc_render_fsbrain_handle('kb','c0','c0');
 end;
+return;
+
+function aux_point_Callback(src,~)
+
+fprintf('label [%s] is clicked!\n',src.String);
+
+%   src.Color = rand(1,3);
 return;
