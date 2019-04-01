@@ -1336,7 +1336,11 @@ global etc_render_fsbrain
 
 etc_render_fsbrain.show_nearest_brain_surface_location_flag=get(hObject,'Value');
 
-etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
+if(isfield(etc_render_fsbrain,'click_coord'))
+    if(~isempty(etc_render_fsbrain.click_coord))
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
+    end;
+end;
 
 % --- Executes on button press in checkbox_show_contact_names.
 function checkbox_show_contact_names_Callback(hObject, eventdata, handles)
@@ -1480,7 +1484,7 @@ global etc_render_fsbrain;
 
 if(filename~=0)
     
-    tmp=load(filename);
+    tmp=load(sprintf('%s/%s',pathname,filename));
     if(isfield(tmp,'electrode'))
         etc_render_fsbrain.electrode=tmp.electrode;
         
