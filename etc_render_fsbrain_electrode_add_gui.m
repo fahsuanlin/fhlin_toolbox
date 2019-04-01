@@ -64,9 +64,16 @@ if(isfield(etc_render_fsbrain,'electrode_modify_flag'))
         set(handles.edit_spacing,'string',sprintf('%1.1f',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).spacing)); 
         set(handles.edit_name,'string',sprintf('%s',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).name)); 
         set(handles.edit_n_contact,'string',sprintf('%d',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact)); 
+    else
+        %initialization as a new electrode to be added
+        set(handles.figure_electrode_add_gui,'name','add an electrode');
+        set(handles.edit_spacing,'string','5');
+        set(handles.edit_name,'string','');
+        set(handles.edit_n_contact,'string','8');
     end;
 else
     %initialization as a new electrode to be added
+    set(handles.figure_electrode_add_gui,'name','add an electrode');
     set(handles.edit_spacing,'string','5'); 
     set(handles.edit_name,'string',''); 
     set(handles.edit_n_contact,'string','8'); 
