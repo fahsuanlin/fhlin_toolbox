@@ -1564,8 +1564,12 @@ global etc_render_fsbrain
 
 etc_render_fsbrain.show_all_contacts_mri_flag=get(hObject,'Value');
 
-surface_coord=etc_render_fsbrain.click_coord'; %clicked surface coord
-
-etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord);
-
-etc_render_fsbrain_handle('redraw');
+if(isfield(etc_render_fsbrain,'click_coord'))
+    if(~isempty(etc_render_fsbrain.click_coord))
+        surface_coord=etc_render_fsbrain.click_coord'; %clicked surface coord
+        
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord);
+        
+        etc_render_fsbrain_handle('redraw');
+    end;
+end;
