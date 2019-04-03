@@ -184,17 +184,26 @@ for tt=1:size(value,2)
                     D(count,:)=[non_zero(n_idx) non_zero(n_idx) 1];
                     count=count+1;
                     %D(count:count+length(nn{n_idx})-1,:)=[nn{n_idx}(:), ones(length(nn{n_idx}(:)),1).*non_zero(n_idx), ones(length(nn{n_idx}(:)),1)];
-                    D(count:count+length(nn{n_idx})-1,:)=[nn{n_idx}(:), ones(length(nn{n_idx}(:)),1).*n_idx, ones(length(nn{n_idx}(:)),1)];
+                    D(count:count+length(nn{n_idx})-1,:)=[nn{n_idx}(:), ones(length(nn{n_idx}(:)),1).*non_zero(n_idx), ones(length(nn{n_idx}(:)),1)];
                     count=count+length(nn{n_idx});
                 end;
                 Ds=spconvert(D);
                 Ds=Ds(:,non_zero);
                 Dsn=sum(Ds,2);
-                w=(Ds*w(non_zero))./Dsn;
+                nnz=find(Dsn>eps);
+%         figure;
+%         etc_render_fsbrain('subject','031519','overlay_value',w,'overlay_vertex',[1:length(w)]-1,'overlay_threshold',[0.3 0.7],'overlay_smooth',[],'hemi','lh','surf','inflated');
+%         keyboard;
+        
+                w(nnz)=(Ds(nnz,:)*w(non_zero))./Dsn(nnz);
                 
 %         figure;
-%         etc_render_fsbrain('overlay_value',w,'overlay_vertex',[1:length(w)]-1,'overlay_threshold',[2 4],'overlay_smooth',[],'hemi','rh','surf','pial');
-%         %hold on;
+%         etc_render_fsbrain('subject','031519','overlay_value',w,'overlay_vertex',[1:length(w)]-1,'overlay_threshold',[0.3 0.7],'overlay_smooth',[],'hemi','lh','surf','inflated');
+%         keyboard;
+
+
+        %etc_render_fsbrain('overlay_value',w,'overlay_vertex',[1:length(w)]-1,'overlay_threshold',[2 4],'overlay_smooth',[],'hemi','rh','surf','pial');
+        %hold on;
 %         %plot3(vertex(1,non_zero),vertex(2,non_zero),vertex(3,non_zero),'g.');
 %         keyboard;    
 
@@ -294,6 +303,7 @@ for tt=1:size(value,2)
         end;
         Ds=spconvert(D);
         Dsn=sum(Ds,2);
+        nnz=find(Dsn>eps);
     end;
     
     for ss=1:step
@@ -310,7 +320,9 @@ for tt=1:size(value,2)
             if(flag_display) fprintf('.'); end;
             
             
-                tmp=(Ds*w(non_zero))./Dsn;
+                %tmp=(Ds*w(non_zero))./Dsn;
+                tmp=zeros(size(Ds,1),1);
+                tmp(nnz)=(Ds(nnz,:)*w(non_zero))./Dsn(nnz);
                 w(non_zero)=tmp(non_zero);
 %             if(~isempty(value     _idx))
 %                 w(value_idx+1)=w0;
@@ -334,7 +346,8 @@ for tt=1:size(value,2)
 %         keyboard;    
         
         
-        w=(Ds*w(non_zero))./Dsn;
+        %w=(Ds*w(non_zero))./Dsn;
+        w(nnz)=(Ds(nnz,:)*w(non_zero))./Dsn(nnz);
         %w=B*w./yy;
         
 %         close;

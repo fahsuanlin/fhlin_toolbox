@@ -63,6 +63,12 @@ switch lower(param)
                 close(etc_render_fsbrain.fig_brain);
                 close(etc_render_fsbrain.fig_stc);
                 close(etc_render_fsbrain.fig_vol);
+                close(etc_render_fsbrain.fig_gui);
+                close(etc_render_fsbrain.fig_label_gui);
+                close(etc_render_fsbrain.fig_register);
+                close(etc_render_fsbrain.fig_coord_gui);
+                close(etc_render_fsbrain.fig_electrode_gui);
+                
             case 'r'
                 fprintf('\nredrawing...\n');
                 redraw;
