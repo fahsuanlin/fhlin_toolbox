@@ -54,6 +54,7 @@ overlay_regrid_flag=1;
 overlay_regrid_zero_flag=0;
 overlay_flag_render=1;
 overlay_fixval_flag=0;
+overlay_Ds=[];
 
 overlay_exclude_fstem='';
 overlay_exclude=[];
@@ -153,6 +154,8 @@ for idx=1:length(varargin)/2
             overlay_vertex=option_value;
         case 'overlay_smooth'
             overlay_smooth=option_value;
+        case 'overlay_ds'
+            overlay_Ds=option_value;
         case 'overlay_regrid_flag'
             overlay_regrid_flag=option_value;
         case 'overlay_regrid_zero_flag'
@@ -434,7 +437,7 @@ if(~isempty(overlay_value))
         ov(overlay_vertex+1)=overlay_value;
         
         if(~isempty(overlay_smooth))
-            ovs=inverse_smooth('','vertex',vertex_coords','face',faces','value',ov,'step',overlay_smooth,'flag_fixval',overlay_fixval_flag,'exc_vertex',overlay_exclude,'inc_vertex',overlay_include,'flag_regrid',overlay_regrid_flag,'flag_regrid_zero',overlay_regrid_zero_flag);
+            [ovs,dd0,dd1,overlay_Ds]=inverse_smooth('','vertex',vertex_coords','face',faces','value',ov,'step',overlay_smooth,'flag_fixval',overlay_fixval_flag,'exc_vertex',overlay_exclude,'inc_vertex',overlay_include,'flag_regrid',overlay_regrid_flag,'flag_regrid_zero',overlay_regrid_zero_flag,'Ds',overlay_Ds);
         else
             ovs=ov;
         end;
@@ -451,7 +454,8 @@ if(~isempty(overlay_value))
             ov(overlay_vertex{h_idx}+1)=overlay_value{h_idx};
 
             if(~isempty(overlay_smooth))
-                ovs=cat(1,ovs,inverse_smooth('','vertex',vertex_coords_hemi{h_idx}','face',faces_hemi{h_idx}','value',ov,'step',overlay_smooth,'flag_fixval',overlay_fixval_flag,'exc_vertex',overlay_exclude{h_idx},'inc_vertex',overlay_include{h_idx},'flag_regrid',overlay_regrid_flag,'flag_regrid_zero',overlay_regrid_zero_flag));
+                [tmp,dd0,dd1,overlay_Ds]=inverse_smooth('','vertex',vertex_coords_hemi{h_idx}','face',faces_hemi{h_idx}','value',ov,'step',overlay_smooth,'flag_fixval',overlay_fixval_flag,'exc_vertex',overlay_exclude{h_idx},'inc_vertex',overlay_include{h_idx},'flag_regrid',overlay_regrid_flag,'flag_regrid_zero',overlay_regrid_zero_flag,'Ds',overlay_Ds);
+                ovs=cat(1,ovs,tmp);
             else
                 ovs=cat(1,ovs,ov);
             end;
@@ -591,7 +595,7 @@ etc_render_fsbrain.overlay_flag_render=overlay_flag_render;
 etc_render_fsbrain.overlay_fixval_flag=overlay_fixval_flag;
 etc_render_fsbrain.overlay_regrid_flag=overlay_regrid_flag;
 etc_render_fsbrain.overlay_regrid_zero_flag=overlay_regrid_zero_flag;
-
+etc_render_fsbrain.overlay_Ds=overlay_Ds;
 
 
 etc_render_fsbrain.label_vertex=label_vertex;

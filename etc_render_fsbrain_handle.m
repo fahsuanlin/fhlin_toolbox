@@ -1010,6 +1010,7 @@ if(~isempty(etc_render_fsbrain.vol_vox))
         end;
         
         if(etc_render_fsbrain.show_all_contacts_mri_flag)
+            count=1;
             for v_idx=1:size(etc_render_fsbrain.aux2_point_coords,1)
                 surface_coord=etc_render_fsbrain.aux2_point_coords(v_idx,:);
                 v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
@@ -1023,21 +1024,32 @@ if(~isempty(etc_render_fsbrain.vol_vox))
   
                 D=2;
                 
-                etc_render_fsbrain.aux2_point_mri_cor_h(v_idx)=scatter(etc_render_fsbrain.img_cor_padx+click_vertex_vox(1), etc_render_fsbrain.img_cor_pady+click_vertex_vox(2),80,[0.8500 0.3250 0.0980],'.');
-                set(etc_render_fsbrain.aux2_point_mri_cor_h(v_idx),'MarkerEdgeColor',[0.8500 0.3250 0.0980]);
-                set(etc_render_fsbrain.aux2_point_mri_cor_h(v_idx),'MarkerEdgeAlpha',exp(-(abs(click_vertex_vox(3)-round(etc_render_fsbrain.click_vertex_vox(3))))/D));
-                set(etc_render_fsbrain.aux2_point_mri_cor_h(v_idx),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
+                alpha=exp(-(abs(click_vertex_vox(3)-round(etc_render_fsbrain.click_vertex_vox(3))))/D);
+                if(alpha>0.2)
+                    etc_render_fsbrain.aux2_point_mri_cor_h(count)=scatter(etc_render_fsbrain.img_cor_padx+click_vertex_vox(1), etc_render_fsbrain.img_cor_pady+click_vertex_vox(2),80,[0.8500 0.3250 0.0980],'.');
+                    set(etc_render_fsbrain.aux2_point_mri_cor_h(count),'MarkerEdgeColor',[0.8500 0.3250 0.0980]);
+                    set(etc_render_fsbrain.aux2_point_mri_cor_h(count),'MarkerEdgeAlpha',alpha);
+                    set(etc_render_fsbrain.aux2_point_mri_cor_h(count),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
+                    count=count+1;
+                end;
                 
-                etc_render_fsbrain.aux2_point_mri_ax_h(v_idx)=scatter(mm+etc_render_fsbrain.img_ax_padx+click_vertex_vox(1), mm-(etc_render_fsbrain.img_ax_pady+click_vertex_vox(3)),80,[0.8500 0.3250 0.0980],'.');
-                set(etc_render_fsbrain.aux2_point_mri_ax_h(v_idx),'MarkerEdgeColor',[0.8500 0.3250 0.0980]);
-                set(etc_render_fsbrain.aux2_point_mri_ax_h(v_idx),'MarkerEdgeAlpha',exp(-(abs(click_vertex_vox(2)-round(etc_render_fsbrain.click_vertex_vox(2))))/D));
-                set(etc_render_fsbrain.aux2_point_mri_ax_h(v_idx),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
+                alpha=exp(-(abs(click_vertex_vox(2)-round(etc_render_fsbrain.click_vertex_vox(2))))/D);
+                if(alpha>0.2)
+                    etc_render_fsbrain.aux2_point_mri_ax_h(count)=scatter(mm+etc_render_fsbrain.img_ax_padx+click_vertex_vox(1), mm-(etc_render_fsbrain.img_ax_pady+click_vertex_vox(3)),80,[0.8500 0.3250 0.0980],'.');
+                    set(etc_render_fsbrain.aux2_point_mri_ax_h(count),'MarkerEdgeColor',[0.8500 0.3250 0.0980]);
+                    set(etc_render_fsbrain.aux2_point_mri_ax_h(count),'MarkerEdgeAlpha',alpha);
+                    set(etc_render_fsbrain.aux2_point_mri_ax_h(count),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
+                    count=count+1;
+                end;
                 
-                
-                etc_render_fsbrain.aux2_point_mri_sag_h(v_idx)=scatter(etc_render_fsbrain.img_sag_padx+click_vertex_vox(3), mm+etc_render_fsbrain.img_sag_pady+click_vertex_vox(2),80,[0.8500 0.3250 0.0980],'.');
-                set(etc_render_fsbrain.aux2_point_mri_sag_h(v_idx),'MarkerEdgeColor',[0.8500 0.3250 0.0980]);
-                set(etc_render_fsbrain.aux2_point_mri_sag_h(v_idx),'MarkerEdgeAlpha',exp(-(abs(click_vertex_vox(1)-round(etc_render_fsbrain.click_vertex_vox(1))))/D));
-                set(etc_render_fsbrain.aux2_point_mri_sag_h(v_idx),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
+                alpha=exp(-(abs(click_vertex_vox(1)-round(etc_render_fsbrain.click_vertex_vox(1))))/D);
+                if(alpha>0.2)
+                    etc_render_fsbrain.aux2_point_mri_sag_h(count)=scatter(etc_render_fsbrain.img_sag_padx+click_vertex_vox(3), mm+etc_render_fsbrain.img_sag_pady+click_vertex_vox(2),80,[0.8500 0.3250 0.0980],'.');
+                    set(etc_render_fsbrain.aux2_point_mri_sag_h(count),'MarkerEdgeColor',[0.8500 0.3250 0.0980]);
+                    set(etc_render_fsbrain.aux2_point_mri_sag_h(count),'MarkerEdgeAlpha',alpha);
+                    set(etc_render_fsbrain.aux2_point_mri_sag_h(count),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
+                    count=count+1;
+                end;
             end;
         end;
         
@@ -1378,7 +1390,7 @@ if(etc_render_fsbrain.overlay_flag_render)
             ov(etc_render_fsbrain.overlay_vertex+1)=etc_render_fsbrain.overlay_value;
             
             if(~isempty(etc_render_fsbrain.overlay_smooth))
-                ovs=inverse_smooth('','vertex',etc_render_fsbrain.vertex_coords','face',etc_render_fsbrain.faces','value',ov,'step',etc_render_fsbrain.overlay_smooth,'flag_fixval',etc_render_fsbrain.overlay_fixval_flag,'exc_vertex',etc_render_fsbrain.overlay_exclude,'inc_vertex',etc_render_fsbrain.overlay_include,'flag_regrid',etc_render_fsbrain.overlay_regrid_flag,'flag_regrid_zero',etc_render_fsbrain.overlay_regrid_zero_flag);
+                [ovs,dd0,dd1,etc_render_fsbrain.overlay_Ds]=inverse_smooth('','vertex',etc_render_fsbrain.vertex_coords','face',etc_render_fsbrain.faces','value',ov,'step',etc_render_fsbrain.overlay_smooth,'flag_fixval',etc_render_fsbrain.overlay_fixval_flag,'exc_vertex',etc_render_fsbrain.overlay_exclude,'inc_vertex',etc_render_fsbrain.overlay_include,'flag_regrid',etc_render_fsbrain.overlay_regrid_flag,'flag_regrid_zero',etc_render_fsbrain.overlay_regrid_zero_flag,'Ds',etc_render_fsbrain.overlay_Ds);
             else
                 ovs=ov;
             end;
@@ -1392,7 +1404,8 @@ if(etc_render_fsbrain.overlay_flag_render)
                 ov(etc_render_fsbrain.overlay_vertex{h_idx}+1)=etc_render_fsbrain.overlay_value{h_idx};
                 
                 if(~isempty(etc_render_fsbrain.overlay_smooth))
-                    ovs=cat(1,ovs,inverse_smooth('','vertex',etc_render_fsbrain.vertex_coords_hemi{h_idx}','face',etc_render_fsbrain.faces_hemi{h_idx}','value',ov,'step',etc_render_fsbrain.overlay_smooth,'flag_fixval',etc_render_fsbrain.overlay_fixval_flag,'exc_vertex',etc_render_fsbrain.overlay_exclude{h_idx},'inc_vertex',etc_render_fsbrain.overlay_include{h_idx},'flag_regrid',etc_render_fsbrain.overlay_regrid_flag,'flag_regrid_zero',etc_render_fsbrain.overlay_regrid_zero_flag));
+                    [tmp,dd0,dd1,etc_render_fsbrain.overlay_Ds]=inverse_smooth('','vertex',etc_render_fsbrain.vertex_coords_hemi{h_idx}','face',etc_render_fsbrain.faces_hemi{h_idx}','value',ov,'step',etc_render_fsbrain.overlay_smooth,'flag_fixval',etc_render_fsbrain.overlay_fixval_flag,'exc_vertex',etc_render_fsbrain.overlay_exclude{h_idx},'inc_vertex',etc_render_fsbrain.overlay_include{h_idx},'flag_regrid',etc_render_fsbrain.overlay_regrid_flag,'flag_regrid_zero',etc_render_fsbrain.overlay_regrid_zero_flag,'Ds',etc_render_fsbrain.overlay_Ds)
+                    ovs=cat(1,ovs,tmp);
                 else
                     ovs=cat(1,ovs,ov);
                 end;
