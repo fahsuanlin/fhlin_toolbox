@@ -719,7 +719,7 @@ end;
 
 etc_render_fsbrain.click_coord=pt;
 etc_render_fsbrain.click_point=plot3(pt(1),pt(2),pt(3),'.');
-fprintf('\nsurface coordinate of the clicked point {x, y, z} = {%s}\n',num2str(pt','%2.2f '));
+fprintf('\nsurface coordinate of the clicked point {x, y, z} = {%s}\n',num2str(pt(:)','%2.2f '));
 set(etc_render_fsbrain.click_point,'color',[1 0 1],'markersize',28);
 
 vv=etc_render_fsbrain.vertex_coords;
@@ -1014,7 +1014,7 @@ if(~isempty(etc_render_fsbrain.vol_vox))
             for v_idx=1:size(etc_render_fsbrain.aux2_point_coords,1)
                 surface_coord=etc_render_fsbrain.aux2_point_coords(v_idx,:);
                 v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
-                click_vertex_vox=(v(1:3))';
+                click_vertex_vox=round(v(1:3))';
                 
                 
 %         img_cor=squeeze(etc_render_fsbrain.vol.vol(:,:,round(etc_render_fsbrain.click_vertex_vox(3))));

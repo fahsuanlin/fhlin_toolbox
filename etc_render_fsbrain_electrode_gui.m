@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_electrode_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_electrode_gui
 
-% Last Modified by GUIDE v2.5 27-Mar-2019 14:34:03
+% Last Modified by GUIDE v2.5 10-Apr-2019 00:44:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -39,6 +39,7 @@ end
 if nargout
     [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
 else
+    warning off;
     gui_mainfcn(gui_State, varargin{:});
 end
 % End initialization code - DO NOT EDIT
@@ -248,7 +249,7 @@ etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
 vv=etc_render_fsbrain.orig_vertex_coords;
 dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
 [min_dist,min_dist_idx]=min(dist);
-surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+%surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
 if(etc_render_fsbrain.electrode_update_contact_view_flag)
     etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
 end;
@@ -509,7 +510,7 @@ switch answer
             vv=etc_render_fsbrain.orig_vertex_coords;
             dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
             [min_dist,min_dist_idx]=min(dist);
-            surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+            %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
             
             %update figure;
             if(etc_render_fsbrain.electrode_update_contact_view_flag)
@@ -582,7 +583,7 @@ etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
 vv=etc_render_fsbrain.orig_vertex_coords;
 dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
 [min_dist,min_dist_idx]=min(dist);
-surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+%surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
 
 %update figure;
 if(etc_render_fsbrain.electrode_update_contact_view_flag)
@@ -650,7 +651,7 @@ etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
 vv=etc_render_fsbrain.orig_vertex_coords;
 dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
 [min_dist,min_dist_idx]=min(dist);
-surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+%surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
 
 %update figure;
 if(etc_render_fsbrain.electrode_update_contact_view_flag)
@@ -706,7 +707,7 @@ etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
 vv=etc_render_fsbrain.orig_vertex_coords;
 dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
 [min_dist,min_dist_idx]=min(dist);
-surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+%surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
 
 %update figure;
 if(etc_render_fsbrain.electrode_update_contact_view_flag)
@@ -763,7 +764,7 @@ etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
 vv=etc_render_fsbrain.orig_vertex_coords;
 dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
 [min_dist,min_dist_idx]=min(dist);
-surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+%surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
 
 %update figure;
 if(etc_render_fsbrain.electrode_update_contact_view_flag)
@@ -821,7 +822,7 @@ etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
 vv=etc_render_fsbrain.orig_vertex_coords;
 dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
 [min_dist,min_dist_idx]=min(dist);
-surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+%surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
 
 %update figure;
 if(etc_render_fsbrain.electrode_update_contact_view_flag)
@@ -879,7 +880,7 @@ etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
 vv=etc_render_fsbrain.orig_vertex_coords;
 dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
 [min_dist,min_dist_idx]=min(dist);
-surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+%surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
 
 %update figure;
 if(etc_render_fsbrain.electrode_update_contact_view_flag)
@@ -980,9 +981,9 @@ click_vertex_vox=round(v(1:3))';
 
 etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
                     
-%vv=etc_render_fsbrain.orig_vertex_coords;
-%dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
-%[min_dist,min_dist_idx]=min(dist);
+vv=etc_render_fsbrain.orig_vertex_coords;
+dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+[min_dist,min_dist_idx]=min(dist);
 %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
 
 %update figure;
@@ -1069,7 +1070,7 @@ etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
 vv=etc_render_fsbrain.orig_vertex_coords;
 dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
 [min_dist,min_dist_idx]=min(dist);
-surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+%surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
 
 %update figure;
 if(etc_render_fsbrain.electrode_update_contact_view_flag)
@@ -1126,7 +1127,7 @@ etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
 vv=etc_render_fsbrain.orig_vertex_coords;
 dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
 [min_dist,min_dist_idx]=min(dist);
-surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+%surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
 
 %update figure;
 if(etc_render_fsbrain.electrode_update_contact_view_flag)
@@ -1245,7 +1246,8 @@ if(~isempty(etc_render_fsbrain.vol))
             if(e_idx==1&&c_idx==1)
                 fprintf('name\tC\tR\tS\t\t');
                 if(~isempty(etc_render_fsbrain.talxfm))
-                    fprintf('tal_x(mm)\ttal_y(mm)\ttal_z(mm)\t\t');
+                    fprintf('MNI_x(mm)\tMNI_y(mm)\tMNI_z(mm)\t\t');
+                    fprintf('TAL_x(mm)\tTAL_y(mm)\tTAL_z(mm)\t\t');
                 end;
                 fprintf('\n');
             end;
@@ -1253,6 +1255,29 @@ if(~isempty(etc_render_fsbrain.vol))
             if(~isempty(etc_render_fsbrain.talxfm))
                 click_vertex_point_tal=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*[click_vertex_vox_now 1].';
                 fprintf('%1.0f\t%1.0f\t%1.0f\t\t',click_vertex_point_tal(1), click_vertex_point_tal(2), click_vertex_point_tal(3));
+
+                
+M2T.rotn  = [      1         0         0         0;
+                   0    0.9988    0.0500         0;
+                   0   -0.0500    0.9988         0;
+                   0         0         0    1.0000 ];
+ 
+M2T.upZ   = [ 0.9900         0         0         0;
+                   0    0.9700         0         0;
+                   0         0    0.9200         0;
+                   0         0         0    1.0000 ];
+M2T.downZ = [ 0.9900         0         0         0;
+                   0    0.9700         0         0;
+                   0         0    0.8400         0;
+                   0         0         0    1.0000 ];
+               
+                if(click_vertex_point_tal(3)<0)
+                    click_vertex_point_true_tal=(M2T.rotn * M2T.downZ) * click_vertex_point_tal(:);
+                else
+                    click_vertex_point_true_tal=(M2T.rotn * M2T.upZ) * click_vertex_point_tal(:);
+                end;
+                fprintf('%1.0f\t%1.0f\t%1.0f\t\t',click_vertex_point_true_tal(1), click_vertex_point_true_tal(2), click_vertex_point_true_tal(3));
+ 
             end;
             fprintf('\n');
         end;
@@ -1300,7 +1325,8 @@ for e_idx=1:length(etc_render_fsbrain.electrode)
         if(e_idx==1&&c_idx==1)
             fprintf(fp,'name\tC\tR\tS\t\t');
             if(~isempty(etc_render_fsbrain.talxfm))
-                fprintf(fp,'tal_x(mm)\ttal_y(mm)\ttal_z(mm)\t\t');
+                fprintf(fp,'MNI_x(mm)\tMNI_y(mm)\tMNI_z(mm)\t\t');
+                fprintf(fp,'TAL_x(mm)\tTAL_y(mm)\tTAL_z(mm)\t\t');
             end;
             fprintf(fp,'\n');
         end;
@@ -1308,6 +1334,29 @@ for e_idx=1:length(etc_render_fsbrain.electrode)
         if(~isempty(etc_render_fsbrain.talxfm))
             click_vertex_point_tal=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*[click_vertex_vox_now 1].';
             fprintf(fp,'%1.0f\t%1.0f\t%1.0f\t\t',click_vertex_point_tal(1), click_vertex_point_tal(2), click_vertex_point_tal(3));
+            
+            M2T.rotn  = [      1         0         0         0;
+                0    0.9988    0.0500         0;
+                0   -0.0500    0.9988         0;
+                0         0         0    1.0000 ];
+            
+            M2T.upZ   = [ 0.9900         0         0         0;
+                0    0.9700         0         0;
+                0         0    0.9200         0;
+                0         0         0    1.0000 ];
+            M2T.downZ = [ 0.9900         0         0         0;
+                0    0.9700         0         0;
+                0         0    0.8400         0;
+                0         0         0    1.0000 ];
+            
+            if(click_vertex_point_tal(3)<0)
+                click_vertex_point_true_tal=(M2T.rotn * M2T.downZ) * click_vertex_point_tal(:);
+            else
+                click_vertex_point_true_tal=(M2T.rotn * M2T.upZ) * click_vertex_point_tal(:);
+            end;
+            fprintf(fp,'%1.0f\t%1.0f\t%1.0f\t\t',click_vertex_point_true_tal(1), click_vertex_point_true_tal(2), click_vertex_point_true_tal(3));
+            
+            
         end;
         fprintf(fp,'\n');
     end;
@@ -1568,8 +1617,257 @@ if(isfield(etc_render_fsbrain,'click_coord'))
     if(~isempty(etc_render_fsbrain.click_coord))
         surface_coord=etc_render_fsbrain.click_coord'; %clicked surface coord
         
-        etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord);
+        
+        v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+        click_vertex_vox=round(v(1:3))';
+
+        etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
+                    
+        vv=etc_render_fsbrain.orig_vertex_coords;
+        dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+        [min_dist,min_dist_idx]=min(dist);
+        %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+
+        %update figure;
+        if(etc_render_fsbrain.electrode_update_contact_view_flag)
+            etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+        end;
+        
+        %etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord);
         
         etc_render_fsbrain_handle('redraw');
     end;
 end;
+
+
+% --- Executes on button press in button_optimize.
+function button_optimize_Callback(hObject, eventdata, handles)
+% hObject    handle to button_optimize (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global etc_render_fsbrain;
+
+az0=0; %degree;
+el0=0; %degree
+rotate_angle0=0; %degree
+translate_dist0=0; % mm
+translate_dist1=0; % mm
+
+%parameters in the objective function
+mri=etc_render_fsbrain.vol.vol;
+tkrvox2ras=etc_render_fsbrain.vol.tkrvox2ras;
+
+fprintf('optimizing electrode contact locations...\n');
+
+%optimize each electrode separately
+for e_idx=1:length(etc_render_fsbrain.electrode)
+%for e_idx=1:1 
+    fprintf('\toptimizing electrode [%s]...\n',etc_render_fsbrain.electrode(e_idx).name);
+
+    mask_idx=find(etc_render_fsbrain.electrode_mask(e_idx,:)>eps);
+
+    tmp=etc_render_fsbrain.aux2_point_coords(mask_idx,:).';
+
+    mmin=min(tmp,[],2);
+    mmax=max(tmp,[],2);
+    
+    %initialize optimizer
+    init(1)=az0;
+    init(2)=el0;
+    init(3)=rotate_angle0;
+    init(4)=translate_dist0;
+    init(5)=translate_dist1;
+    init(6:8)=mean(tmp,2);
+    
+   
+    opt_options = optimset('Display','off','MaxIter',1e4,'tolX',1e-4, 'tolFun',1e-4);
+    
+    [cost_init, tmp_init]=etc_render_fsbrain_electrode_cost(init,tmp,mri,tkrvox2ras,'flag_display',1);
+    
+    f = @(x)etc_render_fsbrain_electrode_cost(x,tmp,mri,tkrvox2ras);
+    %[param_opt, fval, exitflag] = fminsearch(@etc_render_fsbrain_electrode_cost, init, opt_options, tmp, mri, tkrvox2ras);
+    %[param_opt, fval, exitflag] = fminsearch(f, init, opt_options);
+    %[param_opt,fval] = fminunc(f,init,options);
+    LB=[-90 -180 -5 -2 -2 mmin(1)-10 mmin(2)-10 mmin(3)-10];
+    UB=[90 180 5 2 2 mmax(1)+10 mmax(2)+10 mmax(3)+10];
+    
+    [param_opt,fval] = patternsearch(f,init,[],[],[],[],LB,UB,[],opt_options);
+    
+    [cost_opt, tmp_opt]=etc_render_fsbrain_electrode_cost(param_opt,tmp,mri,tkrvox2ras,'flag_display',1);
+    
+    %fprintf('cost [%1.2f] --> [%1.2f]\n',cost_init,cost_opt);
+
+    etc_render_fsbrain.aux2_point_coords(mask_idx,:)=tmp_opt';
+end;
+fprintf('optimization done!\n');
+
+%end of optimization; update electrode contact information.....
+
+%update coordinates for electrode contacts
+count=1;
+for e_idx=1:length(etc_render_fsbrain.electrode)
+    for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
+        etc_render_fsbrain.electrode(e_idx).coord(c_idx,:)=etc_render_fsbrain.aux2_point_coords(count,:);
+        count=count+1;
+    end;
+end;
+
+%find current contact
+count=0;
+for e_idx=1:etc_render_fsbrain.electrode_idx-1
+    count=count+etc_render_fsbrain.electrode(e_idx).n_contact;
+end;
+count=count+etc_render_fsbrain.electrode_contact_idx;
+
+surface_coord=etc_render_fsbrain.aux2_point_coords(count,:);
+v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+click_vertex_vox=round(v(1:3))';
+
+etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
+                    
+vv=etc_render_fsbrain.orig_vertex_coords;
+dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+[min_dist,min_dist_idx]=min(dist);
+%surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+
+%update figure;
+if(etc_render_fsbrain.electrode_update_contact_view_flag)
+    etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+end;
+
+etc_render_fsbrain_handle('redraw');
+
+
+% --- Executes on button press in button_evaluate_cost.
+function button_evaluate_cost_Callback(hObject, eventdata, handles)
+% hObject    handle to button_evaluate_cost (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+   
+global etc_render_fsbrain;
+
+%parameters in the objective function
+mri=etc_render_fsbrain.vol.vol;
+tkrvox2ras=etc_render_fsbrain.vol.tkrvox2ras;
+
+
+for e_idx=etc_render_fsbrain.electrode_idx:etc_render_fsbrain.electrode_idx
+    mask_idx=find(etc_render_fsbrain.electrode_mask(e_idx,:)>eps);
+    
+    tmp=etc_render_fsbrain.aux2_point_coords(mask_idx,:).';
+    
+    mmin=min(tmp,[],2);
+    mmax=max(tmp,[],2);
+    
+    %initialize optimizer
+    init(1)=0;
+    init(2)=0;
+    init(3)=0;
+    init(4)=0;
+    init(5)=0;
+    init(6:8)=[0 0 0];
+
+    [cost]=etc_render_fsbrain_electrode_cost(init,tmp,mri,tkrvox2ras,'flag_display',2);
+    
+    fprintf('electrode [%s] current cost [%1.2f]\n',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).name,cost);
+    
+end;
+return
+
+
+% --- Executes on button press in button_optimize_sel.
+function button_optimize_sel_Callback(hObject, eventdata, handles)
+% hObject    handle to button_optimize_sel (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain;
+
+az0=0; %degree;
+el0=0; %degree
+rotate_angle0=0; %degree
+translate_dist0=0; % mm
+translate_dist1=0; % mm
+
+%parameters in the objective function
+mri=etc_render_fsbrain.vol.vol;
+tkrvox2ras=etc_render_fsbrain.vol.tkrvox2ras;
+
+fprintf('optimizing electrode contact locations...\n');
+
+%optimize each electrode separately
+for e_idx=etc_render_fsbrain.electrode_idx:etc_render_fsbrain.electrode_idx
+    fprintf('\toptimizing electrode [%s]...\n',etc_render_fsbrain.electrode(e_idx).name);
+
+    mask_idx=find(etc_render_fsbrain.electrode_mask(e_idx,:)>eps);
+
+    tmp=etc_render_fsbrain.aux2_point_coords(mask_idx,:).';
+
+    mmin=min(tmp,[],2);
+    mmax=max(tmp,[],2);
+    
+    %initialize optimizer
+    init(1)=az0;
+    init(2)=el0;
+    init(3)=rotate_angle0;
+    init(4)=translate_dist0;
+    init(5)=translate_dist1;
+    init(6:8)=mean(tmp,2);
+    
+   
+    opt_options = optimset('Display','off','MaxIter',1e4,'tolX',1e-6, 'tolFun',1e-6);
+    
+    [cost_init, tmp_init]=etc_render_fsbrain_electrode_cost(init,tmp,mri,tkrvox2ras,'flag_display',1);
+    
+    f = @(x)etc_render_fsbrain_electrode_cost(x,tmp,mri,tkrvox2ras);
+    %[param_opt, fval, exitflag] = fminsearch(@etc_render_fsbrain_electrode_cost, init, opt_options, tmp, mri, tkrvox2ras);
+    %[param_opt, fval, exitflag] = fminsearch(f, init, opt_options);
+    %[param_opt,fval] = fminunc(f,init,options);
+    LB=[-90 -180 -5 -2 -2 mmin(1)-10 mmin(2)-10 mmin(3)-10];
+    UB=[90 180 5 2 2 mmax(1)+10 mmax(2)+10 mmax(3)+10];
+    
+    [param_opt,fval] = patternsearch(f,init,[],[],[],[],LB,UB,[],opt_options);
+    
+    [cost_opt, tmp_opt]=etc_render_fsbrain_electrode_cost(param_opt,tmp,mri,tkrvox2ras,'flag_display',1);
+    
+    %fprintf('cost [%1.2f] --> [%1.2f]\n',cost_init,cost_opt);
+
+    etc_render_fsbrain.aux2_point_coords(mask_idx,:)=tmp_opt';
+end;
+fprintf('optimization done!\n');
+
+%end of optimization; update electrode contact information.....
+
+%update coordinates for electrode contacts
+count=1;
+for e_idx=1:length(etc_render_fsbrain.electrode)
+    for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
+        etc_render_fsbrain.electrode(e_idx).coord(c_idx,:)=etc_render_fsbrain.aux2_point_coords(count,:);
+        count=count+1;
+    end;
+end;
+
+%find current contact
+count=0;
+for e_idx=1:etc_render_fsbrain.electrode_idx-1
+    count=count+etc_render_fsbrain.electrode(e_idx).n_contact;
+end;
+count=count+etc_render_fsbrain.electrode_contact_idx;
+
+surface_coord=etc_render_fsbrain.aux2_point_coords(count,:);
+v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+click_vertex_vox=round(v(1:3))';
+
+etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
+                    
+vv=etc_render_fsbrain.orig_vertex_coords;
+dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+[min_dist,min_dist_idx]=min(dist);
+%surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+
+%update figure;
+if(etc_render_fsbrain.electrode_update_contact_view_flag)
+    etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+end;
+
+etc_render_fsbrain_handle('redraw');
