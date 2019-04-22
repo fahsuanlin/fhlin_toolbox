@@ -35,6 +35,9 @@ flag_display=1;
 flag_regrid=1;
 flag_regrid_zero=0;
 
+default_neighbor=5;
+
+
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
@@ -69,6 +72,8 @@ for i=1:length(varargin)/2
             Ds=option_value;
         case 'Ds'
             Ds=option_value;
+        case 'default_neighbor'
+            default_neighbor=option_value;
         otherwise
             fprintf('unknown option [%s]\n',option);
             return;
@@ -149,9 +154,10 @@ v_max=max(value(:));
 
 nn={};
 D=[];
+
 for tt=1:size(value,2)
     if(flag_display)
-        fprintf('smoothing [%d|%d]',tt,size(value,2));
+        fprintf('smoothing [%d|%d] ',tt,size(value,2));
     end;
     w=value(:,tt);
     w0=w;
@@ -174,26 +180,32 @@ for tt=1:size(value,2)
                     %regrdding from graph
                     count=0;
                     for n_idx=1:length(non_zero)
-                        nn{n_idx}=nearest(G,non_zero(n_idx),5);
+                        nn{n_idx}=nearest(G,non_zero(n_idx),default_neighbor);
                         count=count+length(nn{n_idx}(:));
                     end;
                     
                     D=zeros(count+length(non_zero),3);
                     count=1;
                     for n_idx=1:length(non_zero)
-                        D(count,:)=[non_zero(n_idx) non_zero(n_idx) 1];
-                        count=count+1;
-                        %D(count:count+length(nn{n_idx})-1,:)=[nn{n_idx}(:), ones(length(nn{n_idx}(:)),1).*non_zero(n_idx), ones(length(nn{n_idx}(:)),1)];
+%                        D(count,:)=[non_zero(n_idx) non_zero(n_idx) 1];
+%                        count=count+1;
                         D(count:count+length(nn{n_idx})-1,:)=[nn{n_idx}(:), ones(length(nn{n_idx}(:)),1).*non_zero(n_idx), ones(length(nn{n_idx}(:)),1)];
                         count=count+length(nn{n_idx});
                     end;
+                    for n_idx=1:length(w)
+                        D(count,:)=[n_idx n_idx 1];
+                        count=count+1;
+                    end;
+                    
                     Ds=spconvert(D);
                     Ds=Ds(:,non_zero);
+
                 end;
                 Dsn=sum(Ds,2);
                 nnz=find(Dsn>eps);
                 
-                w(nnz)=(Ds(nnz,:)*w(non_zero))./Dsn(nnz);
+                %w(nnz)=(Ds(nnz,:)*w(non_zero))./Dsn(nnz);
+                w=(Ds*w(non_zero))./Dsn;
                 
                 w(find(w(:)>v_max))=v_max;
                 w(find(w(:)<v_min))=v_min;
@@ -203,7 +215,7 @@ for tt=1:size(value,2)
                 
                 %regrdding from graph
                 for n_idx=1:length(non_zero)
-                    nn=nearest(G,non_zero(n_idx),5);
+                    nn=nearest(G,non_zero(n_idx),default_neighbor);
                     w(nn)=w(non_zero(n_idx));
                 end;
                 
@@ -248,7 +260,7 @@ for tt=1:size(value,2)
             %regrdding from graph
             clear nn;
             for n_idx=1:length(non_zero)
-                nn{n_idx}=nearest(G,non_zero(n_idx),5);
+                nn{n_idx}=nearest(G,non_zero(n_idx),default_neighbor);
             end;
         end;
     end;
@@ -258,10 +270,14 @@ for tt=1:size(value,2)
             D=zeros(count+length(non_zero),3);
             count=1;
             for n_idx=1:length(non_zero)
-                D(count,:)=[non_zero(n_idx) non_zero(n_idx) 1];
-                count=count+1;
+                %D(count,:)=[non_zero(n_idx) non_zero(n_idx) 1];
+                %count=count+1;
                 D(count:count+length(nn{n_idx})-1,:)=[nn{n_idx}(:), ones(length(nn{n_idx}(:)),1).*non_zero(n_idx), ones(length(nn{n_idx}(:)),1)];
                 count=count+length(nn{n_idx});
+            end;
+            for n_idx=1:length(w)
+                D(count,:)=[n_idx n_idx 1];
+                count=count+1;
             end;
             Ds=spconvert(D);
             Ds=Ds(:,non_zero);
@@ -281,8 +297,9 @@ for tt=1:size(value,2)
             if(flag_display) fprintf('#'); end;
         end;
         
-        w(nnz)=(Ds(nnz,:)*w(non_zero))./Dsn(nnz);
-        
+        %w(nnz)=(Ds(nnz,:)*w(non_zero))./Dsn(nnz);
+        w=(Ds*w(non_zero))./Dsn;
+
         ww(:,ss)=w(:);
         
         mmin=min(w(:));

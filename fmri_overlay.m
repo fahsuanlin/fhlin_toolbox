@@ -495,12 +495,13 @@ colormap(cmap);
 
 %setup figure
 set(gca,'color',[1,1,1]);
+axis off image;
 set(gcf,'color',[0,0,0]);
 if(colorbar_flag)
-    set(gca,'DataAspectRatioMode','auto');
-    set(gca,'PlotBoxAspectRatioMode','manual');
-    set(gca,'PlotBoxAspectRatio',[1 1 1]);
-    set(gca,'unit','normalized');
+    %set(gca,'DataAspectRatioMode','auto');
+    %set(gca,'PlotBoxAspectRatioMode','manual');
+    %set(gca,'PlotBoxAspectRatio',[1 1 1]);
+    %set(gca,'unit','normalized');
     pos=get(gca,'pos');
     
     fmri_colorbar_handle=colorbar('peer',gca);
@@ -542,6 +543,9 @@ end;
 
 
 fmri_fig_overlay=gcf;
+
+global fmri_montage_config;
+fmri_montage_config=montage_config;
 
 set(fmri_fig_overlay,'KeyPressFcn','fmri_overlay_handle(''kb'')');
 set(fmri_fig_overlay,'WindowButtonDownFcn','fmri_overlay_handle(''bd'')');

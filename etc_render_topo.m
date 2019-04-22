@@ -48,6 +48,7 @@ topo_regrid_flag=1;
 topo_regrid_zero_flag=0;
 topo_flag_render=0;
 topo_fixval_flag=0;
+topo_Ds=[];
 
 topo_aux_point_coords=[];
 topo_aux_point_coords_h=[];
@@ -118,6 +119,8 @@ for idx=1:length(varargin)/2
             topo_smooth=option_value;
         case 'topo_threshold'
             topo_threshold=option_value;
+        case 'topo_ds'
+            topo_Ds=option_value;
         case 'topo_cmap'
             topo_cmap=option_value;
         case 'topo_cmap_neg'
@@ -220,8 +223,8 @@ if(~isempty(topo_value))
         topo_exclude=find(vol_vertex(:,3)<min(vol_vertex(topo_vertex+1,3)));
         
         if(~isempty(topo_smooth))
-            %ovs=inverse_smooth('','value',ov,'step',topo_smooth,'face',vol_face','vertex',vol_vertex','flag_fixval',1);
-            ovs=inverse_smooth('','vertex',vol_vertex','face',vol_face','value',ov,'step',topo_smooth,'flag_fixval',0,'exc_vertex',topo_exclude,'inc_vertex',topo_include,'flag_regrid',topo_regrid_flag,'flag_regrid_zero',topo_regrid_zero_flag);
+            %[ovs,dd0,dd1,topo_Ds]=inverse_smooth('','value',ov,'step',topo_smooth,'face',vol_face','vertex',vol_vertex','flag_fixval',1);
+            [ovs,dd0,dd1,topo_Ds]=inverse_smooth('','vertex',vol_vertex','face',vol_face','value',ov,'step',topo_smooth,'flag_fixval',0,'exc_vertex',topo_exclude,'inc_vertex',topo_include,'flag_regrid',topo_regrid_flag,'flag_regrid_zero',topo_regrid_zero_flag,'Ds',topo_Ds,'default_neighbor',10);
         else
             ovs=ov;
         end;
@@ -237,11 +240,11 @@ if(~isempty(topo_value))
             ov(topo_vertex{h_idx}+1)=topo_value{h_idx};
             
             if(~isempty(overlay_smooth))
-                %                ovs=cat(1,ovs,inverse_smooth('','vertex',vertex_coords_hemi{h_idx}','face',faces_hemi{h_idx}','value',ov,'step',overlay_smooth,'flag_fixval',0,'exc_vertex',overlay_exclude{h_idx},'inc_vertex',overlay_include{h_idx},'flag_regrid',overlay_regrid_flag,'flag_regrid_zero',overlay_regrid_zero_flag));
+                %                [ovs,dd0,dd1,topo_Ds]=cat(1,ovs,inverse_smooth('','vertex',vertex_coords_hemi{h_idx}','face',faces_hemi{h_idx}','value',ov,'step',overlay_smooth,'flag_fixval',0,'exc_vertex',overlay_exclude{h_idx},'inc_vertex',overlay_include{h_idx},'flag_regrid',overlay_regrid_flag,'flag_regrid_zero',overlay_regrid_zero_flag,'Ds',topo_Ds));
                 val=zeros(size(vol_vertex,1),1);
                 val(topo_vertex)=topo_value;
                 
-                ovs=inverse_smooth('','value',val,'step',topo_smooth,'face',vol_face','vertex',vol_vertex','flag_fixval',1);
+                [ovs,dd0,dd1,topo_Ds]=inverse_smooth('','vertex',vol_vertex','face',vol_face','value',ov,'step',topo_smooth,'flag_fixval',0,'exc_vertex',topo_exclude,'inc_vertex',topo_include,'flag_regrid',topo_regrid_flag,'flag_regrid_zero',topo_regrid_zero_flag,'Ds',topo_Ds,'default_neighbor',10);
             else
                 ovs=cat(1,ovs,ov);
             end;
@@ -418,6 +421,7 @@ etc_render_fsbrain.overlay_flag_render=topo_flag_render;
 etc_render_fsbrain.overlay_fixval_flag=topo_fixval_flag;
 etc_render_fsbrain.overlay_regrid_flag=topo_regrid_flag;
 etc_render_fsbrain.overlay_regrid_zero_flag=topo_regrid_zero_flag;
+etc_render_fsbrain.overlay_Ds=topo_Ds;
 
 etc_render_fsbrain.label_vertex=label_vertex;
 etc_render_fsbrain.label_value=label_value;

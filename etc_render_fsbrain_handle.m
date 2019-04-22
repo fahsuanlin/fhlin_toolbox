@@ -106,6 +106,7 @@ switch lower(param)
                     etc_render_fsbrain.overlay_flag_render=1;
                     
                 end;
+                etc_render_fsbrain.overlay_Ds=[];
                 redraw;
                 
             case 'o' %draw ROI....

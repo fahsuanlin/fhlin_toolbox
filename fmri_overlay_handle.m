@@ -598,6 +598,8 @@ global fmri_datamat;
 global fmri_beta;
 global fmri_over_data;
 global fmri_timeVec;
+global fmri_montage_config;
+
 
 fmri_fig_overlay_xlim=[];
 fmri_fig_overlay_ylim=[];
@@ -641,7 +643,7 @@ close_all;
 
 %figure(fmri_fig_overlay);
 fmri_fig_overlay=figure;
-fmri_overlay(fmri_under,fmri_over,fmri_op,fmri_threshold,'cmap',fmri_colormap,'datamat',fmri_datamat,'beta',fmri_beta,'hdr',fmri_hdr,'over_data',fmri_over_data,'timeVec',fmri_timeVec,'under_vol',fmri_under_vol,'over_vol',fmri_over_vol,'talxfm',fmri_talxfm,'xfm',fmri_xfm,'colorbar',flag_colorbar_handle);
+fmri_overlay(fmri_under,fmri_over,fmri_op,fmri_threshold,'cmap',fmri_colormap,'datamat',fmri_datamat,'beta',fmri_beta,'hdr',fmri_hdr,'over_data',fmri_over_data,'timeVec',fmri_timeVec,'under_vol',fmri_under_vol,'over_vol',fmri_over_vol,'talxfm',fmri_talxfm,'xfm',fmri_xfm,'colorbar',flag_colorbar_handle,'montage_config',fmri_montage_config);
 tmp=get(fmri_fig_overlay,'child');
 tmp0=find(isgraphics(tmp,'axes'));
 if(~isempty(fmri_fig_overlay_xlim))
@@ -959,10 +961,10 @@ global fmri_overlay_min;
 global fmri_overlay_max;
 global fmri_colorbar_handle
 
-set(gca,'DataAspectRatioMode','auto');
-set(gca,'PlotBoxAspectRatioMode','manual');
-set(gca,'PlotBoxAspectRatio',[1 1 1]);
-set(gca,'unit','normalized');
+%set(gca,'DataAspectRatioMode','auto');
+%set(gca,'PlotBoxAspectRatioMode','manual');
+%set(gca,'PlotBoxAspectRatio',[1 1 1]);
+%set(gca,'unit','normalized');
 pos=get(gca,'pos');
 
 fmri_colorbar_handle=colorbar('peer',gca);
