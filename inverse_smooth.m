@@ -187,15 +187,15 @@ for tt=1:size(value,2)
                     D=zeros(count+length(non_zero),3);
                     count=1;
                     for n_idx=1:length(non_zero)
-%                        D(count,:)=[non_zero(n_idx) non_zero(n_idx) 1];
-%                        count=count+1;
-                        D(count:count+length(nn{n_idx})-1,:)=[nn{n_idx}(:), ones(length(nn{n_idx}(:)),1).*non_zero(n_idx), ones(length(nn{n_idx}(:)),1)];
+                        D(count,:)=[non_zero(n_idx) non_zero(n_idx) 1];
+                        count=count+1;
+                        D(count:count+length(nn{n_idx})-1,:)=[nn{n_idx}(:), ones(length(nn{n_idx}(:)),1).*non_zero(n_idx), ones(length(nn{n_idx}(:)),1)./default_neighbor];
                         count=count+length(nn{n_idx});
                     end;
-                    for n_idx=1:length(w)
-                        D(count,:)=[n_idx n_idx 1];
-                        count=count+1;
-                    end;
+%                     for n_idx=1:length(w)
+%                         D(count,:)=[n_idx n_idx 1];
+%                         count=count+1;
+%                     end;
                     
                     Ds=spconvert(D);
                     Ds=Ds(:,non_zero);
@@ -204,8 +204,10 @@ for tt=1:size(value,2)
                 Dsn=sum(Ds,2);
                 nnz=find(Dsn>eps);
                 
-                %w(nnz)=(Ds(nnz,:)*w(non_zero))./Dsn(nnz);
-                w=(Ds*w(non_zero))./Dsn;
+                %tmp=(Ds(nnz,:)*w(non_zero))./Dsn(nnz);
+                tmp=(Ds(nnz,:)*w(non_zero));
+                w(nnz)=tmp;
+                %w=(Ds*w(non_zero))./Dsn;
                 
                 w(find(w(:)>v_max))=v_max;
                 w(find(w(:)<v_min))=v_min;
@@ -270,15 +272,15 @@ for tt=1:size(value,2)
             D=zeros(count+length(non_zero),3);
             count=1;
             for n_idx=1:length(non_zero)
-                %D(count,:)=[non_zero(n_idx) non_zero(n_idx) 1];
-                %count=count+1;
-                D(count:count+length(nn{n_idx})-1,:)=[nn{n_idx}(:), ones(length(nn{n_idx}(:)),1).*non_zero(n_idx), ones(length(nn{n_idx}(:)),1)];
+                D(count,:)=[non_zero(n_idx) non_zero(n_idx) 1];
+                count=count+1;
+                D(count:count+length(nn{n_idx})-1,:)=[nn{n_idx}(:), ones(length(nn{n_idx}(:)),1).*non_zero(n_idx), ones(length(nn{n_idx}(:)),1)./default_neighbor];
                 count=count+length(nn{n_idx});
             end;
-            for n_idx=1:length(w)
-                D(count,:)=[n_idx n_idx 1];
-                count=count+1;
-            end;
+%             for n_idx=1:length(w)
+%                 D(count,:)=[n_idx n_idx 1];
+%                 count=count+1;
+%             end;
             Ds=spconvert(D);
             Ds=Ds(:,non_zero);
         end;
@@ -289,16 +291,17 @@ for tt=1:size(value,2)
     for ss=1:step
         if(flag_fixval)
             if(flag_display) fprintf('.'); end;
-            %tmp=(Ds*w(non_zero))./Dsn;
-            tmp=zeros(size(Ds,1),1);
-            tmp(nnz)=(Ds(nnz,:)*w(non_zero))./Dsn(nnz);
-            w(non_zero)=tmp(non_zero);
+            %tmp=(Ds(nnz,:)*w(non_zero))./Dsn(nnz);
+            tmp=(Ds(nnz,:)*w(non_zero));
+            w(nnz)=tmp;
+            w(non_zero)=w0(non_zero);
         else
             if(flag_display) fprintf('#'); end;
+            %tmp=(Ds(nnz,:)*w(non_zero))./Dsn(nnz);
+            tmp=(Ds(nnz,:)*w(non_zero));
+            w(nnz)=tmp;
         end;
         
-        %w(nnz)=(Ds(nnz,:)*w(non_zero))./Dsn(nnz);
-        w=(Ds*w(non_zero))./Dsn;
 
         ww(:,ss)=w(:);
         

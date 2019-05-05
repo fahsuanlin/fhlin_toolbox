@@ -1439,8 +1439,10 @@ axis off vis3d equal;
 axis(etc_render_fsbrain.lim);
 
 if(~isempty(etc_render_fsbrain.overlay_threshold))
-    if(etc_render_fsbrain.overlay_threshold(1)<etc_render_fsbrain.overlay_threshold(2))
-        set(gca,'climmode','manual','clim',etc_render_fsbrain.overlay_threshold);
+    if(length(etc_render_fsbrain.overlay_threshold)==2)
+        if(etc_render_fsbrain.overlay_threshold(1)<etc_render_fsbrain.overlay_threshold(2))
+            set(gca,'climmode','manual','clim',etc_render_fsbrain.overlay_threshold);
+        end;
     end;
 end;
 set(gcf,'color',etc_render_fsbrain.bg_color);
