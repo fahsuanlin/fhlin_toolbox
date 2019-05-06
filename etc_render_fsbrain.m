@@ -437,7 +437,7 @@ if(~isempty(overlay_value))
         ov(overlay_vertex+1)=overlay_value;
         
         if(~isempty(overlay_smooth))
-            [ovs,dd0,dd1,overlay_Ds]=inverse_smooth('','vertex',vertex_coords','face',faces','value',ov,'step',overlay_smooth,'flag_fixval',overlay_fixval_flag,'exc_vertex',overlay_exclude,'inc_vertex',overlay_include,'flag_regrid',overlay_regrid_flag,'flag_regrid_zero',overlay_regrid_zero_flag,'Ds',overlay_Ds);
+            [ovs,dd0,dd1,overlay_Ds]=inverse_smooth('','vertex',vertex_coords','face',faces','value',ov,'step',overlay_smooth,'flag_fixval',overlay_fixval_flag,'exc_vertex',overlay_exclude,'inc_vertex',overlay_include,'flag_regrid',overlay_regrid_flag,'flag_regrid_zero',overlay_regrid_zero_flag,'Ds',overlay_Ds,'n_ratio',length(ov)/length(overlay_value));
         else
             ovs=ov;
         end;
@@ -454,7 +454,7 @@ if(~isempty(overlay_value))
             ov(overlay_vertex{h_idx}+1)=overlay_value{h_idx};
 
             if(~isempty(overlay_smooth))
-                [tmp,dd0,dd1,overlay_Ds]=inverse_smooth('','vertex',vertex_coords_hemi{h_idx}','face',faces_hemi{h_idx}','value',ov,'step',overlay_smooth,'flag_fixval',overlay_fixval_flag,'exc_vertex',overlay_exclude{h_idx},'inc_vertex',overlay_include{h_idx},'flag_regrid',overlay_regrid_flag,'flag_regrid_zero',overlay_regrid_zero_flag,'Ds',overlay_Ds);
+                [tmp,dd0,dd1,overlay_Ds]=inverse_smooth('','vertex',vertex_coords_hemi{h_idx}','face',faces_hemi{h_idx}','value',ov,'step',overlay_smooth,'flag_fixval',overlay_fixval_flag,'exc_vertex',overlay_exclude{h_idx},'inc_vertex',overlay_include{h_idx},'flag_regrid',overlay_regrid_flag,'flag_regrid_zero',overlay_regrid_zero_flag,'Ds',overlay_Ds,'n_ratio',length(ov)/length(overlay_value));
                 ovs=cat(1,ovs,tmp);
             else
                 ovs=cat(1,ovs,ov);

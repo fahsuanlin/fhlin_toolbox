@@ -35,6 +35,8 @@ flag_display=1;
 flag_regrid=1;
 flag_regrid_zero=0;
 
+n_ratio=16;
+
 default_neighbor=5;
 
 
@@ -74,6 +76,8 @@ for i=1:length(varargin)/2
             Ds=option_value;
         case 'default_neighbor'
             default_neighbor=option_value;
+        case 'n_ratio'
+            n_ratio=option_value;
         otherwise
             fprintf('unknown option [%s]\n',option);
             return;
@@ -104,8 +108,8 @@ d2=[connection(2,:);[1:nf];ones(1,size(connection,2))]';
 d3=[connection(3,:);[1:nf];ones(1,size(connection,2))]';
 A=spones(spconvert([d1;d2;d3]));
 xx=sum(A,2);
-B=spones(A*A').*0.5+speye(size(A,1),size(A,1)).*0.5;
-yy=sum(B,2);
+%B=spones(A*A').*0.5+speye(size(A,1),size(A,1)).*0.5;
+%yy=sum(B,2);
 
 
 %prepare a graph if regridding is enabled
@@ -151,6 +155,51 @@ end;
 
 v_min=min(value(:));
 v_max=max(value(:));
+v_idx=find(abs(value(:))>eps);
+
+flag_050619=1;
+if(flag_050619)
+    dd1=[connection(1,:);connection(2,:)]';
+    dd2=[connection(2,:);connection(3,:)]';
+    dd3=[connection(3,:);connection(1,:)]';
+    dd4=[connection(2,:);connection(1,:)]';
+    dd5=[connection(3,:);connection(2,:)]';
+    dd6=[connection(1,:);connection(3,:)]';
+    dde=[[1:size(vertex,2)]; 1:size(vertex,2)]'; %for self-weighting
+    dd=[dd1;dd2;dd3;dd4;dd5;dd6;dde];
+    %dd=[dd1;dd2;dd3;dd4;dd5;dd6];
+    %dd=unique(sort(dd,2),'rows');
+    dd=unique(dd,'rows');
+    dd(:,3)=1;
+    
+    D=spconvert(dd);
+    D=D*D; %every repetition increases neighbors one connection further away from the source vertex
+    
+    D(find(D(:)>1))=1;
+    
+    D=spones(D);
+    nD=sum(D,2);
+    for tt=1:size(value,2)
+        sv=value(:,tt);
+        ii=find(abs(sv(:))>eps);
+        vv_max=max(value(:,tt));
+        vv_min=min(value(:,tt));
+        for idx=1:step
+            
+            %sv(ii)=value(ii,tt);
+            
+            %ii=find(abs(sv(:))>eps);
+            %sv=D(:,ii)*sv(ii);
+            sv=(D*sv)./nD;
+            %sv=D*sv;
+            %sv=fmri_scale(sv,vv_max,vv_min);
+            
+        end;
+        %smooth_value(:,tt)=fmri_scale(sv,v_max,v_min);
+        smooth_value(:,tt)=sv*n_ratio;
+    end;
+end;
+return;
 
 nn={};
 D=[];
@@ -166,7 +215,7 @@ for tt=1:size(value,2)
     
     mmin0=min(w0(:));
     mmax0=max(w0(:));
-
+    
     if(flag_regrid)
         if(isempty(value_idx))
             if(~flag_regrid_zero)
@@ -192,14 +241,14 @@ for tt=1:size(value,2)
                         D(count:count+length(nn{n_idx})-1,:)=[nn{n_idx}(:), ones(length(nn{n_idx}(:)),1).*non_zero(n_idx), ones(length(nn{n_idx}(:)),1)./default_neighbor];
                         count=count+length(nn{n_idx});
                     end;
-%                     for n_idx=1:length(w)
-%                         D(count,:)=[n_idx n_idx 1];
-%                         count=count+1;
-%                     end;
+                    %                     for n_idx=1:length(w)
+                    %                         D(count,:)=[n_idx n_idx 1];
+                    %                         count=count+1;
+                    %                     end;
                     
                     Ds=spconvert(D);
                     Ds=Ds(:,non_zero);
-
+                    
                 end;
                 Dsn=sum(Ds,2);
                 nnz=find(Dsn>eps);
@@ -256,7 +305,7 @@ for tt=1:size(value,2)
         non_zero_full=non_zero;
     end;
     
-   
+    
     if(isempty(nn)&&isempty(Ds))
         if(flag_regrid|flag_fixval)
             %regrdding from graph
@@ -277,10 +326,10 @@ for tt=1:size(value,2)
                 D(count:count+length(nn{n_idx})-1,:)=[nn{n_idx}(:), ones(length(nn{n_idx}(:)),1).*non_zero(n_idx), ones(length(nn{n_idx}(:)),1)./default_neighbor];
                 count=count+length(nn{n_idx});
             end;
-%             for n_idx=1:length(w)
-%                 D(count,:)=[n_idx n_idx 1];
-%                 count=count+1;
-%             end;
+            %             for n_idx=1:length(w)
+            %                 D(count,:)=[n_idx n_idx 1];
+            %                 count=count+1;
+            %             end;
             Ds=spconvert(D);
             Ds=Ds(:,non_zero);
         end;
@@ -302,7 +351,7 @@ for tt=1:size(value,2)
             w(nnz)=tmp;
         end;
         
-
+        
         ww(:,ss)=w(:);
         
         mmin=min(w(:));
