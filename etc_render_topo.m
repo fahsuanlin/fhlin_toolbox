@@ -54,11 +54,15 @@ topo_aux_point_coords=[];
 topo_aux_point_coords_h=[];
 topo_aux_point_name={};
 topo_aux_point_name_h=[];
+topo_aux_point_color=[1 0 0];
+topo_aux_point_size=0.005;
 
 topo_aux2_point_coords=[];
 topo_aux2_point_coords_h=[];
 topo_aux2_point_name={};
 topo_aux2_point_name_h=[];
+topo_aux2_point_color=[0.3984    0.5977         0];
+topo_aux2_point_size=44;
 
 topo_exclude_fstem='';
 topo_exclude=[];
@@ -91,6 +95,12 @@ show_nearest_brain_surface_location_flag=1;
 show_contact_names_flag=1;
 show_all_contacts_mri_flag=1;
 electrode_update_contact_view_flag=0;
+
+click_point_size=28;
+click_point_color=[1 0 1];
+
+click_vertex_point_size=24;
+click_vertex_point_color=[0 1 1];
 
 
 for idx=1:length(varargin)/2
@@ -155,10 +165,18 @@ for idx=1:length(varargin)/2
             topo_aux_point_coords=option_value;
         case 'topo_aux_point_name';
             topo_aux_point_name=option_value;
+        case 'topo_aux_point_color'
+            topo_aux_point_color=option_value;
+        case 'topo_aux_point_size'
+            topo_aux_point_size=option_value;
         case 'topo_aux2_point_coords';
             topo_aux2_point_coords=option_value;
         case 'topo_aux2_point_name';
             topo_aux2_point_name=option_value;
+        case 'topo_aux2_point_color'
+            topo_aux2_point_color=option_value;
+        case 'topo_aux2_point_size'
+            topo_aux2_point_size=option_value;
         case 'topo_fixval_flag'
             topo_fixval_flag=option_value;
         case 'default_solid_color'
@@ -195,6 +213,14 @@ for idx=1:length(varargin)/2
             label_ctab=option_value;
         case 'file_annot'
             file_annot=option_value;
+        case 'click_point_size'
+            click_point_size=option_value;
+        case 'click_point_color'
+            click_point_color=option_value;
+        case 'click_vertex_point_size'
+            click_vertex_point_size=option_value;
+        case 'click_vertex_point_color'
+            click_vertex_point_color=option_value;
         otherwise
             fprintf('unknown option [%s]...\n',option);
             return;
@@ -444,11 +470,20 @@ etc_render_fsbrain.aux_point_coords=topo_aux_point_coords;
 etc_render_fsbrain.aux_point_coords_h=topo_aux_point_coords_h;
 etc_render_fsbrain.aux_point_name=topo_aux_point_name;
 etc_render_fsbrain.aux_point_name_h=topo_aux_point_name_h;
+etc_render_fsbrain.aux_point_color=topo_aux_point_color;
+etc_render_fsbrain.aux_point_size=topo_aux_point_size;
 
 etc_render_fsbrain.aux2_point_coords=topo_aux2_point_coords;
 etc_render_fsbrain.aux2_point_coords_h=topo_aux2_point_coords_h;
 etc_render_fsbrain.aux2_point_name=topo_aux2_point_name;
 etc_render_fsbrain.aux2_point_name_h=topo_aux2_point_name_h;
+etc_render_fsbrain.aux2_point_color=topo_aux2_point_color;
+etc_render_fsbrain.aux2_point_size=topo_aux2_point_size;
+
+etc_render_fsbrain.click_point_color=click_point_color;
+etc_render_fsbrain.click_point_size=click_point_size;
+etc_render_fsbrain.click_vertex_point_color=click_vertex_point_color;
+etc_render_fsbrain.click_vertex_point_size=click_vertex_point_size;
 
 etc_render_fsbrain.register_rotate_angle=3; %default: 3 degrees
 etc_render_fsbrain.register_translate_dist=1e-3; %default: 1 mm

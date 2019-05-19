@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_gui
 
-% Last Modified by GUIDE v2.5 18-Mar-2019 11:51:56
+% Last Modified by GUIDE v2.5 18-May-2019 22:08:21
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -72,6 +72,23 @@ if(get(handles.checkbox_show_colorbar,'value'))
 else
     set(handles.checkbox_show_colorbar,'enable','off');
 end;
+
+set(handles.checkbox_show_colorbar,'enable','off');
+
+set(handles.pushbutton_aux_point_color,'BackgroundColor',etc_render_fsbrain.aux_point_color);
+set(handles.edit_aux_point_size,'string',sprintf('%3.3f',etc_render_fsbrain.aux_point_size));
+
+set(handles.pushbutton_aux2_point_color,'BackgroundColor',etc_render_fsbrain.aux2_point_color);
+set(handles.edit_aux2_point_size,'string',sprintf('%d',etc_render_fsbrain.aux2_point_size));
+
+set(handles.pushbutton_click_point_color,'BackgroundColor',etc_render_fsbrain.click_point_color);
+set(handles.edit_click_point_size,'string',sprintf('%d',etc_render_fsbrain.click_point_size));
+
+set(handles.checkbox_nearest_brain_surface,'value',etc_render_fsbrain.show_nearest_brain_surface_location_flag);
+set(handles.pushbutton_click_vertex_point_color,'BackgroundColor',etc_render_fsbrain.click_vertex_point_color);
+set(handles.edit_click_vertex_point_size,'string',sprintf('%d',etc_render_fsbrain.click_vertex_point_size));
+
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -424,3 +441,176 @@ function slider_alpha_CreateFcn(hObject, eventdata, handles)
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
+
+
+
+function edit_aux_point_size_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_aux_point_size (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_aux_point_size as text
+%        str2double(get(hObject,'String')) returns contents of edit_aux_point_size as a double
+global etc_render_fsbrain;
+
+etc_render_fsbrain.aux_point_size=str2double(get(hObject,'String'));
+etc_render_fsbrain_handle('redraw');
+
+% --- Executes during object creation, after setting all properties.
+function edit_aux_point_size_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_aux_point_size (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_aux2_point_size_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_aux2_point_size (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_aux2_point_size as text
+%        str2double(get(hObject,'String')) returns contents of edit_aux2_point_size as a double
+
+global etc_render_fsbrain;
+
+etc_render_fsbrain.aux2_point_size=str2double(get(hObject,'String'));
+etc_render_fsbrain_handle('redraw');
+
+% --- Executes during object creation, after setting all properties.
+function edit_aux2_point_size_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_aux2_point_size (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pushbutton_aux_point_color.
+function pushbutton_aux_point_color_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_aux_point_color (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global etc_render_fsbrain;
+
+c = uisetcolor(etc_render_fsbrain.aux_point_color,'Select a color');
+etc_render_fsbrain.aux_point_color=c;
+set(handles.pushbutton_aux_point_color,'BackgroundColor',etc_render_fsbrain.aux_point_color);
+etc_render_fsbrain_handle('redraw');
+
+% --- Executes on button press in pushbutton_aux2_point_color.
+function pushbutton_aux2_point_color_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_aux2_point_color (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain;
+
+c = uisetcolor(etc_render_fsbrain.aux2_point_color,'Select a color');
+etc_render_fsbrain.aux2_point_color=c;
+set(handles.pushbutton_aux2_point_color,'BackgroundColor',etc_render_fsbrain.aux2_point_color);
+etc_render_fsbrain_handle('redraw');
+
+
+% --- Executes on button press in pushbutton_click_vertex_point_color.
+function pushbutton_click_vertex_point_color_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_click_vertex_point_color (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain;
+
+c = uisetcolor(etc_render_fsbrain.click_vertex_point_color,'Select a color');
+etc_render_fsbrain.click_vertex_point_color=c;
+set(handles.pushbutton_click_vertex_point_color,'BackgroundColor',etc_render_fsbrain.click_vertex_point_color);
+etc_render_fsbrain_handle('draw_pointer');
+
+% --- Executes on button press in pushbutton_click_point_color.
+function pushbutton_click_point_color_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_click_point_color (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain;
+
+c = uisetcolor(etc_render_fsbrain.click_point_color,'Select a color');
+etc_render_fsbrain.click_point_color=c;
+set(handles.pushbutton_click_point_color,'BackgroundColor',etc_render_fsbrain.click_point_color);
+etc_render_fsbrain_handle('draw_pointer');
+
+
+function edit_click_vertex_point_size_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_click_vertex_point_size (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_click_vertex_point_size as text
+%        str2double(get(hObject,'String')) returns contents of edit_click_vertex_point_size as a double
+global etc_render_fsbrain;
+
+etc_render_fsbrain.click_vertex_point_size=str2double(get(hObject,'String'));
+etc_render_fsbrain_handle('draw_pointer');
+
+% --- Executes during object creation, after setting all properties.
+function edit_click_vertex_point_size_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_click_vertex_point_size (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_click_point_size_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_click_point_size (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_click_point_size as text
+%        str2double(get(hObject,'String')) returns contents of edit_click_point_size as a double
+global etc_render_fsbrain;
+
+etc_render_fsbrain.click_point_size=str2double(get(hObject,'String'));
+etc_render_fsbrain_handle('draw_pointer');
+
+% --- Executes during object creation, after setting all properties.
+function edit_click_point_size_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_click_point_size (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in checkbox_nearest_brain_surface.
+function checkbox_nearest_brain_surface_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_nearest_brain_surface (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_nearest_brain_surface
+global etc_render_fsbrain
+
+etc_render_fsbrain.show_nearest_brain_surface_location_flag=get(hObject,'Value');
+
+if(isfield(etc_render_fsbrain,'click_coord'))
+    if(~isempty(etc_render_fsbrain.click_coord))
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
+    end;
+end;
