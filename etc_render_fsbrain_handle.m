@@ -1172,7 +1172,7 @@ if(~isempty(etc_render_fsbrain.overlay_vertex))
             end;
             fprintf('the nearest overlay vertex: hemi{%d} location=[%d]::<%2.2f> @ (%2.2f %2.2f %2.2f) \n',hemi_idx,min_overlay_dist_idx-offset,etc_render_fsbrain.overlay_value{hemi_idx}(min_overlay_dist_idx-offset),vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3));
         end;
-        %etc_render_fsbrain.click_overlay_vertex=min_overlay_dist_idx;
+        etc_render_fsbrain.click_overlay_vertex=min_overlay_dist_idx;
         %etc_render_fsbrain.click_overlay_vertex_point=plot3(vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3),'.');
         %set(etc_render_fsbrain.click_overlay_vertex_point,'color',[0 1 0]);
     catch ME
