@@ -991,7 +991,7 @@ if(etc_render_fsbrain.electrode_update_contact_view_flag)
     etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',[],'click_vertex_vox',click_vertex_vox);
 end;
 
-etc_render_fsbrain_handle('redraw');
+%etc_render_fsbrain_handle('redraw');
 
 
    

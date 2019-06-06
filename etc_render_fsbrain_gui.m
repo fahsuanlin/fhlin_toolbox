@@ -60,6 +60,15 @@ global etc_render_fsbrain;
 %surface opacity slider
 set(handles.slider_alpha,'value',get(etc_render_fsbrain.h,'facealpha'));
 
+%timeVec slider
+try
+    if(isfield(etc_render_fsbrain,'overlay_stc_timeVec_idx'))
+        set(handles.slider_timeVec,'Enable','on');
+        set(handles.slider_timeVec,'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
+    end;
+catch
+end;
+
 %colorbar check box
 set(handles.checkbox_show_colorbar,'value',0);
 if(isfield(etc_render_fsbrain,'h_colorbar_pos'))
