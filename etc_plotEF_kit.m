@@ -252,7 +252,6 @@ mm=floor(mm/20)*20;
 mx=ceil(mx/20)*20;
 for h_idx=1:length(meg_x_2d)
     h_ax(h_idx) = axes('Position', [meg_x_2d_s(h_idx), meg_y_2d_s(h_idx), .04, .04]);
-    
     set(h_ax(h_idx),'ButtonDownFcn',{@etc_plotEF_kit_kb,fig_h,h_idx,timeVec,data(h_idx,:),label{h_idx}},'HitTest','on')
     
     hold on;

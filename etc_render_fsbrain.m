@@ -70,6 +70,7 @@ topo_aux_point_name={};
 topo_aux_point_name_h=[];
 topo_aux_point_color=[1 0 0];
 topo_aux_point_size=0.005;
+topo_aux_point_label_flag=1;
 
 topo_aux2_point_coords=[];
 topo_aux2_point_coords_h=[];
@@ -214,6 +215,8 @@ for idx=1:length(varargin)/2
             topo_aux_point_color=option_value;
         case 'topo_aux_point_size'
             topo_aux_point_size=option_value;
+        case 'topo_aux_point_label_flag'
+            topo_aux_point_label_flag=option_value;
         case 'topo_aux2_point_coords';
             topo_aux2_point_coords=option_value;
         case 'topo_aux2_point_name';
@@ -507,7 +510,7 @@ if(~isempty(overlay_value))
 
     c_idx=find(ovs(:)<=-min(overlay_threshold));
     
-    fvdata(c_idx,:)=inverse_get_color(overlay_cmap_neg,ovs(c_idx),-max(overlay_threshold),-min(overlay_threshold));
+    fvdata(c_idx,:)=inverse_get_color(overlay_cmap_neg,-ovs(c_idx),max(overlay_threshold),min(overlay_threshold));
 
     colormap(overlay_cmap);
 end;
@@ -656,6 +659,7 @@ etc_render_fsbrain.aux_point_name=topo_aux_point_name;
 etc_render_fsbrain.aux_point_name_h=topo_aux_point_name_h;
 etc_render_fsbrain.aux_point_color=topo_aux_point_color;
 etc_render_fsbrain.aux_point_size=topo_aux_point_size;
+etc_render_fsbrain.aux_point_label_flag=topo_aux_point_label_flag;
 
 etc_render_fsbrain.aux2_point_coords=topo_aux2_point_coords;
 etc_render_fsbrain.aux2_point_coords_h=topo_aux2_point_coords_h;

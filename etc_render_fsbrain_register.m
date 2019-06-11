@@ -344,12 +344,21 @@ global etc_render_fsbrain
 assignin('base','points',etc_render_fsbrain.aux_point_coords);
 filename = uigetfile;
 if(filename)
-    points_all=etc_render_fsbrain.aux_point_coords;
-    points=points_all;
-    %remove auxillary points
-    idx=find(strcmp(etc_render_fsbrain.aux_point_name,'.'));
-    points(idx,:)=[];
+    points=etc_render_fsbrain.aux_point_coords;
+    points_label=etc_render_fsbrain.aux_point_name;
+    hsp=etc_render_fsbrain.aux2_point_coords;
     
-    save(filename,'-append','points','points_all');
-    fprintf('variable "points" and "points_all" exported and saved in [%s]\n',filename);
+%     
+%     points_all=etc_render_fsbrain.aux_point_coords;
+%     points=points_all;
+%     points_all_name=etc_render_fsbrain.aux_point_name;
+%     points_name=points_all_name;
+%     %remove auxillary points
+%     idx=find(strcmp(etc_render_fsbrain.aux_point_name,'.'));
+%     points(idx,:)=[];
+%     points_name(idx)=[];
+    
+%    save(filename,'-append','points','points_all','points_name','points_all_name');
+     save(filename,'-append','points','points_label','hsp');
+    fprintf('variable "points", "points_label", and "hsp" exported and saved in [%s]\n',filename);
 end;

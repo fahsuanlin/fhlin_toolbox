@@ -219,6 +219,31 @@ if(isfield(etc_render_fsbrain,'electrode_modify_flag'))
         
         uiresume(etc_render_fsbrain.electrode_add_gui_h);
         
+    else
+        etc_render_fsbrain.new_electrode.name=get(handles.edit_name,'String');
+        
+        %check if electrode name empty
+        if(isempty(etc_render_fsbrain.new_electrode.name))
+            etc_render_fsbrain.electrode_add_gui_ok=0;
+            fprintf('electrode name cannot be empty!\n');
+        end;
+        
+        %check if electrode name duplicates
+        flag_duplicate=0;
+        for e_idx=1:length(etc_render_fsbrain.electrode)
+            if(strcmp(etc_render_fsbrain.electrode(e_idx).name,etc_render_fsbrain.new_electrode.name))
+                flag_duplicate=1;
+            end;
+        end;
+        if(flag_duplicate)
+            etc_render_fsbrain.electrode_add_gui_ok=0;
+            fprintf('electrode [%s] is in the list already!\n',etc_render_fsbrain.new_electrode.name);
+        end;
+        
+        etc_render_fsbrain.new_electrode.n_contact=str2double(get(handles.edit_n_contact,'String'));
+        etc_render_fsbrain.new_electrode.spacing=str2double(get(handles.edit_spacing,'String'));
+        
+        uiresume(etc_render_fsbrain.electrode_add_gui_h);
     end;
 else
     etc_render_fsbrain.new_electrode.name=get(handles.edit_name,'String');

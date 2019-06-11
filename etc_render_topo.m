@@ -56,13 +56,14 @@ topo_aux_point_name={};
 topo_aux_point_name_h=[];
 topo_aux_point_color=[1 0 0];
 topo_aux_point_size=0.005;
+topo_aux_point_label_flag=1;
 
 topo_aux2_point_coords=[];
 topo_aux2_point_coords_h=[];
 topo_aux2_point_name={};
 topo_aux2_point_name_h=[];
 topo_aux2_point_color=[0.3984    0.5977         0];
-topo_aux2_point_size=44;
+topo_aux2_point_size=6;
 
 topo_exclude_fstem='';
 topo_exclude=[];
@@ -71,6 +72,9 @@ topo_include_fstem='';
 topo_include=[];
 
 topo=[]; %topology structure; with "vertex", "face", "ch_names", "electrode_idx" 4 fields.
+
+%electrode
+electrode=[];
 
 %label (annotation)
 label_vertex=[];
@@ -169,6 +173,8 @@ for idx=1:length(varargin)/2
             topo_aux_point_color=option_value;
         case 'topo_aux_point_size'
             topo_aux_point_size=option_value;
+        case 'topo_aux_point_label_flag'
+            topo_aux_point_label_flag=option_value;
         case 'topo_aux2_point_coords';
             topo_aux2_point_coords=option_value;
         case 'topo_aux2_point_name';
@@ -213,6 +219,8 @@ for idx=1:length(varargin)/2
             label_ctab=option_value;
         case 'file_annot'
             file_annot=option_value;
+        case 'electrode'
+            electrode=option_value;
         case 'click_point_size'
             click_point_size=option_value;
         case 'click_point_color'
@@ -290,7 +298,7 @@ if(~isempty(topo_value))
     
     c_idx=find(ovs(:)<=-min(topo_threshold));
     
-    fvdata(c_idx,:)=inverse_get_color(topo_cmap_neg,ovs(c_idx),-max(topo_threshold),-min(topo_threshold));
+    fvdata(c_idx,:)=inverse_get_color(topo_cmap_neg,-ovs(c_idx),max(topo_threshold),min(topo_threshold));
 end;
 
 
@@ -312,7 +320,8 @@ view(view_angle(1), view_angle(2));
 
 hold on;
 [sx,sy,sz] = sphere(8);
-sr=0.005;
+%sr=0.005;
+sr=topo_aux_point_size;
 
 % for idx=1:size(topo_aux_point_coords,1)
 %     topo_aux_point_coords_h(idx)=surf(sx.*sr+topo_aux_point_coords(idx,1),sy.*sr+topo_aux_point_coords(idx,2),sz.*sr+topo_aux_point_coords(idx,3));
@@ -343,7 +352,7 @@ for idx=1:size(topo_aux_point_coords,1)
     end;
 end;
 topo_aux_point_coords_h(1)=surf(xx,yy,zz);
-set(topo_aux_point_coords_h(1),'facecolor','r','edgecolor','none');
+set(topo_aux_point_coords_h(1),'facecolor',topo_aux_point_color,'edgecolor','none');
 %set(topo_aux_point_coords_h(1),'facecolor','r','edgecolor','none','ButtonDownFcn',@(~,~)disp('click!\n'),'PickableParts','all');
 %set(topo_aux_point_coords_h(1),'facecolor','r','edgecolor','none','ButtonDownFcn',@aux_point_Callback,'PickableParts','all');
 
@@ -358,7 +367,7 @@ for idx=1:size(topo_aux2_point_coords,1)
     end;
 end;
 topo_aux2_point_coords_h=plot3(xx,yy,zz,'r.');
-set(topo_aux2_point_coords_h,'color',[1 0 0].*0.5);
+set(topo_aux2_point_coords_h,'color',topo_aux2_point_color,'markersize',topo_aux2_point_size);
 
 % for idx=1:size(topo_aux_point_coords,1)
 %     topo_aux_point_coords_h(idx)=plot3(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3));
@@ -472,6 +481,7 @@ etc_render_fsbrain.aux_point_name=topo_aux_point_name;
 etc_render_fsbrain.aux_point_name_h=topo_aux_point_name_h;
 etc_render_fsbrain.aux_point_color=topo_aux_point_color;
 etc_render_fsbrain.aux_point_size=topo_aux_point_size;
+etc_render_fsbrain.aux_point_label_flag=topo_aux_point_label_flag;
 
 etc_render_fsbrain.aux2_point_coords=topo_aux2_point_coords;
 etc_render_fsbrain.aux2_point_coords_h=topo_aux2_point_coords_h;
@@ -489,6 +499,8 @@ etc_render_fsbrain.register_rotate_angle=3; %default: 3 degrees
 etc_render_fsbrain.register_translate_dist=1e-3; %default: 1 mm
 
 etc_render_fsbrain.topo=topo;
+
+etc_render_fsbrain.electrode=electrode;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%

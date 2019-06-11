@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_gui
 
-% Last Modified by GUIDE v2.5 18-May-2019 22:08:21
+% Last Modified by GUIDE v2.5 07-Jun-2019 11:38:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -62,9 +62,16 @@ set(handles.slider_alpha,'value',get(etc_render_fsbrain.h,'facealpha'));
 
 %timeVec slider
 try
+    set(handles.slider_timeVec,'Enable','off');
+    set(handles.edit_timeVec,'Enable','off');
+
     if(isfield(etc_render_fsbrain,'overlay_stc_timeVec_idx'))
-        set(handles.slider_timeVec,'Enable','on');
-        set(handles.slider_timeVec,'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
+        if(~isempty(etc_render_fsbrain.overlay_stc_timeVec))
+            if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
+                set(handles.slider_timeVec,'Enable','on');
+                set(handles.slider_timeVec,'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
+            end;
+        end;
     end;
 catch
 end;
@@ -86,6 +93,10 @@ set(handles.checkbox_show_colorbar,'enable','off');
 
 set(handles.pushbutton_aux_point_color,'BackgroundColor',etc_render_fsbrain.aux_point_color);
 set(handles.edit_aux_point_size,'string',sprintf('%3.3f',etc_render_fsbrain.aux_point_size));
+if(~isfield(etc_render_fsbrain,'aux_point_label_flag'))
+    etc_render_fsbrain.aux_point_label_flag=1;
+end;
+set(handles.checkbox_aux_point_label,'value',etc_render_fsbrain.aux_point_label_flag);
 
 set(handles.pushbutton_aux2_point_color,'BackgroundColor',etc_render_fsbrain.aux2_point_color);
 set(handles.edit_aux2_point_size,'string',sprintf('%d',etc_render_fsbrain.aux2_point_size));
@@ -623,3 +634,17 @@ if(isfield(etc_render_fsbrain,'click_coord'))
         etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
     end;
 end;
+
+
+% --- Executes on button press in checkbox_aux_point_label.
+function checkbox_aux_point_label_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_aux_point_label (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_aux_point_label
+global etc_render_fsbrain
+
+etc_render_fsbrain.aux_point_label_flag=get(hObject,'Value');
+
+etc_render_fsbrain_handle('redraw');

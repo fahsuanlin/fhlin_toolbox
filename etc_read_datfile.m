@@ -59,20 +59,4 @@ while ischar(tmp)
 end
 fclose(fid);
 
-% idx=find(~cellfun(@isempty,cellfun(@(x) strfind(x,target_str), tline,'UniformOutput',0)));
-% 
-% tmp = str2num(tline{idx+1});
-% n_points=tmp(1);
-% n_dim=tmp(2);
-% 
-% for ii=1:n_points
-%     tmp = str2num(tline{idx+ii+1});
-%     points(ii,1)=tmp(1);
-%     points(ii,2)=tmp(2);
-%     points(ii,3)=tmp(3);
-% end;
-
-return;
-
-
 return;

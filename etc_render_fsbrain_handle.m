@@ -239,6 +239,17 @@ switch lower(param)
                 pos=get(etc_render_fsbrain.fig_electrode_gui,'pos');
                 pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
                 set(etc_render_fsbrain.fig_electrode_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
+            case 'b'
+                %fprintf('\nsensors...\n');
+                if(isfield(etc_render_fsbrain,'fig_sensor_gui'))
+                    etc_render_fsbrain.fig_sensor_gui=[];
+                end;
+                etc_render_fsbrain.fig_sensor_gui=etc_render_fsbrain_sensors;
+                set(etc_render_fsbrain.fig_sensor_gui,'HandleVisibility','on')
+                set(etc_render_fsbrain.fig_sensor_gui,'unit','pixel');
+                pos=get(etc_render_fsbrain.fig_sensor_gui,'pos');
+                pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                set(etc_render_fsbrain.fig_sensor_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
             case 't'
                 fprintf('\ntemporal integration...\n');
                 if(isempty(inverse_time_integration))
@@ -592,7 +603,13 @@ switch lower(param)
     case 'bd'
         if(gcf==etc_render_fsbrain.fig_brain)
             draw_pointer;
-            draw_stc;
+            if(isfield(etc_render_fsbrain,'overlay_stc_timeVec_idx'))
+                if(~isempty(etc_render_fsbrain.overlay_stc_timeVec))
+                    if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
+                        draw_stc;
+                    end;
+                end;
+            end;
             figure(etc_render_fsbrain.fig_brain);
         elseif(gcf==etc_render_fsbrain.fig_vol)
             xx=get(gca,'currentpoint');
@@ -1435,8 +1452,7 @@ if(etc_render_fsbrain.overlay_flag_render)
         
         c_idx=find(ovs(:)<=-min(etc_render_fsbrain.overlay_threshold));
         
-        etc_render_fsbrain.fvdata(c_idx,:)=inverse_get_color(etc_render_fsbrain.overlay_cmap_neg,ovs(c_idx),-max(etc_render_fsbrain.overlay_threshold),-min(etc_render_fsbrain.overlay_threshold));
-        
+        etc_render_fsbrain.fvdata(c_idx,:)=inverse_get_color(etc_render_fsbrain.overlay_cmap_neg,-ovs(c_idx),max(etc_render_fsbrain.overlay_threshold),min(etc_render_fsbrain.overlay_threshold));
     end;
 end;
 
@@ -1488,11 +1504,16 @@ try
                     yy=cat(1,yy,sy.*sr+etc_render_fsbrain.aux_point_coords(idx,2));
                     zz=cat(1,zz,sz.*sr+etc_render_fsbrain.aux_point_coords(idx,3));
                 end;
-                if(~isempty(etc_render_fsbrain.aux_point_name))
-                    if(strcmp(etc_render_fsbrain.aux_point_name{idx},'.'))
-                        etc_render_fsbrain.aux_point_name_h(idx)=text(etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3),''); hold on;
-                    else
-                        etc_render_fsbrain.aux_point_name_h(idx)=text(etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3),etc_render_fsbrain.aux_point_name{idx}); hold on;
+                if(~isfield(etc_render_fsbrain,'aux_point_label_flag'))
+                    etc_render_fsbrain.aux_point_label_flag=1;
+                end;
+                if(etc_render_fsbrain.aux_point_label_flag)
+                    if(~isempty(etc_render_fsbrain.aux_point_name))
+                        if(strcmp(etc_render_fsbrain.aux_point_name{idx},'.'))
+                            etc_render_fsbrain.aux_point_name_h(idx)=text(etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3),''); hold on;
+                        else
+                            etc_render_fsbrain.aux_point_name_h(idx)=text(etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3),etc_render_fsbrain.aux_point_name{idx}); hold on;
+                        end;
                     end;
                 end;
             end;
