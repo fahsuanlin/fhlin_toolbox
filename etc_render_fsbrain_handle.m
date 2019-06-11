@@ -43,6 +43,7 @@ switch lower(param)
                 fprintf('g: open time course GUI \n');
                 fprintf('k: open registration GUI\n');
                 fprintf('e: open electrode GUI\n');
+                fprintf('b: open sensor location GUI\n');
                 fprintf('f: load overlay (w/stc) file\n');
                 fprintf('l: open label GUI\n');
                 fprintf('w: open coordinates GUI\n');
