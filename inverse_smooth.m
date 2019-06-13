@@ -176,9 +176,27 @@ if(flag_050619)
     D=D*D; %every repetition increases neighbors one connection further away from the source vertex
     
     D(find(D(:)>1))=1;
-    
     D=spones(D);
     nD=sum(D,2);
+
+    
+    
+    %for initial interpolation
+    if(flag_regrid)
+        dd0=[dd1;dd2;dd3;dd4;dd5;dd6];
+        dd0=unique(dd0,'rows');
+        dd0(:,3)=1;
+        dijk_A=spones(spconvert(dd0));
+        Dm=dijkstra(dijk_A,value_idx);
+        Dme=exp(-Dm.*2);
+        Dme=Dme./repmat(sum(Dme,1),[size(Dme,1) 1]);
+        non_value_idx=setdiff([1:size(Dme,2)],value_idx);
+        for tt=1:size(value,2)
+            %value(:,tt)=fmri_scale(Dme'*value(value_idx,tt),max(value,tt),min(value,tt));
+            value(non_value_idx,tt)=Dme(:,non_value_idx)'*value(value_idx,tt);
+        end;
+    end;
+    
     for tt=1:size(value,2)
         sv=value(:,tt);
         ii=find(abs(sv(:))>eps);
@@ -196,7 +214,11 @@ if(flag_050619)
             
         end;
         %smooth_value(:,tt)=fmri_scale(sv,v_max,v_min);
-        smooth_value(:,tt)=sv*n_ratio;
+        if(~flag_regrid)
+            smooth_value(:,tt)=sv*n_ratio;
+        else
+            smooth_value(:,tt)=sv;
+        end;
     end;
 end;
 return;

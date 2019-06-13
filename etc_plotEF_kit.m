@@ -252,8 +252,11 @@ mm=floor(mm/20)*20;
 mx=ceil(mx/20)*20;
 for h_idx=1:length(meg_x_2d)
     h_ax(h_idx) = axes('Position', [meg_x_2d_s(h_idx), meg_y_2d_s(h_idx), .04, .04]);
-    set(h_ax(h_idx),'ButtonDownFcn',{@etc_plotEF_kit_kb,fig_h,h_idx,timeVec,data(h_idx,:),label{h_idx}},'HitTest','on')
-    
+    if(isempty(data_aux))
+        set(h_ax(h_idx),'ButtonDownFcn',{@etc_plotEF_kit_kb,fig_h,h_idx,timeVec,data(h_idx,:),label{h_idx}},'HitTest','on')
+    else
+        set(h_ax(h_idx),'ButtonDownFcn',{@etc_plotEF_kit_kb,fig_h,h_idx,timeVec,data(h_idx,:),label{h_idx},data_aux(h_idx,:)},'HitTest','on')
+    end;
     hold on;
     h=line([0 0],[mm mx]); set(h,'color',[1 1 1].*0.3); set(h,'HitTest','off');
     h=line([min(timeVec) max(timeVec)],[0 0]); set(h,'color',[1 1 1].*0.3); set(h,'HitTest','off');
@@ -284,14 +287,24 @@ end;
 linkaxes(h_ax,'x');
 
 
-function etc_plotEF_kit_kb(source, eventdata, h,h_idx,timeVec,d,l)
+function etc_plotEF_kit_kb(source, eventdata, h,h_idx,timeVec,d,l,varargin)
+
+if(~isempty(varargin))
+    d_aux=varargin{1};
+else
+    d_aux=[];
+end;
 
 hh=figure(h.Number+1);
 hh_pos=get(hh,'pos');
 h_pos=get(h,'pos');
 set(hh,'pos',[h_pos(1)-hh_pos(3) h_pos(2) hh_pos(3) hh_pos(4)]);
 
-plot(timeVec,d);
+if(isempty(d_aux))
+    plot(timeVec,d);
+else
+    plot(timeVec,d,timeVec,d_aux);
+end;
 
 h=title(l); set(h,'fontname','helvetica','fontsize',16);
 

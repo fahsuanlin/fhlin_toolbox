@@ -257,7 +257,7 @@ if(~isempty(topo_value))
         topo_exclude=find(vol_vertex(:,3)<min(vol_vertex(topo_vertex+1,3)));
         
         if(~isempty(topo_smooth))
-            [ovs,dd0,dd1,topo_Ds]=inverse_smooth('','vertex',vol_vertex','face',vol_face','value',ov,'step',topo_smooth,'flag_fixval',0,'exc_vertex',topo_exclude,'inc_vertex',topo_include,'flag_regrid',topo_regrid_flag,'flag_regrid_zero',topo_regrid_zero_flag,'Ds',topo_Ds,'default_neighbor',10,'n_ratio',length(ov)/length(topo_value));
+            [ovs,dd0,dd1,topo_Ds]=inverse_smooth('','vertex',vol_vertex','face',vol_face','value_idx',topo_vertex+1,'value',ov,'step',topo_smooth,'flag_fixval',0,'exc_vertex',topo_exclude,'inc_vertex',topo_include,'flag_regrid',topo_regrid_flag,'flag_regrid_zero',topo_regrid_zero_flag,'Ds',topo_Ds,'default_neighbor',10,'n_ratio',length(ov)/length(topo_value));
         else
             ovs=ov;
         end;
@@ -276,7 +276,7 @@ if(~isempty(topo_value))
                 val=zeros(size(vol_vertex,1),1);
                 val(topo_vertex)=topo_value;
                 
-                [ovs,dd0,dd1,topo_Ds]=inverse_smooth('','vertex',vol_vertex','face',vol_face','value',ov,'step',topo_smooth,'flag_fixval',0,'exc_vertex',topo_exclude,'inc_vertex',topo_include,'flag_regrid',topo_regrid_flag,'flag_regrid_zero',topo_regrid_zero_flag,'Ds',topo_Ds,'default_neighbor',10,'n_ratio',length(ov)/length(topo_value));
+                [ovs,dd0,dd1,topo_Ds]=inverse_smooth('','vertex',vol_vertex','face',vol_face','value_idx',topo_vertex+1,'value',ov,'step',topo_smooth,'flag_fixval',0,'exc_vertex',topo_exclude,'inc_vertex',topo_include,'flag_regrid',topo_regrid_flag,'flag_regrid_zero',topo_regrid_zero_flag,'Ds',topo_Ds,'default_neighbor',10,'n_ratio',length(ov)/length(topo_value));
             else
                 ovs=cat(1,ovs,ov);
             end;
