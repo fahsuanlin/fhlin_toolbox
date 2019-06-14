@@ -104,7 +104,7 @@ global etc_trace_obj;
  end;
 
  if(size(data,2)/fs<duration)
-    duration=size(data,2)/fs/2;
+ %   duration=size(data,2)/fs/2;
  end;
  
 etc_trace_obj.fs=fs;

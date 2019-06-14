@@ -44,6 +44,7 @@ switch lower(param)
                 fprintf('k: open registration GUI\n');
                 fprintf('e: open electrode GUI\n');
                 fprintf('b: open sensor location GUI\n');
+                fprintf('v: open trace viewer GUI\n');
                 fprintf('f: load overlay (w/stc) file\n');
                 fprintf('l: open label GUI\n');
                 fprintf('w: open coordinates GUI\n');
@@ -251,27 +252,76 @@ switch lower(param)
                 pos=get(etc_render_fsbrain.fig_sensor_gui,'pos');
                 pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
                 set(etc_render_fsbrain.fig_sensor_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
-            case 't'
-                fprintf('\ntemporal integration...\n');
-                if(isempty(inverse_time_integration))
-                    inverse_time_integration=1;
-                end;
-                
-                def={num2str(inverse_time_integration)};
-                if(isempty(inverse_stc_timeVec))
-                    answer=inputdlg('temporal integration',sprintf('temporal integration interval= %s [samples]',num2str(inverse_time_integration)),1,def);
-                else
-                    answer=inputdlg('temporal integration',sprintf('temporal integration interval= %s [ms]',num2str(inverse_time_integration)),1,def);
-                end;
-                if(~isempty(answer))
-                    inverse_time_integration=str2num(answer{1});
-                    if(isempty(inverse_stc_timeVec))
-                        fprintf('temporal integration = %s [samples]\n',mat2str(inverse_time_integration));
-                    else
-                        fprintf('temporal integration = %s [ms]\n',mat2str(inverse_time_integration));
+            case 'v'
+                if(~isempty(etc_render_fsbrain.overlay_stc))
+                    %etc_trace(etc_render_fsbrian.overlay_stc,'fs',fs,'trigger',trigger_all,'ch_names',label,'aux_data',{data_nobcg});
+                    aux_data={};
+                    if(~isempty(etc_render_fsbrain.overlay_aux_stc))
+                        aux_data={etc_render_fsbrain.overlay_aux_stc};
                     end;
-                    redraw;
+                    fs=1e3;
+                    if(~isempty(etc_render_fsbrain.overlay_stc_timeVec))
+                        fs=1e3./mean(diff(etc_render_fsbrain.overlay_stc_timeVec));
+                    end;
+                    etc_trace(etc_render_fsbrain.overlay_stc,'fs',fs,'ch_names',etc_render_fsbrain.aux_point_name,'aux_data',aux_data);
+                    global etc_trace_obj;
+                    if(isvalid(etc_trace_obj.fig_trace))
+                        etc_trace_handle('bd','time_idx',etc_render_fsbrain.overlay_stc_timeVec_idx);
+                    end;
+                    
+                    global etc_trace_obj;
+                    
+                    if(~isempty(etc_trace_obj))
+                        try
+                            etc_trace_obj.topo.vertex=etc_render_fsbrain.vertex_coords;
+                            etc_trace_obj.topo.face=etc_render_fsbrain.faces;
+                            
+                            Index=find(contains(etc_render_fsbrain.aux_point_name,etc_trace_obj.ch_names));
+                            if(length(Index)<=length(etc_trace_obj.ch_names)) %all electrodes were found on topology
+                                for ii=1:length(etc_trace_obj.ch_names)
+                                    for idx=1:length(etc_render_fsbrain.aux_point_name)
+                                        if(strcmp(etc_render_fsbrain.aux_point_name{idx},etc_trace_obj.ch_names{ii}))
+                                            Index(ii)=idx;
+                                            electrode_data_idx(idx)=ii;
+                                        end;
+                                    end;
+                                end;
+                                
+                                for jj=1:size(etc_render_fsbrain.aux_point_coords,1)
+                                    dd=etc_trace_obj.topo.vertex-repmat(etc_render_fsbrain.aux_point_coords(jj,:),[size(etc_trace_obj.topo.vertex,1) 1]);
+                                    dd=sum(dd.^2,2);
+                                    [dummy, electrode_idx(jj)]=min(dd);
+                                end;
+                                
+                                etc_trace_obj.topo.ch_names=etc_render_fsbrain.aux_point_name(Index);
+                                etc_trace_obj.topo.electrode_idx=electrode_idx;
+                                etc_trace_obj.topo.electrode_data_idx=electrode_data_idx;
+                            end;
+                        catch ME
+                        end;
+                    end;
                 end;
+            case 't'
+%                 fprintf('\ntemporal integration...\n');
+%                 if(isempty(inverse_time_integration))
+%                     inverse_time_integration=1;
+%                 end;
+%                 
+%                 def={num2str(inverse_time_integration)};
+%                 if(isempty(inverse_stc_timeVec))
+%                     answer=inputdlg('temporal integration',sprintf('temporal integration interval= %s [samples]',num2str(inverse_time_integration)),1,def);
+%                 else
+%                     answer=inputdlg('temporal integration',sprintf('temporal integration interval= %s [ms]',num2str(inverse_time_integration)),1,def);
+%                 end;
+%                 if(~isempty(answer))
+%                     inverse_time_integration=str2num(answer{1});
+%                     if(isempty(inverse_stc_timeVec))
+%                         fprintf('temporal integration = %s [samples]\n',mat2str(inverse_time_integration));
+%                     else
+%                         fprintf('temporal integration = %s [ms]\n',mat2str(inverse_time_integration));
+%                     end;
+%                     redraw;
+%                 end;
             case 'w' %coordinate GUI
                 %fprintf('\nCoordinate GUI...\n');
                 if(isfield(etc_render_fsbrain,'fig_coord_gui'))
@@ -695,6 +745,13 @@ switch lower(param)
             redraw;
             figure(etc_render_fsbrain.fig_stc);
             
+        end;
+        
+        global etc_trace_obj;
+        if(~isempty(etc_trace_obj))
+            if(isvalid(etc_trace_obj.fig_trace))
+                etc_trace_handle('bd','time_idx',etc_render_fsbrain.overlay_stc_timeVec_idx);
+            end;
         end;
 end;
 

@@ -16,7 +16,7 @@ for i=1:length(varargin)/2
             cc=option;
         case 'time_idx'
             time_idx=option;
-    end;
+    end; 
 end;
 
 if(isempty(etc_trace_obj))
@@ -72,7 +72,7 @@ switch lower(param)
                 %    fprintf('stop making triggers/events...\n');
                 %end;
                 %etc_trace_obj.flag_mark=~etc_trace_obj.flag_mark;
-            case 'v' 
+            case 'v'
                 fprintf('show events....\n');
                 if(isfield(etc_trace_obj,'fig_trigger'))
                     etc_trace_obj.fig_trigger=[];
@@ -84,8 +84,8 @@ switch lower(param)
                 set(etc_trace_obj.fig_trigger,'pos',[pp1(1)-pp0(3), pp1(2),pp0(3), pp0(4)]);
                 set(etc_trace_obj.fig_trigger,'Name','events');
                 set(etc_trace_obj.fig_trigger,'Resize','off');
- 
-            case 'f' 
+                
+            case 'f'
                 fprintf('show configuration....\n');
                 if(isfield(etc_trace_obj,'fig_config'))
                     etc_trace_obj.fig_config=[];
@@ -97,95 +97,107 @@ switch lower(param)
                 set(etc_trace_obj.fig_config,'pos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
                 set(etc_trace_obj.fig_config,'Name','events');
                 set(etc_trace_obj.fig_config,'Resize','off');
-
+                
             case 't'
                 fprintf('show topology....\n');
                 
                 if(isfield(etc_trace_obj,'time_select_idx'))
                     if(~isempty(etc_trace_obj.time_select_idx))
-                        data=etc_trace_obj.data(:,etc_trace_obj.time_select_idx);
-                                                
-                        if(isempty(etc_trace_obj.topo))
-                            [filename, pathname, filterindex] = uigetfile({'*.mat','topology Matlab file'}, 'Pick a topology definition file');
-                            if(filename>0)
-                                try
-                                    load(sprintf('%s/%s',pathname,filename));
-                                    etc_trace_obj.topo.vertex=vertex;
-                                    etc_trace_obj.topo.face=face;
-                                    
-                                    Index=find(contains(electrode_name,etc_trace_obj.ch_names));
-                                    if(length(Index)<=length(etc_trace_obj.ch_names)) %all electrodes were found on topology
-                                        for ii=1:length(etc_trace_obj.ch_names)
-                                            for idx=1:length(electrode_name)
-                                                if(strcmp(electrode_name{idx},etc_trace_obj.ch_names{ii}))
-                                                    Index(ii)=idx;
-                                                    electrode_data_idx(idx)=ii;
+                        try
+                            data=etc_trace_obj.data(:,etc_trace_obj.time_select_idx);
+                            
+                            global etc_render_fsbrain;
+                            
+                            if(isempty(etc_trace_obj.topo))
+                                [filename, pathname, filterindex] = uigetfile({'*.mat','topology Matlab file'}, 'Pick a topology definition file');
+                                if(filename>0)
+                                    try
+                                        load(sprintf('%s/%s',pathname,filename));
+                                        etc_trace_obj.topo.vertex=vertex;
+                                        etc_trace_obj.topo.face=face;
+                                        
+                                        Index=find(contains(electrode_name,etc_trace_obj.ch_names));
+                                        if(length(Index)<=length(etc_trace_obj.ch_names)) %all electrodes were found on topology
+                                            for ii=1:length(etc_trace_obj.ch_names)
+                                                for idx=1:length(electrode_name)
+                                                    if(strcmp(electrode_name{idx},etc_trace_obj.ch_names{ii}))
+                                                        Index(ii)=idx;
+                                                        electrode_data_idx(idx)=ii;
+                                                    end;
                                                 end;
                                             end;
+                                            etc_trace_obj.topo.ch_names=electrode_name(Index);
+                                            etc_trace_obj.topo.electrode_idx=electrode_idx(Index);
+                                            etc_trace_obj.topo.electrode_data_idx=electrode_data_idx;
                                         end;
-                                        etc_trace_obj.topo.ch_names=electrode_name(Index);
-                                        etc_trace_obj.topo.electrode_idx=electrode_idx(Index);
-                                        etc_trace_obj.topo.electrode_data_idx=electrode_data_idx;
-                                    end;
-                                    
-                                    %etc_trace_obj.topo.ch_names=electrode_name;
-                                    %etc_trace_obj.topo.electrode_idx=electrode_idx;
-                                    
-                                    if(isfield(etc_trace_obj,'fig_topology'))
-                                        if(isvalid(etc_trace_obj.fig_topology))
-                                            figure(etc_trace_obj.fig_topology);
-                                            flag_camlight=0;
-                                            
-                                            global etc_render_fsbrain;
-                                            [aa bb]=view;
-                                            etc_render_fsbrain.view_angle=[aa bb];
-                                            
+                                        
+                                        %etc_trace_obj.topo.ch_names=electrode_name;
+                                        %etc_trace_obj.topo.electrode_idx=electrode_idx;
+                                        
+                                        if(isfield(etc_trace_obj,'fig_topology'))
+                                            if(isvalid(etc_trace_obj.fig_topology))
+                                                figure(etc_trace_obj.fig_topology);
+                                                flag_camlight=0;
+                                                
+                                                global etc_render_fsbrain;
+                                                [aa bb]=view;
+                                                etc_render_fsbrain.view_angle=[aa bb];
+                                                
+                                            else
+                                                etc_trace_obj.fig_topology=figure;
+                                                flag_camlight=1;
+                                            end;
                                         else
                                             etc_trace_obj.fig_topology=figure;
                                             flag_camlight=1;
                                         end;
+                                        
+                                        if(isempty(etc_render_fsbrain))
+                                            %etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',10,'topo_threshold',[abs(diff(etc_trace_obj.ylim))/4 abs(diff(etc_trace_obj.ylim))/2 ],'flag_camlight',flag_camlight);
+                                            etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',10,'topo_threshold',[abs(diff(etc_trace_obj.ylim))/4 abs(diff(etc_trace_obj.ylim))/2 ],'flag_camlight',flag_camlight);
+                                        else
+                                            delete(etc_render_fsbrain.click_point);
+                                            delete(etc_render_fsbrain.click_vertex_point);
+                                            delete(etc_render_fsbrain.click_overlay_vertex_point);
+                                            
+                                            %etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',etc_render_fsbrain.overlay_smooth,'topo_threshold',etc_render_fsbrain.overlay_threshold,'flag_camlight',flag_camlight,'view_angle',etc_render_fsbrain.view_angle);
+                                            etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',etc_render_fsbrain.overlay_smooth,'topo_threshold',etc_render_fsbrain.overlay_threshold,'flag_camlight',flag_camlight,'view_angle',etc_render_fsbrain.view_angle);
+                                        
+                                        end;
+                                    catch ME
+                                    end;
+                                end;
+                            else
+                                if(~isempty(etc_render_fsbrain))
+                                    etc_trace_obj.fig_topology=etc_render_fsbrain.fig_brain;
+                                end;
+                                if(isfield(etc_trace_obj,'fig_topology'))
+                                    if(isvalid(etc_trace_obj.fig_topology))
+                                        figure(etc_trace_obj.fig_topology);
+                                        flag_camlight=0;
                                     else
                                         etc_trace_obj.fig_topology=figure;
                                         flag_camlight=1;
                                     end;
-                                    
-                                    global etc_render_fsbrain;
-                                    if(isempty(etc_render_fsbrain))
-                                        etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',10,'topo_threshold',[abs(diff(etc_trace_obj.ylim))/4 abs(diff(etc_trace_obj.ylim))/2 ],'flag_camlight',flag_camlight);
-                                    else
-                                        delete(etc_render_fsbrain.click_point);
-                                        delete(etc_render_fsbrain.click_vertex_point);
-                                        delete(etc_render_fsbrain.click_overlay_vertex_point);
-                                        
-                                        etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',etc_render_fsbrain.overlay_smooth,'topo_threshold',etc_render_fsbrain.overlay_threshold,'flag_camlight',flag_camlight,'view_angle',etc_render_fsbrain.view_angle);
-                                    end;
-                                catch ME
-                                end;
-                            end;
-                        else
-                            if(isfield(etc_trace_obj,'fig_topology'))
-                                if(isvalid(etc_trace_obj.fig_topology))
-                                    figure(etc_trace_obj.fig_topology);
-                                    flag_camlight=0;
                                 else
                                     etc_trace_obj.fig_topology=figure;
                                     flag_camlight=1;
                                 end;
-                            else
-                                etc_trace_obj.fig_topology=figure;
-                                flag_camlight=1;
-                            end;                           
-                            
-                            global etc_render_fsbrain;
-                            if(isempty(etc_render_fsbrain))
-                                etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',10,'topo_threshold',[abs(diff(etc_trace_obj.ylim))/4 abs(diff(etc_trace_obj.ylim))/2 ],'flag_camlight',flag_camlight);
-                            else
-                                delete(etc_render_fsbrain.click_point);
-                                delete(etc_render_fsbrain.click_vertex_point);
-                                delete(etc_render_fsbrain.click_overlay_vertex_point);
                                 
-                                etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',etc_render_fsbrain.overlay_smooth,'topo_threshold',etc_render_fsbrain.overlay_threshold,'flag_camlight',flag_camlight,'view_angle',etc_render_fsbrain.view_angle);
+                                if(isempty(etc_render_fsbrain))
+                                    etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',10,'topo_threshold',[abs(diff(etc_trace_obj.ylim))/4 abs(diff(etc_trace_obj.ylim))/2 ],'flag_camlight',flag_camlight);
+                                else
+                                    %delete(etc_render_fsbrain.click_point);
+                                    %delete(etc_render_fsbrain.click_vertex_point);
+                                    %delete(etc_render_fsbrain.click_overlay_vertex_point);
+                                    
+                                    %etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',etc_render_fsbrain.overlay_smooth,'topo_threshold',etc_render_fsbrain.overlay_threshold,'flag_camlight',flag_camlight,'view_angle',etc_render_fsbrain.view_angle);
+                                    etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_stc',etc_render_fsbrain.overlay_stc,'topo_stc_timeVec',etc_render_fsbrain.overlay_stc_timeVec,'topo_stc_timeVec_unit',etc_render_fsbrain.overlay_stc_timeVec_unit,'topo_stc_timeVec_idx',etc_render_fsbrain.overlay_stc_timeVec_idx,'topo_smooth',etc_render_fsbrain.overlay_smooth,'topo_threshold',etc_render_fsbrain.overlay_threshold,'flag_camlight',flag_camlight,'view_angle',etc_render_fsbrain.view_angle);
+                                    %etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',etc_render_fsbrain.overlay_smooth,'topo_threshold',etc_render_fsbrain.overlay_threshold,'flag_camlight',flag_camlight,'view_angle',etc_render_fsbrain.view_angle);
+
+                                end;
                             end;
+                        catch ME
                         end;
                     else
                     end;
@@ -201,7 +213,7 @@ switch lower(param)
                 
                 set(etc_trace_obj.fig_montage,'Name','montages');
                 set(etc_trace_obj.fig_montage,'Resize','off');
-                set(etc_trace_obj.fig_montage, 'Visible','on');                
+                set(etc_trace_obj.fig_montage, 'Visible','on');
                 
             case 'l' %a list box of all electrodes
                 if(isfield(etc_trace_obj,'fig_electrode_listbox'))
@@ -272,8 +284,10 @@ switch lower(param)
                 end;
             otherwise
         end;
-    case 'bd'        
-        if(gcf==etc_trace_obj.fig_trace)
+    case 'bd'
+        global etc_render_fsbrain
+
+        %if(gcf==etc_trace_obj.fig_trace)
             %detect right mouse click
             clickType = get(gcf, 'SelectionType');
             if(strcmp(clickType,'alt'))
@@ -299,11 +313,13 @@ switch lower(param)
                 
                 if(~etc_trace_obj.flag_mark)
                     if(etc_trace_obj.config_current_time_flag)
+                        figure(etc_trace_obj.fig_trace);
                         etc_trace_obj.time_select_line=plot([etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1 etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1],ylim,'m','linewidth',2);
                         set(etc_trace_obj.time_select_line,'color',etc_trace_obj.config_current_time_color);
                     end;
                 else
                     if(etc_trace_obj.config_current_time_flag)
+                        figure(etc_trace_obj.fig_trace);
                         etc_trace_obj.time_select_line=plot([etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1 etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1],ylim,'r','linewidth',2);
                     end;
                 end;
@@ -372,7 +388,7 @@ switch lower(param)
                                         delete(etc_render_fsbrain.click_point);
                                         delete(etc_render_fsbrain.click_vertex_point);
                                         delete(etc_render_fsbrain.click_overlay_vertex_point);
-                                    
+                                        
                                         etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',etc_render_fsbrain.overlay_smooth,'topo_threshold',etc_render_fsbrain.overlay_threshold,'flag_camlight',flag_camlight,'view_angle',etc_render_fsbrain.view_angle);
                                     catch ME
                                     end;
@@ -398,6 +414,53 @@ switch lower(param)
                 end;
                 figure(etc_trace_obj.fig_trace);
             end;
+        
+            
+        %else
+        if(gcf==etc_trace_obj.fig_trace)
+            if(~isempty(etc_render_fsbrain))
+                try
+                    xx= etc_trace_obj.time_select_idx;
+                    if(isempty(etc_render_fsbrain.overlay_stc_timeVec))
+                        etc_render_fsbrain.overlay_stc_timeVec_idx=round(xx);
+                        fprintf('showing STC at time index [%d] (sample)\n',etc_render_fsbrain.overlay_stc_timeVec_idx);
+                    else
+                        %[dummy,etc_render_fsbrain.overlay_stc_timeVec_idx]=min(abs(etc_render_fsbrain.overlay_stc_timeVec-xx));
+                        etc_render_fsbrain.overlay_stc_timeVec_idx=xx;
+                        if(isempty(etc_render_fsbrain.overlay_stc_timeVec_unit))
+                            unt='sample';
+                        else
+                            unt=etc_render_fsbrain.overlay_stc_timeVec_unit;
+                        end;
+                        fprintf('showing STC at time [%2.2f] %s\n',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx),unt);
+                    end;
+                    
+                    if(~iscell(etc_render_fsbrain.overlay_value))
+                        etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
+                    else
+                        for h_idx=1:length(etc_render_fsbrain.overlay_value)
+                            etc_render_fsbrain.overlay_value{h_idx}=etc_render_fsbrain.overlay_stc_hemi{h_idx}(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
+                        end;
+                    end;
+                    
+                    if(~isempty(etc_render_fsbrain.overlay_stc))
+                        etc_render_fsbrain_handle('draw_stc');
+                    end
+                    
+                    if(ishandle(etc_render_fsbrain.fig_gui))
+                        set(findobj(etc_render_fsbrain.fig_gui,'tag','slider_timeVec'),'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
+                        
+                        set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_timeVec'),'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
+                        set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_timeVec'),'string',sprintf('%1.0f',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx)));
+                    end;
+                    
+                    figure(etc_render_fsbrain.fig_brain);
+                    etc_render_fsbrain_handle('redraw');
+                    figure(etc_render_fsbrain.fig_stc);
+                    
+                catch ME
+                end;
+            end;
         end;
 end;
 
@@ -416,24 +479,24 @@ cla(etc_trace_obj.axis_trace);
 if(isfield(etc_trace_obj,'aux_data'))
     if(~isempty(etc_trace_obj.aux_data))
         cc=[
-    0.8500    0.3250    0.0980
-    0.9290    0.6940    0.1250
-    0.4940    0.1840    0.5560
-    0.4660    0.6740    0.1880
-    0.3010    0.7450    0.9330
-    0.6350    0.0780    0.1840
-    0    0.4470    0.7410
-]; %color order
-
+            0.8500    0.3250    0.0980
+            0.9290    0.6940    0.1250
+            0.4940    0.1840    0.5560
+            0.4660    0.6740    0.1880
+            0.3010    0.7450    0.9330
+            0.6350    0.0780    0.1840
+            0    0.4470    0.7410
+            ]; %color order
+        
         for ii=1:length(etc_trace_obj.aux_data)
-            %%scaling 
+            %%scaling
             %tmp=etc_trace_obj.S*tmp;
-
+            
             %tmp=bsxfun(@plus, etc_trace_obj.aux_data{ii}(:,etc_trace_obj.time_begin_idx:etc_trace_obj.time_end_idx)', diff(sort(etc_trace_obj.ylim)).*[0:size(etc_trace_obj.aux_data{ii},1)-1]);
             
-            %%montage 
+            %%montage
             %tmp=etc_trace_obj.M*tmp;
-
+            
             tmp=etc_trace_obj.aux_data{ii}(:,etc_trace_obj.time_begin_idx:etc_trace_obj.time_end_idx);
             tmp=cat(1,tmp,ones(1,size(tmp,2)));
             
@@ -454,7 +517,7 @@ if(isfield(etc_trace_obj,'aux_data'))
             
             tmp=tmp(1:end-1,:);
             tmp=tmp';
-             
+            
             %hh=plot(etc_trace_obj.axis_trace, tmp,'color',cc(ii,:));
             if(etc_trace_obj.config_aux_trace_flag)
                 hh=plot(etc_trace_obj.axis_trace, tmp,'color',etc_trace_obj.config_aux_trace_color);
@@ -465,7 +528,15 @@ if(isfield(etc_trace_obj,'aux_data'))
     end;
 end;
 
-tmp=etc_trace_obj.data(:,etc_trace_obj.time_begin_idx:etc_trace_obj.time_end_idx);
+if(etc_trace_obj.time_begin_idx>=1&&etc_trace_obj.time_end_idx<=size(etc_trace_obj.data,2))
+    tmp=etc_trace_obj.data(:,etc_trace_obj.time_begin_idx:etc_trace_obj.time_end_idx);
+elseif(etc_trace_obj.time_begin_idx<1&&etc_trace_obj.time_end_idx<=size(etc_trace_obj.data,2))
+    tmp=etc_trace_obj.data(:,1:etc_trace_obj.time_end_idx);
+elseif(etc_trace_obj.time_begin_idx>=1&&etc_trace_obj.time_end_idx>size(etc_trace_obj.data,2))
+    tmp=etc_trace_obj.data(:,etc_trace_obj.time_begin_idx:end);
+else(etc_trace_obj.time_begin_idx<1&&etc_trace_obj.time_end_idx>size(etc_trace_obj.data,2))
+    tmp=etc_trace_obj.data(:,1:end);
+end;
 tmp=cat(1,tmp,ones(1,size(tmp,2)));
 
 %select channels;
@@ -477,7 +548,7 @@ tmp=etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix*tmp;
 %scaling channels;
 tmp=etc_trace_obj.scaling{etc_trace_obj.montage_idx}*tmp;
 
-%vertical shift for display 
+%vertical shift for display
 S=eye(size(tmp,1));
 S(1:(size(tmp,1)-1),end)=(diff(sort(etc_trace_obj.ylim)).*[0:size(tmp,1)-2])';
 tmp=S*tmp;
@@ -612,7 +683,7 @@ Index = find(strcmp(etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_
 if(isfield(etc_trace_obj,'trace_selected_idx'))
     if(~isempty(etc_trace_obj.trace_selected_idx))
         if(Index==etc_trace_obj.trace_selected_idx)
-            etc_trace_obj.trace_selected_idx=[];            
+            etc_trace_obj.trace_selected_idx=[];
         else
             etc_trace_obj.trace_selected_idx=Index;
         end;
