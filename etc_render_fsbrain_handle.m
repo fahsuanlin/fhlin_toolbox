@@ -658,6 +658,18 @@ switch lower(param)
                 if(~isempty(etc_render_fsbrain.overlay_stc_timeVec))
                     if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
                         draw_stc;
+                        
+                        
+                        global etc_trace_obj;
+                        if(~isempty(etc_trace_obj))
+                            if(isvalid(etc_trace_obj.fig_trace))
+                                try
+                                    etc_trace_obj.trace_selected_idx=etc_render_fsbrain.click_overlay_vertex;
+                                    etc_trace_handle('redraw');
+                                catch ME
+                                end;
+                            end;
+                        end;
                     end;
                 end;
             end;

@@ -458,6 +458,11 @@ switch lower(param)
                     etc_render_fsbrain_handle('redraw');
                     figure(etc_render_fsbrain.fig_stc);
                     
+                    
+                    
+                     etc_render_fsbrain.click_overlay_vertex=etc_trace_obj.trace_selected_idx;
+                     etc_render_fsbrain_handle('draw_stc');
+
                 catch ME
                 end;
             end;
@@ -528,13 +533,13 @@ if(isfield(etc_trace_obj,'aux_data'))
     end;
 end;
 
-if(etc_trace_obj.time_begin_idx>=1&&etc_trace_obj.time_end_idx<=size(etc_trace_obj.data,2))
+if((etc_trace_obj.time_begin_idx>=1)&&(etc_trace_obj.time_end_idx<=size(etc_trace_obj.data,2)))
     tmp=etc_trace_obj.data(:,etc_trace_obj.time_begin_idx:etc_trace_obj.time_end_idx);
-elseif(etc_trace_obj.time_begin_idx<1&&etc_trace_obj.time_end_idx<=size(etc_trace_obj.data,2))
+elseif((etc_trace_obj.time_begin_idx<1)&&(etc_trace_obj.time_end_idx<=size(etc_trace_obj.data,2)))
     tmp=etc_trace_obj.data(:,1:etc_trace_obj.time_end_idx);
-elseif(etc_trace_obj.time_begin_idx>=1&&etc_trace_obj.time_end_idx>size(etc_trace_obj.data,2))
+elseif((etc_trace_obj.time_begin_idx>=1)&&(etc_trace_obj.time_end_idx>size(etc_trace_obj.data,2)))
     tmp=etc_trace_obj.data(:,etc_trace_obj.time_begin_idx:end);
-else(etc_trace_obj.time_begin_idx<1&&etc_trace_obj.time_end_idx>size(etc_trace_obj.data,2))
+else((etc_trace_obj.time_begin_idx<1)&&(etc_trace_obj.time_end_idx>size(etc_trace_obj.data,2)))
     tmp=etc_trace_obj.data(:,1:end);
 end;
 tmp=cat(1,tmp,ones(1,size(tmp,2)));
@@ -558,6 +563,10 @@ tmp=S*tmp;
 tmp=tmp(1:end-1,:);
 tmp=tmp';
 if(etc_trace_obj.config_trace_flag)
+    %figure(6);
+    %plot(tmp(:,etc_trace_obj.trace_selected_idx));
+    %figure(etc_trace_obj.fig_trace);
+    
     hh=plot(etc_trace_obj.axis_trace, tmp,'color',etc_trace_obj.config_trace_color);
     set(hh,'linewidth',etc_trace_obj.config_trace_width);
     %assign a tag for each trace
@@ -605,6 +614,13 @@ if(isfield(etc_trace_obj,'trace_selected_idx'))
     else
     end;
 else
+end;
+
+global etc_render_fsbrain;
+try
+    etc_render_fsbrain.click_overlay_vertex=etc_trace_obj.trace_selected_idx;
+    etc_render_fsbrain_handel('draw_stc');
+catch ME
 end;
 
 set(etc_trace_obj.axis_trace,'ylim',[min(etc_trace_obj.ylim) min(etc_trace_obj.ylim)+(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-1)*diff(sort(etc_trace_obj.ylim))]);
