@@ -20,6 +20,7 @@ flag_curv=1;
 hemi='lh'; %hemi={'lh','rh'}; for showing both hemispheres;
 curv=[];
 vol=[];
+vol_A=[];
 vol_vox=[];
 vol_pre_xfm=eye(4);
 talxfm=[];
@@ -36,6 +37,7 @@ overlay_cmap_neg(:,3)=1;
 
 %overlay
 overlay_vol=[];
+overlay_vol_stc=[];
 overlay_value=[];
 overlay_stc=[];
 overlay_aux_stc=[];
@@ -127,6 +129,8 @@ for idx=1:length(varargin)/2
             surf=option_value;
         case 'vol'
             vol=option_value;
+        case 'vol_a'
+            vol_A=option_value;
         case 'vol_pre_xfm'
             vol_pre_xfm=option_value;
         case 'talxfm'
@@ -141,6 +145,8 @@ for idx=1:length(varargin)/2
             curv_neg_color=option_value;
         case 'overlay_vol'
             overlay_vol=option_value;
+        case 'overlay_vol_stc'
+            overlay_vol_stc=option_value;
         case 'overlay_flag_render'
             overlay_flag_render=option_value;
         case 'overlay_value'
@@ -248,6 +254,29 @@ for idx=1:length(varargin)/2
             return;
     end;
 end
+
+%get the surface overlay values from volumetric STC.
+if(~isempty(overlay_vol_stc)&~isempty(vol_A))
+    for hemi_idx=1:2
+        n_dip(hemi_idx)=size(vol_A(hemi_idx).A,2);
+        n_source(hemi_idx)=n_dip(hemi_idx)/3;
+        switch hemi_idx
+            case 1
+                offset=0;
+            case 2
+                offset=n_source(1);
+        end;
+        X_hemi_cort{hemi_idx}=overlay_vol_stc(offset+1:offset+length(vol_A(hemi_idx).v_idx),:);
+        X_hemi_subcort{hemi_idx}=overlay_vol_stc(offset+length(vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),:);
+    end;
+    if(strcmp('hemi','lh'))    
+        overlay_stc=X_hemi_cort{1};
+        overlay_vertex=vol_A(1).v_idx;
+    else
+        overlay_stc=X_hemi_cort{2};
+        overlay_vertex=vol_A(2).v_idx;
+    end;
+end;
 
 %get the overlay value from STC at the largest power instant, if it is not specified.
 if(isempty(overlay_value)&~isempty(overlay_stc))
@@ -572,6 +601,7 @@ etc_render_fsbrain.brain_axis=gca;
 
 
 etc_render_fsbrain.vol=vol;
+etc_render_fsbrain.vol_A=vol_A;
 etc_render_fsbrain.vol_vox=vol_vox;
 etc_render_fsbrain.vol_pre_xfm=vol_pre_xfm;
 etc_render_fsbrain.talxfm=talxfm;
@@ -604,6 +634,7 @@ etc_render_fsbrain.electrode_update_contact_view_flag=electrode_update_contact_v
 etc_render_fsbrain.show_all_contacts_mri_flag=show_all_contacts_mri_flag;
 
 etc_render_fsbrain.overlay_vol=overlay_vol;
+etc_render_fsbrain.overlay_vol_stc=overlay_vol_stc;
 etc_render_fsbrain.overlay_value=overlay_value;
 etc_render_fsbrain.overlay_stc=overlay_stc;
 etc_render_fsbrain.overlay_aux_stc=overlay_aux_stc;

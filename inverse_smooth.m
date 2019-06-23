@@ -1,4 +1,4 @@
-function [smooth_value,vertex,w_regrid,Ds]=inverse_smooth(file_asc_surf,varargin)
+function [smooth_value,vertex,w_regrid,Ds,D]=inverse_smooth(file_asc_surf,varargin)
 %
 % inverse_smooth	smoothing surface values
 %
@@ -24,6 +24,7 @@ nv=[];
 nf=[];
 
 Ds=[];
+D=[];
 
 w_regrid=[];
 
@@ -74,6 +75,8 @@ for i=1:length(varargin)/2
             Ds=option_value;
         case 'Ds'
             Ds=option_value;
+        case 'D'
+            D=option_value;
         case 'default_neighbor'
             default_neighbor=option_value;
         case 'n_ratio'
@@ -83,6 +86,10 @@ for i=1:length(varargin)/2
             return;
     end;
 end;
+
+
+flag_050619=1;
+
 
 if(~isempty(file_asc_surf))
     if(strcmp('asc',file_asc_surf(end-2:end)))
@@ -97,20 +104,19 @@ if(~isempty(file_asc_surf))
 else
     nv=size(vertex,2);
     nf=size(face,2);
-end;
+end;if(flag_display) fprintf('constructing connection graph\n'); end;
 
-if(flag_display) fprintf('constructing connection graph\n'); end;
 %assume triangle surface!!
 connection=face(1:3,:)+1; %shift zero-based dipole indices to 1-based dipole indices
-
-d1=[connection(1,:);[1:nf];ones(1,size(connection,2))]';
-d2=[connection(2,:);[1:nf];ones(1,size(connection,2))]';
-d3=[connection(3,:);[1:nf];ones(1,size(connection,2))]';
-A=spones(spconvert([d1;d2;d3]));
-xx=sum(A,2);
-%B=spones(A*A').*0.5+speye(size(A,1),size(A,1)).*0.5;
-%yy=sum(B,2);
-
+if(~flag_050619)
+    d1=[connection(1,:);[1:nf];ones(1,size(connection,2))]';
+    d2=[connection(2,:);[1:nf];ones(1,size(connection,2))]';
+    d3=[connection(3,:);[1:nf];ones(1,size(connection,2))]';
+    A=spones(spconvert([d1;d2;d3]));
+    xx=sum(A,2);
+    %B=spones(A*A').*0.5+speye(size(A,1),size(A,1)).*0.5;
+    %yy=sum(B,2);
+end;
 
 %prepare a graph if regridding is enabled
 if(flag_regrid|flag_fixval)
@@ -157,26 +163,27 @@ v_min=min(value(:));
 v_max=max(value(:));
 v_idx=find(abs(value(:))>eps);
 
-flag_050619=1;
 if(flag_050619)
-    dd1=[connection(1,:);connection(2,:)]';
-    dd2=[connection(2,:);connection(3,:)]';
-    dd3=[connection(3,:);connection(1,:)]';
-    dd4=[connection(2,:);connection(1,:)]';
-    dd5=[connection(3,:);connection(2,:)]';
-    dd6=[connection(1,:);connection(3,:)]';
-    dde=[[1:size(vertex,2)]; 1:size(vertex,2)]'; %for self-weighting
-    dd=[dd1;dd2;dd3;dd4;dd5;dd6;dde];
-    %dd=[dd1;dd2;dd3;dd4;dd5;dd6];
-    %dd=unique(sort(dd,2),'rows');
-    dd=unique(dd,'rows');
-    dd(:,3)=1;
-    
-    D=spconvert(dd);
-    D=D*D; %every repetition increases neighbors one connection further away from the source vertex
-    
-    D(find(D(:)>1))=1;
-    D=spones(D);
+    if(isempty(D))
+        dd1=[connection(1,:);connection(2,:)]';
+        dd2=[connection(2,:);connection(3,:)]';
+        dd3=[connection(3,:);connection(1,:)]';
+        dd4=[connection(2,:);connection(1,:)]';
+        dd5=[connection(3,:);connection(2,:)]';
+        dd6=[connection(1,:);connection(3,:)]';
+        dde=[[1:size(vertex,2)]; 1:size(vertex,2)]'; %for self-weighting
+        dd=[dd1;dd2;dd3;dd4;dd5;dd6;dde];
+        %dd=[dd1;dd2;dd3;dd4;dd5;dd6];
+        %dd=unique(sort(dd,2),'rows');
+        dd=unique(dd,'rows');
+        dd(:,3)=1;
+        
+        D=spconvert(dd);
+        D=D*D; %every repetition increases neighbors one connection further away from the source vertex
+        
+        D(find(D(:)>1))=1;
+        D=spones(D);
+    end;
     nD=sum(D,2);
 
     
