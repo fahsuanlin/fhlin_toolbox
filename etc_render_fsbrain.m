@@ -276,6 +276,10 @@ if(~isempty(overlay_vol_stc)&~isempty(vol_A))
         overlay_stc=X_hemi_cort{2};
         overlay_vertex=vol_A(2).v_idx;
     end;
+    
+    if(isempty(overlay_stc_timeVec))
+        overlay_stc_timeVec=[1:size(overlay_stc,2)];
+    end;
 end;
 
 %get the overlay value from STC at the largest power instant, if it is not specified.

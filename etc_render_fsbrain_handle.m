@@ -652,17 +652,13 @@ switch lower(param)
         catch ME
         end;
     case 'bd'
-        
-        
         if(gcf==etc_render_fsbrain.fig_brain)            
             update_overlay_vol;
-            
             draw_pointer;
             if(isfield(etc_render_fsbrain,'overlay_stc_timeVec_idx'))
                 if(~isempty(etc_render_fsbrain.overlay_stc_timeVec))
                     if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
                         draw_stc;
-                        
                         
                         global etc_trace_obj;
                         if(~isempty(etc_trace_obj))
@@ -677,7 +673,7 @@ switch lower(param)
                     end;
                 end;
             end;
-            redraw;
+            %redraw;
             figure(etc_render_fsbrain.fig_brain);
         elseif(gcf==etc_render_fsbrain.fig_vol)
             update_overlay_vol;
