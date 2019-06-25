@@ -797,6 +797,9 @@ global etc_render_fsbrain;
 
 try
     
+    ax=get(etc_render_fsbrain.fig_brain,'child');
+    set(etc_render_fsbrain.fig_brain,'CurrentAxes',ax(end));
+
     if(~isempty(etc_render_fsbrain.click_point))
         if(ishandle(etc_render_fsbrain.click_point))
             delete(etc_render_fsbrain.click_point);
