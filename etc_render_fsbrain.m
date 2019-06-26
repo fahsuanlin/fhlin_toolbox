@@ -269,7 +269,7 @@ if(~isempty(overlay_vol_stc)&~isempty(vol_A))
         X_hemi_cort{hemi_idx}=overlay_vol_stc(offset+1:offset+length(vol_A(hemi_idx).v_idx),:);
         X_hemi_subcort{hemi_idx}=overlay_vol_stc(offset+length(vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),:);
     end;
-    if(strcmp('hemi','lh'))    
+    if(strcmp(hemi,'lh'))    
         overlay_stc=X_hemi_cort{1};
         overlay_vertex=vol_A(1).v_idx;
     else
