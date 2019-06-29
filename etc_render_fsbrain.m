@@ -610,6 +610,7 @@ etc_render_fsbrain.vol_vox=vol_vox;
 etc_render_fsbrain.vol_pre_xfm=vol_pre_xfm;
 etc_render_fsbrain.talxfm=talxfm;
 etc_render_fsbrain.faces=faces;
+etc_render_fsbrain.hemi=hemi;
 etc_render_fsbrain.vertex_coords=vertex_coords;
 etc_render_fsbrain.faces_hemi=faces_hemi;
 etc_render_fsbrain.vertex_coords_hemi=vertex_coords_hemi;
