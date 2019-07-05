@@ -50,6 +50,10 @@ topo_flag_render=0;
 topo_fixval_flag=0;
 topo_Ds=[];
 
+topo_truncate_pos=0;
+topo_truncate_neg=0;
+
+
 topo_aux_point_coords=[];
 topo_aux_point_coords_h=[];
 topo_aux_point_name={};
@@ -185,6 +189,10 @@ for idx=1:length(varargin)/2
             topo_aux2_point_size=option_value;
         case 'topo_fixval_flag'
             topo_fixval_flag=option_value;
+        case 'topo_truncate_pos'
+            topo_truncate_pos=option_value;
+        case 'topo_truncate_neg'
+            topo_truncate_neg=option_value;
         case 'default_solid_color'
             default_solid_color=option_value;
         case 'cluster_file'
@@ -286,6 +294,18 @@ if(~isempty(topo_value))
         
         if(~isempty(find(topo_value(:)>0))) topo_value_flag_pos=1; end;
         if(~isempty(find(topo_value(:)<0))) topo_value_flag_neg=1; end;
+    end;
+    
+    %truncate positive value overlay
+    if(topo_truncate_pos)
+        idx=find(ovs(:)>0);
+        ovs(idx)=0;
+    end;
+    
+    %truncate negative value overlay
+    if(topo_truncate_neg)
+        idx=find(ovs(:)<0);
+        ovs(idx)=0;
     end;
     
     if(isempty(topo_threshold))
@@ -455,6 +475,8 @@ etc_render_fsbrain.overlay_fixval_flag=topo_fixval_flag;
 etc_render_fsbrain.overlay_regrid_flag=topo_regrid_flag;
 etc_render_fsbrain.overlay_regrid_zero_flag=topo_regrid_zero_flag;
 etc_render_fsbrain.overlay_Ds=topo_Ds;
+etc_render_fsbrain.flag_overlay_truncate_pos=topo_truncate_pos;
+etc_render_fsbrain.flag_overlay_truncate_neg=topo_truncate_neg;
 
 etc_render_fsbrain.label_vertex=label_vertex;
 etc_render_fsbrain.label_value=label_value;

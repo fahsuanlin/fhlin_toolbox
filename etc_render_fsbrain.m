@@ -58,6 +58,9 @@ overlay_flag_render=1;
 overlay_fixval_flag=0;
 overlay_Ds=[];
 
+overlay_truncate_pos=0;
+overlay_truncate_neg=0;
+
 overlay_exclude_fstem='';
 overlay_exclude=[];
 
@@ -187,6 +190,10 @@ for idx=1:length(varargin)/2
             overlay_cmap=option_value;
         case 'overlay_cmap_neg'
             overlay_cmap_neg=option_value;
+        case 'overlay_truncate_pos'
+            overlay_truncate_pos=option_value;
+        case 'overlay_truncate_neg'
+            overlay_truncate_neg=option_value
         case 'cluster_file'
             cluster_file=option_value;
         case 'alpha'
@@ -533,6 +540,19 @@ if(~isempty(overlay_value))
         if(~isempty(find(overlay_value{h_idx}<0))) overlay_value_flag_neg=1; end;
     end;
     
+    
+    %truncate positive value overlay
+    if(overlay_truncate_pos)
+        idx=find(ovs(:)>0);
+        ovs(idx)=0;
+    end;
+    
+    %truncate negative value overlay
+    if(overlay_truncate_neg)
+        idx=find(ovs(:)<0);
+        ovs(idx)=0;
+    end;
+
     if(isempty(overlay_threshold))
         tmp=sort(ovs(:));
         overlay_threshold=[tmp(round(length(tmp)*0.5)) tmp(round(length(tmp)*0.9))];
@@ -663,6 +683,8 @@ etc_render_fsbrain.overlay_fixval_flag=overlay_fixval_flag;
 etc_render_fsbrain.overlay_regrid_flag=overlay_regrid_flag;
 etc_render_fsbrain.overlay_regrid_zero_flag=overlay_regrid_zero_flag;
 etc_render_fsbrain.overlay_Ds=overlay_Ds;
+etc_render_fsbrain.flag_overlay_truncate_pos=overlay_truncate_pos;
+etc_render_fsbrain.flag_overlay_truncate_neg=overlay_truncate_neg;
 
 
 etc_render_fsbrain.label_vertex=label_vertex;

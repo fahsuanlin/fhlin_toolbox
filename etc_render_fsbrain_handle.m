@@ -253,6 +253,7 @@ switch lower(param)
                 pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
                 set(etc_render_fsbrain.fig_sensor_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
             case 'v'
+                fprintf('showing trace GUI...\n');
                 if(~isempty(etc_render_fsbrain.overlay_stc))
                     %etc_trace(etc_render_fsbrian.overlay_stc,'fs',fs,'trigger',trigger_all,'ch_names',label,'aux_data',{data_nobcg});
                     aux_data={};
@@ -1583,6 +1584,19 @@ if(etc_render_fsbrain.overlay_flag_render)
             tmp=sort(ovs(:));
             etc_render_fsbrain.overlay_threshold=[tmp(round(length(tmp)*0.5)) tmp(round(length(tmp)*0.9))];
         end;
+
+        %truncate positive value overlay
+        if(etc_render_fsbrain.flag_overlay_truncate_pos)
+            idx=find(ovs(:)>0);
+            ovs(idx)=0;
+        end;
+        
+        %truncate negative value overlay
+        if(etc_render_fsbrain.flag_overlay_truncate_neg)
+            idx=find(ovs(:)<0);
+            ovs(idx)=0;
+        end;
+
         c_idx=find(ovs(:)>=min(etc_render_fsbrain.overlay_threshold));
         
         etc_render_fsbrain.fvdata(c_idx,:)=inverse_get_color(etc_render_fsbrain.overlay_cmap,ovs(c_idx),max(etc_render_fsbrain.overlay_threshold),min(etc_render_fsbrain.overlay_threshold));

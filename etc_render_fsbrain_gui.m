@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_gui
 
-% Last Modified by GUIDE v2.5 07-Jun-2019 11:38:14
+% Last Modified by GUIDE v2.5 05-Jul-2019 16:04:44
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -107,6 +107,9 @@ set(handles.edit_click_point_size,'string',sprintf('%d',etc_render_fsbrain.click
 set(handles.checkbox_nearest_brain_surface,'value',etc_render_fsbrain.show_nearest_brain_surface_location_flag);
 set(handles.pushbutton_click_vertex_point_color,'BackgroundColor',etc_render_fsbrain.click_vertex_point_color);
 set(handles.edit_click_vertex_point_size,'string',sprintf('%d',etc_render_fsbrain.click_vertex_point_size));
+
+set(handles.checkbox_overlay_truncate_neg,'value',etc_render_fsbrain.flag_overlay_truncate_neg);
+set(handles.checkbox_overlay_truncate_pos,'value',etc_render_fsbrain.flag_overlay_truncate_pos);
 
 
 % Update handles structure
@@ -646,5 +649,32 @@ function checkbox_aux_point_label_Callback(hObject, eventdata, handles)
 global etc_render_fsbrain
 
 etc_render_fsbrain.aux_point_label_flag=get(hObject,'Value');
+
+etc_render_fsbrain_handle('redraw');
+
+
+% --- Executes on button press in checkbox_overlay_truncate_neg.
+function checkbox_overlay_truncate_neg_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_overlay_truncate_neg (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_overlay_truncate_neg
+global etc_render_fsbrain
+
+etc_render_fsbrain.flag_overlay_truncate_neg=get(hObject,'Value');
+
+etc_render_fsbrain_handle('redraw');
+
+% --- Executes on button press in checkbox_overlay_truncate_pos.
+function checkbox_overlay_truncate_pos_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_overlay_truncate_pos (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_overlay_truncate_pos
+global etc_render_fsbrain
+
+etc_render_fsbrain.flag_overlay_truncate_pos=get(hObject,'Value');
 
 etc_render_fsbrain_handle('redraw');
