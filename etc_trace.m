@@ -166,8 +166,6 @@ if(~isempty(montage))
         S=eye(size(etc_trace_obj.montage{end}.config,1)+1);
         S(ecg_idx,ecg_idx)=S(ecg_idx,ecg_idx)./10;
         etc_trace_obj.scaling{m_idx+1}=S;
-
-       
         
 
     end;

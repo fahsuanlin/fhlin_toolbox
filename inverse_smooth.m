@@ -32,7 +32,7 @@ exc_vertex=[];
 inc_vertex=[];
 
 flag_fixval=1;
-flag_display=1;
+flag_display=0;
 flag_regrid=1;
 flag_regrid_zero=0;
 
@@ -104,7 +104,9 @@ if(~isempty(file_asc_surf))
 else
     nv=size(vertex,2);
     nf=size(face,2);
-end;if(flag_display) fprintf('constructing connection graph\n'); end;
+end;
+
+if(flag_display) fprintf('constructing connection graph\n'); end;
 
 %assume triangle surface!!
 connection=face(1:3,:)+1; %shift zero-based dipole indices to 1-based dipole indices

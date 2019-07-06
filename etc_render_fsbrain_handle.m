@@ -260,11 +260,15 @@ switch lower(param)
                     if(~isempty(etc_render_fsbrain.overlay_aux_stc))
                         aux_data={etc_render_fsbrain.overlay_aux_stc};
                     end;
-                    fs=1e3;
+                    
+                    fs=1e3; %default sampling rate; 1000 Hz
+                    
                     if(~isempty(etc_render_fsbrain.overlay_stc_timeVec))
                         fs=1e3./mean(diff(etc_render_fsbrain.overlay_stc_timeVec));
                     end;
+
                     etc_trace(etc_render_fsbrain.overlay_stc,'fs',fs,'ch_names',etc_render_fsbrain.aux_point_name,'aux_data',aux_data);
+                    
                     global etc_trace_obj;
                     if(isvalid(etc_trace_obj.fig_trace))
                         etc_trace_handle('bd','time_idx',etc_render_fsbrain.overlay_stc_timeVec_idx);
