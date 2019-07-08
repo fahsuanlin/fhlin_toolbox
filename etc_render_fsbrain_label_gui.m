@@ -177,6 +177,19 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
     
     if(~isempty(select_idx))
         try
+            
+            %delete highlighted label
+            if(isfield(etc_render_fsbrain,'label_h'))
+                if(~isempty(etc_render_fsbrain.label_h))
+                    delete(etc_render_fsbrain.label_h);
+                    etc_render_fsbrain.label_h=[];
+                    
+                    etc_render_fsbrain.label_idx=[];
+
+                    etc_render_fsbrain.h.FaceVertexCData=etc_render_fsbrain.fvcdata_old;
+                end;
+            end;
+            
             label_number=etc_render_fsbrain.label_ctab.table(select_idx,5);
             vidx=find(etc_render_fsbrain.label_value==label_number);
             etc_render_fsbrain.label_value(vidx)=0;

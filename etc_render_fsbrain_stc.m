@@ -20,7 +20,7 @@ overlay_cmap_neg=winter(80); %overlay colormap;
 overlay_cmap_neg(:,3)=1;
 overlay_regrid_zero_flag=1;
 overlay_fixval_flag=0;
-overlay_regrid_flag=1;
+overlay_regrid_flag=0;
 
 surf='inflated';
 flag_view_default4=0;

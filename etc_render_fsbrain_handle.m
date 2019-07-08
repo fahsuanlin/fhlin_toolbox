@@ -658,6 +658,7 @@ switch lower(param)
             etc_render_fsbrain.flag_overlay_stc_surf=1;
             etc_render_fsbrain.flag_overlay_stc_vol=0;
             
+            
             update_overlay_vol;
             draw_pointer;
             
@@ -828,7 +829,7 @@ global etc_render_fsbrain;
 try
     
     ax=get(etc_render_fsbrain.fig_brain,'child');
-    set(etc_render_fsbrain.fig_brain,'CurrentAxes',ax(end));
+    set(etc_render_fsbrain.fig_brain,'CurrentAxes',etc_render_fsbrain.brain_axis);
 
     if(~isempty(etc_render_fsbrain.click_point))
         if(ishandle(etc_render_fsbrain.click_point))
