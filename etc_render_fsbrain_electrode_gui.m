@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_electrode_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_electrode_gui
 
-% Last Modified by GUIDE v2.5 10-Apr-2019 00:44:55
+% Last Modified by GUIDE v2.5 09-Jul-2019 11:02:32
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1007,7 +1007,7 @@ try
     end;
 catch ME
 end;
-%etc_render_fsbrain_handle('redraw');
+etc_render_fsbrain_handle('redraw');
 
 
    
@@ -1645,9 +1645,9 @@ if(isfield(etc_render_fsbrain,'click_coord'))
         %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
 
         %update figure;
-        if(etc_render_fsbrain.electrode_update_contact_view_flag)
+        %if(etc_render_fsbrain.electrode_update_contact_view_flag)
             etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
-        end;
+        %end;
         
         %etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord);
         

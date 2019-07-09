@@ -1721,9 +1721,9 @@ try
                 yy=etc_render_fsbrain.aux2_point_coords(idx,2);
                 zz=etc_render_fsbrain.aux2_point_coords(idx,3);
                 
-                etc_render_fsbrain.aux2_point_coords_h(2)=plot3(xx,yy,zz,'.');
-%                set(etc_render_fsbrain.aux2_point_coords_h(2),'color',[0.3984    0.5977         0],'markersize',44);
-                set(etc_render_fsbrain.aux2_point_coords_h(2),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
+                etc_render_fsbrain.aux2_point_coords_h(2)=plot3(xx,yy,zz,'o');
+                set(etc_render_fsbrain.aux2_point_coords_h(2),'color',[1 0 0],'markersize',etc_render_fsbrain.aux2_point_size.*1.5);
+%                set(etc_render_fsbrain.aux2_point_coords_h(2),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
                 
             catch ME
             end;
