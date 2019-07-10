@@ -5,3 +5,5 @@ read_m/
 snr/
 mask/
 ice/data/
+fmri_balloonODE.m
+fmri_balloonODE_sim.m
