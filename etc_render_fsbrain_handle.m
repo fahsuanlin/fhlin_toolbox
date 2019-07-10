@@ -94,6 +94,11 @@ switch lower(param)
                     close(etc_render_fsbrain.fig_electrode_gui);
                 catch
                 end;
+                
+                try
+                    close(etc_render_fsbrain.fig_sensor_gui);
+                catch
+                end;
             case 'r'
                 fprintf('\nredrawing...\n');
                 redraw;
