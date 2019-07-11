@@ -146,6 +146,7 @@ function button_sensor_add_Callback(hObject, eventdata, handles)
 global etc_render_fsbrain;
 
 etc_render_fsbrain.sensor_add_gui_ok=0;
+etc_render_fsbrain.sensor_add_gui_ok=0;
 etc_render_fsbrain.sensor_modify_flag=0;
 etc_render_fsbrain.sensor_add_gui_h=etc_render_fsbrain_sensor_add_gui;
 uiwait(etc_render_fsbrain.sensor_add_gui_h);
