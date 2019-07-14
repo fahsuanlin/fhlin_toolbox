@@ -220,7 +220,8 @@ if(flag_050619)
             sv=(D*sv)./nD;
             %sv=D*sv;
             %sv=fmri_scale(sv,vv_max,vv_min);
-            
+            sv(exc_vertex)=0;
+
         end;
         %smooth_value(:,tt)=fmri_scale(sv,v_max,v_min);
         if(~flag_regrid)

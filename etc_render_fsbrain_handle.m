@@ -1121,11 +1121,12 @@ try
                 img_depth=128;				%default: 128 gray level underlay
                 overlay_depth=128;		    %default: 128 color level overlay
                 
-                etc_render_fsbrain.overlay_vol_img(idx_scale)=fmri_scale(etc_render_fsbrain.overlay_vol_img(idx_scale),overlay_depth+img_depth,img_depth+eps);
+                etc_render_fsbrain.overlay_vol_img(idx_scale)=fmri_scale(etc_render_fsbrain.overlay_vol_img(idx_scale),overlay_depth+img_depth,img_depth+1);
                 etc_render_fsbrain.overlay_vol_img(idx_replace)=fmri_scale(etc_render_fsbrain.vol_img(idx_replace),img_depth,0);
                 
                 etc_render_fsbrain.overlay_vol_img_cmap(1:img_depth,:) =gray(img_depth);
-                etc_render_fsbrain.overlay_vol_img_cmap(img_depth+1:img_depth+overlay_depth,:) = autumn(overlay_depth);
+%                etc_render_fsbrain.overlay_vol_img_cmap(img_depth+1:img_depth+overlay_depth,:) = autumn(overlay_depth);
+                etc_render_fsbrain.overlay_vol_img_cmap(img_depth+1:img_depth+overlay_depth,:) = imresize(etc_render_fsbrain.overlay_cmap,[overlay_depth, 3],'bilinear');
             else
                 etc_render_fsbrain.overlay_vol_img=etc_render_fsbrain.vol_img;
                 etc_render_fsbrain.overlay_vol_img_cmap=gray(max(etc_render_fsbrain.vol_img(:)));

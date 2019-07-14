@@ -17,15 +17,16 @@ vol_face_hemi={};
 
 %color
 default_solid_color=[256 180 100]./256;
-
+%default_solid_color=[214, 185, 133]./256;
 
 bg_color=[1 1 1]; %figure background color;
 
 tmp=jet(256);
-topo_cmap=tmp(129:end,:);
+topo_cmap=tmp(161:end,:);
 % overlay_cmap=autumn(80); %overlay colormap;
 %topo_cmap_neg=winter(80); %overlay colormap;
-topo_cmap_neg=flipud(tmp(1:128,:));
+%topo_cmap_neg=flipud(tmp(1:128,:));
+topo_cmap_neg=flipud(tmp(1:96,:));
 
 %overlay
 topo_value=[];
