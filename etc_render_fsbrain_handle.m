@@ -746,7 +746,9 @@ switch lower(param)
                         %etc_render_fsbrain.overlay_stc=etc_render_fsbrain.overlay_vol_stc;
                         %etc_render_fsbrain.click_overlay_vertex=loc_min_idx;
                         
-                        draw_stc;
+                        if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
+                            draw_stc;
+                        end;
 
                     end;
 
@@ -1112,29 +1114,33 @@ try
             end;
             
             if(~isempty(etc_render_fsbrain.overlay_vol))
-                etc_render_fsbrain.overlay_vol_img(find(etc_render_fsbrain.overlay_vol_img>max(etc_render_fsbrain.overlay_threshold)))=max(etc_render_fsbrain.overlay_threshold);
+                etc_render_fsbrain.overlay_vol_img_c=zeros(size(etc_render_fsbrain.vol_img,1)*size(etc_render_fsbrain.vol_img,2),3);
                 
-                idx_scale=find(etc_render_fsbrain.overlay_vol_img>=(min(etc_render_fsbrain.overlay_threshold)+eps));
-                idx_replace=find(etc_render_fsbrain.overlay_vol_img<min(etc_render_fsbrain.overlay_threshold));
+                c_idx=[1:prod(size(etc_render_fsbrain.vol_img))];
+                mmax=max(etc_render_fsbrain.vol_img(:));
+                mmin=min(etc_render_fsbrain.vol_img(:));
+                etc_render_fsbrain.overlay_vol_img_c(c_idx,:)=inverse_get_color(gray(128),etc_render_fsbrain.vol_img(c_idx),mmax,mmin);
                 
+                c_idx=find(etc_render_fsbrain.overlay_vol_img(:)>=min(etc_render_fsbrain.overlay_threshold));
                 
-                img_depth=128;				%default: 128 gray level underlay
-                overlay_depth=128;		    %default: 128 color level overlay
+                etc_render_fsbrain.overlay_vol_img_c(c_idx,:)=inverse_get_color(etc_render_fsbrain.overlay_cmap,etc_render_fsbrain.overlay_vol_img(c_idx),max(etc_render_fsbrain.overlay_threshold),min(etc_render_fsbrain.overlay_threshold));
                 
-                etc_render_fsbrain.overlay_vol_img(idx_scale)=fmri_scale(etc_render_fsbrain.overlay_vol_img(idx_scale),overlay_depth+img_depth,img_depth+1);
-                etc_render_fsbrain.overlay_vol_img(idx_replace)=fmri_scale(etc_render_fsbrain.vol_img(idx_replace),img_depth,0);
+                c_idx=find(etc_render_fsbrain.overlay_vol_img(:)<=-min(etc_render_fsbrain.overlay_threshold));
                 
-                etc_render_fsbrain.overlay_vol_img_cmap(1:img_depth,:) =gray(img_depth);
-%                etc_render_fsbrain.overlay_vol_img_cmap(img_depth+1:img_depth+overlay_depth,:) = autumn(overlay_depth);
-                etc_render_fsbrain.overlay_vol_img_cmap(img_depth+1:img_depth+overlay_depth,:) = imresize(etc_render_fsbrain.overlay_cmap,[overlay_depth, 3],'bilinear');
+                etc_render_fsbrain.overlay_vol_img_c(c_idx,:)=inverse_get_color(etc_render_fsbrain.overlay_cmap_neg,-etc_render_fsbrain.overlay_vol_img(c_idx),max(etc_render_fsbrain.overlay_threshold),min(etc_render_fsbrain.overlay_threshold));
             else
-                etc_render_fsbrain.overlay_vol_img=etc_render_fsbrain.vol_img;
-                etc_render_fsbrain.overlay_vol_img_cmap=gray(max(etc_render_fsbrain.vol_img(:)));
+                etc_render_fsbrain.overlay_vol_img_c=zeros(size(etc_render_fsbrain.vol_img,1)*size(etc_render_fsbrain.vol_img,2),3);
+                
+                c_idx=[1:prod(size(etc_render_fsbrain.vol_img))];
+                mmax=max(etc_render_fsbrain.vol_img(:));
+                mmin=min(etc_render_fsbrain.vol_img(:));
+                etc_render_fsbrain.overlay_vol_img_c(c_idx,:)=inverse_get_color(gray(128),etc_render_fsbrain.vol_img(c_idx),mmax,mmin);
             end;
             
+            etc_render_fsbrain.overlay_vol_img_c=reshape(etc_render_fsbrain.overlay_vol_img_c,[ size(etc_render_fsbrain.vol_img,1), size(etc_render_fsbrain.vol_img,2),3]);
+            
             clf;
-            image(etc_render_fsbrain.overlay_vol_img); hold on;
-            colormap(etc_render_fsbrain.overlay_vol_img_cmap);
+            image(etc_render_fsbrain.overlay_vol_img_c); hold on;
             set(gca,'pos',[0 0 1 1]);
             etc_render_fsbrain.vol_img_h=gca;
             axis off image;
