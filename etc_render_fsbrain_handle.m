@@ -796,7 +796,7 @@ switch lower(param)
             
             figure(etc_render_fsbrain.fig_brain);
            
-            draw_pointer;
+            draw_pointer('pt',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
             redraw;
             figure(etc_render_fsbrain.fig_stc);
             
