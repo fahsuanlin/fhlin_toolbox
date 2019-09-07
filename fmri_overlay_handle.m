@@ -186,6 +186,7 @@ switch lower(param)
                     fmri_under=u;
                     clear u;
                     
+                    u=[];
                     if(ndims(fmri_over_data)==3)
                         u=zeros(size(fmri_over_data,2),size(fmri_over_data,1),size(fmri_over_data,3));
                         for t=1:size(fmri_over_data,3)
