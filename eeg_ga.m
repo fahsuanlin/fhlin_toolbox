@@ -266,6 +266,7 @@ if(sum(abs(eeg_trigger))>0)
                 ga_template(:,ii)=etc_circshift(ga_template(:,ii)',shift(tr_idx))';
             end;
             D=ga_template;
+            %tr_idx
             
             bnd0(tr_idx,:)=[tmp(1) tmp(end)]; %aligning ends (prep.)
             tmp=tmp(:)-D*inv(D'*D)*(D'*tmp(:)); %AAS by regression 

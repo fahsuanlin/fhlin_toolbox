@@ -44,7 +44,7 @@ switch lower(param)
         switch(cc)
             case 'h'
                 fprintf('interactive rendering commands:\n\n');
-                fprintf('a: archiving image (fmri_overlay.tif if no specified output file name)\n');
+                fprintf('a: archiving image (etc_trace_obj.tif if no specified output file name)\n');
                 fprintf('r: force redrawing \n');
                 fprintf('m: montage selection \n');
                 fprintf('v: triggers \n');
