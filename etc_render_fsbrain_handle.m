@@ -1768,8 +1768,12 @@ try
                 offset=n_source(1);
         end;
         
+        %get source estimates at cortical and sub-cortical locations
         X_hemi_cort=etc_render_fsbrain.overlay_vol_stc(offset+1:offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx),time_idx);
         X_hemi_subcort=etc_render_fsbrain.overlay_vol_stc(offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),time_idx);
+        
+        
+        %smooth source estimates at cortical locations
         ov=zeros(size(etc_render_fsbrain.vol_A(hemi_idx).vertex_coords,1),1);
         ov(etc_render_fsbrain.vol_A(hemi_idx).v_idx+1)=X_hemi_cort;
         
@@ -1786,6 +1790,7 @@ try
         
         [ovs,dd0,dd1,overlay_Ds,etc_render_fsbrain.overlay_D{hemi_idx}]=inverse_smooth('','vertex',etc_render_fsbrain.vol_A(hemi_idx).vertex_coords','face',etc_render_fsbrain.vol_A(hemi_idx).faces','value',ov,'value_idx',etc_render_fsbrain.vol_A(hemi_idx).v_idx+1,'step',etc_render_fsbrain.overlay_smooth,'n_ratio',length(ov)/size(X_hemi_cort,1),'flag_display',0,'flag_regrid',0,'flag_fixval',0,'D',etc_render_fsbrain.overlay_D{hemi_idx});
         
+        %assemble smoothed source at cortical locations and sources at sub-cortical locations
         X_wb{hemi_idx}=cat(1,ovs(:),X_hemi_subcort(:));
         
         flag_cal_loc_vol_idx=1;
@@ -1810,17 +1815,6 @@ try
         end;
         
         
-%         if(strcmp(etc_render_fsbrain.hemi,'lh'))  
-%             if(hemi_idx==1)
-%                 etc_render_fsbrain.overlay_stc=X_hemi_cort;
-%                 etc_render_fsbrain.overlay_vertex=etc_render_fsbrain.vol_A(1).v_idx;
-%             end;
-%         else
-%             if(hemi_idx==2)
-%                 etc_render_fsbrain.overlay_stc=X_hemi_cort;
-%                 etc_render_fsbrain.overlay_vertex=etc_render_fsbrain.vol_A(2).v_idx;
-%             end;
-%         end;
     end;
     
     
