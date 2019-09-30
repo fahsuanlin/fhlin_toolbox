@@ -997,6 +997,9 @@ try
         end;
     end;
     
+    %add exploration toolbar
+    addToolbarExplorationButtons(etc_render_fsbrain.fig_vol);
+    
     if(~isempty(etc_render_fsbrain.vol_vox))
         figure(etc_render_fsbrain.fig_vol);
         
@@ -1158,13 +1161,31 @@ try
                 count=1;
                 for v_idx=1:size(etc_render_fsbrain.aux2_point_coords,1)
                     surface_coord=etc_render_fsbrain.aux2_point_coords(v_idx,:);
+                    
+                    
+                    if(strcmp(etc_render_fsbrain.surf,'orig'))
+                        
+                    else
+                        if(v_idx==1)
+                            fprintf('surface <%s> not "orig". Electrode contacts locations are mapped from this surface back to the "orig" volume.\n',etc_render_fsbrain.surf);
+                        end;
+                        %tmp=etc_render_fsbrain.aux2_point_coords(count,:);
+                        
+                        vv=etc_render_fsbrain.vertex_coords;
+                        dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+                        [min_dist,min_dist_idx]=min(dist);
+                        surface_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
+                    end;
+                    
                     v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
                     click_vertex_vox=round(v(1:3))';
+                    
+                    point_size=1e3;
                     
                     D=2; %a constant controlling the visibility of contacts
                     alpha=exp(-(abs(click_vertex_vox(3)-round(etc_render_fsbrain.click_vertex_vox(3))))/D);
                     if(alpha>0.2)
-                        etc_render_fsbrain.aux2_point_mri_cor_h(count)=scatter(etc_render_fsbrain.img_cor_padx+click_vertex_vox(1), etc_render_fsbrain.img_cor_pady+click_vertex_vox(2),80,[0.8500 0.3250 0.0980],'.');
+                        etc_render_fsbrain.aux2_point_mri_cor_h(count)=scatter(etc_render_fsbrain.img_cor_padx+click_vertex_vox(1), etc_render_fsbrain.img_cor_pady+click_vertex_vox(2),point_size,[0.8500 0.3250 0.0980],'.');
                         %set(etc_render_fsbrain.aux2_point_mri_cor_h(count),'MarkerEdgeColor',[0.8500 0.3250 0.0980]);
                         set(etc_render_fsbrain.aux2_point_mri_cor_h(count),'MarkerEdgeColor',etc_render_fsbrain.aux2_point_color);
                         set(etc_render_fsbrain.aux2_point_mri_cor_h(count),'MarkerEdgeAlpha',alpha);
@@ -1174,7 +1195,7 @@ try
                     
                     alpha=exp(-(abs(click_vertex_vox(2)-round(etc_render_fsbrain.click_vertex_vox(2))))/D);
                     if(alpha>0.2)
-                        etc_render_fsbrain.aux2_point_mri_ax_h(count)=scatter(mm+etc_render_fsbrain.img_ax_padx+click_vertex_vox(1), mm-(etc_render_fsbrain.img_ax_pady+click_vertex_vox(3)),80,[0.8500 0.3250 0.0980],'.');
+                        etc_render_fsbrain.aux2_point_mri_ax_h(count)=scatter(mm+etc_render_fsbrain.img_ax_padx+click_vertex_vox(1), mm-(etc_render_fsbrain.img_ax_pady+click_vertex_vox(3)),point_size,[0.8500 0.3250 0.0980],'.');
                         %set(etc_render_fsbrain.aux2_point_mri_ax_h(count),'MarkerEdgeColor',[0.8500 0.3250 0.0980]);
                         set(etc_render_fsbrain.aux2_point_mri_ax_h(count),'MarkerEdgeColor',etc_render_fsbrain.aux2_point_color);
                         set(etc_render_fsbrain.aux2_point_mri_ax_h(count),'MarkerEdgeAlpha',alpha);
@@ -1184,7 +1205,7 @@ try
                     
                     alpha=exp(-(abs(click_vertex_vox(1)-round(etc_render_fsbrain.click_vertex_vox(1))))/D);
                     if(alpha>0.2)
-                        etc_render_fsbrain.aux2_point_mri_sag_h(count)=scatter(etc_render_fsbrain.img_sag_padx+click_vertex_vox(3), mm+etc_render_fsbrain.img_sag_pady+click_vertex_vox(2),80,[0.8500 0.3250 0.0980],'.');
+                        etc_render_fsbrain.aux2_point_mri_sag_h(count)=scatter(etc_render_fsbrain.img_sag_padx+click_vertex_vox(3), mm+etc_render_fsbrain.img_sag_pady+click_vertex_vox(2),point_size,[0.8500 0.3250 0.0980],'.');
                         %set(etc_render_fsbrain.aux2_point_mri_sag_h(count),'MarkerEdgeColor',[0.8500 0.3250 0.0980]);
                         set(etc_render_fsbrain.aux2_point_mri_sag_h(count),'MarkerEdgeColor',etc_render_fsbrain.aux2_point_color);
                         set(etc_render_fsbrain.aux2_point_mri_sag_h(count),'MarkerEdgeAlpha',alpha);

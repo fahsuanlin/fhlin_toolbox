@@ -624,6 +624,7 @@ global etc_render_fsbrain;
 etc_render_fsbrain.brain_axis=gca;
 
 
+etc_render_fsbrain.surf=surf;
 etc_render_fsbrain.vol=vol;
 etc_render_fsbrain.vol_A=vol_A;
 etc_render_fsbrain.vol_vox=vol_vox;
