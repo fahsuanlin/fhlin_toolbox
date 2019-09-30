@@ -93,6 +93,9 @@ end;
 t_pre_n=round(t_pre.*fs);
 t_post_n=round(t_post.*fs);
 
+if(min(size(eeg))==1)
+    eeg=eeg(:)';
+end;
 %epoching; only valid for data with MRI triggers
 if(sum(abs(eeg_trigger))>0)
     epoch=[];
