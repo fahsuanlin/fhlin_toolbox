@@ -531,6 +531,7 @@ c = uisetcolor(etc_render_fsbrain.aux_point_color,'Select a color');
 etc_render_fsbrain.aux_point_color=c;
 set(handles.pushbutton_aux_point_color,'BackgroundColor',etc_render_fsbrain.aux_point_color);
 etc_render_fsbrain_handle('redraw');
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
 
 % --- Executes on button press in pushbutton_aux2_point_color.
 function pushbutton_aux2_point_color_Callback(hObject, eventdata, handles)
@@ -543,6 +544,8 @@ c = uisetcolor(etc_render_fsbrain.aux2_point_color,'Select a color');
 etc_render_fsbrain.aux2_point_color=c;
 set(handles.pushbutton_aux2_point_color,'BackgroundColor',etc_render_fsbrain.aux2_point_color);
 etc_render_fsbrain_handle('redraw');
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
+
 
 
 % --- Executes on button press in pushbutton_click_vertex_point_color.
@@ -555,7 +558,8 @@ global etc_render_fsbrain;
 c = uisetcolor(etc_render_fsbrain.click_vertex_point_color,'Select a color');
 etc_render_fsbrain.click_vertex_point_color=c;
 set(handles.pushbutton_click_vertex_point_color,'BackgroundColor',etc_render_fsbrain.click_vertex_point_color);
-etc_render_fsbrain_handle('draw_pointer');
+%etc_render_fsbrain_handle('draw_pointer');
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
 
 % --- Executes on button press in pushbutton_click_point_color.
 function pushbutton_click_point_color_Callback(hObject, eventdata, handles)
@@ -567,7 +571,8 @@ global etc_render_fsbrain;
 c = uisetcolor(etc_render_fsbrain.click_point_color,'Select a color');
 etc_render_fsbrain.click_point_color=c;
 set(handles.pushbutton_click_point_color,'BackgroundColor',etc_render_fsbrain.click_point_color);
-etc_render_fsbrain_handle('draw_pointer');
+%etc_render_fsbrain_handle('draw_pointer');
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
 
 
 function edit_click_vertex_point_size_Callback(hObject, eventdata, handles)

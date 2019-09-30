@@ -727,7 +727,7 @@ switch lower(param)
                     vv=etc_render_fsbrain.orig_vertex_coords;
                     dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
                     [min_dist,min_dist_idx]=min(dist);
-                    %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+                    surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
                     
                     %draw_pointer('pt',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
                     draw_pointer('pt',surface_coord,'min_dist_idx',[],'click_vertex_vox',click_vertex_vox);    
