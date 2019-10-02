@@ -4,6 +4,12 @@ function trigger=etc_read_vmrk(markerFile,varargin)
 flag_auto_event=1;
 event_code_empty=999; %default code for "empty" event
 
+
+token_R128=1000;
+token_SYNC=100;
+token_ECG=33;
+token_EKG=33;
+
 for i=1:length(varargin)./2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
@@ -52,16 +58,16 @@ if(~isempty(mk))
                 trigger.event_str{trigger_idx}=mk_tmp{2};
                 trigger.time(trigger_idx)=str2num(mk_tmp{3});
                 trigger_idx=trigger_idx+1;
-    
-                %update for the next trigger 
+                
+                %update for the next trigger
                 trigger_str=sprintf('Mk%d',trigger_idx);
-               
+                
             end;
         end;
         mk_idx=mk_idx+1;
     end;
     
-
+    
     fprintf('\t\ttotal [%d] events found\n',length(trigger));
 end;
 
@@ -70,7 +76,17 @@ all_events=unique(trigger.event_str);
 fprintf('[%d] event(s) found!\n',length(all_events));
 for e_idx=1:length(all_events)
     if((~isempty(all_events{e_idx})))
-        fprintf('event {%s} --> [%d]\n',all_events{e_idx},e_idx);
+        if(strcmp(lower(all_events{e_idx}),'r128'))
+            fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_R128);
+        elseif(strcmp(lower(all_events{e_idx}),'sync'))
+            fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_SYNC);
+        elseif(strcmp(lower(all_events{e_idx}),'ECG'))
+            fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_ECG);
+        elseif(strcmp(lower(all_events{e_idx}),'EKG'))
+            fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_EKG);
+        else
+            fprintf('event {%s} --> [%d]\n',all_events{e_idx},e_idx);
+        end;
     else
         fprintf('event {''''} --> [%d]\n',event_code_empty);
     end;
@@ -80,7 +96,17 @@ if(flag_auto_event)
     fprintf('automatic assigning event number...\n');
     for trigger_idx=1:length(trigger.time)
         if(~isempty(trigger.event_str{trigger_idx}))
-             trigger.event(trigger_idx)=find(cellfun(@(s) ~isempty(strfind(trigger.event_str{trigger_idx}, s)), all_events));
+            if(strcmp(lower(trigger.event_str{trigger_idx}),'r128'))
+                trigger.event(trigger_idx)=token_R128;
+            elseif(strcmp(lower(trigger.event_str{trigger_idx}),'sync'))
+                trigger.event(trigger_idx)=token_SYNC;
+            elseif(strcmp(lower(trigger.event_str{trigger_idx}),'ECG'))
+                trigger.event(trigger_idx)=token_ECG;
+            elseif(strcmp(lower(trigger.event_str{trigger_idx}),'EKG'))
+                trigger.event(trigger_idx)=token_EKG;
+            else
+                trigger.event(trigger_idx)=find(cellfun(@(s) ~isempty(strfind(trigger.event_str{trigger_idx}, s)), all_events));
+            end;
         else
             trigger.event(trigger_idx)=event_code_empty;
         end;
