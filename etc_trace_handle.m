@@ -305,11 +305,11 @@ switch lower(param)
             if(isempty(time_idx))
                 xx=get(gca,'currentpoint');
                 xx=xx(1);
-                etc_trace_obj.time_select_idx=round(xx)+etc_trace_obj.time_begin_idx-1;
+                etc_trace_obj.time_select_idx=round(xx)+etc_trace_obj.time_begin_idx;
             else
                 etc_trace_obj.time_select_idx=time_idx;
             end;
-            fprintf('selected time <%3.3f> (s) [index [%d] (sample)]\n',etc_trace_obj.time_select_idx/etc_trace_obj.fs, etc_trace_obj.time_select_idx);
+            fprintf('selected time <%3.3f> (s) [index [%d] (sample)]\n',(etc_trace_obj.time_select_idx-1)/etc_trace_obj.fs, etc_trace_obj.time_select_idx);
             
             if(~etc_trace_obj.flag_mark)
                 if(etc_trace_obj.config_current_time_flag)
@@ -328,7 +328,7 @@ switch lower(param)
             hObject=findobj('tag','edit_time_now_idx');
             set(hObject,'String',num2str(etc_trace_obj.time_select_idx));
             hObject=findobj('tag','edit_time_now');
-            set(hObject,'String',num2str((etc_trace_obj.time_select_idx-1)/etc_trace_obj.fs));
+            set(hObject,'String',num2str((etc_trace_obj.time_select_idx-1)/etc_trace_obj.fs,'%1.3f'));
             
             %update trigger GUI
             hObject=findobj('tag','edit_time');

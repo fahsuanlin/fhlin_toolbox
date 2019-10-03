@@ -328,8 +328,17 @@ try
     hObject=findobj('tag','edit_trigger_time_idx');
     set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
     hObject=findobj('tag','edit_trigger_time');
-    set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger_time_idx./etc_trace_obj.fs));
+    set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs));
     
+    
+    etc_trace_obj.time_select_idx =etc_trace_obj.trigger_time_idx;
+
+    %update trace GUI
+    hObject=findobj('tag','edit_time_now_idx');
+    set(hObject,'String',num2str(etc_trace_obj.time_select_idx));
+    hObject=findobj('tag','edit_time_now');
+    set(hObject,'String',num2str((etc_trace_obj.time_select_idx-1)/etc_trace_obj.fs,'%1.3f'));
+
     %update trigger gui
     hObject=findobj('tag','listbox_time');
     if(~isempty(hObject))
@@ -965,7 +974,7 @@ if(isempty(etc_trace_obj))
     return;
 end;
                 
-etc_trace_obj.time_select_idx =round(str2double(get(hObject,'String')).*etc_trace_obj.fs);
+etc_trace_obj.time_select_idx =round(str2double(get(hObject,'String')).*etc_trace_obj.fs)+1;
 
 
 %figure(etc_trace_obj.fig_trace);
