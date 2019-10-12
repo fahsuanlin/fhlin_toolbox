@@ -35,6 +35,7 @@ flag_fixval=1;
 flag_display=0;
 flag_regrid=1;
 flag_regrid_zero=0;
+flag_scale=1;
 
 n_ratio=16;
 
@@ -71,6 +72,8 @@ for i=1:length(varargin)/2
             flag_regrid=option_value;
         case 'flag_regrid_zero'
             flag_regrid_zero=option_value;
+        case 'flag_scale'
+            flag_scale=option_value;
         case 'ds'
             Ds=option_value;
         case 'Ds'
@@ -223,11 +226,22 @@ if(flag_050619)
             sv(exc_vertex)=0;
 
         end;
-        %smooth_value(:,tt)=fmri_scale(sv,v_max,v_min);
         if(~flag_regrid)
             smooth_value(:,tt)=sv*n_ratio;
         else
             smooth_value(:,tt)=sv;
+        end;
+
+        if(flag_scale)
+            tmp=sv;
+            
+            idx=find(sv>eps);
+            tmp(idx)=fmri_scale(sv(idx),v_max,eps);
+            
+            idx=find(sv<-eps);
+            tmp(idx)=fmri_scale(sv(idx),-eps,v_min);
+            
+            smooth_value(:,tt)=tmp;
         end;
     end;
 end;

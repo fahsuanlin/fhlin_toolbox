@@ -35,6 +35,8 @@ switch lower(param)
         redraw;
     case 'draw_stc'
         draw_stc;
+    case 'update_overlay_vol'
+        update_overlay_vol;
     case 'kb'
         switch(cc)
             case 'h'
@@ -904,7 +906,7 @@ try
         dist=sqrt(sum((vv-repmat([pt(1),pt(2),pt(3)],[size(vv,1),1])).^2,2));
         [min_dist,min_dist_idx]=min(dist);
     end;
-    fprintf('the nearest vertex on the surface: IDX=[%d] {x, y, z} = {%2.2f %2.2f %2.2f} \n',min_dist_idx,vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3));
+    fprintf('the nearest vertex on the surface: IDX=[%d] {x, y, z} = {%2.2f %2.2f %2.2f} <<%2.2f>> \n',min_dist_idx,vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3),etc_render_fsbrain.ovs(min_dist_idx));
     etc_render_fsbrain.click_coord_round=[vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3)];
     etc_render_fsbrain.click_vertex=min_dist_idx;
     if(etc_render_fsbrain.show_nearest_brain_surface_location_flag)
@@ -1669,6 +1671,8 @@ if(etc_render_fsbrain.overlay_flag_render)
         etc_render_fsbrain.fvdata(c_idx,:)=inverse_get_color(etc_render_fsbrain.overlay_cmap_neg,-ovs(c_idx),max(etc_render_fsbrain.overlay_threshold),min(etc_render_fsbrain.overlay_threshold));
     end;
 end;
+
+etc_render_fsbrain.ovs=ovs;
 
 h=patch('Faces',etc_render_fsbrain.faces+1,'Vertices',etc_render_fsbrain.vertex_coords,'FaceVertexCData',etc_render_fsbrain.fvdata,'facealpha',etc_render_fsbrain.alpha,'CDataMapping','direct','facecolor','interp','edgecolor','none');
 material dull;

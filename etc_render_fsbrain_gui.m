@@ -70,6 +70,9 @@ try
             if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
                 set(handles.slider_timeVec,'Enable','on');
                 set(handles.slider_timeVec,'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
+
+                set(handles.edit_timeVec,'Enable','on');
+
             end;
         end;
     end;
@@ -162,7 +165,15 @@ else
     fprintf('showing STC at time [%2.2f] ms\n',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
 end;
 
-etc_render_fsbrain_handle('draw_stc');
+etc_render_fsbrain_handle('update_overlay_vol');
+
+if(~isempty(etc_render_fsbrain.overlay_stc))
+    etc_render_fsbrain_handle('draw_stc');
+end;
+
+%etc_render_fsbrain_handle('draw_pointer');
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
+
 etc_render_fsbrain_handle('redraw');
 
 
@@ -350,7 +361,16 @@ else
     fprintf('showing STC at time [%2.2f] ms\n',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
 end;
 
-etc_render_fsbrain_handle('draw_stc');
+
+etc_render_fsbrain_handle('update_overlay_vol');
+
+if(~isempty(etc_render_fsbrain.overlay_stc))
+    etc_render_fsbrain_handle('draw_stc');
+end;
+
+%etc_render_fsbrain_handle('draw_pointer');
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
+
 etc_render_fsbrain_handle('redraw');
 
 
@@ -585,7 +605,8 @@ function edit_click_vertex_point_size_Callback(hObject, eventdata, handles)
 global etc_render_fsbrain;
 
 etc_render_fsbrain.click_vertex_point_size=str2double(get(hObject,'String'));
-etc_render_fsbrain_handle('draw_pointer');
+%etc_render_fsbrain_handle('draw_pointer');
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
 
 % --- Executes during object creation, after setting all properties.
 function edit_click_vertex_point_size_CreateFcn(hObject, eventdata, handles)
@@ -611,7 +632,8 @@ function edit_click_point_size_Callback(hObject, eventdata, handles)
 global etc_render_fsbrain;
 
 etc_render_fsbrain.click_point_size=str2double(get(hObject,'String'));
-etc_render_fsbrain_handle('draw_pointer');
+%etc_render_fsbrain_handle('draw_pointer');
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
 
 % --- Executes during object creation, after setting all properties.
 function edit_click_point_size_CreateFcn(hObject, eventdata, handles)
