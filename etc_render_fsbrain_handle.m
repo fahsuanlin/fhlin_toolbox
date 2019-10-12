@@ -548,7 +548,7 @@ switch lower(param)
                     end;
                 end;
             case 'd' %change overlay threshold or time course limits
-                if(gcf==etc_render_fsbrain.fig_brain)
+                if((gcf==etc_render_fsbrain.fig_brain)||(gcf==etc_render_fsbrain.fig_vol))
                     fprintf('change threshold...\n');
                     fprintf('current threshold = %s\n',mat2str(etc_render_fsbrain.overlay_threshold));
                     def={num2str(etc_render_fsbrain.overlay_threshold)};
@@ -721,13 +721,21 @@ switch lower(param)
                     
                     %convert the volume CRS coordinates to surface (x,y,z)
                     surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[v(:); 1];
+                    
+                    %convert the surface coordinate corresponding to
+                    %current volume to to the surface coordinate
+                    %corresponding to "ORIG' volume
+                    surface_coord=inv(etc_render_fsbrain.vol_reg)*surface_coord;
+                    
                     surface_coord=surface_coord(1:3);
                     click_vertex_vox=v;
                     
                     vv=etc_render_fsbrain.orig_vertex_coords;
                     dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
                     [min_dist,min_dist_idx]=min(dist);
-                    surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+                    %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+                    
+                    %surface_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:)';
                     
                     %draw_pointer('pt',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
                     draw_pointer('pt',surface_coord,'min_dist_idx',[],'click_vertex_vox',click_vertex_vox);    
@@ -749,12 +757,18 @@ switch lower(param)
                         if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
                             draw_stc;
                         end;
-
+                    elseif(~isempty(etc_render_fsbrain.overlay_vol))
+                        rv=round(v);
+                        tmp=etc_render_fsbrain.overlay_vol.vol(rv(1),rv(2),rv(3),:);
+                        etc_render_fsbrain.overlay_vol_stc_1d=tmp(:);
+                        if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
+                            draw_stc;
+                        end;
                     end;
 
                 end;
             end;
-            
+            figure(etc_render_fsbrain.fig_vol);
             
         elseif(gcf==etc_render_fsbrain.fig_stc)
            xx=get(gca,'currentpoint');
@@ -1010,19 +1024,24 @@ try
     
     if(~isempty(etc_render_fsbrain.vol_vox))
         %coordinate transformation
-        etc_render_fsbrain.click_vertex_vox_round=round(etc_render_fsbrain.vol_vox(min_dist_idx,:));
         
         
         %the volume index click_vertex_vox is in CRS!
         if(isempty(click_vertex_vox))
             etc_render_fsbrain.click_vertex_vox=(etc_render_fsbrain.vol_vox(min_dist_idx,:));
+            etc_render_fsbrain.click_vertex_vox_round=round(etc_render_fsbrain.vol_vox(min_dist_idx,:));
         else
             etc_render_fsbrain.click_vertex_vox=click_vertex_vox;
+            etc_render_fsbrain.click_vertex_vox_round=round(click_vertex_vox);
         end;
         fprintf('voxel for the clicked surface point [C, R, S] = [%1.1f %1.1f %1.1f]\n',etc_render_fsbrain.click_vertex_vox(1),etc_render_fsbrain.click_vertex_vox(2),etc_render_fsbrain.click_vertex_vox(3));
         fprintf('the rounded voxel for the clicked surface point [C, R, S] = [%d %d %d]\n',etc_render_fsbrain.click_vertex_vox_round(1),etc_render_fsbrain.click_vertex_vox_round(2),etc_render_fsbrain.click_vertex_vox_round(3));
         if(~isempty(etc_render_fsbrain.overlay_vol))
-            fprintf('value at the rounded voxel for the clicked surface point [%d %d %d] = [%1.1f] \n',etc_render_fsbrain.click_vertex_vox_round(1),etc_render_fsbrain.click_vertex_vox_round(2),etc_render_fsbrain.click_vertex_vox_round(3),etc_render_fsbrain.overlay_vol.vol(etc_render_fsbrain.click_vertex_vox_round(2), etc_render_fsbrain.click_vertex_vox_round(1), etc_render_fsbrain.click_vertex_vox_round(3)));
+            if(ndims(etc_render_fsbrain.overlay_vol.vol)==3)
+                fprintf('value at the rounded voxel for the clicked surface point [%d %d %d] = [%1.1f] \n',etc_render_fsbrain.click_vertex_vox_round(1),etc_render_fsbrain.click_vertex_vox_round(2),etc_render_fsbrain.click_vertex_vox_round(3),etc_render_fsbrain.overlay_vol.vol(etc_render_fsbrain.click_vertex_vox_round(2), etc_render_fsbrain.click_vertex_vox_round(1), etc_render_fsbrain.click_vertex_vox_round(3)));
+            elseif(ndims(etc_render_fsbrain.overlay_vol.vol)==4)
+                fprintf('value at the rounded voxel for the clicked surface point [%d %d %d] = [%1.1f] \n',etc_render_fsbrain.click_vertex_vox_round(1),etc_render_fsbrain.click_vertex_vox_round(2),etc_render_fsbrain.click_vertex_vox_round(3),etc_render_fsbrain.overlay_vol.vol(etc_render_fsbrain.click_vertex_vox_round(2), etc_render_fsbrain.click_vertex_vox_round(1), etc_render_fsbrain.click_vertex_vox_round(3),etc_render_fsbrain.overlay_stc_timeVec_idx));
+            end;
         end;
         if(~isempty(etc_render_fsbrain.talxfm))
             etc_render_fsbrain.click_vertex_point_tal=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*[etc_render_fsbrain.click_vertex_vox 1].';
@@ -1038,9 +1057,15 @@ try
             img_ax=rot90(squeeze(etc_render_fsbrain.vol.vol(round(etc_render_fsbrain.click_vertex_vox(2)),:,:)));
             
             if(~isempty(etc_render_fsbrain.overlay_vol))
-                img_cor_overlay=squeeze(etc_render_fsbrain.overlay_vol.vol(:,:,round(etc_render_fsbrain.click_vertex_vox(3))));
-                img_sag_overlay=squeeze(etc_render_fsbrain.overlay_vol.vol(:,round(etc_render_fsbrain.click_vertex_vox(1)),:));
-                img_ax_overlay=rot90(squeeze(etc_render_fsbrain.overlay_vol.vol(round(etc_render_fsbrain.click_vertex_vox(2)),:,:)));
+                if(ndims(etc_render_fsbrain.overlay_vol.vol)==4)
+                    img_cor_overlay=squeeze(etc_render_fsbrain.overlay_vol.vol(:,:,round(etc_render_fsbrain.click_vertex_vox(3)),etc_render_fsbrain.overlay_stc_timeVec_idx));
+                    img_sag_overlay=squeeze(etc_render_fsbrain.overlay_vol.vol(:,round(etc_render_fsbrain.click_vertex_vox(1)),:,etc_render_fsbrain.overlay_stc_timeVec_idx));
+                    img_ax_overlay=rot90(squeeze(etc_render_fsbrain.overlay_vol.vol(round(etc_render_fsbrain.click_vertex_vox(2)),:,:,etc_render_fsbrain.overlay_stc_timeVec_idx)));
+                elseif(ndims(etc_render_fsbrain.overlay_vol.vol)==3)
+                    img_cor_overlay=squeeze(etc_render_fsbrain.overlay_vol.vol(:,:,round(etc_render_fsbrain.click_vertex_vox(3))));
+                    img_sag_overlay=squeeze(etc_render_fsbrain.overlay_vol.vol(:,round(etc_render_fsbrain.click_vertex_vox(1)),:));
+                    img_ax_overlay=rot90(squeeze(etc_render_fsbrain.overlay_vol.vol(round(etc_render_fsbrain.click_vertex_vox(2)),:,:)));                    
+                end;
             else
                 img_cor_overlay=[];
                 img_ax_overlay=[];
@@ -1226,13 +1251,13 @@ try
             
             
             if(etc_render_fsbrain.show_nearest_brain_surface_location_flag)
-                etc_render_fsbrain.vol_img_h_round_cor=plot(etc_render_fsbrain.img_cor_padx+etc_render_fsbrain.click_vertex_vox_round(1), etc_render_fsbrain.img_cor_pady+etc_render_fsbrain.click_vertex_vox_round(2),'o');
+                etc_render_fsbrain.vol_img_h_round_cor=plot(etc_render_fsbrain.img_cor_padx+etc_render_fsbrain.click_vertex_vox_round(1), etc_render_fsbrain.img_cor_pady+etc_render_fsbrain.click_vertex_vox_round(2),'.');
                 set(etc_render_fsbrain.vol_img_h_round_cor,'color',etc_render_fsbrain.click_vertex_point_color,'MarkerSize',etc_render_fsbrain.click_vertex_point_size);
                 
-                etc_render_fsbrain.vol_img_h_round_ax=plot(mm+etc_render_fsbrain.img_ax_padx+etc_render_fsbrain.click_vertex_vox_round(1), mm-(etc_render_fsbrain.img_ax_pady+etc_render_fsbrain.click_vertex_vox_round(3)),'o');
+                etc_render_fsbrain.vol_img_h_round_ax=plot(mm+etc_render_fsbrain.img_ax_padx+etc_render_fsbrain.click_vertex_vox_round(1), mm-(etc_render_fsbrain.img_ax_pady+etc_render_fsbrain.click_vertex_vox_round(3)),'.');
                 set(etc_render_fsbrain.vol_img_h_round_ax,'color',etc_render_fsbrain.click_vertex_point_color,'MarkerSize',etc_render_fsbrain.click_vertex_point_size);
                 
-                etc_render_fsbrain.vol_img_h_round_sag=plot(etc_render_fsbrain.img_sag_padx+etc_render_fsbrain.click_vertex_vox_round(3), mm+etc_render_fsbrain.img_sag_pady+etc_render_fsbrain.click_vertex_vox_round(2),'o');
+                etc_render_fsbrain.vol_img_h_round_sag=plot(etc_render_fsbrain.img_sag_padx+etc_render_fsbrain.click_vertex_vox_round(3), mm+etc_render_fsbrain.img_sag_pady+etc_render_fsbrain.click_vertex_vox_round(2),'.');
                 set(etc_render_fsbrain.vol_img_h_round_sag,'color',etc_render_fsbrain.click_vertex_point_color,'MarkerSize',etc_render_fsbrain.click_vertex_point_size);
                 
             end;
@@ -1328,7 +1353,7 @@ try
             dist=sqrt(sum((vv-repmat([pt(1),pt(2),pt(3)],[size(vv,1),1])).^2,2));
             [min_overlay_dist,min_overlay_dist_idx]=min(dist);
             if(~iscell(etc_render_fsbrain.overlay_vertex))
-                fprintf('the nearest overlay surface vertex: location=[%d]::<%2.2f> (%2.2f %2.2f %2.2f) \n',min_overlay_dist_idx,etc_render_fsbrain.overlay_value(min_overlay_dist_idx),vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3));
+                fprintf('the nearest overlay surface vertex: location=[%d]::<<%2.2f>> @ (%2.2f %2.2f %2.2f) \n',min_overlay_dist_idx,etc_render_fsbrain.overlay_value(min_overlay_dist_idx),vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3));
             else
                 if(min_overlay_dist_idx>length(etc_render_fsbrain.overlay_vertex{1}))
                     offset=length(etc_render_fsbrain.overlay_vertex{1});
@@ -1337,7 +1362,7 @@ try
                     offset=0;
                     hemi_idx=1;
                 end;
-                fprintf('the nearest overlay vertex: hemi{%d} location=[%d]::<%2.2f> @ (%2.2f %2.2f %2.2f) \n',hemi_idx,min_overlay_dist_idx-offset,etc_render_fsbrain.overlay_value{hemi_idx}(min_overlay_dist_idx-offset),vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3));
+                fprintf('the nearest overlay vertex: hemi{%d} location=[%d]::<<%2.2f>> @ (%2.2f %2.2f %2.2f) \n',hemi_idx,min_overlay_dist_idx-offset,etc_render_fsbrain.overlay_value{hemi_idx}(min_overlay_dist_idx-offset),vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3));
             end;
             etc_render_fsbrain.click_overlay_vertex=min_overlay_dist_idx;
             %etc_render_fsbrain.click_overlay_vertex_point=plot3(vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3),'.');
@@ -1779,7 +1804,8 @@ try
     loc_vol=[];
     for hemi_idx=1:2
         
-        n_dip(hemi_idx)=size(etc_render_fsbrain.vol_A(hemi_idx).A,2);
+        %n_dip(hemi_idx)=size(etc_render_fsbrain.vol_A(hemi_idx).A,2);
+        n_dip(hemi_idx)=(size(etc_render_fsbrain.vol_A(hemi_idx).loc,1)+size(etc_render_fsbrain.vol_A(hemi_idx).wb_loc,1)).*3;
         n_source(hemi_idx)=n_dip(hemi_idx)/3;
         
         switch hemi_idx
@@ -1829,7 +1855,7 @@ try
             %get coordinates from surface to volume
             loc=cat(1,etc_render_fsbrain.vol_A(hemi_idx).vertex_coords./1e3,etc_render_fsbrain.vol_A(hemi_idx).wb_loc);
             loc_surf=[loc.*1e3 ones(size(loc,1),1)]';
-            tmp=inv(etc_render_fsbrain.vol.tkrvox2ras)*loc_surf;
+            tmp=inv(etc_render_fsbrain.vol.tkrvox2ras)*(etc_render_fsbrain.vol_reg)*loc_surf;
             loc_vol{hemi_idx}=round(tmp(1:3,:))';
             etc_render_fsbrain.loc_vol{hemi_idx}=round(tmp(1:3,:))';
             etc_render_fsbrain.loc_vol_idx{hemi_idx}=sub2ind(size(etc_render_fsbrain.vol.vol),loc_vol{hemi_idx}(:,2),loc_vol{hemi_idx}(:,1),loc_vol{hemi_idx}(:,3));

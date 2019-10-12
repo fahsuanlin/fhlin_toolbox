@@ -20,6 +20,7 @@ flag_curv=1;
 hemi='lh'; %hemi={'lh','rh'}; for showing both hemispheres;
 curv=[];
 vol=[];
+vol_reg=eye(4);
 vol_A=[];
 vol_vox=[];
 vol_pre_xfm=eye(4);
@@ -132,6 +133,8 @@ for idx=1:length(varargin)/2
             surf=option_value;
         case 'vol'
             vol=option_value;
+        case 'vol_reg'
+            vol_reg=option_value;
         case 'vol_a'
             vol_A=option_value;
         case 'vol_pre_xfm'
@@ -287,6 +290,10 @@ if(~isempty(overlay_vol_stc)&~isempty(vol_A))
     if(isempty(overlay_stc_timeVec))
         overlay_stc_timeVec=[1:size(overlay_stc,2)];
     end;
+elseif(~isempty(overlay_vol))
+    if(isempty(overlay_stc_timeVec))
+        overlay_stc_timeVec=[1:size(overlay_vol.vol,4)];
+    end;
 end;
 
 %get the overlay value from STC at the largest power instant, if it is not specified.
@@ -312,6 +319,10 @@ if(isempty(overlay_value)&~isempty(overlay_stc))
         overlay_value=overlay_stc(:,overlay_stc_timeVec_idx);
         overlay_stc_hemi=overlay_stc;
     end;
+elseif(~isempty(overlay_vol))
+    sz=size(overlay_vol.vol);
+    tmp=reshape(overlay_vol.vol,[sz(1)*sz(2)*sz(3),sz(4)]);
+    [dd,overlay_stc_timeVec_idx]=max(sum(tmp.^2,1),[],2);
 end;
 
 
@@ -425,6 +436,13 @@ if(~isempty(vol))
     right_column = [ ones( size(orig_vertex_coords,1), 1 ); 0 ];
     SurfVertices = [ [orig_vertex_coords; 0 0 0]  right_column ];
     %convert the surface coordinate (x,y,z) into CRS of the volume!
+    
+    if(~isempty(vol))
+        SurfVertices=((vol_reg)*SurfVertices.').';
+    end;
+    %"SurfVertices" is now for volume "vol".
+    
+    %get the CRS
     vol_vox=(inv(vol.tkrvox2ras)*(SurfVertices.')).';
     
     %vol_vox=(inv(vol.vox2ras)*(SurfVertices.')).';
@@ -432,6 +450,85 @@ if(~isempty(vol))
     
 end;
 
+
+%prepare mapping overlay values from "overlay_vol" 
+if(~isempty(overlay_vol))
+    offset=0;
+    for hemi_idx=1:2
+        
+        %choose 15,000 sources arbitrarily for cortical soruces
+        vol_A(hemi_idx).v_idx=[1:15000]-1;
+        
+        vol_A(hemi_idx).vertex_coords=vertex_coords;
+        vol_A(hemi_idx).faces=faces;
+        vol_A(hemi_idx).orig_vertex_coords=orig_vertex_coords;
+        
+        SurfVertices=cat(2,vol_A(hemi_idx).orig_vertex_coords(vol_A(hemi_idx).v_idx+1,:),ones(length(vol_A(hemi_idx).v_idx),1));
+                
+        vol_vox_tmp=(inv(vol.tkrvox2ras)*(vol_reg)*(SurfVertices.')).';
+        vol_vox_tmp=round(vol_vox_tmp(:,1:3));
+        
+        all_idx=[1:prod(overlay_vol.volsize(1:3))];
+        [cort_idx,ii]=unique(sub2ind(overlay_vol.volsize(1:3),vol_vox_tmp(:,2),vol_vox_tmp(:,1),vol_vox_tmp(:,3)));
+        
+        %cort_idx=sub2ind(overlay_vol.volsize(1:3),vol_vox_tmp(:,2),vol_vox_tmp(:,1),vol_vox_tmp(:,3));
+        vol_A(hemi_idx).v_idx=vol_A(hemi_idx).v_idx(ii);
+        
+        sub_cort_idx=setdiff(all_idx,cort_idx);
+        
+        n_source(hemi_idx)=length(sub_cort_idx)+length(cort_idx);
+        n_dip(hemi_idx)=n_source(hemi_idx)*3;
+        
+        
+        [C,R,S] = meshgrid([1:size(overlay_vol.vol,2)],[1:size(overlay_vol.vol,1)],[1:size(overlay_vol.vol,3)]);
+        CRS=[C(:) R(:) S(:)];
+        CRS=cat(2,CRS,ones(size(CRS,1),1))';
+        
+        all_coords=inv(vol_reg)*vol.tkrvox2ras*CRS;
+        all_coords=all_coords(1:3,:)';
+        vol_A(hemi_idx).loc=all_coords(cort_idx,:);
+        vol_A(hemi_idx).wb_loc=all_coords(sub_cort_idx,:)./1e3;
+        
+        
+                        %%%%crs=[44 59 44];
+                        %%%surface_coord=[   -14   -21   -33]';
+                        %%%
+                        %%%loc_rh=cat(1,vol_A(hemi_idx).loc,vol_A(hemi_idx).wb_loc.*1e3);
+                        %%%loc=loc_rh;
+                        %%%dist=sqrt(sum((loc-repmat(surface_coord(:)',[size(loc,1),1])).^2,2));
+                        %%%[dummy,loc_min_idx]=min(dist)
+                        %%%
+                        %%%figure; plot(squeeze(overlay_vol.vol(59,44,44,:))); hold on;
+        
+        overlay_vol_value=reshape(overlay_vol.vol,[size(overlay_vol.vol,1)*size(overlay_vol.vol,2)*size(overlay_vol.vol,3), size(overlay_vol.vol,4)]);
+        
+        %overlay_vol_stc(offset+1:offset+length(vol_A(hemi_idx).v_idx),:)=overlay_vol_value(cort_idx,:);
+        %overlay_vol_stc(offset+length(vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),:)=overlay_vol_value(sub_cort_idx,:);
+        
+        midx=[cort_idx(:)' sub_cort_idx(:)'];
+        overlay_vol_stc(offset+1:offset+length(vol_A(hemi_idx).v_idx),:)=overlay_vol_value(midx(1:length(cort_idx)),:);
+        overlay_vol_stc(offset+length(vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),:)=overlay_vol_value(midx(length(cort_idx)+1:end),:);
+        
+        offset=offset+n_source(hemi_idx);
+
+                        %%%plot(overlay_vol_stc(loc_min_idx,:));
+        
+        X_hemi_cort{hemi_idx}=overlay_vol_value(cort_idx,:);
+        X_hemi_subcort{hemi_idx}=overlay_vol_value(sub_cort_idx,:);
+    end;
+    
+    
+   if(strcmp(hemi,'lh'))    
+        overlay_stc=X_hemi_cort{1};
+        overlay_vertex=vol_A(1).v_idx;
+    else
+        overlay_stc=X_hemi_cort{2};
+        overlay_vertex=vol_A(2).v_idx;
+    end;
+    overlay_value=overlay_stc(:,overlay_stc_timeVec_idx);
+end;    
+    
+    
 %exclusive/inclusive labels
 if(~isempty(overlay_exclude_fstem))
     if(~iscell(hemi))
@@ -615,6 +712,15 @@ if(~isempty(label_vertex)&&~isempty(label_value)&&~isempty(label_ctab))
     fprintf('annotated label loaded...\n');
     
 end;
+
+
+% if(strcmp(hemi,'rh'))
+%     hemi_idx=2;
+% else
+%     hemi_idx=1;
+% end;
+% hold on;
+% h=plot3(vol_A(hemi_idx).vertex_coords(:,1), vol_A(hemi_idx).vertex_coords(:,2), vol_A(hemi_idx).vertex_coords(:,3), 'g.');
     
 %%%%%%%%%%%%%%%%%%%%%%%%
 %setup global object
@@ -626,6 +732,7 @@ etc_render_fsbrain.brain_axis=gca;
 
 etc_render_fsbrain.surf=surf;
 etc_render_fsbrain.vol=vol;
+etc_render_fsbrain.vol_reg=vol_reg;
 etc_render_fsbrain.vol_A=vol_A;
 etc_render_fsbrain.vol_vox=vol_vox;
 etc_render_fsbrain.vol_pre_xfm=vol_pre_xfm;

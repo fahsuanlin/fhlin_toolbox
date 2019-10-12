@@ -69,7 +69,7 @@ try
                 fprintf('failed to find ''Linear_Transform'' string in first 20 lines of xfm file.\n');
             end
             
-        elseif(strcmp(ext,'.dat'))
+        elseif(strcmp(ext,'.dat')|strcmp(ext,'.reg'))
             fprintf('reading registration matrix ...\n');
             fid = fopen(file_xfm,'r');
             xfm_subject = fscanf(fid,'%s',1); %subject

@@ -1,10 +1,11 @@
 function vol = etc_MRIvol2vol(mov,targ,R,varargin)
 % vol = etc_MRIvol2vol(mov,targ,<R>)
 %
-% mov  = MRIread('mov'); % only one frame
-% targ = MRIread('targ');
+% mov: the volume image to be moved. an MRI object from MRIread. can have
+% multiple frames.
+% targ: the target volume image. an MRI object from MRIread
 %
-% R maps targ-to-mov
+% R maps targ to mov (mov = R * targ).
 %
 % Currently only uses nearest neighbor.
 %
@@ -12,8 +13,7 @@ function vol = etc_MRIvol2vol(mov,targ,R,varargin)
 
 
 flag_display=0;
-
-for i=1:length(varargin)
+for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
 
@@ -114,10 +114,19 @@ if(length(size(mov.vol))==3)
 else
     vol.vol = zeros(nrt,nct,nst,size(mov.vol,4));  
     for t_idx=1:size(mov.vol,4)
+        if(flag_display)
+            fprintf('*');
+        end;
         tmp_mov=mov.vol(:,:,:,t_idx);
         tmp_targ=zeros(nrt,nct,nst);
         tmp_targ(tind)=tmp_mov(mind);
-        vol.vol(:,:,:,t_idx)=tmp_arg;
+        if(t_idx==1)
+            vol.vol=zeros(size(tmp_targ,1),size(tmp_targ,2),size(tmp_targ,3),size(mov.vol,4));
+        end;
+        vol.vol(:,:,:,t_idx)=tmp_targ;
+    end;
+    if(flag_display)
+        fprintf('\n');
     end;
 end;
 
