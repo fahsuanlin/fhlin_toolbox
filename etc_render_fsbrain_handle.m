@@ -563,7 +563,7 @@ switch lower(param)
                             set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_threshold_min'),'string',sprintf('%1.0f',min(etc_render_fsbrain.overlay_threshold)));
                             set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_threshold_max'),'string',sprintf('%1.0f',max(etc_render_fsbrain.overlay_threshold)));
                         end;
-                        
+                        draw_pointer;
                         redraw;
                     end;
                 elseif(gcf==etc_render_fsbrain.fig_stc)
@@ -665,7 +665,7 @@ switch lower(param)
             etc_render_fsbrain.flag_overlay_stc_surf=1;
             etc_render_fsbrain.flag_overlay_stc_vol=0;
             
-            
+           
             update_overlay_vol;
             draw_pointer;
             
@@ -749,9 +749,16 @@ switch lower(param)
                         dist=sqrt(sum((loc-repmat(surface_coord(:)',[size(loc,1),1])).^2,2));
                         [dummy,loc_min_idx]=min(dist);
                         
+                        
+                        etc_render_fsbrain.click_overlay_vertex=loc_min_idx;
+                        
                         %figure(10);
                         %plot(etc_render_fsbrain.overlay_vol_stc(loc_min_idx,:));
                         etc_render_fsbrain.overlay_vol_stc_1d=etc_render_fsbrain.overlay_vol_stc(loc_min_idx,:);
+                        
+                        for vv_idx=1:size(etc_render_fsbrain.overlay_aux_vol_stc,3);
+                            etc_render_fsbrain.overlay_aux_vol_stc_1d=etc_render_fsbrain.overlay_aux_vol_stc(loc_min_idx,:,vv_idx);
+                        end;
                         
                         %etc_render_fsbrain.overlay_stc=etc_render_fsbrain.overlay_vol_stc;
                         %etc_render_fsbrain.click_overlay_vertex=loc_min_idx;
@@ -763,6 +770,12 @@ switch lower(param)
                         rv=round(v);
                         tmp=etc_render_fsbrain.overlay_vol.vol(rv(1),rv(2),rv(3),:);
                         etc_render_fsbrain.overlay_vol_stc_1d=tmp(:);
+                        
+                        for vv_idx=1:length(etc_render_fsbrain.overlay_aux_vol);
+                            tmp=etc_render_fsbrain.overlay_aux_vol(vv_idx).vol(rv(1),rv(2),rv(3),:);
+                            etc_render_fsbrain.overlay_vol_stc_1d(:,vv_idx)=tmp(:);
+                        end;
+                        
                         if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
                             draw_stc;
                         end;
@@ -1033,6 +1046,7 @@ try
             etc_render_fsbrain.click_vertex_vox=(etc_render_fsbrain.vol_vox(min_dist_idx,:));
             etc_render_fsbrain.click_vertex_vox_round=round(etc_render_fsbrain.vol_vox(min_dist_idx,:));
         else
+            %fprintf('------[%s]-----\n',mat2str(round(etc_render_fsbrain.click_vertex_vox)));
             etc_render_fsbrain.click_vertex_vox=click_vertex_vox;
             etc_render_fsbrain.click_vertex_vox_round=round(click_vertex_vox);
         end;
@@ -1066,8 +1080,31 @@ try
                 elseif(ndims(etc_render_fsbrain.overlay_vol.vol)==3)
                     img_cor_overlay=squeeze(etc_render_fsbrain.overlay_vol.vol(:,:,round(etc_render_fsbrain.click_vertex_vox(3))));
                     img_sag_overlay=squeeze(etc_render_fsbrain.overlay_vol.vol(:,round(etc_render_fsbrain.click_vertex_vox(1)),:));
-                    img_ax_overlay=rot90(squeeze(etc_render_fsbrain.overlay_vol.vol(round(etc_render_fsbrain.click_vertex_vox(2)),:,:)));                    
+                    img_ax_overlay=rot90(squeeze(etc_render_fsbrain.overlay_vol.vol(round(etc_render_fsbrain.click_vertex_vox(2)),:,:)));
                 end;
+                
+                
+                
+                %truncate positive value overlay
+                if(etc_render_fsbrain.flag_overlay_truncate_pos)
+                    idx=find(img_cor_overlay(:)>0);
+                    img_cor_overlay(idx)=0;
+                    idx=find(img_sag_overlay(:)>0);
+                    img_sag_overlay(idx)=0;
+                    idx=find(img_ax_overlay(:)>0);
+                    img_ax_overlay(idx)=0;
+                end;
+                
+                %truncate negative value overlay
+                if(etc_render_fsbrain.flag_overlay_truncate_neg)
+                   idx=find(img_cor_overlay(:)<0);
+                    img_cor_overlay(idx)=0;
+                    idx=find(img_sag_overlay(:)<0);
+                    img_sag_overlay(idx)=0;
+                    idx=find(img_ax_overlay(:)<0);
+                    img_ax_overlay(idx)=0;
+                end;
+        
             else
                 img_cor_overlay=[];
                 img_ax_overlay=[];
@@ -1366,7 +1403,9 @@ try
                 end;
                 fprintf('the nearest overlay vertex: hemi{%d} location=[%d]::<<%2.2f>> @ (%2.2f %2.2f %2.2f) \n',hemi_idx,min_overlay_dist_idx-offset,etc_render_fsbrain.overlay_value{hemi_idx}(min_overlay_dist_idx-offset),vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3));
             end;
-            etc_render_fsbrain.click_overlay_vertex=min_overlay_dist_idx;
+            if(etc_render_fsbrain.flag_overlay_stc_surf)
+                etc_render_fsbrain.click_overlay_vertex=min_overlay_dist_idx;
+            end;
             %etc_render_fsbrain.click_overlay_vertex_point=plot3(vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3),'.');
             %set(etc_render_fsbrain.click_overlay_vertex_point,'color',[0 1 0]);
         catch ME
@@ -1451,6 +1490,17 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
                     etc_render_fsbrain.handle_fig_stc_aux_timecourse=h;
                 end;
             end;
+            if(etc_render_fsbrain.flag_overlay_stc_vol)
+                if(~isempty(etc_render_fsbrain.overlay_aux_vol_stc))
+                    hold on; h=plot(squeeze(etc_render_fsbrain.overlay_aux_vol_stc(etc_render_fsbrain.click_overlay_vertex,:,:)));
+                    cc=get(gca,'ColorOrder');
+                    for ii=1:length(h)
+                        set(h(ii),'linewidth',1,'color',cc(rem(ii,8),:));
+                    end;
+                    etc_render_fsbrain.handle_fig_stc_aux_timecourse=h;
+                end;
+            end;
+            
             
             if(etc_render_fsbrain.flag_overlay_stc_surf)
                 hold on; h=plot(etc_render_fsbrain.overlay_stc(etc_render_fsbrain.click_overlay_vertex,:));
@@ -1502,6 +1552,16 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
             if(etc_render_fsbrain.flag_overlay_stc_surf)
                 if(~isempty(etc_render_fsbrain.overlay_aux_stc))
                     hold on; h=plot(etc_render_fsbrain.overlay_stc_timeVec,squeeze(etc_render_fsbrain.overlay_aux_stc(etc_render_fsbrain.click_overlay_vertex,:,:)));
+                    cc=get(gca,'ColorOrder');
+                    for ii=1:length(h)
+                        set(h(ii),'linewidth',1,'color',cc(rem(ii,8),:));
+                    end;
+                    etc_render_fsbrain.handle_fig_stc_aux_timecourse=h;
+                end;
+            end;
+            if(etc_render_fsbrain.flag_overlay_stc_vol)
+                if(~isempty(etc_render_fsbrain.overlay_aux_vol_stc))
+                    hold on; h=plot(etc_render_fsbrain.overlay_stc_timeVec,squeeze(etc_render_fsbrain.overlay_aux_vol_stc(etc_render_fsbrain.click_overlay_vertex,:,:)));
                     cc=get(gca,'ColorOrder');
                     for ii=1:length(h)
                         set(h(ii),'linewidth',1,'color',cc(rem(ii,8),:));
@@ -1693,6 +1753,9 @@ set(gcf,'color',etc_render_fsbrain.bg_color);
 
 
 view(etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2));
+
+%add exploration toolbar
+addToolbarExplorationButtons(etc_render_fsbrain.fig_brain);
 
 
 try

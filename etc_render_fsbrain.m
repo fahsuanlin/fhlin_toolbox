@@ -38,7 +38,9 @@ overlay_cmap_neg(:,3)=1;
 
 %overlay
 overlay_vol=[];
+overlay_aux_vol=[];
 overlay_vol_stc=[];
+overlay_aux_vol_stc=[];
 overlay_value=[];
 overlay_stc=[];
 overlay_aux_stc=[];
@@ -149,6 +151,8 @@ for idx=1:length(varargin)/2
             curv_pos_color=option_value;
         case 'curv_neg_color'
             curv_neg_color=option_value;
+        case 'overlay_aux_vol'
+            overlay_aux_vol=option_value;
         case 'overlay_vol'
             overlay_vol=option_value;
         case 'overlay_vol_stc'
@@ -509,21 +513,39 @@ if(~isempty(overlay_vol))
         overlay_vol_stc(offset+1:offset+length(vol_A(hemi_idx).v_idx),:)=overlay_vol_value(midx(1:length(cort_idx)),:);
         overlay_vol_stc(offset+length(vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),:)=overlay_vol_value(midx(length(cort_idx)+1:end),:);
         
+        overlay_aux_vol_value=[];
+        for vv_idx=1:length(overlay_aux_vol)
+            overlay_aux_vol_value(:,:,vv_idx)=reshape(overlay_aux_vol(vv_idx).vol,[size(overlay_aux_vol(vv_idx).vol,1)*size(overlay_aux_vol(vv_idx).vol,2)*size(overlay_aux_vol(vv_idx).vol,3), size(overlay_aux_vol(vv_idx).vol,4)]);
+            overlay_aux_vol_stc(offset+1:offset+length(vol_A(hemi_idx).v_idx),:,vv_idx)=overlay_aux_vol_value(midx(1:length(cort_idx)),:,vv_idx);
+            overlay_aux_vol_stc(offset+length(vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),:,vv_idx)=overlay_aux_vol_value(midx(length(cort_idx)+1:end),:,vv_idx);
+        end;
+        
         offset=offset+n_source(hemi_idx);
 
                         %%%plot(overlay_vol_stc(loc_min_idx,:));
         
         X_hemi_cort{hemi_idx}=overlay_vol_value(cort_idx,:);
         X_hemi_subcort{hemi_idx}=overlay_vol_value(sub_cort_idx,:);
+
+        if(~isempty(overlay_aux_vol_value))
+            aux_X_hemi_cort{hemi_idx}=overlay_aux_vol_value(cort_idx,:,:);
+            aux_X_hemi_subcort{hemi_idx}=overlay_aux_vol_value(sub_cort_idx,:,:);
+        end;
     end;
     
     
    if(strcmp(hemi,'lh'))    
         overlay_stc=X_hemi_cort{1};
         overlay_vertex=vol_A(1).v_idx;
+        if(~isempty(overlay_aux_vol_stc))
+            overlay_aux_stc=aux_X_hemi_cort{1};
+        end;
     else
         overlay_stc=X_hemi_cort{2};
         overlay_vertex=vol_A(2).v_idx;
+        if(~isempty(overlay_aux_vol_stc))
+            overlay_aux_stc=aux_X_hemi_cort{2};
+        end;
     end;
     overlay_value=overlay_stc(:,overlay_stc_timeVec_idx);
 end;    
@@ -597,6 +619,7 @@ if(~isempty(curv))
     fvdata(idx,:)=repmat(curv_neg_color,[length(idx),1]);
 end;
 
+ovs=[];
 overlay_flag_render=0;
 %2: curvature and overlay color
 if(~isempty(overlay_value))
@@ -713,6 +736,8 @@ if(~isempty(label_vertex)&&~isempty(label_value)&&~isempty(label_ctab))
     
 end;
 
+%add exploration toolbar
+addToolbarExplorationButtons(gcf);
 
 % if(strcmp(hemi,'rh'))
 %     hemi_idx=2;
@@ -746,6 +771,7 @@ etc_render_fsbrain.orig_vertex_coords=orig_vertex_coords;
 etc_render_fsbrain.orig_vertex_coords_hemi=orig_vertex_coords_hemi;
 etc_render_fsbrain.fvdata=fvdata;
 etc_render_fsbrain.curv=curv;
+etc_render_fsbrain.ovs=ovs;
 %etc_render_fsbrain.curv_hemi=curv_hemi;
 
 etc_render_fsbrain.view_angle=view_angle;
@@ -768,6 +794,8 @@ etc_render_fsbrain.show_all_contacts_mri_flag=show_all_contacts_mri_flag;
 
 etc_render_fsbrain.overlay_vol=overlay_vol;
 etc_render_fsbrain.overlay_vol_stc=overlay_vol_stc;
+etc_render_fsbrain.overlay_aux_vol=overlay_aux_vol;
+etc_render_fsbrain.overlay_aux_vol_stc=overlay_aux_vol_stc;
 etc_render_fsbrain.overlay_value=overlay_value;
 etc_render_fsbrain.overlay_stc=overlay_stc;
 etc_render_fsbrain.overlay_aux_stc=overlay_aux_stc;

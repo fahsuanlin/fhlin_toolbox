@@ -72,11 +72,25 @@ try
                 set(handles.slider_timeVec,'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
 
                 set(handles.edit_timeVec,'Enable','on');
-
+                set(handles.edit_timeVec,'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
+                set(handles.edit_timeVec,'string',sprintf('%1.1f',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx)));
             end;
         end;
     end;
 catch
+end;
+
+%overlay smooth
+set(handles.edit_smooth,'enable','off');
+if(isfield(etc_render_fsbrain,'overlay_value'))
+    if(~isempty(etc_render_fsbrain.overlay_value))
+        set(handles.edit_smooth,'enable','on');
+    end;
+end;
+if(isfield(etc_render_fsbrain,'overlay_stc'))
+    if(~isempty(etc_render_fsbrain.overlay_stc))
+        set(handles.edit_smooth,'enable','on');
+    end;
 end;
 
 %colorbar check box
@@ -232,8 +246,9 @@ global etc_render_fsbrain
 mm=str2double(get(hObject,'string'));
 mx=max(etc_render_fsbrain.overlay_threshold);
 etc_render_fsbrain.overlay_threshold=[mm,mx];
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
 etc_render_fsbrain_handle('redraw');
-
+etc_render_fsbrain_handle('kb','c0','c0'); %update colorbar
 
 % --- Executes during object creation, after setting all properties.
 function edit_threshold_min_CreateFcn(hObject, eventdata, handles)
@@ -263,7 +278,10 @@ global etc_render_fsbrain
 mx=str2double(get(hObject,'string'));
 mm=min(etc_render_fsbrain.overlay_threshold);
 etc_render_fsbrain.overlay_threshold=[mm,mx];
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
 etc_render_fsbrain_handle('redraw');
+etc_render_fsbrain_handle('kb','c0','c0'); %update colorbar
+
 
 
 % --- Executes during object creation, after setting all properties.
@@ -691,6 +709,8 @@ global etc_render_fsbrain
 
 etc_render_fsbrain.flag_overlay_truncate_neg=get(hObject,'Value');
 
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
+
 etc_render_fsbrain_handle('redraw');
 
 % --- Executes on button press in checkbox_overlay_truncate_pos.
@@ -703,5 +723,7 @@ function checkbox_overlay_truncate_pos_Callback(hObject, eventdata, handles)
 global etc_render_fsbrain
 
 etc_render_fsbrain.flag_overlay_truncate_pos=get(hObject,'Value');
+
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
 
 etc_render_fsbrain_handle('redraw');
