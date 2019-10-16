@@ -309,7 +309,7 @@ switch lower(param)
             else
                 etc_trace_obj.time_select_idx=time_idx;
             end;
-            fprintf('selected time <%3.3f> (s) [index [%d] (sample)]\n',(etc_trace_obj.time_select_idx-1)/etc_trace_obj.fs, etc_trace_obj.time_select_idx);
+            fprintf('selected time <%3.3f> (s) [index [%d] (sample)]\n',(etc_trace_obj.time_select_idx-1)/etc_trace_obj.fs+etc_trace_obj.time_begin, etc_trace_obj.time_select_idx);
             
             if(~etc_trace_obj.flag_mark)
                 if(etc_trace_obj.config_current_time_flag)
@@ -624,9 +624,9 @@ end;
 
 set(etc_trace_obj.axis_trace,'ylim',[min(etc_trace_obj.ylim) min(etc_trace_obj.ylim)+(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-1)*diff(sort(etc_trace_obj.ylim))]);
 set(etc_trace_obj.axis_trace,'xlim',[1 etc_trace_obj.time_duration_idx]);
-set(etc_trace_obj.axis_trace,'xtick',([0:5]./5.*etc_trace_obj.time_duration_idx));
+set(etc_trace_obj.axis_trace,'xtick',round([0:5]./5.*etc_trace_obj.time_duration_idx));
 set(etc_trace_obj.axis_trace,'ydir','reverse');
-xx=(etc_trace_obj.time_begin_idx+round([0:5]./5.*etc_trace_obj.time_duration_idx))-1;
+xx=(etc_trace_obj.time_begin_idx+round([0:5]./5.*etc_trace_obj.time_duration_idx))-1+etc_trace_obj.time_begin.*etc_trace_obj.fs;
 set(etc_trace_obj.axis_trace,'xticklabel',cellstr(num2str((xx./etc_trace_obj.fs)')));
 
 

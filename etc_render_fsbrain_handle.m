@@ -265,16 +265,35 @@ switch lower(param)
                     %etc_trace(etc_render_fsbrian.overlay_stc,'fs',fs,'trigger',trigger_all,'ch_names',label,'aux_data',{data_nobcg});
                     aux_data={};
                     if(~isempty(etc_render_fsbrain.overlay_aux_stc))
-                        aux_data={etc_render_fsbrain.overlay_aux_stc};
+                        for vv_idx=1:size(etc_render_fsbrain.overlay_aux_stc,3)
+                            aux_data{vv_idx}=etc_render_fsbrain.overlay_aux_stc(:,:,vv_idx);
+                        end;
                     end;
-                    
-                    fs=1e3; %default sampling rate; 1000 Hz
                     
                     if(~isempty(etc_render_fsbrain.overlay_stc_timeVec))
-                        fs=1e3./mean(diff(etc_render_fsbrain.overlay_stc_timeVec));
+                        fs=1./mean(diff(etc_render_fsbrain.overlay_stc_timeVec));
+                        if(~isempty(etc_render_fsbrain.overlay_stc_timeVec_unit))
+                            switch lower(etc_render_fsbrain.overlay_stc_timeVec_unit)
+                                case 'ms'
+                                    fs=fs.*1e3;
+                            end;
+                        end;
+                    else
+                        fs=1e3; %default sampling rate; 1000 Hz
                     end;
+                   
 
-                    etc_trace(etc_render_fsbrain.overlay_stc,'fs',fs,'ch_names',etc_render_fsbrain.aux_point_name,'aux_data',aux_data);
+                    time_begin=0;
+                    if(~isempty(etc_render_fsbrain.overlay_stc_timeVec))
+                        time_begin=etc_render_fsbrain.overlay_stc_timeVec(1);
+                        if(~isempty(etc_render_fsbrain.overlay_stc_timeVec_unit))
+                            switch lower(etc_render_fsbrain.overlay_stc_timeVec_unit)
+                                case 'ms'
+                                    time_begin=time_begin/1e3;
+                            end;
+                        end;
+                    end;
+                    etc_trace(etc_render_fsbrain.overlay_stc,'fs',fs,'ch_names',etc_render_fsbrain.aux_point_name,'aux_data',aux_data,'time_begin',time_begin);
                     
                     global etc_trace_obj;
                     if(isvalid(etc_trace_obj.fig_trace))
