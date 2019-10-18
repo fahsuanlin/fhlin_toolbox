@@ -759,7 +759,8 @@ switch lower(param)
                     %surface_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:)';
                     
                     %draw_pointer('pt',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
-                    draw_pointer('pt',surface_coord,'min_dist_idx',[],'click_vertex_vox',click_vertex_vox);    
+                    surface_coord_now=etc_render_fsbrain.vertex_coords(min_dist_idx,:);
+                    draw_pointer('pt',surface_coord_now,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);    
                     
                     if((~isempty(etc_render_fsbrain.vol_A))&&(~isempty(etc_render_fsbrain.overlay_vol_stc)))
                         loc_lh=cat(1,etc_render_fsbrain.vol_A(1).loc,etc_render_fsbrain.vol_A(1).wb_loc.*1e3);
@@ -775,8 +776,10 @@ switch lower(param)
                         %plot(etc_render_fsbrain.overlay_vol_stc(loc_min_idx,:));
                         etc_render_fsbrain.overlay_vol_stc_1d=etc_render_fsbrain.overlay_vol_stc(loc_min_idx,:);
                         
-                        for vv_idx=1:size(etc_render_fsbrain.overlay_aux_vol_stc,3);
-                            etc_render_fsbrain.overlay_aux_vol_stc_1d=etc_render_fsbrain.overlay_aux_vol_stc(loc_min_idx,:,vv_idx);
+                        if(~isempty(etc_render_fsbrain.overlay_aux_vol_stc))
+                            for vv_idx=1:size(etc_render_fsbrain.overlay_aux_vol_stc,3);
+                                etc_render_fsbrain.overlay_aux_vol_stc_1d=etc_render_fsbrain.overlay_aux_vol_stc(loc_min_idx,:,vv_idx);
+                            end;
                         end;
                         
                         %etc_render_fsbrain.overlay_stc=etc_render_fsbrain.overlay_vol_stc;

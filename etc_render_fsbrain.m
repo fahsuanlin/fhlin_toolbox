@@ -354,6 +354,25 @@ if(~iscell(hemi))
     
     orig_vertex_coords_hemi=orig_vertex_coords;
     orig_faces_hemi=faces;
+    
+    %loading vertices/faces for both hemispheres.
+    for hemi_idx=1:2
+        switch hemi_idx
+            case 1
+                hemi_str='lh';
+            case 2
+                hemi_str='rh';
+        end;
+        
+        file_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi_str,surf);
+        %fprintf('reading [%s]...\n',file_surf);
+        [hemi_vertex_coords{hemi_idx}, hemi_faces{hemi_idx}] = read_surf(file_surf);
+    
+        file_orig_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi_str,'orig');
+        %fprintf('reading orig [%s]...\n',file_orig_surf);
+        [hemi_orig_vertex_coords{hemi_idx}, hemi_orig_faces{hemi_idx}] = read_surf(file_orig_surf);
+    end;
+
 else
     vertex_coords=[]; faces=[]; ovelay_vertex_tmp=[];
     orig_vertex_coords=[]; orig_faces=[]; orig_ovelay_vertex_tmp=[];
@@ -460,27 +479,35 @@ if(~isempty(overlay_vol))
     offset=0;
     for hemi_idx=1:2
         
-        %choose 15,000 sources arbitrarily for cortical soruces
-        vol_A(hemi_idx).v_idx=[1:15000]-1;
+        %choose 10,242 sources arbitrarily for cortical soruces
+        vol_A(hemi_idx).v_idx=[1:10242]-1;
         
         vol_A(hemi_idx).vertex_coords=vertex_coords;
         vol_A(hemi_idx).faces=faces;
         vol_A(hemi_idx).orig_vertex_coords=orig_vertex_coords;
+        %vol_A(hemi_idx).vertex_coords=hemi_vertex_coords{hemi_idx};
+        %vol_A(hemi_idx).faces=hemi_faces{hemi_idx};
+        %vol_A(hemi_idx).orig_vertex_coords=hemi_orig_vertex_coords{hemi_idx};
         
         SurfVertices=cat(2,vol_A(hemi_idx).orig_vertex_coords(vol_A(hemi_idx).v_idx+1,:),ones(length(vol_A(hemi_idx).v_idx),1));
                 
         vol_vox_tmp=(inv(vol.tkrvox2ras)*(vol_reg)*(SurfVertices.')).';
         vol_vox_tmp=round(vol_vox_tmp(:,1:3));
         
+        %separate data into "cort_idx" and "non_cort_idx" entries; the
+        %former ones are for cortical locations (defined for ONLY one selected
+        %hemisphere. the latter ones are for non-cortical locations (may
+        %include the cortical locations of the other non-selected
+        %hemisphere).
         all_idx=[1:prod(overlay_vol.volsize(1:3))];
-        [cort_idx,ii]=unique(sub2ind(overlay_vol.volsize(1:3),vol_vox_tmp(:,2),vol_vox_tmp(:,1),vol_vox_tmp(:,3)));
+        %[cort_idx,ii]=unique(sub2ind(overlay_vol.volsize(1:3),vol_vox_tmp(:,2),vol_vox_tmp(:,1),vol_vox_tmp(:,3)));
         
-        %cort_idx=sub2ind(overlay_vol.volsize(1:3),vol_vox_tmp(:,2),vol_vox_tmp(:,1),vol_vox_tmp(:,3));
+        cort_idx=sub2ind(overlay_vol.volsize(1:3),vol_vox_tmp(:,2),vol_vox_tmp(:,1),vol_vox_tmp(:,3));
+        ii=[1:length(cort_idx)];
         vol_A(hemi_idx).v_idx=vol_A(hemi_idx).v_idx(ii);
+        non_cort_idx=setdiff(all_idx,cort_idx);
         
-        sub_cort_idx=setdiff(all_idx,cort_idx);
-        
-        n_source(hemi_idx)=length(sub_cort_idx)+length(cort_idx);
+        n_source(hemi_idx)=length(non_cort_idx)+length(cort_idx);
         n_dip(hemi_idx)=n_source(hemi_idx)*3;
         
         
@@ -491,7 +518,7 @@ if(~isempty(overlay_vol))
         all_coords=inv(vol_reg)*vol.tkrvox2ras*CRS;
         all_coords=all_coords(1:3,:)';
         vol_A(hemi_idx).loc=all_coords(cort_idx,:);
-        vol_A(hemi_idx).wb_loc=all_coords(sub_cort_idx,:)./1e3;
+        vol_A(hemi_idx).wb_loc=all_coords(non_cort_idx,:)./1e3;
         
         
                         %%%%crs=[44 59 44];
@@ -507,9 +534,9 @@ if(~isempty(overlay_vol))
         overlay_vol_value=reshape(overlay_vol.vol,[size(overlay_vol.vol,1)*size(overlay_vol.vol,2)*size(overlay_vol.vol,3), size(overlay_vol.vol,4)]);
         
         %overlay_vol_stc(offset+1:offset+length(vol_A(hemi_idx).v_idx),:)=overlay_vol_value(cort_idx,:);
-        %overlay_vol_stc(offset+length(vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),:)=overlay_vol_value(sub_cort_idx,:);
+        %overlay_vol_stc(offset+length(vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),:)=overlay_vol_value(non_cort_idx,:);
         
-        midx=[cort_idx(:)' sub_cort_idx(:)'];
+        midx=[cort_idx(:)' non_cort_idx(:)'];
         overlay_vol_stc(offset+1:offset+length(vol_A(hemi_idx).v_idx),:)=overlay_vol_value(midx(1:length(cort_idx)),:);
         overlay_vol_stc(offset+length(vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),:)=overlay_vol_value(midx(length(cort_idx)+1:end),:);
         
@@ -525,11 +552,11 @@ if(~isempty(overlay_vol))
                         %%%plot(overlay_vol_stc(loc_min_idx,:));
         
         X_hemi_cort{hemi_idx}=overlay_vol_value(cort_idx,:);
-        X_hemi_subcort{hemi_idx}=overlay_vol_value(sub_cort_idx,:);
+        X_hemi_subcort{hemi_idx}=overlay_vol_value(non_cort_idx,:);
 
         if(~isempty(overlay_aux_vol_value))
             aux_X_hemi_cort{hemi_idx}=overlay_aux_vol_value(cort_idx,:,:);
-            aux_X_hemi_subcort{hemi_idx}=overlay_aux_vol_value(sub_cort_idx,:,:);
+            aux_X_hemi_subcort{hemi_idx}=overlay_aux_vol_value(non_cort_idx,:,:);
         end;
     end;
     
