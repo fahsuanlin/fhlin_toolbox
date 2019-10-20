@@ -27,6 +27,11 @@ orig_vertex_coords=[];
 vertex_coords=[];
 faces=[];
 
+flag_smooth=1;
+smooth_fwhm=4; %mm
+
+flag_display=0;
+
 vol_reg=eye(4);
 
 for idx=1:length(varargin)/2
@@ -39,6 +44,12 @@ for idx=1:length(varargin)/2
             subjects_dir=option_value;
         case 'vol_reg'
             vol_reg=option_value;
+        case 'flag_smooth'
+            flag_smooth=option_value;
+        case 'smooth_fwhm'
+            smooth_fwhm=option_value;
+        case 'flag_display'
+            flag_display=option_value;
     end;
 end;
 
@@ -63,7 +74,26 @@ end;
 %prepare mapping overlay values from "overlay_vol"
 if(~isempty(overlay_vol))
     
-    overlay_vol_value=reshape(overlay_vol.vol,[size(overlay_vol.vol,1)*size(overlay_vol.vol,2)*size(overlay_vol.vol,3), size(overlay_vol.vol,4)]);
+    tmp=overlay_vol.vol;
+    
+    if(flag_smooth)
+        if(flag_display)
+            fprintf('smoothing with FWHM = [%1.1f] mm (vox size =[%1.1f %1.1f %1.1f] mm).',smooth_fwhm,overlay_vol.xsize overlay_vol.ysize overlay_vol.zsize);
+        end;
+        for t_idx=1:size(tmp,4)
+            if(t_idx==1)
+                [tmp(:,:,:,t_idx),kernel]=fmri_smooth(tmp(:,:,:,t_idx),smooth_fwhm,'vox',[overlay_vol.xsize overlay_vol.ysize overlay_vol.zsize]);
+            else
+                [tmp(:,:,:,t_idx),kernel]=fmri_smooth(tmp(:,:,:,t_idx),smooth_fwhm,'kernel',kernel,'vox',[overlay_vol.xsize overlay_vol.ysize overlay_vol.zsize]);
+            end;
+        end;
+    else
+        if(flag_display)
+            fprintf('no smoothing on the volume applied...\n');
+        end;
+    end;
+            
+    overlay_vol_value=reshape(tmp,[size(tmp,1)*size(tmp,2)*size(tmp,3), size(tmp,4)]);
     
     [C,R,S] = meshgrid([1:size(overlay_vol.vol,2)],[1:size(overlay_vol.vol,1)],[1:size(overlay_vol.vol,3)]);
     CRS=[C(:) R(:) S(:)];
