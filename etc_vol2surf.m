@@ -78,7 +78,7 @@ if(~isempty(overlay_vol))
     
     if(flag_smooth)
         if(flag_display)
-            fprintf('smoothing with FWHM = [%1.1f] mm (vox size =[%1.1f %1.1f %1.1f] mm).',smooth_fwhm,overlay_vol.xsize overlay_vol.ysize overlay_vol.zsize);
+            fprintf('smoothing with FWHM = [%1.1f] mm (vox size =[%1.1f %1.1f %1.1f] mm).',smooth_fwhm,overlay_vol.xsize, overlay_vol.ysize, overlay_vol.zsize);
         end;
         for t_idx=1:size(tmp,4)
             if(t_idx==1)
