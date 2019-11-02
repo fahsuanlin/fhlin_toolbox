@@ -93,8 +93,12 @@ ccmap(:,3)=interp1([1:size(cmap_crop,1)],cmap_crop(:,3),rr);
 
 
 mm=zeros(n_step_white+n_step_gray+n_step_color,3);
-mm(1:n_step_white,:)=1; %solid white
-mm(n_step_white+1:n_step_white+n_step_gray,:)=repmat(color_insig,[n_step_gray,1]); %solod gray
+if(n_step_white>0)
+    mm(1:n_step_white,:)=1; %solid white
+end;
+if(n_step_gray>0)
+    mm(n_step_white+1:n_step_white+n_step_gray,:)=repmat(color_insig,[n_step_gray,1]); %solod gray
+end;
 mm(n_step_white+n_step_gray+1:end,:)=ccmap;
 
 

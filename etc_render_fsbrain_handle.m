@@ -107,40 +107,41 @@ switch lower(param)
             case 'f'
                 fprintf('\nload overlay...\n');
                 [filename, pathname, filterindex] = uigetfile({'*.stc','STC file (space x time)';'*.w','w file (space x 1)'}, 'Pick an overlay file');
-                if(findstr(filename,'.stc')) %stc file
-                    [stc,vv,d0,d1,timeVec]=inverse_read_stc(sprintf('%s/%s',pathname,filename));
-                    if(findstr(filename,'-lh'))
-                        hemi='lh';
-                    else
-                        hemi='rh';
+                if(filename~=0) %not 'cancel'
+                    if(findstr(filename,'.stc')) %stc file
+                        [stc,vv,d0,d1,timeVec]=inverse_read_stc(sprintf('%s/%s',pathname,filename));
+                        if(findstr(filename,'-lh'))
+                            hemi='lh';
+                        else
+                            hemi='rh';
+                        end;
+                        etc_render_fsbrain.overlay_stc=stc;
+                        etc_render_fsbrain.overlay_vertex=vv;
+                        etc_render_fsbrain.overlay_stc_timeVec=timeVec;
+                        etc_render_fsbrain.stc_hemi=hemi;
+                        
+                        [tmp,etc_render_fsbrain.overlay_stc_timeVec_idx]=max(sum(etc_render_fsbrain.overlay_stc.^2,1));
+                        etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
+                        etc_render_fsbrain.overlay_stc_hemi=etc_render_fsbrain.overlay_stc;
+                        
+                        etc_render_fsbrain.overlay_flag_render=1;
+                    elseif(findstr(filename,'.w')) %w file
+                        [ww,vv]=inverse_read_wfile(sprintf('%s/%s',pathname,filename));
+                        if(findstr(filename,'-lh'))
+                            hemi='lh';
+                        else
+                            hemi='rh';
+                        end;
+                        etc_render_fsbrain.overlay_value=ww;
+                        etc_render_fsbrain.overlay_vertex=vv;
+                        etc_render_fsbrain.stc_hemi=hemi;
+                        
+                        etc_render_fsbrain.overlay_flag_render=1;
+                        
                     end;
-                    etc_render_fsbrain.overlay_stc=stc;
-                    etc_render_fsbrain.overlay_vertex=vv;
-                    etc_render_fsbrain.overlay_stc_timeVec=timeVec;
-                    etc_render_fsbrain.stc_hemi=hemi;
-                    
-                    [tmp,etc_render_fsbrain.overlay_stc_timeVec_idx]=max(sum(etc_render_fsbrain.overlay_stc.^2,1));
-                    etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
-                    etc_render_fsbrain.overlay_stc_hemi=etc_render_fsbrain.overlay_stc;
-                    
-                    etc_render_fsbrain.overlay_flag_render=1;
-                elseif(findstr(filename,'.w')) %w file
-                    [ww,vv]=inverse_read_wfile(sprintf('%s/%s',pathname,filename));
-                    if(findstr(filename,'-lh'))
-                        hemi='lh';
-                    else
-                        hemi='rh';
-                    end;
-                    etc_render_fsbrain.overlay_value=ww;
-                    etc_render_fsbrain.overlay_vertex=vv;
-                    etc_render_fsbrain.stc_hemi=hemi;
-                    
-                    etc_render_fsbrain.overlay_flag_render=1;
-                    
+                    etc_render_fsbrain.overlay_Ds=[];
+                    redraw;
                 end;
-                etc_render_fsbrain.overlay_Ds=[];
-                redraw;
-                
             case 'o' %draw ROI....
                 if(isfield(etc_render_fsbrain,'flag_collect_vertex'))
                     etc_render_fsbrain.flag_collect_vertex=~etc_render_fsbrain.flag_collect_vertex;
@@ -941,7 +942,11 @@ try
         dist=sqrt(sum((vv-repmat([pt(1),pt(2),pt(3)],[size(vv,1),1])).^2,2));
         [min_dist,min_dist_idx]=min(dist);
     end;
-    fprintf('the nearest vertex on the surface: IDX=[%d] {x, y, z} = {%2.2f %2.2f %2.2f} <<%2.2f>> \n',min_dist_idx,vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3),etc_render_fsbrain.ovs(min_dist_idx));
+    if(isempty(etc_render_fsbrain.ovs))
+        fprintf('the nearest vertex on the surface: IDX=[%d] {x, y, z} = {%2.2f %2.2f %2.2f} \n',min_dist_idx,vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3));
+    else
+        fprintf('the nearest vertex on the surface: IDX=[%d] {x, y, z} = {%2.2f %2.2f %2.2f} <<%2.2f>> \n',min_dist_idx,vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3),etc_render_fsbrain.ovs(min_dist_idx));
+    end;
     etc_render_fsbrain.click_coord_round=[vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3)];
     etc_render_fsbrain.click_vertex=min_dist_idx;
     if(etc_render_fsbrain.show_nearest_brain_surface_location_flag)
@@ -1467,8 +1472,8 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
     if(~isempty(etc_render_fsbrain.click_overlay_vertex)&~isempty(etc_render_fsbrain.overlay_stc))
         if(isempty(etc_render_fsbrain.fig_stc))
             etc_render_fsbrain.fig_stc=figure;
-            pos=get(etc_render_fsbrain.fig_brain,'pos');
-            set(etc_render_fsbrain.fig_stc,'pos',[pos(1), pos(2)-pos(4), pos(3), pos(4)]);
+            pos=get(etc_render_fsbrain.fig_brain,'outerpos');
+            set(etc_render_fsbrain.fig_stc,'outerpos',[pos(1), pos(2)-pos(4), pos(3), pos(4)]);
         else
             figure(etc_render_fsbrain.fig_stc);
         end;
