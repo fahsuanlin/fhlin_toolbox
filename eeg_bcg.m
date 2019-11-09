@@ -239,8 +239,8 @@ for ch_idx=1:length(non_ecg_channel)
                     
                     %if(non_ecg_channel(ch_idx)==9) keyboard; end;
                     [uu,ss,vv]=svd(bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:),'econ');
-                    %            tt=cumsum(diag(ss).^2);
-                    %            tt=tt./tt(end);
+                                tt=cumsum(diag(ss).^2);
+                                tt=tt./tt(end);
                     %             tmp=find(tt>0.8);
                     %             if(isempty(bcg_nsvd))
                     %                 bcg_nsvd=tmp(1);
