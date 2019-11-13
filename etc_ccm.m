@@ -1,6 +1,7 @@
 function [y_est, rho, W, U, D, y_trim]=etc_ccm(x,y,varargin)
 % etc_ccm convergent cross mapping
 %
+%
 % [y_est, rho, W, U, D, y_trim]=etc_ccm(x,y,[option, option_value,...]);
 %
 % estimate  y (source) by cross mapping from x (target) (M_x)
