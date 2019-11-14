@@ -61,9 +61,10 @@ rho=[];
 W=[];
 U=[];
 D=[];
+nn=[];
 
 flag_normalize=1;
-flag_display=1;
+flag_display=0;
 flag_graphics=1;
 
 tau=1; %interval between time series; in sample
@@ -78,6 +79,8 @@ for i=1:length(varargin)/2
             E=option_value;
         case 'tau'
             tau=option_value;
+        case 'nn'
+            nn=option_value;
         case 'flag_display'
             flag_display=option_value;
         case 'flag_normalize'
@@ -88,6 +91,10 @@ for i=1:length(varargin)/2
             fprintf('unknown option [%s].\nerror!\n',option_name);
             return;
     end;
+end;
+
+if(isempty(nn))
+    nn=E+2;
 end;
 
 if(flag_normalize)
@@ -106,9 +113,10 @@ idx_trim=find(sum(mask,1)>eps);
 t(:,idx_trim)=[];
 y_trim=y;
 y_trim(idx_trim)=[];
-X=x(t)';
+X=x(t)'; %shadowed manifold for X
+Y_m=y(t)'; %shadowed manifold for Y 
 
-[IDX,D] = knnsearch(X,X,'K',E+2); %find the E+2 nearest neighbors, including itself.
+[IDX,D] = knnsearch(X,X,'K',nn); %find the nn (default: E+2) nearest neighbors, including itself.
 
 %find E+1 nearest neighbors other than itself 
 IDX(:,1)=[];
@@ -120,6 +128,41 @@ W=U./repmat(sum(U,2),[1,size(U,2)]);
 
 Y=y(IDX); %<---locating the nearest points in Y manifold
 y_est=reshape(sum(Y.*W,2),size(y_trim));
+
+Y_e=y_est(IDX); %<---create a shadow Y manifold from estimates
+
+if((flag_display)&&(E==2))
+    figure;
+    subplot(121); hold on;
+    plot(X(:,1),X(:,2),'.')
+    
+    subplot(122); hold on;
+    plot(Y_m(:,1),Y_m(:,2),'.')
+    
+    h1=[];
+    ha=[];
+    h2=[];
+    hb=[];
+    he=[];
+    for ii=1:size(X,1)
+        if(~isempty(h1)) delete(h1); end;
+        if(~isempty(ha)) delete(ha); end;
+        subplot(121);
+        h1=plot(X(IDX(ii,:),1),X(IDX(ii,:),2),'ro');
+        ha=plot(X(ii,1),X(ii,2),'go');
+        
+        if(~isempty(h2)) delete(h2); end;
+        if(~isempty(hb)) delete(hb); end;
+        if(~isempty(he)) delete(he); end;
+        subplot(122);
+        h2=plot(Y_m(IDX(ii,:),1),Y_m(IDX(ii,:),2),'ro');
+        hb=plot(Y_m(ii,1),Y_m(ii,2),'go');
+        he=plot(Y_e(ii,1),Y_e(ii,2),'c+');
+
+        pause(0.1);
+    end;
+end;
+
 
 rho=corrcoef(y_trim(:),y_est(:));
 rho=rho(2,1);
