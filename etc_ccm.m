@@ -1,6 +1,7 @@
 function [y_est, rho, W, U, D, y_trim]=etc_ccm(x,y,varargin)
 % etc_ccm convergent cross mapping
 %
+%
 % [y_est, rho, W, U, D, y_trim]=etc_ccm(x,y,[option, option_value,...]);
 %
 % estimate  y (source) by cross mapping from x (target) (M_x)
@@ -126,7 +127,8 @@ D(:,1)=[];
 U=exp(-D./repmat(D(:,1),[1,size(D,2)]));
 W=U./repmat(sum(U,2),[1,size(U,2)]);
 
-Y=y(IDX); %<---locating the nearest points in Y manifold
+%Y=y(IDX); %<---locating the nearest points in Y manifold
+Y=reshape(y(IDX),size(IDX));%<---locating the nearest points in Y manifold
 y_est=reshape(sum(Y.*W,2),size(y_trim));
 
 Y_e=y_est(IDX); %<---create a shadow Y manifold from estimates
