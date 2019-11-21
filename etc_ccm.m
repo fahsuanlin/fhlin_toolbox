@@ -131,7 +131,11 @@ W=U./repmat(sum(U,2),[1,size(U,2)]);
 Y=reshape(y(IDX),size(IDX));%<---locating the nearest points in Y manifold
 y_est=reshape(sum(Y.*W,2),size(y_trim));
 
-Y_e=y_est(IDX); %<---create a shadow Y manifold from estimates
+y_est_append=y;
+y_est_append(1:length(y_est))=y_est;
+Y_e=y_est_append(t(:,IDX))'; %<---create a shadow Y manifold from estimates
+
+%Y_e=y_est(IDX); %<---create a shadow Y manifold from estimates
 
 if((flag_display)&&(E==2))
     figure;
