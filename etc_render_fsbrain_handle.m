@@ -1700,6 +1700,7 @@ if(~isempty(etc_render_fsbrain.curv))
     etc_render_fsbrain.fvdata(idx,:)=repmat(etc_render_fsbrain.curv_neg_color,[length(idx),1]);
 end;
 
+ovs=[];
 if(etc_render_fsbrain.overlay_flag_render)
     %2: curvature and overlay color
     if(~isempty(etc_render_fsbrain.overlay_value))

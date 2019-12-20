@@ -17,6 +17,7 @@ fig_bcg=[];
 flag_dyn_bcg=1;
 flag_post_ssp=0;
 flag_bcgmc=0;
+flag_ppca=0;
 flag_bcg_nsvd_auto=0;
 
 trigger=[];
@@ -49,6 +50,8 @@ for i=1:length(varargin)/2
             flag_post_ssp=option_value;
         case 'flag_bcgmc'
             flag_bcgmc=option_value;
+        case 'flag_ppca'
+            flag_ppca=option_value;
         case 'flag_bcg_nsvd_auto'
             flag_bcg_nsvd_auto=option_value;
         case 'trigger'
@@ -237,6 +240,18 @@ for ch_idx=1:length(non_ecg_channel)
                         [U,S,V,numiter] = SVT([sz(1) sz(2)],IDX,x(IDX),5*sqrt(prod(sz)),1.2/(length(IDX)/prod(sz)));
                     end;
                     
+                    if(flag_ppca) %restore matrix 
+                        x=bcg_all{non_ecg_channel(ch_idx)};
+                        sz=size(x);
+                        IDX=find(~isnan(x(:)));
+                        M = opRestriction(prod(sz), IDX);
+                        % Sampled data
+                        y = M(x(:),1);
+                        x1=IST_MC(y,M,sz);
+                        bcg_all{non_ecg_channel(ch_idx)}=x1;
+                        [U,S,V,numiter] = SVT([sz(1) sz(2)],IDX,x(IDX),5*sqrt(prod(sz)),1.2/(length(IDX)/prod(sz)));
+                    end;
+
                     %if(non_ecg_channel(ch_idx)==9) keyboard; end;
                     [uu,ss,vv]=svd(bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:),'econ');
                                 tt=cumsum(diag(ss).^2);
