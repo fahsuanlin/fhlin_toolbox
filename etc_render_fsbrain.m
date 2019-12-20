@@ -87,6 +87,10 @@ topo_aux2_point_name_h=[];
 topo_aux2_point_color=[0.3984    0.5977         0];
 topo_aux2_point_size=44;
 
+selected_contact_size=50;
+selected_contact_flag=1;
+selected_contact_color=[1 0 0];
+
 %electrode
 electrode=[];
 
@@ -888,6 +892,11 @@ etc_render_fsbrain.aux2_point_name=topo_aux2_point_name;
 etc_render_fsbrain.aux2_point_name_h=topo_aux2_point_name_h;
 etc_render_fsbrain.aux2_point_color=topo_aux2_point_color;
 etc_render_fsbrain.aux2_point_size=topo_aux2_point_size;
+
+
+etc_render_fsbrain.selected_contact_size=selected_contact_size;
+etc_render_fsbrain.selected_contact_flag=selected_contact_flag;
+etc_render_fsbrain.selected_contact_color=selected_contact_color;
 
 etc_render_fsbrain.register_rotate_angle=3; %default: 3 degrees
 etc_render_fsbrain.register_translate_dist=1e-3; %default: 1 mm

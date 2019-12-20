@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_gui
 
-% Last Modified by GUIDE v2.5 05-Jul-2019 16:04:44
+% Last Modified by GUIDE v2.5 20-Dec-2019 14:58:56
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -128,6 +128,10 @@ set(handles.edit_click_vertex_point_size,'string',sprintf('%d',etc_render_fsbrai
 set(handles.checkbox_overlay_truncate_neg,'value',etc_render_fsbrain.flag_overlay_truncate_neg);
 set(handles.checkbox_overlay_truncate_pos,'value',etc_render_fsbrain.flag_overlay_truncate_pos);
 
+
+set(handles.checkbox_selected_contact,'value',etc_render_fsbrain.selected_contact_flag);
+set(handles.pushbutton_selected_contact_color,'BackgroundColor',etc_render_fsbrain.selected_contact_color);
+set(handles.edit_selected_contact_size,'string',sprintf('%d',etc_render_fsbrain.selected_contact_size));
 
 % Update handles structure
 guidata(hObject, handles);
@@ -725,5 +729,72 @@ global etc_render_fsbrain
 etc_render_fsbrain.flag_overlay_truncate_pos=get(hObject,'Value');
 
 etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
+
+etc_render_fsbrain_handle('redraw');
+
+
+% --- Executes on button press in pushbutton_selected_contact_color.
+function pushbutton_selected_contact_color_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_selected_contact_color (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain;
+
+c = uisetcolor(etc_render_fsbrain.selected_contact_color,'Select a color');
+etc_render_fsbrain.selected_contact_color=c;
+set(handles.pushbutton_selected_contact_color,'BackgroundColor',etc_render_fsbrain.selected_contact_color);
+%etc_render_fsbrain_handle('draw_pointer');
+try
+    if(isfield(etc_render_fsbrain,'click_coord')&&(isfield(etc_render_fsbrain,'click_vertex_vox')))
+        %etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
+    else
+        %etc_render_fsbrain_handle('draw_pointer');        
+        etc_render_fsbrain_handle('redraw');        
+    end;
+catch ME
+end;
+
+
+function edit_selected_contact_size_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_selected_contact_size (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_selected_contact_size as text
+%        str2double(get(hObject,'String')) returns contents of edit_selected_contact_size as a double
+global etc_render_fsbrain;
+
+etc_render_fsbrain.selected_contact_size=str2double(get(hObject,'String'));
+%etc_render_fsbrain_handle('draw_pointer');
+if(isfield(etc_render_fsbrain,'click_coord')&&(isfield(etc_render_fsbrain,'click_vertex_vox')))
+    %etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
+else
+    %etc_render_fsbrain_handle('draw_pointer');        
+    etc_render_fsbrain_handle('redraw');        
+end;
+
+% --- Executes during object creation, after setting all properties.
+function edit_selected_contact_size_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_selected_contact_size (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in checkbox_selected_contact.
+function checkbox_selected_contact_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_selected_contact (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_selected_contact
+global etc_render_fsbrain
+
+etc_render_fsbrain.selected_contact_flag=get(hObject,'Value');
 
 etc_render_fsbrain_handle('redraw');

@@ -1857,7 +1857,7 @@ try
                     end;
                 end;
             end;
-            etc_render_fsbrain.aux2_point_coords_h=plot3(xx,yy,zz,'r.');
+            etc_render_fsbrain.aux2_point_coords_h=plot3(xx,yy,zz,'.');
             %set(etc_render_fsbrain.aux2_point_coords_h,'color',[1 0 0].*0.5,'markersize',16);
             set(etc_render_fsbrain.aux2_point_coords_h,'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
         end;
@@ -1874,10 +1874,11 @@ try
                 yy=etc_render_fsbrain.aux2_point_coords(idx,2);
                 zz=etc_render_fsbrain.aux2_point_coords(idx,3);
                 
-                etc_render_fsbrain.aux2_point_coords_h(2)=plot3(xx,yy,zz,'o');
-                set(etc_render_fsbrain.aux2_point_coords_h(2),'color',[1 0 0],'markersize',etc_render_fsbrain.aux2_point_size.*1.5);
-%                set(etc_render_fsbrain.aux2_point_coords_h(2),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
-                
+                if(etc_render_fsbrain.selected_contact_flag)
+                    etc_render_fsbrain.aux2_point_coords_h(2)=plot3(xx,yy,zz,'o');
+                    set(etc_render_fsbrain.aux2_point_coords_h(2),'color',etc_render_fsbrain.selected_contact_color,'markersize',etc_render_fsbrain.selected_contact_size);
+%                    set(etc_render_fsbrain.aux2_point_coords_h(2),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
+                end;
             catch ME
             end;
         end;
