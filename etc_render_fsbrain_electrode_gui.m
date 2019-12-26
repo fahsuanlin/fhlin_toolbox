@@ -111,6 +111,21 @@ if(~isempty(etc_render_fsbrain.electrode))
         else
             for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
                 etc_render_fsbrain.aux2_point_coords(count,:)=etc_render_fsbrain.electrode(e_idx).coord(c_idx,:);
+                
+                if(strcmp(etc_render_fsbrain.surf,'orig'))
+                    
+                else
+                    fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+                    
+                    tmp=etc_render_fsbrain.aux2_point_coords(count,:);
+                    
+                    vv=etc_render_fsbrain.orig_vertex_coords;
+                    dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+                    [min_dist,min_dist_idx]=min(dist);
+                    etc_render_fsbrain.aux2_point_coords(count,:)=etc_render_fsbrain.vertex_coords(min_dist_idx,:);
+                end;
+                
+                
                 count=count+1;
             end;
         end;
@@ -246,13 +261,28 @@ end;
 count=count+etc_render_fsbrain.electrode_contact_idx;
 
 surface_coord=etc_render_fsbrain.aux2_point_coords(count,:);
+
+if(strcmp(etc_render_fsbrain.surf,'orig'))
+    surface_orig_coord=surface_coord;
+else
+    %fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+    
+    tmp=surface_coord;
+    
+    vv=etc_render_fsbrain.vertex_coords;
+    dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+    [min_dist,min_dist_idx]=min(dist);
+    surface_orig_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
+end;
+
 try
-    v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+    v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
     click_vertex_vox=round(v(1:3))';
 catch ME
 end;
 
-etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
+
+etc_render_fsbrain.electrode_contact_coord_now=surface_orig_coord;
 
 try
     vv=etc_render_fsbrain.orig_vertex_coords;
@@ -586,12 +616,26 @@ end;
 count=count+etc_render_fsbrain.electrode_contact_idx;
 
 surface_coord=etc_render_fsbrain.aux2_point_coords(count,:);
-v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+
+if(strcmp(etc_render_fsbrain.surf,'orig'))
+    surface_orig_coord=surface_coord;
+else
+    %fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+    
+    tmp=surface_coord;
+    
+    vv=etc_render_fsbrain.vertex_coords;
+    dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+    [min_dist,min_dist_idx]=min(dist);
+    surface_orig_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
+end;
+
+v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
 click_vertex_vox=round(v(1:3))';
 
 etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
                     
-vv=etc_render_fsbrain.orig_vertex_coords;
+vv=etc_render_fsbrain.vertex_coords;
 dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
 [min_dist,min_dist_idx]=min(dist);
 %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
@@ -654,12 +698,26 @@ end;
 count=count+etc_render_fsbrain.electrode_contact_idx;
 
 surface_coord=etc_render_fsbrain.aux2_point_coords(count,:);
-v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+
+if(strcmp(etc_render_fsbrain.surf,'orig'))
+    surface_orig_coord=surface_coord;
+else
+    %fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+    
+    tmp=surface_coord;
+    
+    vv=etc_render_fsbrain.vertex_coords;
+    dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+    [min_dist,min_dist_idx]=min(dist);
+    surface_orig_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
+end;
+
+v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
 click_vertex_vox=round(v(1:3))';
 
 etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
                     
-vv=etc_render_fsbrain.orig_vertex_coords;
+vv=etc_render_fsbrain.vertex_coords;
 dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
 [min_dist,min_dist_idx]=min(dist);
 %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
@@ -710,12 +768,26 @@ end;
 count=count+etc_render_fsbrain.electrode_contact_idx;
 
 surface_coord=etc_render_fsbrain.aux2_point_coords(count,:);
-v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+
+if(strcmp(etc_render_fsbrain.surf,'orig'))
+    surface_orig_coord=surface_coord;
+else
+    %fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+    
+    tmp=surface_coord;
+    
+    vv=etc_render_fsbrain.vertex_coords;
+    dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+    [min_dist,min_dist_idx]=min(dist);
+    surface_orig_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
+end;
+
+v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
 click_vertex_vox=round(v(1:3))';
 
 etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
                     
-vv=etc_render_fsbrain.orig_vertex_coords;
+vv=etc_render_fsbrain.vertex_coords;
 dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
 [min_dist,min_dist_idx]=min(dist);
 %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
@@ -767,12 +839,26 @@ end;
 count=count+etc_render_fsbrain.electrode_contact_idx;
 
 surface_coord=etc_render_fsbrain.aux2_point_coords(count,:);
-v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+
+if(strcmp(etc_render_fsbrain.surf,'orig'))
+    surface_orig_coord=surface_coord;
+else
+    %fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+    
+    tmp=surface_coord;
+    
+    vv=etc_render_fsbrain.vertex_coords;
+    dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+    [min_dist,min_dist_idx]=min(dist);
+    surface_orig_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
+end;
+
+v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
 click_vertex_vox=round(v(1:3))';
 
 etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
                     
-vv=etc_render_fsbrain.orig_vertex_coords;
+vv=etc_render_fsbrain.vertex_coords;
 dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
 [min_dist,min_dist_idx]=min(dist);
 %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
@@ -825,12 +911,26 @@ end;
 count=count+etc_render_fsbrain.electrode_contact_idx;
 
 surface_coord=etc_render_fsbrain.aux2_point_coords(count,:);
-v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+
+if(strcmp(etc_render_fsbrain.surf,'orig'))
+    surface_orig_coord=surface_coord;
+else
+    %fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+    
+    tmp=surface_coord;
+    
+    vv=etc_render_fsbrain.vertex_coords;
+    dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+    [min_dist,min_dist_idx]=min(dist);
+    surface_orig_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
+end;
+
+v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
 click_vertex_vox=round(v(1:3))';
 
 etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
                     
-vv=etc_render_fsbrain.orig_vertex_coords;
+vv=etc_render_fsbrain.vertex_coords;
 dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
 [min_dist,min_dist_idx]=min(dist);
 %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
@@ -883,12 +983,26 @@ end;
 count=count+etc_render_fsbrain.electrode_contact_idx;
 
 surface_coord=etc_render_fsbrain.aux2_point_coords(count,:);
-v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+
+if(strcmp(etc_render_fsbrain.surf,'orig'))
+    surface_orig_coord=surface_coord;
+else
+    %fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+    
+    tmp=surface_coord;
+    
+    vv=etc_render_fsbrain.vertex_coords;
+    dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+    [min_dist,min_dist_idx]=min(dist);
+    surface_orig_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
+end;
+
+v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
 click_vertex_vox=round(v(1:3))';
 
 etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
                     
-vv=etc_render_fsbrain.orig_vertex_coords;
+vv=etc_render_fsbrain.vertex_coords;
 dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
 [min_dist,min_dist_idx]=min(dist);
 %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
@@ -1000,7 +1114,6 @@ else
     [min_dist,min_dist_idx]=min(dist);
     surface_orig_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
 end;
-
 try
 %    v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
     v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
@@ -1095,12 +1208,26 @@ end;
 count=count+etc_render_fsbrain.electrode_contact_idx;
 
 surface_coord=etc_render_fsbrain.aux2_point_coords(count,:);
-v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+
+if(strcmp(etc_render_fsbrain.surf,'orig'))
+    surface_orig_coord=surface_coord;
+else
+    %fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+    
+    tmp=surface_coord;
+    
+    vv=etc_render_fsbrain.vertex_coords;
+    dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+    [min_dist,min_dist_idx]=min(dist);
+    surface_orig_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
+end;
+
+v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
 click_vertex_vox=round(v(1:3))';
 
 etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
                     
-vv=etc_render_fsbrain.orig_vertex_coords;
+vv=etc_render_fsbrain.vertex_coords;
 dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
 [min_dist,min_dist_idx]=min(dist);
 %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
@@ -1152,12 +1279,26 @@ end;
 count=count+etc_render_fsbrain.electrode_contact_idx;
 
 surface_coord=etc_render_fsbrain.aux2_point_coords(count,:);
-v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+
+if(strcmp(etc_render_fsbrain.surf,'orig'))
+    surface_orig_coord=surface_coord;
+else
+    %fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+    
+    tmp=surface_coord;
+    
+    vv=etc_render_fsbrain.vertex_coords;
+    dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+    [min_dist,min_dist_idx]=min(dist);
+    surface_orig_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
+end;
+
+v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
 click_vertex_vox=round(v(1:3))';
 
 etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
                     
-vv=etc_render_fsbrain.orig_vertex_coords;
+vv=etc_render_fsbrain.vertex_coords;
 dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
 [min_dist,min_dist_idx]=min(dist);
 %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
@@ -1664,8 +1805,21 @@ if(isfield(etc_render_fsbrain,'click_coord'))
     if(~isempty(etc_render_fsbrain.click_coord))
         surface_coord=etc_render_fsbrain.click_coord'; %clicked surface coord
         
-        
-        v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+        if(strcmp(etc_render_fsbrain.surf,'orig'))
+            surface_orig_coord=surface_coord;
+        else
+            %fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+            
+            tmp=surface_coord;
+            
+            vv=etc_render_fsbrain.vertex_coords;
+            dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+            [min_dist,min_dist_idx]=min(dist);
+            surface_orig_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
+        end;
+
+
+        v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
         click_vertex_vox=round(v(1:3))';
 
         etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
@@ -1768,12 +1922,27 @@ end;
 count=count+etc_render_fsbrain.electrode_contact_idx;
 
 surface_coord=etc_render_fsbrain.aux2_point_coords(count,:);
-v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+
+if(strcmp(etc_render_fsbrain.surf,'orig'))
+    surface_orig_coord=surface_coord;
+else
+    %fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+    
+    tmp=surface_coord;
+    
+    vv=etc_render_fsbrain.vertex_coords;
+    dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+    [min_dist,min_dist_idx]=min(dist);
+    surface_orig_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
+end;
+
+                
+v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
 click_vertex_vox=round(v(1:3))';
 
 etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
                     
-vv=etc_render_fsbrain.orig_vertex_coords;
+vv=etc_render_fsbrain.vertex_coords;
 dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
 [min_dist,min_dist_idx]=min(dist);
 %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
@@ -1902,12 +2071,26 @@ end;
 count=count+etc_render_fsbrain.electrode_contact_idx;
 
 surface_coord=etc_render_fsbrain.aux2_point_coords(count,:);
-v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+
+if(strcmp(etc_render_fsbrain.surf,'orig'))
+    surface_orig_coord=surface_coord;
+else
+    %fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+    
+    tmp=surface_coord;
+    
+    vv=etc_render_fsbrain.vertex_coords;
+    dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+    [min_dist,min_dist_idx]=min(dist);
+    surface_orig_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
+end;
+
+v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
 click_vertex_vox=round(v(1:3))';
 
 etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
                     
-vv=etc_render_fsbrain.orig_vertex_coords;
+vv=etc_render_fsbrain.vertex_coords;
 dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
 [min_dist,min_dist_idx]=min(dist);
 %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
