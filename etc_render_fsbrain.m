@@ -116,7 +116,8 @@ flag_colorbar=0;
 show_nearest_brain_surface_location_flag=1;
 show_contact_names_flag=1;
 show_all_contacts_mri_flag=1;
-electrode_update_contact_view_flag=0;
+show_all_contacts_brain_surface_flag=1;
+electrode_update_contact_view_flag=1;
 
 click_point_size=28;
 click_point_color=[1 0 1];
@@ -223,6 +224,8 @@ for idx=1:length(varargin)/2
             show_contact_names_flag=option_value;
         case 'show_all_contacts_mri_flag'
             show_all_contacts_mri_flag=option_value;
+        case 'show_all_contacts_brain_surface_flag'
+            show_all_contacts_brain_surface_flag=option_value;
         case 'electrode_update_contact_view_flag'
             electrode_update_contact_view_flag=option_value;
         case 'view_angle'
@@ -822,6 +825,7 @@ etc_render_fsbrain.show_nearest_brain_surface_location_flag=show_nearest_brain_s
 etc_render_fsbrain.show_contact_names_flag=show_contact_names_flag;
 etc_render_fsbrain.electrode_update_contact_view_flag=electrode_update_contact_view_flag;
 etc_render_fsbrain.show_all_contacts_mri_flag=show_all_contacts_mri_flag;
+etc_render_fsbrain.show_all_contacts_brain_surface_flag=show_all_contacts_brain_surface_flag;
 
 etc_render_fsbrain.overlay_vol=overlay_vol;
 etc_render_fsbrain.overlay_vol_stc=overlay_vol_stc;
