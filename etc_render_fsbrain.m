@@ -911,6 +911,7 @@ etc_render_fsbrain.click_vertex_point_color=click_vertex_point_color;
 etc_render_fsbrain.click_vertex_point_size=click_vertex_point_size;
 
 etc_render_fsbrain.electrode=electrode;
+etc_render_fsbrain.fig_electrode_gui=[];
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 %setup call-back function
