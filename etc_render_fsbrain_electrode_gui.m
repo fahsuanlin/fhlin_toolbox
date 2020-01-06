@@ -1258,9 +1258,7 @@ try
 catch ME
 end;
 
-
-
-etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
+etc_render_fsbrain.electrode_contact_coord_now=surface_orig_coord;
                     
 try
     vv=etc_render_fsbrain.orig_vertex_coords;
