@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_gui
 
-% Last Modified by GUIDE v2.5 20-Dec-2019 14:58:56
+% Last Modified by GUIDE v2.5 02-Jan-2020 15:17:32
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -798,3 +798,19 @@ global etc_render_fsbrain
 etc_render_fsbrain.selected_contact_flag=get(hObject,'Value');
 
 etc_render_fsbrain_handle('redraw');
+
+
+% --- Executes on button press in pushbutton_auto_threshold.
+function pushbutton_auto_threshold_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_auto_threshold (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global etc_render_fsbrain
+
+etc_render_fsbrain.overlay_threshold=[];
+
+etc_render_fsbrain_handle('redraw');
+
+set(handles.edit_threshold_min,'string',sprintf('%2.1e',min(etc_render_fsbrain.overlay_threshold)));
+set(handles.edit_threshold_max,'string',sprintf('%2.1e',max(etc_render_fsbrain.overlay_threshold)));

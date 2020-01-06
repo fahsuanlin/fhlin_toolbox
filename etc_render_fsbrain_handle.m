@@ -570,7 +570,7 @@ switch lower(param)
                     end;
                 end;
             case 'd' %change overlay threshold or time course limits
-                if((gcf==etc_render_fsbrain.fig_brain)||(gcf==etc_render_fsbrain.fig_vol))
+                if((gcf==etc_render_fsbrain.fig_brain)|(gcf==etc_render_fsbrain.fig_vol))
                     fprintf('change threshold...\n');
                     fprintf('current threshold = %s\n',mat2str(etc_render_fsbrain.overlay_threshold));
                     def={num2str(etc_render_fsbrain.overlay_threshold)};
@@ -1735,6 +1735,7 @@ if(etc_render_fsbrain.overlay_flag_render)
         
         if(isempty(etc_render_fsbrain.overlay_threshold))
             tmp=sort(ovs(:));
+            fprintf('automatic threshold at 50%% [%1.1e] and 90%% [%1.1e] of the current overlay...\n',tmp(round(length(tmp)*0.5)), tmp(round(length(tmp)*0.9)));
             etc_render_fsbrain.overlay_threshold=[tmp(round(length(tmp)*0.5)) tmp(round(length(tmp)*0.9))];
         end;
 
