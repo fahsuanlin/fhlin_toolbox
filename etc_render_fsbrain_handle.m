@@ -64,43 +64,7 @@ switch lower(param)
                 print(fn,'-dtiff');
             case 'q'
                 fprintf('\nclosing all figures!\n');
-                try
-                    close(etc_render_fsbrain.fig_brain);
-                catch
-                end;
-                try
-                    close(etc_render_fsbrain.fig_stc);
-                catch
-                end;
-                try
-                    close(etc_render_fsbrain.fig_vol);
-                catch
-                end;
-                try
-                    close(etc_render_fsbrain.fig_gui);
-                catch
-                end;
-                try
-                    close(etc_render_fsbrain.fig_label_gui);
-                catch
-                end;
-                try
-                    close(etc_render_fsbrain.fig_register);
-                catch
-                end;
-                try
-                    close(etc_render_fsbrain.fig_coord_gui);
-                catch
-                end;
-                try
-                    close(etc_render_fsbrain.fig_electrode_gui);
-                catch
-                end;
-                
-                try
-                    close(etc_render_fsbrain.fig_sensor_gui);
-                catch
-                end;
+                etc_render_fsbrain_handle('del');
             case 'r'
                 fprintf('\nredrawing...\n');
                 redraw;
