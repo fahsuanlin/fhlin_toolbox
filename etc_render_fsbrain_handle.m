@@ -675,6 +675,7 @@ switch lower(param)
             delete(etc_render_fsbrain.fig_stc);
             delete(etc_render_fsbrain.fig_coord_gui);
             delete(etc_render_fsbrain.fig_label_gui);
+            delete(etc_render_fsbrain.fig_electrode_gui);
             delete(etc_render_fsbrain.fig_gui);
             delete(etc_render_fsbrain.fig_vol);
             delete(etc_render_fsbrain.fig_brain);
