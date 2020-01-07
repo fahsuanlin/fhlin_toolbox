@@ -1019,8 +1019,12 @@ try
     end;
     
     %add exploration toolbar
-    addToolbarExplorationButtons(etc_render_fsbrain.fig_vol);
-    
+    [vv date] = version;
+    DateNumber = datenum(date);
+    if(DateNumber>737426) %after January 1, 2019; Matlab verion 2019 and later
+        addToolbarExplorationButtons(etc_render_fsbrain.fig_vol);
+    end;
+
     if(~isempty(etc_render_fsbrain.vol_vox))
         figure(etc_render_fsbrain.fig_vol);
         
@@ -1749,7 +1753,11 @@ set(gcf,'color',etc_render_fsbrain.bg_color);
 view(etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2));
 
 %add exploration toolbar
-addToolbarExplorationButtons(etc_render_fsbrain.fig_brain);
+[vv date] = version;
+DateNumber = datenum(date);
+if(DateNumber>737426) %after January 1, 2019; Matlab verion 2019 and later
+    addToolbarExplorationButtons(etc_render_fsbrain.fig_brain);
+end;
 
 
 try
