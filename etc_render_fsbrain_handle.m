@@ -145,7 +145,8 @@ switch lower(param)
                             etc_render_fsbrain.label_h=plot3(etc_render_fsbrain.vertex_coords_hemi(roi_idx,1),etc_render_fsbrain.vertex_coords_hemi(roi_idx,2), etc_render_fsbrain.vertex_coords_hemi(roi_idx,3),'r.');
                             
                             %save the label?
-                            [file, path] = uiputfile({'*.label'});
+                            %[file, path] = uiputfile({'*.label'});
+                            [file, path] = uigetfile({'*.label','FreeSufer label'}, 'Pick a file');
                             if isequal(file,0) || isequal(path,0)
                                 etc_render_fsbrain.label_idx=[];
                                 delete(etc_render_fsbrain.label_h);
@@ -333,7 +334,8 @@ switch lower(param)
                 %fprintf('\nannotation/labels GUI...\n');
                 global etc_render_fsbrain;
                 
-                [filename, pathname, filterindex] = uigetfile({'*.annot','FreeSufer annotation';'*.label','FreeSufer label'}, 'Pick a file', 'lh.aparc.a2009s.annot');
+                %[filename, pathname, filterindex] = uigetfile({'*.annot','FreeSufer annotation';'*.label','FreeSufer label'}, 'Pick a file', 'lh.aparc.a2009s.annot');
+                [filename, pathname, filterindex] = uigetfile({'*.annot; *.label','FreeSufer annotation/label'}, 'Pick a file', 'lh.aparc.a2009s.annot');
                 try
                     if(findstr(filename,'.annot'))
                         file_annot=sprintf('%s/%s',pathname,filename);
@@ -636,14 +638,50 @@ switch lower(param)
     case 'del'
         try
             delete(etc_render_fsbrain.fig_register);
+        catch ME
+            close(etc_render_fsbrain.fig_register,'force');
+        end;
+        
+        try
             delete(etc_render_fsbrain.fig_stc);
+        catch ME
+            close(etc_render_fsbrain.fig_stc,'force');
+        end;
+        
+        try
             delete(etc_render_fsbrain.fig_coord_gui);
+        catch ME
+            close(etc_render_fsbrain.fig_coord_gui,'force');
+        end;
+        
+        try
             delete(etc_render_fsbrain.fig_label_gui);
+        catch ME
+            close(etc_render_fsbrain.fig_label_gui,'force');
+        end;
+        
+        try
             delete(etc_render_fsbrain.fig_electrode_gui);
+        catch ME
+            close(etc_render_fsbrain.fig_electrode_gui,'force');
+        end;
+        
+        try
             delete(etc_render_fsbrain.fig_gui);
+        catch ME
+            close(etc_render_fsbrain.fig_gui,'force');
+        end;
+        
+        try
             delete(etc_render_fsbrain.fig_vol);
+        catch ME
+            close(etc_render_fsbrain.fig_vol,'force');
+        end;
+        
+        try
             delete(etc_render_fsbrain.fig_brain);
         catch ME
+            close(etc_render_fsbrain.fig_brain,'force');
         end;
     case 'bd'
         if(gcf==etc_render_fsbrain.fig_brain)

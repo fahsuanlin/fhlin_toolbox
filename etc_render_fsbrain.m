@@ -301,6 +301,10 @@ if(~isempty(overlay_vol_stc)&~isempty(vol_A))
     if(isempty(overlay_stc_timeVec))
         overlay_stc_timeVec=[1:size(overlay_stc,2)];
     end;
+elseif(~isempty(overlay_stc))
+    if(isempty(overlay_stc_timeVec))
+        overlay_stc_timeVec=[1:size(overlay_stc,2)];
+    end;
 elseif(~isempty(overlay_vol))
     if(isempty(overlay_stc_timeVec))
         overlay_stc_timeVec=[1:size(overlay_vol.vol,4)];
