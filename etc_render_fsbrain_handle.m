@@ -639,49 +639,81 @@ switch lower(param)
         try
             delete(etc_render_fsbrain.fig_register);
         catch ME
-            close(etc_render_fsbrain.fig_register,'force');
+            if(isfield(etc_render_fsbrain,'fig_register'))
+                close(etc_render_fsbrain.fig_register,'force');
+            else
+                close(gcf,'force');
+            end;
         end;
         
         try
             delete(etc_render_fsbrain.fig_stc);
         catch ME
-            close(etc_render_fsbrain.fig_stc,'force');
+            if(isfield(etc_render_fsbrain,'fig_stc'))
+                close(etc_render_fsbrain.fig_stc,'force');
+            else
+                close(gcf,'force');
+            end;
         end;
         
         try
             delete(etc_render_fsbrain.fig_coord_gui);
         catch ME
-            close(etc_render_fsbrain.fig_coord_gui,'force');
+            if(isfield(etc_render_fsbrain,'fig_coord_gui'))
+                close(etc_render_fsbrain.fig_coord_gui,'force');
+            else
+                close(gcf,'force');
+            end;
         end;
         
         try
             delete(etc_render_fsbrain.fig_label_gui);
         catch ME
-            close(etc_render_fsbrain.fig_label_gui,'force');
+            if(isfield(etc_render_fsbrain,'fig_label_gui'))
+                close(etc_render_fsbrain.fig_label_gui,'force');
+            else
+                close(gcf,'force');
+            end;
         end;
         
         try
             delete(etc_render_fsbrain.fig_electrode_gui);
         catch ME
-            close(etc_render_fsbrain.fig_electrode_gui,'force');
+            if(isfield(etc_render_fsbrain,'fig_electrode_gui'))
+                close(etc_render_fsbrain.fig_electrode_gui,'force');
+            else
+                close(gcf,'force');
+            end;
         end;
         
         try
             delete(etc_render_fsbrain.fig_gui);
         catch ME
-            close(etc_render_fsbrain.fig_gui,'force');
+            if(isfield(etc_render_fsbrain,'fig_gui'))
+                close(etc_render_fsbrain.fig_gui,'force');
+            else
+                close(gcf,'force');
+            end;
         end;
         
         try
             delete(etc_render_fsbrain.fig_vol);
         catch ME
-            close(etc_render_fsbrain.fig_vol,'force');
+            if(isfield(etc_render_fsbrain,'fig_vol'))
+                close(etc_render_fsbrain.fig_vol,'force');
+            else
+                close(gcf,'force');
+            end;
         end;
         
         try
             delete(etc_render_fsbrain.fig_brain);
         catch ME
-            close(etc_render_fsbrain.fig_brain,'force');
+            if(isfield(etc_render_fsbrain,'fig_brain'))
+                close(etc_render_fsbrain.fig_brain,'force');
+            else
+                close(gcf,'force');
+            end;
         end;
     case 'bd'
         if(gcf==etc_render_fsbrain.fig_brain)
