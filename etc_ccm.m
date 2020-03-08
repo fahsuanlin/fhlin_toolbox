@@ -122,7 +122,7 @@ Y_m=y(t)'; %shadowed manifold for Y
 %find E+1 nearest neighbors other than itself 
 IDX(:,1)=[];
 D(:,1)=[];
-
+    
 %weightings
 U=exp(-D./repmat(D(:,1),[1,size(D,2)]));
 W=U./repmat(sum(U,2),[1,size(U,2)]);

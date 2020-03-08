@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_gui
 
-% Last Modified by GUIDE v2.5 02-Jan-2020 15:17:32
+% Last Modified by GUIDE v2.5 07-Mar-2020 21:07:27
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -132,6 +132,11 @@ set(handles.checkbox_overlay_truncate_pos,'value',etc_render_fsbrain.flag_overla
 set(handles.checkbox_selected_contact,'value',etc_render_fsbrain.selected_contact_flag);
 set(handles.pushbutton_selected_contact_color,'BackgroundColor',etc_render_fsbrain.selected_contact_color);
 set(handles.edit_selected_contact_size,'string',sprintf('%d',etc_render_fsbrain.selected_contact_size));
+
+set(handles.checkbox_selected_electrode,'value',etc_render_fsbrain.selected_electrode_flag);
+set(handles.pushbutton_selected_electrode_color,'BackgroundColor',etc_render_fsbrain.selected_electrode_color);
+set(handles.edit_selected_electrode_size,'string',sprintf('%d',etc_render_fsbrain.selected_electrode_size));
+
 
 % Update handles structure
 guidata(hObject, handles);
@@ -745,12 +750,12 @@ etc_render_fsbrain.selected_contact_color=c;
 set(handles.pushbutton_selected_contact_color,'BackgroundColor',etc_render_fsbrain.selected_contact_color);
 %etc_render_fsbrain_handle('draw_pointer');
 try
-    if(isfield(etc_render_fsbrain,'click_coord')&&(isfield(etc_render_fsbrain,'click_vertex_vox')))
+    %if(isfield(etc_render_fsbrain,'click_coord')&&(isfield(etc_render_fsbrain,'click_vertex_vox')))
         %etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
-    else
+    %else
         %etc_render_fsbrain_handle('draw_pointer');        
         etc_render_fsbrain_handle('redraw');        
-    end;
+    %end;
 catch ME
 end;
 
@@ -766,11 +771,14 @@ global etc_render_fsbrain;
 
 etc_render_fsbrain.selected_contact_size=str2double(get(hObject,'String'));
 %etc_render_fsbrain_handle('draw_pointer');
-if(isfield(etc_render_fsbrain,'click_coord')&&(isfield(etc_render_fsbrain,'click_vertex_vox')))
-    %etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
-else
-    %etc_render_fsbrain_handle('draw_pointer');        
-    etc_render_fsbrain_handle('redraw');        
+try
+    %if(isfield(etc_render_fsbrain,'click_coord')&&(isfield(etc_render_fsbrain,'click_vertex_vox')))
+        %etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
+    %else
+        %etc_render_fsbrain_handle('draw_pointer');
+        etc_render_fsbrain_handle('redraw');
+    %end;
+catch ME
 end;
 
 % --- Executes during object creation, after setting all properties.
@@ -814,3 +822,76 @@ etc_render_fsbrain_handle('redraw');
 
 set(handles.edit_threshold_min,'string',sprintf('%2.1e',min(etc_render_fsbrain.overlay_threshold)));
 set(handles.edit_threshold_max,'string',sprintf('%2.1e',max(etc_render_fsbrain.overlay_threshold)));
+
+
+
+function edit_selected_electrode_size_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_selected_electrode_size (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_selected_electrode_size as text
+%        str2double(get(hObject,'String')) returns contents of edit_selected_electrode_size as a double
+global etc_render_fsbrain;
+
+etc_render_fsbrain.selected_electrode_size=str2double(get(hObject,'String'));
+%etc_render_fsbrain_handle('draw_pointer');
+try
+    %if(isfield(etc_render_fsbrain,'click_coord')&&(isfield(etc_render_fsbrain,'click_vertex_vox')))
+        %etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
+    %else
+        %etc_render_fsbrain_handle('draw_pointer');
+        etc_render_fsbrain_handle('redraw');
+    %end;
+catch ME
+end;
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_selected_electrode_size_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_selected_electrode_size (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pushbutton_selected_electrode_color.
+function pushbutton_selected_electrode_color_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_selected_electrode_color (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain;
+
+c = uisetcolor(etc_render_fsbrain.selected_electrode_color,'Select a color');
+etc_render_fsbrain.selected_electrode_color=c;
+set(handles.pushbutton_selected_electrode_color,'BackgroundColor',etc_render_fsbrain.selected_electrode_color);
+%etc_render_fsbrain_handle('draw_pointer');
+try
+    %if(isfield(etc_render_fsbrain,'click_coord')&&(isfield(etc_render_fsbrain,'click_vertex_vox')))
+        %etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
+    %else
+        %etc_render_fsbrain_handle('draw_pointer');        
+        etc_render_fsbrain_handle('redraw');        
+    %end;
+catch ME
+end;
+
+
+
+% --- Executes on button press in checkbox_selected_electrode.
+function checkbox_selected_electrode_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_selected_electrode (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_selected_electrode
+global etc_render_fsbrain
+
+etc_render_fsbrain.selected_electrode_flag=get(hObject,'Value');
+
+etc_render_fsbrain_handle('redraw');
