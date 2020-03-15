@@ -1491,7 +1491,7 @@ surface_coord=etc_render_fsbrain.click_coord'; %clicked surface coord
 
 
 mask=repmat(etc_render_fsbrain.electrode_mask(etc_render_fsbrain.electrode_idx,:),[3 1])';
-etc_render_fsbrain.aux2_point_coords=etc_render_fsbrain.aux2_point_coords+mask.*repmat((surface_coord-surface_coord0),[size(etc_render_fsbrain.aux2_point_coords,1),1]);
+etc_render_fsbrain.aux2_point_coords=etc_render_fsbrain.aux2_point_coords+mask.*repmat((surface_coord(:)'-surface_coord0(:)'),[size(etc_render_fsbrain.aux2_point_coords,1),1]);
 
 %update coordinates for electrode contacts
 count=1;
