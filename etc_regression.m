@@ -11,6 +11,9 @@ function [p, r2, beta]=etc_regression(x,y,varargin)
 %
 
 flag_display=1;
+flag_display_data=1;
+flag_display_regline=1;
+flag_display_regline_text=1;
 
 p=[];
 r2=[];
@@ -23,6 +26,12 @@ for i=1:length(varargin)/2
     switch lower(option)
         case 'flag_display'
             flag_display=option_value;
+        case 'flag_display_data'
+            flag_display_data=option_value;
+        case 'flag_display_regline'
+            flag_display_regline=option_value;
+        case 'flag_display_regline_text'
+            flag_display_regline_text=option_value;
         otherwise
             fprintf('unknown option [%s]!\nerror!\n',option);
             return;
@@ -46,15 +55,20 @@ F=(SS_regression./1)/(SS_error/(length(y(:))-2));
 p=1-fcdf(F,1,(length(y(:))-2));
 
 if(flag_display)
-    plot(x(:),y(:),'.'); hold on;
+    if(flag_display_data)
+        plot(x(:),y(:),'.'); hold on;
+    end;
     reg_x=[min(x) max(x)]';
     reg_y=beta(1)+beta(2).*reg_x; 
 
-    
-    h=line(reg_x,reg_y); set(h,'color','k','linewidth',2);
-    h=text((max(x)+min(x))/2,min(y)+(max(y)+min(y))/4,sprintf('Y=%2.2f+%2.2f X',beta(1),beta(2))); set(h,'fontname','helvetica','fontsize',14);  
-    h=text((max(x)+min(x))/2,min(y)+(max(y)+min(y))/4*0.9,sprintf('(R^2=%1.2f; p=%4.3f)',r2,p)); set(h,'fontname','helvetica','fontsize',14);
-    set(gca,'fontname','helvetica','fontsize',14);
+    if(flag_display_regline)
+        h=line(reg_x,reg_y); set(h,'color','k','linewidth',2);
+    end;
+    if(flag_display_regline_text)
+        h=text((max(x)+min(x))/2,min(y)+(max(y)+min(y))/4,sprintf('Y=%2.2f+%2.2f X',beta(1),beta(2))); set(h,'fontname','helvetica','fontsize',14);
+        h=text((max(x)+min(x))/2,min(y)+(max(y)+min(y))/4*0.9,sprintf('(R^2=%1.2f; p=%4.3f)',r2,p)); set(h,'fontname','helvetica','fontsize',14);
+        set(gca,'fontname','helvetica','fontsize',14);
+    end;
 %    set(gca,'xlim',[0.050 0.500],'ylim',[4 6])
 %    h=xlabel('MEG TTP (s)'); set(h,'fontname','helvetica','fontsize',14);
 %    h=ylabel('fMRI TTP (s)'); set(h,'fontname','helvetica','fontsize',14);

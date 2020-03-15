@@ -317,7 +317,11 @@ elseif(~isempty(overlay_stc))
     end;
 elseif(~isempty(overlay_vol))
     if(isempty(overlay_stc_timeVec))
-        overlay_stc_timeVec=[1:size(overlay_vol.vol,4)];
+        if(ndims(overlay_vol.vol)==4)
+            overlay_stc_timeVec=[1:size(overlay_vol.vol,4)];
+        else
+            overlay_stc_timeVec=[1];
+        end;
     end;
 end;
 
@@ -346,8 +350,12 @@ if(isempty(overlay_value)&~isempty(overlay_stc))
     end;
 elseif(~isempty(overlay_vol))
     sz=size(overlay_vol.vol);
-    tmp=reshape(overlay_vol.vol,[sz(1)*sz(2)*sz(3),sz(4)]);
-    [dd,overlay_stc_timeVec_idx]=max(sum(tmp.^2,1),[],2);
+    if(ndims(overlay_vol.vol)==4)
+        tmp=reshape(overlay_vol.vol,[sz(1)*sz(2)*sz(3),sz(4)]);
+        [dd,overlay_stc_timeVec_idx]=max(sum(tmp.^2,1),[],2);
+    else
+        overlay_stc_timeVec_idx=1;
+    end;
 end;
 
 

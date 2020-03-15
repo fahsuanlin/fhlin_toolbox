@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_coord_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_coord_gui
 
-% Last Modified by GUIDE v2.5 01-May-2018 19:59:25
+% Last Modified by GUIDE v2.5 15-Mar-2020 00:09:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -750,3 +750,196 @@ function figure1_CloseRequestFcn(hObject, eventdata, handles)
 
 % Hint: delete(hObject) closes the figure
 delete(hObject);
+
+
+% --- Executes on button press in pushbutton_xless.
+function pushbutton_xless_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_xless (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain;
+
+
+if(~isempty(etc_render_fsbrain.click_vertex))
+    click_vertex_vox=[etc_render_fsbrain.click_vertex_vox(1) etc_render_fsbrain.click_vertex_vox(2)  etc_render_fsbrain.click_vertex_vox(3)];
+    if(click_vertex_vox(1)>1)
+        click_vertex_vox(1)=click_vertex_vox(1)-1;
+        
+        tmp=[click_vertex_vox 1]';
+        mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*tmp;
+        %mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.tkrvox2ras*tmp;
+        mni=min(1:3)';
+        
+        surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[click_vertex_vox(:); 1];
+        surface_coord=surface_coord(1:3);
+        
+        vv=etc_render_fsbrain.orig_vertex_coords;
+        dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+        [min_dist,min_dist_idx]=min(dist);
+        %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+        
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+    else
+        
+    end;
+end;
+
+% --- Executes on button press in pushbutton_xmore.
+function pushbutton_xmore_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_xmore (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain;
+
+
+if(~isempty(etc_render_fsbrain.click_vertex))
+    click_vertex_vox=[etc_render_fsbrain.click_vertex_vox(1) etc_render_fsbrain.click_vertex_vox(2)  etc_render_fsbrain.click_vertex_vox(3)];
+    if(click_vertex_vox(1)<=size(etc_render_fsbrain.vol.vol,2))
+        click_vertex_vox(1)=click_vertex_vox(1)+1;
+        
+        tmp=[click_vertex_vox 1]';
+        mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*tmp;
+        %mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.tkrvox2ras*tmp;
+        mni=min(1:3)';
+        
+        surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[click_vertex_vox(:); 1];
+        surface_coord=surface_coord(1:3);
+        
+        vv=etc_render_fsbrain.orig_vertex_coords;
+        dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+        [min_dist,min_dist_idx]=min(dist);
+        %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+        
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+    else
+        
+    end;
+end;
+
+% --- Executes on button press in pushbutton_yless.
+function pushbutton_yless_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_yless (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain;
+
+
+if(~isempty(etc_render_fsbrain.click_vertex))
+    click_vertex_vox=[etc_render_fsbrain.click_vertex_vox(1) etc_render_fsbrain.click_vertex_vox(2)  etc_render_fsbrain.click_vertex_vox(3)];
+    if(click_vertex_vox(2)>1)
+        click_vertex_vox(2)=click_vertex_vox(2)-1;
+        
+        tmp=[click_vertex_vox 1]';
+        mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*tmp;
+        %mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.tkrvox2ras*tmp;
+        mni=min(1:3)';
+        
+        surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[click_vertex_vox(:); 1];
+        surface_coord=surface_coord(1:3);
+        
+        vv=etc_render_fsbrain.orig_vertex_coords;
+        dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+        [min_dist,min_dist_idx]=min(dist);
+        %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+        
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+    else
+        
+    end;
+end;
+
+% --- Executes on button press in pushbutton_ymore.
+function pushbutton_ymore_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_ymore (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain;
+
+
+if(~isempty(etc_render_fsbrain.click_vertex))
+    click_vertex_vox=[etc_render_fsbrain.click_vertex_vox(1) etc_render_fsbrain.click_vertex_vox(2)  etc_render_fsbrain.click_vertex_vox(3)];
+    if(click_vertex_vox(2)<=size(etc_render_fsbrain.vol.vol,1))
+        click_vertex_vox(2)=click_vertex_vox(2)+1;
+        
+        tmp=[click_vertex_vox 1]';
+        mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*tmp;
+        %mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.tkrvox2ras*tmp;
+        mni=min(1:3)';
+        
+        surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[click_vertex_vox(:); 1];
+        surface_coord=surface_coord(1:3);
+        
+        vv=etc_render_fsbrain.orig_vertex_coords;
+        dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+        [min_dist,min_dist_idx]=min(dist);
+        %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+        
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+    else
+        
+    end;
+end;
+
+% --- Executes on button press in pushbutton_zless.
+function pushbutton_zless_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_zless (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain;
+
+
+if(~isempty(etc_render_fsbrain.click_vertex))
+    click_vertex_vox=[etc_render_fsbrain.click_vertex_vox(1) etc_render_fsbrain.click_vertex_vox(2)  etc_render_fsbrain.click_vertex_vox(3)];
+    if(click_vertex_vox(3)>1)
+        click_vertex_vox(3)=click_vertex_vox(3)-1;
+        
+        tmp=[click_vertex_vox 1]';
+        mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*tmp;
+        %mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.tkrvox2ras*tmp;
+        mni=min(1:3)';
+        
+        surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[click_vertex_vox(:); 1];
+        surface_coord=surface_coord(1:3);
+        
+        vv=etc_render_fsbrain.orig_vertex_coords;
+        dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+        [min_dist,min_dist_idx]=min(dist);
+        %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+        
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+    else
+        
+    end;
+end;
+
+% --- Executes on button press in pushbutton_zmore.
+function pushbutton_zmore_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_zmore (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain;
+
+
+if(~isempty(etc_render_fsbrain.click_vertex))
+    click_vertex_vox=[etc_render_fsbrain.click_vertex_vox(1) etc_render_fsbrain.click_vertex_vox(2)  etc_render_fsbrain.click_vertex_vox(3)];
+    if(click_vertex_vox(3)<=size(etc_render_fsbrain.vol.vol,3))
+        click_vertex_vox(3)=click_vertex_vox(3)+1;
+        
+        tmp=[click_vertex_vox 1]';
+        mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*tmp;
+        %mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.tkrvox2ras*tmp;
+        mni=min(1:3)';
+        
+        surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[click_vertex_vox(:); 1];
+        surface_coord=surface_coord(1:3);
+        
+        vv=etc_render_fsbrain.orig_vertex_coords;
+        dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+        [min_dist,min_dist_idx]=min(dist);
+        %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+        
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+    else
+        
+    end;
+end;
