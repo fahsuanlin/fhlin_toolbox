@@ -1,6 +1,6 @@
 # Welcome to the fhlin_toolbox!
 
-Goto the ![wiki page](https://github.com/fahsuanlin/fhlin_toolbox/wiki) for further details.
+Goto the [wiki page](https://github.com/fahsuanlin/fhlin_toolbox/wiki) for further details.
 
 Here are some examples to use functions/scripts in my toolbox. These examples rely on some packages:
 
