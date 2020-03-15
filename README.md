@@ -1,4 +1,4 @@
-# Welcome to the fhlin_toolbox wiki!
+# Welcome to the fhlin_toolbox!
 
 Here are some examples to use functions/scripts in my toolbox. These examples rely on some packages:
 
@@ -10,6 +10,5 @@ Here are some examples to use functions/scripts in my toolbox. These examples re
 
 Please [let me know](mailto:fhlin@sri.utoronto.ca) if there is any bug.
 
-[https://github.com/fahsuanlin/fhlin_toolbox/blob/master/images/fs_render_dec2014.png]
-[https://github.com/fahsuanlin/fhlin_toolbox/blob/master/images/fs_render_dec2014_b.png]
 ![](https://github.com/fahsuanlin/fhlin_toolbox/blob/master/images/fs_render_dec2014.png)
+![](https://github.com/fahsuanlin/fhlin_toolbox/blob/master/images/fs_render_dec2014_b.png)
