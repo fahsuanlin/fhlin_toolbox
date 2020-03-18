@@ -146,7 +146,9 @@ switch lower(param)
                             
                             %save the label?
                             %[file, path] = uiputfile({'*.label'});
-                            [file, path] = uigetfile({'*.label','FreeSufer label'}, 'Pick a file');
+                            %[file, path] = uigetfile({'*.label','FreeSufer label'}, 'Pick a file');
+                            filter = {'*.label'};
+                            [file, path] = uiputfile(filter);
                             if isequal(file,0) || isequal(path,0)
                                 etc_render_fsbrain.label_idx=[];
                                 delete(etc_render_fsbrain.label_h);

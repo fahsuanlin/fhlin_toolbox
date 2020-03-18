@@ -192,6 +192,8 @@ for idx=1:length(varargin)/2
             overlay_stc_lim=option_value;
         case 'overlay_stc_timevec'
             overlay_stc_timeVec=option_value;
+        case 'overlay_stc_timevec_idx'
+            overlay_stc_timeVec_idx=option_value;
         case 'overlay_stc_timevec_unit'
             overlay_stc_timeVec_unit=option_value;
         case 'overlay_vertex'
@@ -328,12 +330,14 @@ end;
 %get the overlay value from STC at the largest power instant, if it is not specified.
 if(isempty(overlay_value)&~isempty(overlay_stc))
     if(iscell(overlay_stc))
-        tmp=[];
-        for h_idx=1:length(overlay_stc)
-            tmp=cat(1,tmp,overlay_stc{h_idx});
+        if(isempty(overlay_stc_timeVec_idx))
+            tmp=[];
+            for h_idx=1:length(overlay_stc)
+                tmp=cat(1,tmp,overlay_stc{h_idx});
+            end;
+            tmp=sum(tmp.^2,1);
+            [dummy,overlay_stc_timeVec_idx]=max(tmp);
         end;
-        tmp=sum(tmp.^2,1);
-        [dummy,overlay_stc_timeVec_idx]=max(tmp);
         
         for h_idx=1:length(overlay_stc)
             overlay_value{h_idx}=overlay_stc{h_idx}(:,overlay_stc_timeVec_idx);
@@ -344,7 +348,9 @@ if(isempty(overlay_value)&~isempty(overlay_stc))
             overlay_stc=cat(1,overlay_stc,overlay_stc_hemi{h_idx});
         end;
     else
-        [tmp,overlay_stc_timeVec_idx]=max(sum(overlay_stc.^2,1));
+        if(isempty(overlay_stc_timeVec_idx))
+            [tmp,overlay_stc_timeVec_idx]=max(sum(overlay_stc.^2,1));
+        end;
         overlay_value=overlay_stc(:,overlay_stc_timeVec_idx);
         overlay_stc_hemi=overlay_stc;
     end;
