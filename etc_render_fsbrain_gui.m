@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_gui
 
-% Last Modified by GUIDE v2.5 15-Mar-2020 00:22:51
+% Last Modified by GUIDE v2.5 19-Mar-2020 23:25:18
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -96,17 +96,25 @@ end;
 %colorbar check box
 set(handles.checkbox_show_colorbar,'value',0);
 if(isfield(etc_render_fsbrain,'h_colorbar_pos'))
-    if(isempty(etc_render_fsbrain.h_colorbar_pos))
+    if(~isempty(etc_render_fsbrain.h_colorbar_pos))
         set(handles.checkbox_show_colorbar,'value',1);
     end;
 end;
+
 if(get(handles.checkbox_show_colorbar,'value'))
+%if(~isempty(etc_render_fsbrain.overlay_value)||~isempty(etc_render_fsbrain.overlay_stc))
     set(handles.checkbox_show_colorbar,'enable','on');
 else
     set(handles.checkbox_show_colorbar,'enable','off');
 end;
 
-set(handles.checkbox_show_colorbar,'enable','off');
+if(~isempty(etc_render_fsbrain.overlay_value)||~isempty(etc_render_fsbrain.overlay_stc))
+    set(handles.checkbox_show_colorbar,'enable','on');
+    set(handles.checkbox_show_overlay,'enable','on');
+else
+    set(handles.checkbox_show_colorbar,'enable','off');
+    set(handles.checkbox_show_overlay,'enable','off');
+end;
 
 set(handles.pushbutton_aux_point_color,'BackgroundColor',etc_render_fsbrain.aux_point_color);
 set(handles.edit_aux_point_size,'string',sprintf('%3.3f',etc_render_fsbrain.aux_point_size));
@@ -122,6 +130,7 @@ set(handles.pushbutton_click_point_color,'BackgroundColor',etc_render_fsbrain.cl
 set(handles.edit_click_point_size,'string',sprintf('%d',etc_render_fsbrain.click_point_size));
 
 set(handles.checkbox_nearest_brain_surface,'value',etc_render_fsbrain.show_nearest_brain_surface_location_flag);
+set(handles.checkbox_brain_surface,'value',etc_render_fsbrain.show_brain_surface_location_flag);
 set(handles.pushbutton_click_vertex_point_color,'BackgroundColor',etc_render_fsbrain.click_vertex_point_color);
 set(handles.edit_click_vertex_point_size,'string',sprintf('%d',etc_render_fsbrain.click_vertex_point_size));
 
@@ -257,8 +266,9 @@ mx=max(etc_render_fsbrain.overlay_threshold);
 etc_render_fsbrain.overlay_threshold=[mm,mx];
 etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
 etc_render_fsbrain_handle('redraw');
-etc_render_fsbrain_handle('kb','c0','c0'); %update colorbar
-
+if(~isempty(etc_render_fsbrain.h_colorbar_pos))
+    etc_render_fsbrain_handle('kb','c0','c0'); %update colorbar
+end;
 % --- Executes during object creation, after setting all properties.
 function edit_threshold_min_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to edit_threshold_min (see GCBO)
@@ -289,8 +299,9 @@ mm=min(etc_render_fsbrain.overlay_threshold);
 etc_render_fsbrain.overlay_threshold=[mm,mx];
 etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
 etc_render_fsbrain_handle('redraw');
-etc_render_fsbrain_handle('kb','c0','c0'); %update colorbar
-
+if(~isempty(etc_render_fsbrain.h_colorbar_pos))
+    etc_render_fsbrain_handle('kb','c0','c0'); %update colorbar
+end;
 
 
 % --- Executes during object creation, after setting all properties.
@@ -396,8 +407,11 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
 end;
 
 %etc_render_fsbrain_handle('draw_pointer');
-etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
-
+if(isfield(etc_render_fsbrain,'click_coord'))
+    if(isfield(etc_render_fsbrain,'click_vertex_vox'))
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
+    end;
+end;
 etc_render_fsbrain_handle('redraw');
 
 
@@ -500,6 +514,9 @@ global etc_render_fsbrain;
 set(etc_render_fsbrain.h,'facealpha',get(hObject,'Value'));
 etc_render_fsbrain.alpha=get(hObject,'Value');
 guidata(hObject, handles);
+
+h=findobj('tag','slider_alpha');
+set(h,'value',get(hObject,'Value'));
 
 % --- Executes during object creation, after setting all properties.
 function slider_alpha_CreateFcn(hObject, eventdata, handles)
@@ -895,3 +912,21 @@ global etc_render_fsbrain
 etc_render_fsbrain.selected_electrode_flag=get(hObject,'Value');
 
 etc_render_fsbrain_handle('redraw');
+
+
+% --- Executes on button press in checkbox_brain_surface.
+function checkbox_brain_surface_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_brain_surface (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_brain_surface
+global etc_render_fsbrain
+
+etc_render_fsbrain.show_brain_surface_location_flag=get(hObject,'Value');
+
+if(isfield(etc_render_fsbrain,'click_coord'))
+    if(~isempty(etc_render_fsbrain.click_coord))
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
+    end;
+end;

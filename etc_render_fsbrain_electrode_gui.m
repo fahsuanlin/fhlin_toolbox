@@ -79,6 +79,7 @@ set(handles.checkbox_brain_surface,'value',etc_render_fsbrain.show_all_contacts_
 
 if(~isempty(etc_render_fsbrain.electrode))
     fprintf('electrodes specified...\n');
+    str={};
     for e_idx=1:length(etc_render_fsbrain.electrode)
         str{e_idx}=etc_render_fsbrain.electrode(e_idx).name;
     end;
@@ -91,6 +92,7 @@ if(~isempty(etc_render_fsbrain.electrode))
     
     %update the electrode contact list box
     hObject=findobj('tag','listbox_contact');
+    str={};
     for c_idx=1:etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact
         str{c_idx}=sprintf('%d',c_idx);
     end;
@@ -108,7 +110,7 @@ if(~isempty(etc_render_fsbrain.electrode))
         end;
         
         if(flag_init)
-            for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
+            for c_idx=1:etc_render_fsbrain.electrode(e).n_contact
                 etc_render_fsbrain.electrode(e_idx).coord(c_idx,1)=0;
                 etc_render_fsbrain.electrode(e_idx).coord(c_idx,2)=etc_render_fsbrain.electrode(e_idx).spacing.*(c_idx-1).*1;
                 etc_render_fsbrain.electrode(e_idx).coord(c_idx,3)=etc_render_fsbrain.electrode(e_idx).spacing.*(e_idx-1).*1;
@@ -153,14 +155,14 @@ if(~isempty(etc_render_fsbrain.electrode))
     end;
     
     
-    %update coordinates for electrode contacts
-    count=1;
-    for e_idx=1:length(etc_render_fsbrain.electrode)
-        for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
-            etc_render_fsbrain.electrode(e_idx).coord(c_idx,:)=etc_render_fsbrain.aux2_point_coords(count,:);
-            count=count+1;
-        end;
-    end;
+%     %update coordinates for electrode contacts
+%     count=1;
+%     for e_idx=1:length(etc_render_fsbrain.electrode)
+%         for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
+%             etc_render_fsbrain.electrode(e_idx).coord(c_idx,:)=etc_render_fsbrain.aux2_point_coords(count,:);
+%             count=count+1;
+%         end;
+%     end;
     
     
     %uncheck electrod contact locking
@@ -169,8 +171,13 @@ if(~isempty(etc_render_fsbrain.electrode))
     guidata(hObject, handles);
     
     %uncheck contact view update option
-    set(handles.checkbox_update_contact_view,'value',0);
-    etc_render_fsbrain.electrode_update_contact_view_flag=0;
+    %set(handles.checkbox_update_contact_view,'value',0);
+    %etc_render_fsbrain.electrode_update_contact_view_flag=0;
+    if(etc_render_fsbrain.electrode_update_contact_view_flag)
+        set(handles.checkbox_update_contact_view,'value',1);
+    else
+        set(handles.checkbox_update_contact_view,'value',0);
+    end;
     guidata(hObject, handles);
 
     count=0;
@@ -180,20 +187,36 @@ if(~isempty(etc_render_fsbrain.electrode))
     count=count+etc_render_fsbrain.electrode_contact_idx;
     
     surface_coord=etc_render_fsbrain.aux2_point_coords(count,:);
-    try
-        v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
-        click_vertex_vox=round(v(1:3))';
-    catch ME
-    end;
-    
+
     etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
     
     try
-        vv=etc_render_fsbrain.orig_vertex_coords;
-        dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
-        [min_dist,min_dist_idx]=min(dist);
-        surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
-        etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+%         vv=etc_render_fsbrain.orig_vertex_coords;
+%         dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+%         [min_dist,min_dist_idx]=min(dist);
+%         surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+%         etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+        if(strcmp(etc_render_fsbrain.surf,'orig'))
+            surface_orig_coord=surface_coord;
+        else
+            %fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+            
+            tmp=surface_coord;
+            
+            vv=etc_render_fsbrain.vertex_coords;
+            dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+            [min_dist,min_dist_idx]=min(dist);
+            surface_orig_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
+        end;
+        
+        try
+            %    v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+            v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
+            click_vertex_vox=round(v(1:3))';
+        catch ME
+        end;
+        
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'click_vertex_vox',click_vertex_vox);
     catch ME
     end;
                 
@@ -395,6 +418,12 @@ function button_electrode_add_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global etc_render_fsbrain;
 
+
+if(~strcmp(etc_render_fsbrain.surf,'orig'))
+    fprintf('surface <%s> not "orig". Skip!\n',etc_render_fsbrain.surf);
+    return;
+end;
+           
 etc_render_fsbrain.electrode_add_gui_ok=0;
 etc_render_fsbrain.electrode_modify_flag=0;
 etc_render_fsbrain.electrode_add_gui_h=etc_render_fsbrain_electrode_add_gui;
@@ -475,6 +504,16 @@ if(etc_render_fsbrain.electrode_add_gui_ok)
             end;
     end;
     
+    %uncheck contact view update option
+    %set(handles.checkbox_update_contact_view,'value',0);
+    %etc_render_fsbrain.electrode_update_contact_view_flag=0;
+    if(etc_render_fsbrain.electrode_update_contact_view_flag)
+        set(handles.checkbox_update_contact_view,'value',1);
+    else
+        set(handles.checkbox_update_contact_view,'value',0);
+    end;
+    %guidata(hObject, handles);
+    
     etc_render_fsbrain.electrode(end+1).name=etc_render_fsbrain.new_electrode.name;
     etc_render_fsbrain.electrode(end).spacing=etc_render_fsbrain.new_electrode.spacing;
     etc_render_fsbrain.electrode(end).n_contact=etc_render_fsbrain.new_electrode.n_contact;
@@ -490,12 +529,33 @@ if(etc_render_fsbrain.electrode_add_gui_ok)
     e_idx=length(etc_render_fsbrain.electrode);
     count=size(etc_render_fsbrain.aux2_point_coords,1)+1;
     for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
-        etc_render_fsbrain.electrode(e_idx).coord(c_idx,1)=0;
-        etc_render_fsbrain.electrode(e_idx).coord(c_idx,2)=etc_render_fsbrain.electrode(e_idx).spacing.*(c_idx-1).*1;
-        etc_render_fsbrain.electrode(e_idx).coord(c_idx,3)=etc_render_fsbrain.electrode(e_idx).spacing.*(e_idx-1).*1;
-        
-        etc_render_fsbrain.aux2_point_coords(count,:)=etc_render_fsbrain.electrode(e_idx).coord(c_idx,:);
+        %etc_render_fsbrain.electrode(e_idx).coord(c_idx,1)=0;
+        %etc_render_fsbrain.electrode(e_idx).coord(c_idx,2)=etc_render_fsbrain.electrode(e_idx).spacing.*(c_idx-1).*1;
+        %etc_render_fsbrain.electrode(e_idx).coord(c_idx,3)=etc_render_fsbrain.electrode(e_idx).spacing.*(e_idx-1).*1;
+        tmp(1)=0;
+        tmp(2)=etc_render_fsbrain.electrode(e_idx).spacing.*(c_idx-1).*1;
+        tmp(3)=etc_render_fsbrain.electrode(e_idx).spacing.*(e_idx-1).*1;
+        %etc_render_fsbrain.aux2_point_coords(count,:)=etc_render_fsbrain.electrode(e_idx).coord(c_idx,:);
+        etc_render_fsbrain.electrode(e_idx).coord(c_idx,:)=tmp(:)';
+        etc_render_fsbrain.aux2_point_coords(count,:)=tmp(:);
         etc_render_fsbrain.aux2_point_name{count}=sprintf('%s_%d',etc_render_fsbrain.electrode(e_idx).name, c_idx);;
+        
+        
+%         if(strcmp(etc_render_fsbrain.surf,'orig'))
+%             
+%         else
+%             fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+%             
+%             tmp=etc_render_fsbrain.aux2_point_coords(count,:);
+%             
+%             vv=etc_render_fsbrain.orig_vertex_coords;
+%             dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+%             [min_dist,min_dist_idx]=min(dist);
+%             etc_render_fsbrain.aux2_point_coords(count,:)=etc_render_fsbrain.vertex_coords(min_dist_idx,:);
+%             %etc_render_fsbrain.electrode(e_idx).coord(c_idx,:)=etc_render_fsbrain.vertex_coords(min_dist_idx,:);
+%         end;
+        
+        
         count=count+1;
     end;
             
@@ -537,6 +597,9 @@ if(etc_render_fsbrain.electrode_add_gui_ok)
     set(handles.listbox_contact,'string',str);
     set(handles.listbox_contact,'value',etc_render_fsbrain.electrode_contact_idx);
     guidata(hObject, handles);
+    
+    etc_render_fsbrain_handle('redraw');
+
 end;
     
     
@@ -1267,9 +1330,9 @@ try
     %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
 
     %update figure;
-    if(etc_render_fsbrain.electrode_update_contact_view_flag)
+%    if(etc_render_fsbrain.electrode_update_contact_view_flag)
         etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',[],'click_vertex_vox',click_vertex_vox);
-    end;
+%    end;
 catch ME
 end;
 etc_render_fsbrain_handle('redraw');
@@ -1458,6 +1521,10 @@ global etc_render_fsbrain;
 set(etc_render_fsbrain.h,'facealpha',get(hObject,'Value'));
 etc_render_fsbrain.alpha=get(hObject,'Value');
 guidata(hObject, handles);
+
+h=findobj('tag','slider_alpha');
+set(h,'value',get(hObject,'Value'));
+
 
 % --- Executes during object creation, after setting all properties.
 function slider_alpha_CreateFcn(hObject, eventdata, handles)
@@ -1722,6 +1789,11 @@ function button_electrode_modify_Callback(hObject, eventdata, handles)
 
 global etc_render_fsbrain;
 
+if(~strcmp(etc_render_fsbrain.surf,'orig'))
+    fprintf('surface <%s> not "orig". Skip!\n',etc_render_fsbrain.surf);
+    return;
+end;
+
 etc_render_fsbrain.electrode_add_gui_ok=0;
 
 %specifiy that the electrode is to be modified.
@@ -1976,6 +2048,52 @@ if(filename~=0)
                 end;
             end;
         end;
+        
+        %uncheck contact view update option
+        %set(handles.checkbox_update_contact_view,'value',0);
+        %etc_render_fsbrain.electrode_update_contact_view_flag=0;
+        if(etc_render_fsbrain.electrode_update_contact_view_flag)
+            set(handles.checkbox_update_contact_view,'value',1);
+        else
+            set(handles.checkbox_update_contact_view,'value',0);
+        end;
+        %guidata(hObject, handles);
+          
+        count=1;
+        surface_coord=etc_render_fsbrain.aux2_point_coords(count,:);
+        
+        etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
+        
+        try
+%                     vv=etc_render_fsbrain.orig_vertex_coords;
+%                     dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+%                     [min_dist,min_dist_idx]=min(dist);
+%                     surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+%                     etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+            if(strcmp(etc_render_fsbrain.surf,'orig'))
+                surface_orig_coord=surface_coord;
+            else
+                %fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+                
+                tmp=surface_coord;
+                
+                vv=etc_render_fsbrain.vertex_coords;
+                dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+                [min_dist,min_dist_idx]=min(dist);
+                surface_orig_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
+            end;
+            
+            try
+                %    v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+                v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
+                click_vertex_vox=round(v(1:3))';
+            catch ME
+            end;
+
+            etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'click_vertex_vox',click_vertex_vox);
+        catch ME
+        end;
+        
         
         etc_render_fsbrain_handle('redraw');
     else

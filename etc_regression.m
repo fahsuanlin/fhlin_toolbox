@@ -18,6 +18,8 @@ flag_display_regline_text=1;
 p=[];
 r2=[];
 beta=[];
+w=[];
+color=[];
 
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
@@ -32,6 +34,10 @@ for i=1:length(varargin)/2
             flag_display_regline=option_value;
         case 'flag_display_regline_text'
             flag_display_regline_text=option_value;
+        case 'color'
+            color=option_value;
+        case 'w'
+            w=option_value;
         otherwise
             fprintf('unknown option [%s]!\nerror!\n',option);
             return;
@@ -42,9 +48,14 @@ y=y(:);
 x=x(:);
 
 D=[ones(length(x),1),x(:)];
+if(isempty(w))
+    W=ones(length(y(:)),1);
+else
+    W=w(:);
+end;
 
-
-beta=inv(D'*D)*D'*y;
+tmp=(repmat(W,[1,size(D,2)]).*D);
+beta=inv(D'*tmp)*D'*(W.*y);
 res=y-D*beta;
 r2=1-(res'*res)./((y-mean(y))'*(y-mean(y)));
 
@@ -55,6 +66,10 @@ F=(SS_regression./1)/(SS_error/(length(y(:))-2));
 p=1-fcdf(F,1,(length(y(:))-2));
 
 if(flag_display)
+    if(isempty(color))
+        color='k';
+    end;
+    
     if(flag_display_data)
         plot(x(:),y(:),'.'); hold on;
     end;
@@ -62,7 +77,7 @@ if(flag_display)
     reg_y=beta(1)+beta(2).*reg_x; 
 
     if(flag_display_regline)
-        h=line(reg_x,reg_y); set(h,'color','k','linewidth',2);
+        h=line(reg_x,reg_y); set(h,'color',color,'linewidth',2);
     end;
     if(flag_display_regline_text)
         h=text((max(x)+min(x))/2,min(y)+(max(y)+min(y))/4,sprintf('Y=%2.2f+%2.2f X',beta(1),beta(2))); set(h,'fontname','helvetica','fontsize',14);

@@ -86,20 +86,20 @@ selected_electrode_coords_h=[];
 selected_contact_coords_h=[];
 topo_aux2_point_name={};
 topo_aux2_point_name_h=[];
-topo_aux2_point_color=[0.3984    0.5977         0];
+topo_aux2_point_color=[0 1  0];
 topo_aux2_point_size=44;
 topo_aux2_point_color_e=[0.3984    0.5977         0];
 topo_aux2_point_size_e=44;
 topo_aux2_point_color_c=[0.3984    0.5977         0];
 topo_aux2_point_size_c=44;
 
-selected_electrode_size=50;
+selected_electrode_size=44;
 selected_electrode_flag=1;
-selected_electrode_color=[1 0 0];
+selected_electrode_color=[0 0 1];
 
-selected_contact_size=50;
+selected_contact_size=44;
 selected_contact_flag=1;
-selected_contact_color=[1 0 0];
+selected_contact_color=[0 1 1];
 
 %electrode
 electrode=[];
@@ -124,6 +124,7 @@ flag_redraw=0;
 flag_camlight=1;
 flag_colorbar=0;
 show_nearest_brain_surface_location_flag=1;
+show_brain_surface_location_flag=1;
 show_contact_names_flag=1;
 show_all_contacts_mri_flag=1;
 show_all_contacts_brain_surface_flag=1;
@@ -232,6 +233,8 @@ for idx=1:length(varargin)/2
             flag_hold_fig_stc_timecourse=option_value;
         case 'show_nearest_brain_surface_location_flag'
             show_nearest_brain_surface_location_flag=option_value;
+        case 'show_brain_surface_location_flag'
+            show_brain_surface_location_flag=option_value;
         case 'show_contact_names_flag'
             show_contact_names_flag=option_value;
         case 'show_all_contacts_mri_flag'
@@ -816,7 +819,7 @@ global etc_render_fsbrain;
 
 etc_render_fsbrain.brain_axis=gca;
 
-
+etc_render_fsbrain.subject=subject;
 etc_render_fsbrain.surf=surf;
 etc_render_fsbrain.vol=vol;
 etc_render_fsbrain.vol_reg=vol_reg;
@@ -850,6 +853,7 @@ etc_render_fsbrain.fig_vol=[];
 etc_render_fsbrain.fig_coord_gui=[];
 etc_render_fsbrain.fig_label_gui=[];
 etc_render_fsbrain.show_nearest_brain_surface_location_flag=show_nearest_brain_surface_location_flag;
+etc_render_fsbrain.show_brain_surface_location_flag=show_brain_surface_location_flag;
 etc_render_fsbrain.show_contact_names_flag=show_contact_names_flag;
 etc_render_fsbrain.electrode_update_contact_view_flag=electrode_update_contact_view_flag;
 etc_render_fsbrain.show_all_contacts_mri_flag=show_all_contacts_mri_flag;
