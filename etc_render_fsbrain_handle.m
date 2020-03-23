@@ -56,6 +56,7 @@ switch lower(param)
                 fprintf('d: interactive threshold change\n');
                 fprintf('c: switch on/off the colorbar\n');
                 fprintf('u: show cluster labels from files\n');
+                fprintf('m: create a region of specified extension\n');
                 fprintf('q: exit\n');
                 fprintf('\n\n fhlin@dec 25, 2014\n');
             case 'a'
@@ -80,6 +81,9 @@ switch lower(param)
                 pos=get(etc_render_fsbrain.fig_subject,'pos');
                 pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
                 set(etc_render_fsbrain.fig_subject,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
+                
+                set(etc_render_fsbrain.fig_subject,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
+
             case 'f'
                 fprintf('\nload overlay...\n');
                 [filename, pathname, filterindex] = uigetfile({'*.stc','STC file (space x time)';'*.w','w file (space x 1)'}, 'Pick an overlay file');
@@ -95,6 +99,7 @@ switch lower(param)
                         etc_render_fsbrain.overlay_vertex=vv;
                         etc_render_fsbrain.overlay_stc_timeVec=timeVec;
                         etc_render_fsbrain.stc_hemi=hemi;
+                        etc_render_fsbrain.overlay_stc_timeVec_unit='ms';
                         
                         [tmp,etc_render_fsbrain.overlay_stc_timeVec_idx]=max(sum(etc_render_fsbrain.overlay_stc.^2,1));
                         etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
@@ -206,6 +211,9 @@ switch lower(param)
                 pos=get(etc_render_fsbrain.fig_gui,'pos');
                 pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
                 set(etc_render_fsbrain.fig_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
+
+                set(etc_render_fsbrain.fig_gui,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
+
             case 'k'
                 %fprintf('\nregister points...\n');
                 if(isfield(etc_render_fsbrain,'fig_register'))
@@ -217,6 +225,9 @@ switch lower(param)
                 pos=get(etc_render_fsbrain.fig_register,'pos');
                 pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
                 set(etc_render_fsbrain.fig_register,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
+
+                set(etc_render_fsbrain.fig_register,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
+
             case 'e'
                 %fprintf('\nelectrodes...\n');
                 if(isfield(etc_render_fsbrain,'fig_electrode_gui'))
@@ -228,7 +239,9 @@ switch lower(param)
                 pos=get(etc_render_fsbrain.fig_electrode_gui,'pos');
                 pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
                 set(etc_render_fsbrain.fig_electrode_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
-            case 'b'
+
+                set(etc_render_fsbrain.fig_electrode_gui,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
+             case 'b'
                 %fprintf('\nsensors...\n');
                 if(isfield(etc_render_fsbrain,'fig_sensor_gui'))
                     etc_render_fsbrain.fig_sensor_gui=[];
@@ -239,6 +252,8 @@ switch lower(param)
                 pos=get(etc_render_fsbrain.fig_sensor_gui,'pos');
                 pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
                 set(etc_render_fsbrain.fig_sensor_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
+
+                set(etc_render_fsbrain.fig_sensor_gui,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
             case 'v'
                 fprintf('showing trace GUI...\n');
                 if(~isempty(etc_render_fsbrain.overlay_stc))
@@ -344,6 +359,8 @@ switch lower(param)
                 pos=get(etc_render_fsbrain.fig_coord_gui,'pos');
                 pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
                 set(etc_render_fsbrain.fig_coord_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
+
+                set(etc_render_fsbrain.fig_coord_gui,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
             case 'l' %annotation/labels GUI
                 %fprintf('\nannotation/labels GUI...\n');
                 global etc_render_fsbrain;
@@ -599,7 +616,7 @@ switch lower(param)
                     end;
                 end;
                 
-            case 'p' %create a surface patch based on the clicked location and a specified radius
+            case 'm' %create a surface patch based on the clicked location and a specified radius
                 
                 if(isempty(etc_render_fsbrain.click_vertex))
                     fprintf('no selected point! try to click the figure to select one point before creating ROI.\n');
@@ -741,6 +758,14 @@ switch lower(param)
         end;
     case 'bd'
         if(gcf==etc_render_fsbrain.fig_brain)
+            
+            %add exploration toolbar
+            [vv date] = version;
+            DateNumber = datenum(date);
+            if(DateNumber>737426) %after January 1, 2019; Matlab verion 2019 and later
+                addToolbarExplorationButtons(etc_render_fsbrain.fig_vol);
+            end;
+            
             etc_render_fsbrain.flag_overlay_stc_surf=1;
             etc_render_fsbrain.flag_overlay_stc_vol=0;
             
@@ -769,6 +794,13 @@ switch lower(param)
             %redraw;
             figure(etc_render_fsbrain.fig_brain);
         elseif(gcf==etc_render_fsbrain.fig_vol)
+            
+            %add exploration toolbar
+            [vv date] = version;
+            DateNumber = datenum(date);
+            if(DateNumber>737426) %after January 1, 2019; Matlab verion 2019 and later
+                addToolbarExplorationButtons(etc_render_fsbrain.fig_vol);
+            end;
             
             etc_render_fsbrain.flag_overlay_stc_surf=0;
             etc_render_fsbrain.flag_overlay_stc_vol=1;
@@ -1114,13 +1146,6 @@ try
         end;
     end;
     
-    %add exploration toolbar
-    [vv date] = version;
-    DateNumber = datenum(date);
-    if(DateNumber>737426) %after January 1, 2019; Matlab verion 2019 and later
-        addToolbarExplorationButtons(etc_render_fsbrain.fig_vol);
-    end;
-
     if(~isempty(etc_render_fsbrain.vol_vox))
         figure(etc_render_fsbrain.fig_vol);
         
@@ -1799,7 +1824,6 @@ else
     figure(etc_render_fsbrain.fig_brain);
 end;
 
-[etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2)]=view;
 
 %set axes
 if(~isvalid(etc_render_fsbrain.brain_axis))
@@ -1812,9 +1836,8 @@ else
     zlim=get(gca,'zlim');
 
     etc_render_fsbrain.lim=[xlim(:)' ylim(:)' zlim(:)'];
-
-
 end;
+[etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2)]=view;
 
 %delete brain patch object
 if(ishandle(etc_render_fsbrain.h))
@@ -1905,6 +1928,14 @@ axis off vis3d equal;
 axis(etc_render_fsbrain.lim);
 
 if(~isempty(etc_render_fsbrain.overlay_threshold))
+        h=findobj('tag','edit_threshold_min');
+        set(h,'String',num2str(min(etc_render_fsbrain.overlay_threshold),'%1.1f'));
+        h=findobj('tag','edit_threshold_max');
+        set(h,'String',num2str(max(etc_render_fsbrain.overlay_threshold),'%1.1f'));
+end;
+
+
+if(~isempty(etc_render_fsbrain.overlay_threshold))
     if(length(etc_render_fsbrain.overlay_threshold)==2)
         if(etc_render_fsbrain.overlay_threshold(1)<etc_render_fsbrain.overlay_threshold(2))
             set(gca,'climmode','manual','clim',etc_render_fsbrain.overlay_threshold);
@@ -1916,12 +1947,12 @@ set(gcf,'color',etc_render_fsbrain.bg_color);
 
 view(etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2));
 
-%add exploration toolbar
-[vv date] = version;
-DateNumber = datenum(date);
-if(DateNumber>737426) %after January 1, 2019; Matlab verion 2019 and later
-    addToolbarExplorationButtons(etc_render_fsbrain.fig_brain);
-end;
+% %add exploration toolbar
+% [vv date] = version;
+% DateNumber = datenum(date);
+% if(DateNumber>737426) %after January 1, 2019; Matlab verion 2019 and later
+%     addToolbarExplorationButtons(etc_render_fsbrain.fig_brain);
+% end;
 
 
 try
@@ -2007,48 +2038,51 @@ try
                 etc_render_fsbrain.aux2_point_coords_h=plot3(xx,yy,zz,'.');
                 %set(etc_render_fsbrain.aux2_point_coords_h,'color',[1 0 0].*0.5,'markersize',16);
                 set(etc_render_fsbrain.aux2_point_coords_h,'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
+                
+                
+                %highlight the selected contact
+                if(isfield(etc_render_fsbrain,'electrode'))
+                    try
+                        idx=0;
+                        for ii=1:etc_render_fsbrain.electrode_idx-1
+                            idx=idx+etc_render_fsbrain.electrode(ii).n_contact;
+                        end;
+                        for contact_idx=1:etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact
+                            xx=etc_render_fsbrain.aux2_point_coords(idx+contact_idx,1);
+                            yy=etc_render_fsbrain.aux2_point_coords(idx+contact_idx,2);
+                            zz=etc_render_fsbrain.aux2_point_coords(idx+contact_idx,3);
+                            
+                            if(etc_render_fsbrain.selected_electrode_flag)
+                                etc_render_fsbrain.selected_electrode_coords_h(contact_idx)=plot3(xx,yy,zz,'.');
+                                set(etc_render_fsbrain.selected_electrode_coords_h(contact_idx),'color',etc_render_fsbrain.selected_electrode_color,'markersize',etc_render_fsbrain.selected_electrode_size);
+                            end;
+                        end;
+                    catch ME
+                    end;
+                    
+                    
+                    try
+                        idx=0;
+                        for ii=1:etc_render_fsbrain.electrode_idx-1
+                            idx=idx+etc_render_fsbrain.electrode(ii).n_contact;
+                        end;
+                        idx=idx+etc_render_fsbrain.electrode_contact_idx;
+                        xx=etc_render_fsbrain.aux2_point_coords(idx,1);
+                        yy=etc_render_fsbrain.aux2_point_coords(idx,2);
+                        zz=etc_render_fsbrain.aux2_point_coords(idx,3);
+                        
+                        if(etc_render_fsbrain.selected_contact_flag)
+                            etc_render_fsbrain.selected_contact_coords_h=plot3(xx,yy,zz,'.');
+                            set(etc_render_fsbrain.selected_contact_coords_h,'color',etc_render_fsbrain.selected_contact_color,'markersize',etc_render_fsbrain.selected_contact_size);
+                            %                    set(etc_render_fsbrain.aux2_point_coords_h(3),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
+                        end;
+                    catch ME
+                    end;
+                end;
             end;
         end;
         
-        %highlight the selected contact
-        if(isfield(etc_render_fsbrain,'electrode'))
-            try
-                idx=0;
-                for ii=1:etc_render_fsbrain.electrode_idx-1
-                    idx=idx+etc_render_fsbrain.electrode(ii).n_contact;
-                end;
-                for contact_idx=1:etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact
-                    xx=etc_render_fsbrain.aux2_point_coords(idx+contact_idx,1);
-                    yy=etc_render_fsbrain.aux2_point_coords(idx+contact_idx,2);
-                    zz=etc_render_fsbrain.aux2_point_coords(idx+contact_idx,3);
-                
-                    if(etc_render_fsbrain.selected_electrode_flag)
-                        etc_render_fsbrain.selected_electrode_coords_h(contact_idx)=plot3(xx,yy,zz,'.');
-                        set(etc_render_fsbrain.selected_electrode_coords_h(contact_idx),'color',etc_render_fsbrain.selected_electrode_color,'markersize',etc_render_fsbrain.selected_electrode_size);
-                    end;
-                end;
-            catch ME
-            end;
-
-
-            try
-                idx=0;
-                for ii=1:etc_render_fsbrain.electrode_idx-1
-                    idx=idx+etc_render_fsbrain.electrode(ii).n_contact;
-                end;
-                idx=idx+etc_render_fsbrain.electrode_contact_idx;
-                xx=etc_render_fsbrain.aux2_point_coords(idx,1);
-                yy=etc_render_fsbrain.aux2_point_coords(idx,2);
-                zz=etc_render_fsbrain.aux2_point_coords(idx,3);
-                
-                if(etc_render_fsbrain.selected_contact_flag)
-                    etc_render_fsbrain.selected_contact_coords_h=plot3(xx,yy,zz,'.');
-                    set(etc_render_fsbrain.selected_contact_coords_h,'color',etc_render_fsbrain.selected_contact_color,'markersize',etc_render_fsbrain.selected_contact_size);
-%                    set(etc_render_fsbrain.aux2_point_coords_h(3),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
-                end;
-            catch ME
-            end;
-        end;
+        
     end;
     
 catch ME

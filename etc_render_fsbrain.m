@@ -954,6 +954,13 @@ etc_render_fsbrain.click_vertex_point_size=click_vertex_point_size;
 etc_render_fsbrain.electrode=electrode;
 etc_render_fsbrain.fig_electrode_gui=[];
 
+etc_render_fsbrain.click_coord=[];
+etc_render_fsbrain.surface_coord=[];
+etc_render_fsbrain.click_vertex_vox=[];
+etc_render_fsbrain.h_colorbar_pos=[];
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%
 %setup call-back function
 %%%%%%%%%%%%%%%%%%%%%%%%

@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_electrode_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_electrode_gui
 
-% Last Modified by GUIDE v2.5 28-Dec-2019 20:30:02
+% Last Modified by GUIDE v2.5 22-Mar-2020 19:18:44
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -306,6 +306,21 @@ else
                 c{i}.Enable='off';
             end;
         end;
+        if(strcmp(c{i}.Tag,'checkbox_electrode_contact_lock'))
+            if(isempty(etc_render_fsbrain.vol))
+                c{i}.Enable='off';
+            end;
+        end;
+        if(strcmp(c{i}.Tag,'edit_move'))
+            if(isempty(etc_render_fsbrain.vol))
+                c{i}.Enable='off';
+            end;
+        end;
+        if(strcmp(c{i}.Tag,'edit_rotate'))
+            if(isempty(etc_render_fsbrain.vol))
+                c{i}.Enable='off';
+            end;
+        end;
         if(strcmp(c{i}.Tag,'pushbutton_goto'))
             if(isempty(etc_render_fsbrain.vol))
                 c{i}.Enable='off';
@@ -493,6 +508,21 @@ if(etc_render_fsbrain.electrode_add_gui_ok)
                 end;
             end;
             if(strcmp(c{i}.Tag,'button_evaluate_cost'))
+                if(isempty(etc_render_fsbrain.vol))
+                    c{i}.Enable='off';
+                end;
+            end;
+            if(strcmp(c{i}.Tag,'checkbox_electrode_contact_lock'))
+                if(isempty(etc_render_fsbrain.vol))
+                    c{i}.Enable='off';
+                end;
+            end;
+            if(strcmp(c{i}.Tag,'edit_move'))
+                if(isempty(etc_render_fsbrain.vol))
+                    c{i}.Enable='off';
+                end;
+            end;
+            if(strcmp(c{i}.Tag,'edit_rotate'))
                 if(isempty(etc_render_fsbrain.vol))
                     c{i}.Enable='off';
                 end;
@@ -2476,3 +2506,120 @@ if(isfield(etc_render_fsbrain,'click_coord'))
         etc_render_fsbrain_handle('redraw');
     end;
 end;
+
+
+% --- Executes on button press in pushbutton24.
+function pushbutton24_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton24 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain;
+
+etc_render_fsbrain.electrode=[];
+
+%update electrode contact coordinates
+etc_render_fsbrain.aux2_point_coords=[];
+etc_render_fsbrain.aux2_point_name={};
+
+
+set(handles.listbox_electrode,'string',{});
+set(handles.listbox_contact,'string',{});
+
+
+
+c=struct2cell(handles);
+for i=1:length(c)
+    if(strcmp(c{i}.Type,'uicontrol'))
+        c{i}.Enable='on';
+    end;
+    
+    if(strcmp(c{i}.Tag,'pushbutton_rotate_c'))
+        %if(isempty(etc_render_fsbrain.vol))
+            c{i}.Enable='off';
+        %end;
+    end;
+    if(strcmp(c{i}.Tag,'pushbutton_rotate_cc'))
+        %if(isempty(etc_render_fsbrain.vol))
+            c{i}.Enable='off';
+        %end;
+    end;
+    if(strcmp(c{i}.Tag,'pushbutton_move_right'))
+        %if(isempty(etc_render_fsbrain.vol))
+            c{i}.Enable='off';
+        %end;
+    end;
+    if(strcmp(c{i}.Tag,'pushbutton_move_left'))
+        %if(isempty(etc_render_fsbrain.vol))
+            c{i}.Enable='off';
+        %end;
+    end;
+    if(strcmp(c{i}.Tag,'pushbutton_move_up'))
+        %if(isempty(etc_render_fsbrain.vol))
+            c{i}.Enable='off';
+        %end;
+    end;
+    if(strcmp(c{i}.Tag,'pushbutton_move_down'))
+        %if(isempty(etc_render_fsbrain.vol))
+            c{i}.Enable='off';
+        %end;
+    end;
+    if(strcmp(c{i}.Tag,'pushbutton_move_more'))
+        %if(isempty(etc_render_fsbrain.vol))
+            c{i}.Enable='off';
+        %end;
+    end;
+    if(strcmp(c{i}.Tag,'pushbutton_move_less'))
+        %if(isempty(etc_render_fsbrain.vol))
+            c{i}.Enable='off';
+        %end;
+    end;
+    if(strcmp(c{i}.Tag,'edit_move'))
+        %if(isempty(etc_render_fsbrain.vol))
+            c{i}.Enable='off';
+        %end;
+    end;
+    if(strcmp(c{i}.Tag,'edit_rotate'))
+        %if(isempty(etc_render_fsbrain.vol))
+            c{i}.Enable='off';
+        %end;
+    end;
+    if(strcmp(c{i}.Tag,'button_optimize'))
+        %if(isempty(etc_render_fsbrain.vol))
+            c{i}.Enable='off';
+        %end;
+    end;
+    if(strcmp(c{i}.Tag,'button_optimize_sel'))
+        %if(isempty(etc_render_fsbrain.vol))
+            c{i}.Enable='off';
+        %end;
+    end;
+    if(strcmp(c{i}.Tag,'button_evaluate_cost'))
+        %if(isempty(etc_render_fsbrain.vol))
+            c{i}.Enable='off';
+        %end;
+    end;
+    if(strcmp(c{i}.Tag,'checkbox_electrode_contact_lock'))
+        %if(isempty(etc_render_fsbrain.vol))
+            c{i}.Enable='off';
+        %end;
+    end;    
+    if(strcmp(c{i}.Tag,'pushbutton_goto'))
+        %if(isempty(etc_render_fsbrain.vol))
+            c{i}.Enable='off';
+        %end;
+    end;
+end;
+
+%uncheck contact view update option
+set(handles.checkbox_update_contact_view,'value',0);
+etc_render_fsbrain.electrode_update_contact_view_flag=0;
+
+
+etc_render_fsbrain_handle('draw_pointer','surface_coord',[],'click_vertex_vox',[]);
+
+etc_render_fsbrain_handle('redraw');
+return;
+        
+        
+        
+  

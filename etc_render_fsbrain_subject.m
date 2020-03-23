@@ -94,22 +94,25 @@ guidata(hObject, handles);
 d=dir(sprintf('%s/%s/mri',getenv('SUBJECTS_DIR'),etc_render_fsbrain.subject));
 str={};
 count=1;
+vol_idx=[];
 for idx=1:length(d)
-    if(~strcmp(d(idx).name,'.'))
-        if(~strcmp(d(idx).name,'.'))
-            if(d(idx).name(1)~='.')
-                str{count}=d(idx).name;
+    if(d(idx).name(1)~='.')
+        str{count}=d(idx).name;
+        if(isfield(etc_render_fsbrain,'vol'))
+            if(~isempty(etc_render_fsbrain.vol))
                 [dummy,ff,stem]=fileparts(etc_render_fsbrain.vol.fspec);
                 if(strcmp(str{count},sprintf('%s%s',ff,stem)))
                     vol_idx=count;
                 end;
-                count=count+1;
             end;
         end;
+        count=count+1;
     end;
 end;
 set(handles.listbox_vol,'string',str);
-set(handles.listbox_vol,'value',vol_idx);
+if(~isempty(vol_idx))
+    set(handles.listbox_vol,'value',vol_idx);
+end;
 guidata(hObject, handles);
 
 d=dir(sprintf('%s/%s/surf',getenv('SUBJECTS_DIR'),etc_render_fsbrain.subject));
@@ -157,6 +160,7 @@ if(baseName >0)
     fprintf('$SUBJECTS_DIR = %s\n',baseName);
 end;
 return;
+
 % --- Executes on selection change in listbox_subject.
 function listbox_subject_Callback(hObject, eventdata, handles)
 % hObject    handle to listbox_subject (see GCBO)
@@ -165,6 +169,75 @@ function listbox_subject_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns listbox_subject contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from listbox_subject
+global etc_render_fsbrain;
+
+try
+    contents = cellstr(get(hObject,'String'));
+    etc_render_fsbrain.subject=contents{get(hObject,'Value')};
+    fprintf('subject = %s.\n',etc_render_fsbrain.subject);
+    etc_render_fsbrain.hemi='lh';
+    etc_render_fsbrain.surf='orig';
+    
+    etc_render_fsbrain.subjects_dir=getenv('SUBJECTS_DIR');
+    file_surf=sprintf('%s/%s/surf/%s.%s',etc_render_fsbrain.subjects_dir,etc_render_fsbrain.subject,etc_render_fsbrain.hemi,etc_render_fsbrain.surf);
+    fprintf('reading [%s]...\n',file_surf);
+    
+    [etc_render_fsbrain.vertex_coords, etc_render_fsbrain.faces] = read_surf(file_surf);
+    
+    etc_render_fsbrain.vertex_coords_hemi=etc_render_fsbrain.vertex_coords;
+    etc_render_fsbrain.faces_hemi=etc_render_fsbrain.faces;
+    
+    file_orig_surf=sprintf('%s/%s/surf/%s.%s',etc_render_fsbrain.subjects_dir,etc_render_fsbrain.subject,etc_render_fsbrain.hemi,'orig');
+    fprintf('reading orig [%s]...\n',file_orig_surf);
+    
+    [orig_vertex_coords, orig_faces] = read_surf(file_orig_surf);
+    
+    etc_render_fsbrain.orig_vertex_coords_hemi=orig_vertex_coords;
+    etc_render_fsbrain.orig_faces_hemi=orig_faces;
+    
+    %loading vertices/faces for both hemispheres.
+    for hemi_idx=1:2
+        switch hemi_idx
+            case 1
+                hemi_str='lh';
+            case 2
+                hemi_str='rh';
+        end;
+        
+        file_surf=sprintf('%s/%s/surf/%s.%s',etc_render_fsbrain.subjects_dir,etc_render_fsbrain.subject,hemi_str,etc_render_fsbrain.surf);
+        %fprintf('reading [%s]...\n',file_surf);
+        [hemi_vertex_coords{hemi_idx}, hemi_faces{hemi_idx}] = read_surf(file_surf);
+        
+        file_orig_surf=sprintf('%s/%s/surf/%s.%s',etc_render_fsbrain.subjects_dir,etc_render_fsbrain.subject,hemi_str,'orig');
+        %fprintf('reading orig [%s]...\n',file_orig_surf);
+        [hemi_orig_vertex_coords{hemi_idx}, hemi_orig_faces{hemi_idx}] = read_surf(file_orig_surf);
+    end;
+    
+    
+    file_curv=sprintf('%s/%s/surf/%s.%s',etc_render_fsbrain.subjects_dir,etc_render_fsbrain.subject,etc_render_fsbrain.hemi,'curv');
+    [etc_render_fsbrain.curv]=read_curv(file_curv);
+    etc_render_fsbrain.curv_hemi=etc_render_fsbrain.curv;
+    
+    
+    fn=sprintf('%s/%s/mri/%s',etc_render_fsbrain.subjects_dir,etc_render_fsbrain.subject,'orig.mgz');
+    fprintf('loading [%s]...\n',fn);
+    etc_render_fsbrain.vol=MRIread(fn);
+
+    
+    etc_render_fsbrain_handle('redraw');
+    etc_render_fsbrain_handle('draw_pointer','surface_coord',[],'min_dist_idx',[],'click_vertex_vox',[]);
+
+    xmin=min(etc_render_fsbrain.vertex_coords(:,1));
+    xmax=max(etc_render_fsbrain.vertex_coords(:,1));
+    ymin=min(etc_render_fsbrain.vertex_coords(:,2));
+    ymax=max(etc_render_fsbrain.vertex_coords(:,2));
+    zmin=min(etc_render_fsbrain.vertex_coords(:,3));
+    zmax=max(etc_render_fsbrain.vertex_coords(:,3));
+    set(etc_render_fsbrain.brain_axis,'xlim',[xmin xmax],'ylim',[ymin ymax],'zlim',[zmin zmax]);
+    axis off vis3d equal tight;
+    
+catch ME
+end;
 
 
 % --- Executes during object creation, after setting all properties.
@@ -282,7 +355,88 @@ try
     fn=sprintf('%s/%s/mri/%s',etc_render_fsbrain.subjects_dir,etc_render_fsbrain.subject,vol_name);
     fprintf('loading [%s]...\n',fn);
     etc_render_fsbrain.vol=MRIread(fn);
-
+    
+    %update electrode contact coordinates
+    etc_render_fsbrain.aux2_point_coords=[];
+    etc_render_fsbrain.aux2_point_name={};
+    count=1;
+    for e_idx=1:length(etc_render_fsbrain.electrode)
+        for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
+            
+            etc_render_fsbrain.aux2_point_coords(count,:)=etc_render_fsbrain.electrode(e_idx).coord(c_idx,:);
+            
+            if(strcmp(etc_render_fsbrain.surf,'orig'))
+                
+            else
+                fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+                
+                tmp=etc_render_fsbrain.aux2_point_coords(count,:);
+                
+                vv=etc_render_fsbrain.orig_vertex_coords;
+                dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+                [min_dist,min_dist_idx]=min(dist);
+                etc_render_fsbrain.aux2_point_coords(count,:)=etc_render_fsbrain.vertex_coords(min_dist_idx,:);
+            end;
+            
+            etc_render_fsbrain.aux2_point_name{count}=sprintf('%s_%d',etc_render_fsbrain.electrode(e_idx).name, c_idx);;
+            count=count+1;
+        end;
+    end;
+    
+    
+    if(~isempty(etc_render_fsbrain.vol))
+        if(isempty(etc_render_fsbrain.talxfm))
+            file_talxfm=sprintf('%s/%s/mri/transforms/talairach.xfm',etc_render_fsbrain.subjects_dir,etc_render_fsbrain.subject);
+            fprintf('reading Talairach (MNI305) transformation matrix [%s]...\n',file_talxfm);
+            if(exist(file_talxfm, 'file') == 2)
+                fid = fopen(file_talxfm,'r');
+                gotit = 0;
+                for i=1:20 % read up to 20 lines, no more
+                    temp = fgetl(fid);
+                    if strmatch('Linear_Transform',temp),
+                        gotit = 1;
+                        break;
+                    end
+                end
+                
+                if gotit,
+                    % Read the transformation matrix (3x4).
+                    etc_render_fsbrain.talxfm = fscanf(fid,'%f',[4,3])';
+                    etc_render_fsbrain.talxfm(4,:) = [0 0 0 1];
+                    fclose(fid);
+                    fprintf('Talairach transformation matrix loaded.\n');
+                else
+                    etc_render_fsbrain.talxfm=[];
+                    fclose(fid);
+                    fprintf('failed to find ''Linear_Transform'' string in first 20 lines of xfm file.\n');
+                end
+            else
+                fprintf('no Talairach transformation!\n');
+                etc_render_fsbrain.talxfm=[];
+            end;
+            
+        else
+            fprintf('Talairach trasformation already...\n');
+        end;
+        
+        %voxel coordinates
+        right_column = [ ones( size(etc_render_fsbrain.orig_vertex_coords,1), 1 ); 0 ];
+        SurfVertices = [ [etc_render_fsbrain.orig_vertex_coords; 0 0 0]  right_column ];
+        %convert the surface coordinate (x,y,z) into CRS of the volume!
+        
+        if(~isempty(etc_render_fsbrain.vol))
+            SurfVertices=((etc_render_fsbrain.vol_reg)*SurfVertices.').';
+        end;
+        %"SurfVertices" is now for volume "vol".
+        
+        %get the CRS
+        etc_render_fsbrain.vol_vox=(inv(etc_render_fsbrain.vol.tkrvox2ras)*(SurfVertices.')).';
+        
+        %vol_vox=(inv(vol.vox2ras)*(SurfVertices.')).';
+        etc_render_fsbrain.vol_vox = etc_render_fsbrain.vol_vox(1:size(etc_render_fsbrain.orig_vertex_coords,1),1:3);
+        
+    end;
+    
     etc_render_fsbrain_handle('redraw');
     etc_render_fsbrain_handle('draw_pointer','surface_coord',[],'min_dist_idx',[],'click_vertex_vox',[]);
 catch ME
