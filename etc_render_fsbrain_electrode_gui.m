@@ -2145,6 +2145,10 @@ global etc_render_fsbrain
 
 etc_render_fsbrain.show_all_contacts_mri_flag=get(hObject,'Value');
 
+v1=get(findobj(etc_render_fsbrain.fig_electrode_gui,'Tag','checkbox_mri_view'),'Value');
+v2=get(findobj(etc_render_fsbrain.fig_electrode_gui,'Tag','checkbox_brain_surface'),'Value');
+set(findobj('Tag','checkbox_electrode_contacts'),'Value',v1|v2);
+
 if(isfield(etc_render_fsbrain,'click_coord'))
     if(~isempty(etc_render_fsbrain.click_coord))
         surface_coord=etc_render_fsbrain.click_coord'; %clicked surface coord
@@ -2462,6 +2466,10 @@ function checkbox_brain_surface_Callback(hObject, eventdata, handles)
 global etc_render_fsbrain
 
 etc_render_fsbrain.show_all_contacts_brain_surface_flag=get(hObject,'Value');
+
+v1=get(findobj(etc_render_fsbrain.fig_electrode_gui,'Tag','checkbox_mri_view'),'Value');
+v2=get(findobj(etc_render_fsbrain.fig_electrode_gui,'Tag','checkbox_brain_surface'),'Value');
+set(findobj('Tag','checkbox_electrode_contacts'),'Value',v1|v2);
 
 if(isfield(etc_render_fsbrain,'click_coord'))
     if(~isempty(etc_render_fsbrain.click_coord))

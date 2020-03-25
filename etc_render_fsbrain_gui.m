@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_gui
 
-% Last Modified by GUIDE v2.5 23-Mar-2020 21:19:09
+% Last Modified by GUIDE v2.5 25-Mar-2020 11:38:45
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -211,10 +211,13 @@ set(handles.edit_selected_electrode_size,'string',sprintf('%d',etc_render_fsbrai
 if(isempty(etc_render_fsbrain.lut))
     set(handles.listbox_overlay_vol_mask,'string',{});
     set(handles.listbox_overlay_vol_mask,'enable','off');
+    set(handles.checkbox_overlay_aux_vol,'enable','off');                                                        
+    set(handles.slider_overlay_aux_vol,'enable','off');
 else
     set(handles.listbox_overlay_vol_mask,'string',etc_render_fsbrain.lut.name);
     set(handles.listbox_overlay_vol_mask,'enable','on');
     set(handles.checkbox_overlay_aux_vol,'enable','on');                                                        
+    set(handles.slider_overlay_aux_vol,'enable','on');
 end;                            
 
 % Update handles structure
@@ -894,8 +897,12 @@ global etc_render_fsbrain
 
 etc_render_fsbrain.selected_contact_flag=get(hObject,'Value');
 
+if(isfield(etc_render_fsbrain,'click_coord'))
+    if(~isempty(etc_render_fsbrain.click_coord))
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
+    end;
+end
 etc_render_fsbrain_handle('redraw');
-
 
 % --- Executes on button press in pushbutton_auto_threshold.
 function pushbutton_auto_threshold_Callback(hObject, eventdata, handles)
@@ -983,8 +990,12 @@ global etc_render_fsbrain
 
 etc_render_fsbrain.selected_electrode_flag=get(hObject,'Value');
 
+if(isfield(etc_render_fsbrain,'click_coord'))
+    if(~isempty(etc_render_fsbrain.click_coord))
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
+    end;
+end
 etc_render_fsbrain_handle('redraw');
-
 
 % --- Executes on button press in checkbox_brain_surface.
 function checkbox_brain_surface_Callback(hObject, eventdata, handles)
@@ -1462,3 +1473,26 @@ function listbox_overlay_vol_mask_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in checkbox_electrode_contacts.
+function checkbox_electrode_contacts_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_electrode_contacts (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_electrode_contacts
+global etc_render_fsbrain;
+
+set(findobj('Tag','checkbox_mri_view'),'Value',get(hObject,'Value'));
+set(findobj('Tag','checkbox_brain_surface'),'Value',get(hObject,'Value'));
+
+etc_render_fsbrain.show_all_contacts_brain_surface_flag=get(hObject,'Value');
+etc_render_fsbrain.show_all_contacts_mri_flag=get(hObject,'Value');
+
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
+%etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord);
+
+etc_render_fsbrain_handle('redraw');
+
+  
