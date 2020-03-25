@@ -26,6 +26,8 @@ vol_vox=[];
 vol_pre_xfm=eye(4);
 talxfm=[];
 
+lut=[];
+
 %color 
 default_solid_color=[1.0000    0.7031    0.3906];
 curv_pos_color=[1 1 1].*0.4;
@@ -69,6 +71,10 @@ overlay_exclude=[];
 
 overlay_include_fstem='';
 overlay_include=[];
+
+overlay_vol_mask_alpha=0.5;
+overlay_vol_mask=[];
+overlay_flag_vol_mask=1;
 
 topo_label={};
 
@@ -219,10 +225,18 @@ for idx=1:length(varargin)/2
             overlay_truncate_pos=option_value;
         case 'overlay_truncate_neg'
             overlay_truncate_neg=option_value
+        case 'overlay_vol_mask_alpha'
+            overlay_vol_mask_alpha=option_value;
+        case 'overlay_vol_mask'
+            overlay_vol_mask=option_value;
+        case 'overlay_flag_vol_mask'
+            overlay_flag_vol_mask=option_value;
         case 'cluster_file'
             cluster_file=option_value;
         case 'alpha'
             alpha=option_value;
+        case 'lut'
+            lut=option_value;
         case 'flag_redraw'
             flag_redraw=option_value;
         case 'flag_camlight'
@@ -889,6 +903,10 @@ etc_render_fsbrain.overlay_Ds=overlay_Ds;
 etc_render_fsbrain.flag_overlay_truncate_pos=overlay_truncate_pos;
 etc_render_fsbrain.flag_overlay_truncate_neg=overlay_truncate_neg;
 
+etc_render_fsbrain.overlay_vol_mask_alpha=overlay_vol_mask_alpha;
+etc_render_fsbrain.overlay_vol_mask=overlay_vol_mask;
+etc_render_fsbrain.overlay_flag_vol_mask=overlay_flag_vol_mask;
+etc_render_fsbrain.lut=lut;
 
 etc_render_fsbrain.label_vertex=label_vertex;
 etc_render_fsbrain.label_value=label_value;

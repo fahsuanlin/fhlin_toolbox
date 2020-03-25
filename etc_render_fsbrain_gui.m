@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_gui
 
-% Last Modified by GUIDE v2.5 22-Mar-2020 15:45:53
+% Last Modified by GUIDE v2.5 23-Mar-2020 21:19:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -79,6 +79,8 @@ try
     end;
 catch
 end;
+set(handles.text_timeVec_unit,'String',etc_render_fsbrain.overlay_stc_timeVec_unit);
+
 
 %overlay smooth
 set(handles.edit_smooth,'enable','off');
@@ -198,7 +200,6 @@ set(handles.edit_click_vertex_point_size,'string',sprintf('%d',etc_render_fsbrai
 set(handles.checkbox_overlay_truncate_neg,'value',etc_render_fsbrain.flag_overlay_truncate_neg);
 set(handles.checkbox_overlay_truncate_pos,'value',etc_render_fsbrain.flag_overlay_truncate_pos);
 
-
 set(handles.checkbox_selected_contact,'value',etc_render_fsbrain.selected_contact_flag);
 set(handles.pushbutton_selected_contact_color,'BackgroundColor',etc_render_fsbrain.selected_contact_color);
 set(handles.edit_selected_contact_size,'string',sprintf('%d',etc_render_fsbrain.selected_contact_size));
@@ -207,6 +208,14 @@ set(handles.checkbox_selected_electrode,'value',etc_render_fsbrain.selected_elec
 set(handles.pushbutton_selected_electrode_color,'BackgroundColor',etc_render_fsbrain.selected_electrode_color);
 set(handles.edit_selected_electrode_size,'string',sprintf('%d',etc_render_fsbrain.selected_electrode_size));
 
+if(isempty(etc_render_fsbrain.lut))
+    set(handles.listbox_overlay_vol_mask,'string',{});
+    set(handles.listbox_overlay_vol_mask,'enable','off');
+else
+    set(handles.listbox_overlay_vol_mask,'string',etc_render_fsbrain.lut.name);
+    set(handles.listbox_overlay_vol_mask,'enable','on');
+    set(handles.checkbox_overlay_aux_vol,'enable','on');                                                        
+end;                            
 
 % Update handles structure
 guidata(hObject, handles);
@@ -325,8 +334,8 @@ global etc_render_fsbrain
 mm=str2double(get(hObject,'string'));
 mx=max(etc_render_fsbrain.overlay_threshold);
 etc_render_fsbrain.overlay_threshold=[mm,mx];
-%etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
-etc_render_fsbrain_handle('draw_pointer','surface_coord',[],'min_dist_idx',[],'click_vertex_vox',[]);    
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
+%etc_render_fsbrain_handle('draw_pointer','surface_coord',[],'min_dist_idx',[],'click_vertex_vox',[]);    
 etc_render_fsbrain_handle('redraw');
 if(~isempty(etc_render_fsbrain.h_colorbar_pos))
     etc_render_fsbrain_handle('kb','c0','c0'); %update colorbar
@@ -359,8 +368,8 @@ global etc_render_fsbrain
 mx=str2double(get(hObject,'string'));
 mm=min(etc_render_fsbrain.overlay_threshold);
 etc_render_fsbrain.overlay_threshold=[mm,mx];
-%etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
-etc_render_fsbrain_handle('draw_pointer','surface_coord',[],'min_dist_idx',[],'click_vertex_vox',[]);    
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
+%etc_render_fsbrain_handle('draw_pointer','surface_coord',[],'min_dist_idx',[],'click_vertex_vox',[]);    
 etc_render_fsbrain_handle('redraw');
 if(~isempty(etc_render_fsbrain.h_colorbar_pos))
     etc_render_fsbrain_handle('kb','c0','c0'); %update colorbar
@@ -1246,7 +1255,7 @@ if(filename>0)
         
         
         if(strcmp(etc_render_fsbrain.hemi,'lh'))
-            etc_render_fsbrain.overlay_stc=etc_render_fsbrain.X_hemi_cort{1};
+            etc_render_fsbrain.overlay_stc=X_hemi_cort{1};
             etc_render_fsbrain.overlay_vertex=etc_render_fsbrain.vol_A(1).v_idx;
             if(~isempty(etc_render_fsbrain.overlay_aux_vol_stc))
                 etc_render_fsbrain.overlay_aux_stc=aux_X_hemi_cort{1};
@@ -1385,9 +1394,71 @@ if(filename>0)
     end;
     
     etc_render_fsbrain_handle('redraw');        
-    
-    
-    
-
 end;
 return;
+
+
+% --- Executes on slider movement.
+function slider_overlay_aux_vol_Callback(hObject, eventdata, handles)
+% hObject    handle to slider_overlay_aux_vol (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+global etc_render_fsbrain;
+
+etc_render_fsbrain.overlay_vol_mask_alpha=get(hObject,'Value');
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
+
+
+% --- Executes during object creation, after setting all properties.
+function slider_overlay_aux_vol_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to slider_overlay_aux_vol (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+% --- Executes on button press in checkbox_overlay_aux_vol.
+function checkbox_overlay_aux_vol_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_overlay_aux_vol (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_overlay_aux_vol
+global etc_render_fsbrain;
+
+etc_render_fsbrain.overlay_flag_vol_mask=get(hObject,'Value');
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
+
+
+% --- Executes on selection change in listbox_overlay_vol_mask.
+function listbox_overlay_vol_mask_Callback(hObject, eventdata, handles)
+% hObject    handle to listbox_overlay_vol_mask (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns listbox_overlay_vol_mask contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from listbox_overlay_vol_mask
+global etc_render_fsbrain;
+
+%obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
+%                    idx=get(obj,'value');
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
+
+% --- Executes during object creation, after setting all properties.
+function listbox_overlay_vol_mask_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to listbox_overlay_vol_mask (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
