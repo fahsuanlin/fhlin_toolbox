@@ -100,7 +100,7 @@ switch lower(param)
                         etc_render_fsbrain.overlay_stc_timeVec=timeVec;
                         etc_render_fsbrain.stc_hemi=hemi;
                         etc_render_fsbrain.overlay_stc_timeVec_unit='ms';
-                        set(findobj('tag','text_timeVec_unit'),etc_render_fsbrain.overlay_stc_timeVec_unit);
+                        set(findobj('tag','text_timeVec_unit'),'string',etc_render_fsbrain.overlay_stc_timeVec_unit);
                         
                         [tmp,etc_render_fsbrain.overlay_stc_timeVec_idx]=max(sum(etc_render_fsbrain.overlay_stc.^2,1));
                         etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);

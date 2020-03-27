@@ -179,34 +179,59 @@ else
     set(handles.checkbox_show_overlay,'enable','off');
 end;
 
-set(handles.pushbutton_aux_point_color,'BackgroundColor',etc_render_fsbrain.aux_point_color);
-set(handles.edit_aux_point_size,'string',sprintf('%3.3f',etc_render_fsbrain.aux_point_size));
-if(~isfield(etc_render_fsbrain,'aux_point_label_flag'))
-    etc_render_fsbrain.aux_point_label_flag=1;
+if(~isempty(etc_render_fsbrain.aux_point_coords))
+    set(handles.pushbutton_aux_point_color,'BackgroundColor',etc_render_fsbrain.aux_point_color);
+    set(handles.edit_aux_point_size,'string',sprintf('%3.3f',etc_render_fsbrain.aux_point_size));
+    if(~isfield(etc_render_fsbrain,'aux_point_label_flag'))
+        etc_render_fsbrain.aux_point_label_flag=1;
+    end;
+    set(handles.checkbox_aux_point_label,'value',etc_render_fsbrain.aux_point_label_flag);
+else
+    set(handles.pushbutton_aux_point_color,'enable','off');
+    set(handles.edit_aux_point_size,'enable','off');
+    set(handles.checkbox_aux_point_label,'enable','off');
 end;
-set(handles.checkbox_aux_point_label,'value',etc_render_fsbrain.aux_point_label_flag);
 
-set(handles.pushbutton_aux2_point_color,'BackgroundColor',etc_render_fsbrain.aux2_point_color);
-set(handles.edit_aux2_point_size,'string',sprintf('%d',etc_render_fsbrain.aux2_point_size));
+if(~isempty(etc_render_fsbrain.aux2_point_coords))
+    set(handles.pushbutton_aux2_point_color,'BackgroundColor',etc_render_fsbrain.aux2_point_color);
+    set(handles.edit_aux2_point_size,'string',sprintf('%d',etc_render_fsbrain.aux2_point_size));
+    v1=etc_render_fsbrain.show_all_contacts_mri_flag;
+    v2=etc_render_fsbrain.show_all_contacts_brain_surface_flag;
+    set(handles.checkbox_electrode_contacts,'value',v1|v2);
+    
+    set(handles.checkbox_selected_contact,'value',etc_render_fsbrain.selected_contact_flag);
+    set(handles.pushbutton_selected_contact_color,'BackgroundColor',etc_render_fsbrain.selected_contact_color);
+    set(handles.edit_selected_contact_size,'string',sprintf('%d',etc_render_fsbrain.selected_contact_size));
+    
+    set(handles.checkbox_selected_electrode,'value',etc_render_fsbrain.selected_electrode_flag);
+    set(handles.pushbutton_selected_electrode_color,'BackgroundColor',etc_render_fsbrain.selected_electrode_color);
+    set(handles.edit_selected_electrode_size,'string',sprintf('%d',etc_render_fsbrain.selected_electrode_size));
+else
+    set(handles.pushbutton_aux2_point_color,'enable','off');
+    set(handles.edit_aux2_point_size,'enable','off');
+    set(handles.checkbox_electrode_contacts,'enable','off');
 
-set(handles.pushbutton_click_point_color,'BackgroundColor',etc_render_fsbrain.click_point_color);
-set(handles.edit_click_point_size,'string',sprintf('%d',etc_render_fsbrain.click_point_size));
+    set(handles.checkbox_selected_contact,'enable','off');
+    set(handles.pushbutton_selected_contact_color,'enable','off');
+    set(handles.edit_selected_contact_size,'enable','off');
+    
+    set(handles.checkbox_selected_electrode,'enable','off');
+    set(handles.pushbutton_selected_electrode_color,'enable','off');
+    set(handles.edit_selected_electrode_size,'enable','off');
+end;
+
+
 
 set(handles.checkbox_nearest_brain_surface,'value',etc_render_fsbrain.show_nearest_brain_surface_location_flag);
 set(handles.checkbox_brain_surface,'value',etc_render_fsbrain.show_brain_surface_location_flag);
 set(handles.pushbutton_click_vertex_point_color,'BackgroundColor',etc_render_fsbrain.click_vertex_point_color);
 set(handles.edit_click_vertex_point_size,'string',sprintf('%d',etc_render_fsbrain.click_vertex_point_size));
+set(handles.pushbutton_click_point_color,'BackgroundColor',etc_render_fsbrain.click_point_color);
+set(handles.edit_click_point_size,'string',sprintf('%d',etc_render_fsbrain.click_point_size));
+
 
 set(handles.checkbox_overlay_truncate_neg,'value',etc_render_fsbrain.flag_overlay_truncate_neg);
 set(handles.checkbox_overlay_truncate_pos,'value',etc_render_fsbrain.flag_overlay_truncate_pos);
-
-set(handles.checkbox_selected_contact,'value',etc_render_fsbrain.selected_contact_flag);
-set(handles.pushbutton_selected_contact_color,'BackgroundColor',etc_render_fsbrain.selected_contact_color);
-set(handles.edit_selected_contact_size,'string',sprintf('%d',etc_render_fsbrain.selected_contact_size));
-
-set(handles.checkbox_selected_electrode,'value',etc_render_fsbrain.selected_electrode_flag);
-set(handles.pushbutton_selected_electrode_color,'BackgroundColor',etc_render_fsbrain.selected_electrode_color);
-set(handles.edit_selected_electrode_size,'string',sprintf('%d',etc_render_fsbrain.selected_electrode_size));
 
 if(isempty(etc_render_fsbrain.lut))
     set(handles.listbox_overlay_vol_mask,'string',{});
@@ -777,6 +802,9 @@ function checkbox_nearest_brain_surface_Callback(hObject, eventdata, handles)
 global etc_render_fsbrain
 
 etc_render_fsbrain.show_nearest_brain_surface_location_flag=get(hObject,'Value');
+
+set(findobj('Tag','checkbox_nearest_brain_surface'),'value',etc_render_fsbrain.show_nearest_brain_surface_location_flag);
+
 
 if(isfield(etc_render_fsbrain,'click_coord'))
     if(~isempty(etc_render_fsbrain.click_coord))
@@ -1494,5 +1522,4 @@ etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.clic
 %etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord);
 
 etc_render_fsbrain_handle('redraw');
-
   

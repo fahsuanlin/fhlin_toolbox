@@ -133,7 +133,9 @@ if(~isempty(etc_render_fsbrain.electrode))
                     vv=etc_render_fsbrain.orig_vertex_coords;
                     dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
                     [min_dist,min_dist_idx]=min(dist);
-                    etc_render_fsbrain.aux2_point_coords(count,:)=etc_render_fsbrain.vertex_coords(min_dist_idx,:);
+                    if(~isnan(min_dist))
+                        etc_render_fsbrain.aux2_point_coords(count,:)=etc_render_fsbrain.vertex_coords(min_dist_idx,:);
+                    end;
                 end;
                 
                 
@@ -252,76 +254,76 @@ else
         end;
         
         if(strcmp(c{i}.Tag,'pushbutton_rotate_c'))
-            if(isempty(etc_render_fsbrain.vol))
+            if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                 c{i}.Enable='off';
             end;
         end;
         if(strcmp(c{i}.Tag,'pushbutton_rotate_cc'))
-            if(isempty(etc_render_fsbrain.vol))
+            if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                 c{i}.Enable='off';
             end;
         end;
         if(strcmp(c{i}.Tag,'pushbutton_move_right'))
-            if(isempty(etc_render_fsbrain.vol))
+            if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                 c{i}.Enable='off';
             end;
         end;
         if(strcmp(c{i}.Tag,'pushbutton_move_left'))
-            if(isempty(etc_render_fsbrain.vol))
+            if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                 c{i}.Enable='off';
             end;
         end;
         if(strcmp(c{i}.Tag,'pushbutton_move_up'))
-            if(isempty(etc_render_fsbrain.vol))
+            if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                 c{i}.Enable='off';
             end;
         end;
         if(strcmp(c{i}.Tag,'pushbutton_move_down'))
-            if(isempty(etc_render_fsbrain.vol))
+            if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                 c{i}.Enable='off';
             end;
         end;
         if(strcmp(c{i}.Tag,'pushbutton_move_more'))
-            if(isempty(etc_render_fsbrain.vol))
+            if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                 c{i}.Enable='off';
             end;
         end;
         if(strcmp(c{i}.Tag,'pushbutton_move_less'))
-            if(isempty(etc_render_fsbrain.vol))
+            if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                 c{i}.Enable='off';
             end;
         end;
         if(strcmp(c{i}.Tag,'button_optimize'))
-            if(isempty(etc_render_fsbrain.vol))
+            if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                 c{i}.Enable='off';
             end;
         end;
         if(strcmp(c{i}.Tag,'button_optimize_sel'))
-            if(isempty(etc_render_fsbrain.vol))
+            if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                 c{i}.Enable='off';
             end;
         end;
         if(strcmp(c{i}.Tag,'button_evaluate_cost'))
-            if(isempty(etc_render_fsbrain.vol))
+            if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                 c{i}.Enable='off';
             end;
         end;
         if(strcmp(c{i}.Tag,'checkbox_electrode_contact_lock'))
-            if(isempty(etc_render_fsbrain.vol))
+            if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                 c{i}.Enable='off';
             end;
         end;
         if(strcmp(c{i}.Tag,'edit_move'))
-            if(isempty(etc_render_fsbrain.vol))
+            if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                 c{i}.Enable='off';
             end;
         end;
         if(strcmp(c{i}.Tag,'edit_rotate'))
-            if(isempty(etc_render_fsbrain.vol))
+            if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                 c{i}.Enable='off';
             end;
         end;
-        if(strcmp(c{i}.Tag,'pushbutton_goto'))
+        if(strcmp(c{i}.Tag,'pushbutton_goto')|~strcmp(etc_render_fsbrain.surf,'orig'))
             if(isempty(etc_render_fsbrain.vol))
                 c{i}.Enable='off';
             end;
@@ -1791,6 +1793,8 @@ global etc_render_fsbrain
 
 etc_render_fsbrain.show_nearest_brain_surface_location_flag=get(hObject,'Value');
 
+set(findobj('Tag','checkbox_nearest_brain_surface'),'value',etc_render_fsbrain.show_nearest_brain_surface_location_flag);
+
 if(isfield(etc_render_fsbrain,'click_coord'))
     if(~isempty(etc_render_fsbrain.click_coord))
         etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
@@ -1970,7 +1974,9 @@ if(filename~=0)
                     vv=etc_render_fsbrain.orig_vertex_coords;
                     dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
                     [min_dist,min_dist_idx]=min(dist);
-                    etc_render_fsbrain.aux2_point_coords(count,:)=etc_render_fsbrain.vertex_coords(min_dist_idx,:);
+                    if(~isnan(min_dist))
+                        etc_render_fsbrain.aux2_point_coords(count,:)=etc_render_fsbrain.vertex_coords(min_dist_idx,:);
+                    end;    
                 end;
                 
                 etc_render_fsbrain.aux2_point_name{count}=sprintf('%s_%d',etc_render_fsbrain.electrode(e_idx).name, c_idx);;
@@ -2018,62 +2024,62 @@ if(filename~=0)
             end;
             
             if(strcmp(c{i}.Tag,'pushbutton_rotate_c'))
-                if(isempty(etc_render_fsbrain.vol))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                     c{i}.Enable='off';
                 end;
             end;
             if(strcmp(c{i}.Tag,'pushbutton_rotate_cc'))
-                if(isempty(etc_render_fsbrain.vol))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                     c{i}.Enable='off';
                 end;
             end;
             if(strcmp(c{i}.Tag,'pushbutton_move_right'))
-                if(isempty(etc_render_fsbrain.vol))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                     c{i}.Enable='off';
                 end;
             end;
             if(strcmp(c{i}.Tag,'pushbutton_move_left'))
-                if(isempty(etc_render_fsbrain.vol))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                     c{i}.Enable='off';
                 end;
             end;        
             if(strcmp(c{i}.Tag,'pushbutton_move_up'))
-                if(isempty(etc_render_fsbrain.vol))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                     c{i}.Enable='off';
                 end;
             end;
             if(strcmp(c{i}.Tag,'pushbutton_move_down'))
-                if(isempty(etc_render_fsbrain.vol))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                     c{i}.Enable='off';
                 end;
             end;    
             if(strcmp(c{i}.Tag,'pushbutton_move_more'))
-                if(isempty(etc_render_fsbrain.vol))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                     c{i}.Enable='off';
                 end;
             end;
             if(strcmp(c{i}.Tag,'pushbutton_move_less'))
-                if(isempty(etc_render_fsbrain.vol))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                     c{i}.Enable='off';
                 end;
             end;
             if(strcmp(c{i}.Tag,'button_optimize'))
-                if(isempty(etc_render_fsbrain.vol))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                     c{i}.Enable='off';
                 end;
             end;
             if(strcmp(c{i}.Tag,'button_optimize_sel'))
-                if(isempty(etc_render_fsbrain.vol))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                     c{i}.Enable='off';
                 end;
             end;
             if(strcmp(c{i}.Tag,'button_evaluate_cost'))
-                if(isempty(etc_render_fsbrain.vol))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                     c{i}.Enable='off';
                 end;
             end;
             if(strcmp(c{i}.Tag,'pushbutton_goto'))
-                if(isempty(etc_render_fsbrain.vol))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                     c{i}.Enable='off';
                 end;
             end;
@@ -2088,7 +2094,37 @@ if(filename~=0)
             set(handles.checkbox_update_contact_view,'value',0);
         end;
         %guidata(hObject, handles);
-          
+        
+        
+        
+        if(~isempty(etc_render_fsbrain.aux2_point_coords))
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','pushbutton_aux2_point_color'),'BackgroundColor',etc_render_fsbrain.aux2_point_color);
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','edit_aux2_point_size'),'string',sprintf('%d',etc_render_fsbrain.aux2_point_size));
+            v1=etc_render_fsbrain.show_all_contacts_mri_flag;
+            v2=etc_render_fsbrain.show_all_contacts_brain_surface_flag;
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','checkbox_electrode_contacts'),'value',v1|v2);
+            
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','checkbox_selected_contact'),'value',etc_render_fsbrain.selected_contact_flag);
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','pushbutton_selected_contact_color'),'BackgroundColor',etc_render_fsbrain.selected_contact_color);
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','edit_selected_contact_size'),'string',sprintf('%d',etc_render_fsbrain.selected_contact_size));
+            
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','checkbox_selected_electrode'),'value',etc_render_fsbrain.selected_electrode_flag);
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','pushbutton_selected_electrode_color'),'BackgroundColor',etc_render_fsbrain.selected_electrode_color);
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','edit_selected_electrode_size'),'string',sprintf('%d',etc_render_fsbrain.selected_electrode_size));
+ 
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','pushbutton_aux2_point_color'),'enable','on');
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','edit_aux2_point_size'),'enable','off');
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','checkbox_electrode_contacts'),'enable','on');
+            
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','checkbox_selected_contact'),'enable','on');
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','pushbutton_selected_contact_color'),'enable','on');
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','edit_selected_contact_size'),'enable','on');
+            
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','checkbox_selected_electrode'),'enable','on');
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','pushbutton_selected_electrode_color'),'enable','on');
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','edit_selected_electrode_size'),'enable','on');
+        end;
+        
         count=1;
         surface_coord=etc_render_fsbrain.aux2_point_coords(count,:);
         
