@@ -120,6 +120,41 @@ function listbox_sensor_Callback(hObject, eventdata, handles)
 global etc_render_fsbrain
 
 etc_render_fsbrain.aux_point_idx=get(hObject,'Value');
+tmp=cellstr(get(hObject,'String'));
+fprintf('sensor [%s] selectred.\n',tmp{etc_render_fsbrain.aux_point_idx});
+
+
+surface_coord=etc_render_fsbrain.aux_point_coords(etc_render_fsbrain.aux_point_idx,:);
+
+%etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'click_vertex_vox',click_vertex_vox);
+try
+    if(strcmp(etc_render_fsbrain.surf,'orig'))
+        surface_orig_coord=surface_coord;
+    else
+        %fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+        
+        tmp=surface_coord;
+        
+        vv=etc_render_fsbrain.vertex_coords;
+        dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+        [min_dist,min_dist_idx]=min(dist);
+        surface_orig_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
+    end;
+    
+    try
+        if(~isempty(etc_render_fsbrain.vol))
+            v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
+            click_vertex_vox=round(v(1:3))';
+        else
+            click_vertex_vox=[];
+        end;
+    catch ME
+    end;
+    
+    etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'click_vertex_vox',click_vertex_vox);
+catch ME
+end;
+
 guidata(hObject, handles);
 
 
@@ -293,6 +328,9 @@ set(etc_render_fsbrain.h,'facealpha',get(hObject,'Value'));
 etc_render_fsbrain.alpha=get(hObject,'Value');
 guidata(hObject, handles);
 
+h=findobj('tag','slider_alpha');
+set(h,'value',get(hObject,'Value'));
+
 % --- Executes during object creation, after setting all properties.
 function slider_alpha_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to slider_alpha (see GCBO)
@@ -315,16 +353,20 @@ function pushbutton_export_Callback(hObject, eventdata, handles)
 global etc_render_fsbrain;
 
 
-vv=etc_render_fsbrain.vertex_coords;
+% vv=etc_render_fsbrain.vertex_coords;
+% 
+% for idx=1:length(etc_render_fsbrain.aux_point_name)
+%     dist=sqrt(sum((vv-repmat([etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3)],[size(vv,1),1])).^2,2));
+%     [min_dist,min_dist_idx]=min(dist);
+%     verts_electrode_idx(idx)=min_dist_idx;
+% end;
 
-for idx=1:length(etc_render_fsbrain.aux_point_name)
-    dist=sqrt(sum((vv-repmat([etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3)],[size(vv,1),1])).^2,2));
-    [min_dist,min_dist_idx]=min(dist);
-    verts_electrode_idx(idx)=min_dist_idx;
-end;
 
-assignin('base','verts_electrode_idx',verts_electrode_idx);
-fprintf('variables "verts_electrode_idx" exported\n');
+sensor.name=etc_render_fsbrain.aux_point_name;
+sensor.coords=etc_render_fsbrain.aux_point_coords;
+    
+assignin('base','sensor',sensor);
+fprintf('variables "sensor" exported\n');
 
 
 
@@ -336,19 +378,26 @@ function pushbutton_save_Callback(hObject, eventdata, handles)
 
 global etc_render_fsbrain
 
-vv=etc_render_fsbrain.vertex_coords;
+% vv=etc_render_fsbrain.vertex_coords;
+% 
+% for idx=1:length(etc_render_fsbrain.aux_point_name)
+%     dist=sqrt(sum((vv-repmat([etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3)],[size(vv,1),1])).^2,2));
+%     [min_dist,min_dist_idx]=min(dist);
+%     verts_electrode_idx(idx)=min_dist_idx;
+% end;
 
-for idx=1:length(etc_render_fsbrain.aux_point_name)
-    dist=sqrt(sum((vv-repmat([etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3)],[size(vv,1),1])).^2,2));
-    [min_dist,min_dist_idx]=min(dist);
-    verts_electrode_idx(idx)=min_dist_idx;
-end;
-
-assignin('base','verts_electrode_idx',verts_electrode_idx);
-filename = uigetfile;
+sensor.name=etc_render_fsbrain.aux_point_name;
+sensor.coords=etc_render_fsbrain.aux_point_coords;
+    
+assignin('base','sensor',sensor);
+[filename, pathname] = uiputfile('sensor.mat', 'Save sensor as');
 if(filename)
-    save(filename,'-append','verts_electrode_idx');
-    fprintf('variable "verts_electrode_idx" exported and saved in [%s]\n',filename);
+    if(exist(filename))
+        save(filename,'-append','sensor');
+    else
+        save(filename,'sensor');
+    end;
+    fprintf('variable "sensor" exported and saved in [%s]\n',filename);
 end;
 
 % --- Executes on button press in checkbox_nearest_brain_surface.
@@ -393,33 +442,37 @@ function button_sensor_load_Callback(hObject, eventdata, handles)
 global etc_render_fsbrain;
 v = evalin('base', 'whos');
 fn={v.name};
-[indx,tf] = listdlg('PromptString','Select a variable',...
+[indx,tf] = listdlg('PromptString','Select a variable...',...
     'SelectionMode','single',...
     'ListString',fn);
 if(indx)
     var=fn{indx};
-    evalin('base',sprintf('global etc_render_fsbrain; etc_render_fsbrain.aux_point_name=%s;',var));
-    
-    etc_render_fsbrain.aux_point_idx=1;
-    str={};
-    for e_idx=1:length(etc_render_fsbrain.aux_point_name)
-        str{e_idx}=etc_render_fsbrain.aux_point_name{e_idx};
-        etc_render_fsbrain.aux_point_coords(e_idx,:)=[0 0 0];
-    end;
-    set(handles.listbox_sensor,'string',str);
-    set(handles.listbox_sensor,'value',etc_render_fsbrain.aux_point_idx);
-    guidata(hObject, handles);
-    
-    %enable all uicontrols
-    c=struct2cell(handles);
-    for i=1:length(c)
-        if(strcmp(c{i}.Type,'uicontrol'))
-            c{i}.Enable='on';
+    evalin('base',sprintf('global etc_render_fsbrain; if(isfield(%s,''coords'')&&isfield(%s,''name'')) etc_render_fsbrain.tmp=1; else etc_render_fsbrain.tmp=0; end;',var,var));
+    if(etc_render_fsbrain.tmp)
+        %evalin('base',sprintf('global etc_render_fsbrain; etc_render_fsbrain.aux_point_name=%s;',var));
+        evalin('base',sprintf('etc_render_fsbrain.aux_point_name=%s.name; etc_render_fsbrain.aux_point_coords=%s.coords;',var,var));
+        
+        etc_render_fsbrain.aux_point_idx=1;
+        str={};
+        for e_idx=1:length(etc_render_fsbrain.aux_point_name)
+            str{e_idx}=etc_render_fsbrain.aux_point_name{e_idx};
+            %etc_render_fsbrain.aux_point_coords(e_idx,:)=[0 0 0];
         end;
+        set(handles.listbox_sensor,'string',str);
+        set(handles.listbox_sensor,'value',etc_render_fsbrain.aux_point_idx);
+        guidata(hObject, handles);
+        
+        %enable all uicontrols
+        c=struct2cell(handles);
+        for i=1:length(c)
+            if(strcmp(c{i}.Type,'uicontrol'))
+                c{i}.Enable='on';
+            end;
+        end;
+        
+        etc_render_fsbrain_handle('redraw');
+    else
     end;
-    
-    etc_render_fsbrain_handle('redraw');
-
 end;
 
 

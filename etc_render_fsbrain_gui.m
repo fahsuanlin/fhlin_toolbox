@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_gui
 
-% Last Modified by GUIDE v2.5 25-Mar-2020 11:38:45
+% Last Modified by GUIDE v2.5 27-Mar-2020 19:04:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -186,10 +186,15 @@ if(~isempty(etc_render_fsbrain.aux_point_coords))
         etc_render_fsbrain.aux_point_label_flag=1;
     end;
     set(handles.checkbox_aux_point_label,'value',etc_render_fsbrain.aux_point_label_flag);
+    set(handles.pushbutton_aux_point_text_color,'BackgroundColor',etc_render_fsbrain.aux_point_text_color);
+    set(handles.edit_aux_point_text_size,'string',sprintf('%d',etc_render_fsbrain.aux_point_text_size));
+
 else
     set(handles.pushbutton_aux_point_color,'enable','off');
     set(handles.edit_aux_point_size,'enable','off');
     set(handles.checkbox_aux_point_label,'enable','off');
+    set(handles.pushbutton_aux_point_text_color,'enable','off');
+    set(handles.edit_aux_point_text_size,'enable','off');
 end;
 
 if(~isempty(etc_render_fsbrain.aux2_point_coords))
@@ -221,14 +226,12 @@ else
 end;
 
 
-
 set(handles.checkbox_nearest_brain_surface,'value',etc_render_fsbrain.show_nearest_brain_surface_location_flag);
 set(handles.checkbox_brain_surface,'value',etc_render_fsbrain.show_brain_surface_location_flag);
 set(handles.pushbutton_click_vertex_point_color,'BackgroundColor',etc_render_fsbrain.click_vertex_point_color);
 set(handles.edit_click_vertex_point_size,'string',sprintf('%d',etc_render_fsbrain.click_vertex_point_size));
 set(handles.pushbutton_click_point_color,'BackgroundColor',etc_render_fsbrain.click_point_color);
 set(handles.edit_click_point_size,'string',sprintf('%d',etc_render_fsbrain.click_point_size));
-
 
 set(handles.checkbox_overlay_truncate_neg,'value',etc_render_fsbrain.flag_overlay_truncate_neg);
 set(handles.checkbox_overlay_truncate_pos,'value',etc_render_fsbrain.flag_overlay_truncate_pos);
@@ -1523,3 +1526,62 @@ etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.clic
 
 etc_render_fsbrain_handle('redraw');
   
+
+
+
+function edit_aux_point_text_size_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_aux_point_text_size (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_aux_point_text_size as text
+%        str2double(get(hObject,'String')) returns contents of edit_aux_point_text_size as a double
+global etc_render_fsbrain;
+
+etc_render_fsbrain.aux_point_text_size=str2double(get(hObject,'String'));
+%etc_render_fsbrain_handle('draw_pointer');
+try
+    %if(isfield(etc_render_fsbrain,'click_coord')&&(isfield(etc_render_fsbrain,'click_vertex_vox')))
+        %etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
+    %else
+        %etc_render_fsbrain_handle('draw_pointer');        
+        etc_render_fsbrain_handle('redraw');        
+    %end;
+catch ME
+end;
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_aux_point_text_size_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_aux_point_text_size (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pushbutton_aux_point_text_color.
+function pushbutton_aux_point_text_color_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_aux_point_text_color (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain;
+
+c = uisetcolor(etc_render_fsbrain.aux_point_text_color,'Select a color');
+etc_render_fsbrain.aux_point_text_color=c;
+set(handles.pushbutton_aux_point_text_color,'BackgroundColor',etc_render_fsbrain.aux_point_text_color);
+%etc_render_fsbrain_handle('draw_pointer');
+try
+    %if(isfield(etc_render_fsbrain,'click_coord')&&(isfield(etc_render_fsbrain,'click_vertex_vox')))
+        %etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
+    %else
+        %etc_render_fsbrain_handle('draw_pointer');        
+        etc_render_fsbrain_handle('redraw');        
+    %end;
+catch ME
+end;
+

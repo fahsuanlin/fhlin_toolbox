@@ -83,6 +83,7 @@ switch lower(param)
                 set(etc_render_fsbrain.fig_subject,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
                 
                 set(etc_render_fsbrain.fig_subject,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
+                set(etc_render_fsbrain.fig_subject,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
 
             case 'f'
                 fprintf('\nload overlay...\n');
@@ -214,6 +215,7 @@ switch lower(param)
                 set(etc_render_fsbrain.fig_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
 
                 set(etc_render_fsbrain.fig_gui,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
+                set(etc_render_fsbrain.fig_gui,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
 
             case 'k'
                 %fprintf('\nregister points...\n');
@@ -228,6 +230,7 @@ switch lower(param)
                 set(etc_render_fsbrain.fig_register,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
 
                 set(etc_render_fsbrain.fig_register,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
+                set(etc_render_fsbrain.fig_register,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
 
             case 'e'
                 %fprintf('\nelectrodes...\n');
@@ -242,6 +245,8 @@ switch lower(param)
                 set(etc_render_fsbrain.fig_electrode_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
 
                 set(etc_render_fsbrain.fig_electrode_gui,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
+                set(etc_render_fsbrain.fig_electrode_gui,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
+                
              case 'b'
                 %fprintf('\nsensors...\n');
                 if(isfield(etc_render_fsbrain,'fig_sensor_gui'))
@@ -255,6 +260,7 @@ switch lower(param)
                 set(etc_render_fsbrain.fig_sensor_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
 
                 set(etc_render_fsbrain.fig_sensor_gui,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
+                set(etc_render_fsbrain.fig_sensor_gui,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
             case 'v'
                 fprintf('showing trace GUI...\n');
                 if(~isempty(etc_render_fsbrain.overlay_stc))
@@ -362,6 +368,8 @@ switch lower(param)
                 set(etc_render_fsbrain.fig_coord_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
 
                 set(etc_render_fsbrain.fig_coord_gui,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
+                set(etc_render_fsbrain.fig_coord_gui,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
+                
             case 'l' %annotation/labels GUI
                 %fprintf('\nannotation/labels GUI...\n');
                 global etc_render_fsbrain;
@@ -734,6 +742,16 @@ switch lower(param)
         catch ME
             if(isfield(etc_render_fsbrain,'fig_subject'))
                 close(etc_render_fsbrain.fig_subject,'force');
+            else
+                close(gcf,'force');
+            end;
+        end;
+        
+         try
+            delete(etc_render_fsbrain.fig_sensor_gui);
+        catch ME
+            if(isfield(etc_render_fsbrain,'fig_sensor_gui'))
+                close(etc_render_fsbrain.fig_sensor_gui,'force');
             else
                 close(gcf,'force');
             end;
@@ -2113,8 +2131,12 @@ try
                     if(~isempty(etc_render_fsbrain.aux_point_name))
                         if(strcmp(etc_render_fsbrain.aux_point_name{idx},'.'))
                             etc_render_fsbrain.aux_point_name_h(idx)=text(etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3),''); hold on;
+                            set(etc_render_fsbrain.aux_point_name_h(idx),'color',etc_render_fsbrain.aux_point_text_color);
+                            set(etc_render_fsbrain.aux_point_name_h(idx),'fontsize',etc_render_fsbrain.aux_point_text_size);
                         else
                             etc_render_fsbrain.aux_point_name_h(idx)=text(etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3),etc_render_fsbrain.aux_point_name{idx}); hold on;
+                            set(etc_render_fsbrain.aux_point_name_h(idx),'color',etc_render_fsbrain.aux_point_text_color);
+                            set(etc_render_fsbrain.aux_point_name_h(idx),'fontsize',etc_render_fsbrain.aux_point_text_size);
                         end;
                     end;
                 end;
@@ -2275,6 +2297,7 @@ try
             etc_render_fsbrain.loc_vol_idx{hemi_idx}=[];
             %get coordinates from surface to volume
             loc=cat(1,etc_render_fsbrain.vol_A(hemi_idx).vertex_coords./1e3,etc_render_fsbrain.vol_A(hemi_idx).wb_loc);
+            %loc=cat(1,etc_render_fsbrain.vol_A(hemi_idx).orig_vertex_coords./1e3,etc_render_fsbrain.vol_A(hemi_idx).wb_loc);
             loc_surf=[loc.*1e3 ones(size(loc,1),1)]';
             tmp=inv(etc_render_fsbrain.vol.tkrvox2ras)*(etc_render_fsbrain.vol_reg)*loc_surf;
             loc_vol{hemi_idx}=round(tmp(1:3,:))';

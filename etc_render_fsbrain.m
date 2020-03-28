@@ -82,9 +82,11 @@ topo_aux_point_coords=[];
 topo_aux_point_coords_h=[];
 topo_aux_point_name={};
 topo_aux_point_name_h=[];
-topo_aux_point_color=[1 0 0];
-topo_aux_point_size=0.005;
+topo_aux_point_color=[0.39 0.83 0.07];
+topo_aux_point_size=2;
 topo_aux_point_label_flag=1;
+topo_aux_point_text_color=[0.39 0.83 0.07];
+topo_aux_point_text_size=20;
 
 topo_aux2_point_coords=[];
 topo_aux2_point_coords_h=[];
@@ -939,6 +941,10 @@ etc_render_fsbrain.aux_point_name_h=topo_aux_point_name_h;
 etc_render_fsbrain.aux_point_color=topo_aux_point_color;
 etc_render_fsbrain.aux_point_size=topo_aux_point_size;
 etc_render_fsbrain.aux_point_label_flag=topo_aux_point_label_flag;
+etc_render_fsbrain.aux_point_text_color=topo_aux_point_text_color;
+etc_render_fsbrain.aux_point_text_size=topo_aux_point_text_size;
+
+
 
 etc_render_fsbrain.aux2_point_coords=topo_aux2_point_coords;
 etc_render_fsbrain.aux2_point_coords_h=topo_aux2_point_coords_h;
