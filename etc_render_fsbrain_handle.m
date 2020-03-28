@@ -407,95 +407,107 @@ switch lower(param)
                             
                             [dummy,fstem]=fileparts(filename);
                             
-                            file_lut='/Applications/freesurfer/FreeSurferColorLUT.txt';
-                            
-                            [etc_render_fsbrain.lut.number,etc_render_fsbrain.lut.name,etc_render_fsbrain.lut.r,etc_render_fsbrain.lut.g,etc_render_fsbrain.lut.b,f]=textread(file_lut,'%d%s%d%d%d%d','commentstyle','shell');
-                            obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
-                            set(obj,'enable','on');
-                            set(obj,'string',etc_render_fsbrain.lut.name);
-                            set(obj,'value',1);
-                            set(obj,'min',0);
-                            set(obj,'max',length(etc_render_fsbrain.lut.name));
-                            
-                            obj=findobj(etc_render_fsbrain.fig_gui,'tag','checkbox_overlay_aux_vol');
-                            set(obj,'enable','on');
-                                                        
-                            draw_pointer();
+                            %file_lut='/Applications/freesurfer/FreeSurferColorLUT.txt';
+                            fprintf('select a LUT file...\n');
+                            [filename, pathname, filterindex] = uigetfile(fullfile(pwd,'*.txt'),'select a LUT file');
+                            if(filename)
+                                file_lut=sprintf('%s%s',pathname,filename);
+                                
+                                [etc_render_fsbrain.lut.number,etc_render_fsbrain.lut.name,etc_render_fsbrain.lut.r,etc_render_fsbrain.lut.g,etc_render_fsbrain.lut.b,f]=textread(file_lut,'%d%s%d%d%d%d','commentstyle','shell');
+                                obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
+                                set(obj,'enable','on');
+                                set(obj,'string',etc_render_fsbrain.lut.name);
+                                set(obj,'value',1);
+                                set(obj,'min',0);
+                                set(obj,'max',length(etc_render_fsbrain.lut.name));
+                                
+                                obj=findobj(etc_render_fsbrain.fig_gui,'tag','checkbox_overlay_aux_vol');
+                                set(obj,'enable','on');
+                                
+                                draw_pointer();
+                            end;
                         case '.mgh'
                             file_annot=sprintf('%s/%s',pathname,filename);
                             etc_render_fsbrain.overlay_vol_mask=MRIread(file_annot);
                             
                             [dummy,fstem]=fileparts(filename);
                             
-                            file_lut='/Applications/freesurfer/FreeSurferColorLUT.txt';
-                            
-                            [etc_render_fsbrain.lut.number,etc_render_fsbrain.lut.name,etc_render_fsbrain.lut.r,etc_render_fsbrain.lut.g,etc_render_fsbrain.lut.b,f]=textread(file_lut,'%d%s%d%d%d%d','commentstyle','shell');
-                            obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
-                            set(obj,'enable','on');
-                            set(obj,'string',etc_render_fsbrain.lut.name);
-                            set(obj,'value',1);
-                            set(obj,'min',0);
-                            set(obj,'max',length(etc_render_fsbrain.lut.name));
-                            
-                            obj=findobj(etc_render_fsbrain.fig_gui,'tag','checkbox_overlay_aux_vol');
-                            set(obj,'enable','on');
-                            
-                            draw_pointer();
+                            %file_lut='/Applications/freesurfer/FreeSurferColorLUT.txt';
+                            fprintf('select a LUT file...\n');
+                            [filename, pathname, filterindex] = uigetfile(fullfile(pwd,'*.txt'),'select a LUT file');
+                            if(filename)
+                                file_lut=sprintf('%s%s',pathname,filename);
+                                
+                                [etc_render_fsbrain.lut.number,etc_render_fsbrain.lut.name,etc_render_fsbrain.lut.r,etc_render_fsbrain.lut.g,etc_render_fsbrain.lut.b,f]=textread(file_lut,'%d%s%d%d%d%d','commentstyle','shell');
+                                obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
+                                set(obj,'enable','on');
+                                set(obj,'string',etc_render_fsbrain.lut.name);
+                                set(obj,'value',1);
+                                set(obj,'min',0);
+                                set(obj,'max',length(etc_render_fsbrain.lut.name));
+                                
+                                obj=findobj(etc_render_fsbrain.fig_gui,'tag','checkbox_overlay_aux_vol');
+                                set(obj,'enable','on');
+                                
+                                draw_pointer();
+                            end;
                         case '.annot'
                             file_annot=sprintf('%s/%s',pathname,filename);
-                            [etc_render_fsbrain.label_vertex etc_render_fsbrain.label_value etc_render_fsbrain.label_ctab] = read_annotation(file_annot);                    
+                            [etc_render_fsbrain.label_vertex etc_render_fsbrain.label_value etc_render_fsbrain.label_ctab] = read_annotation(file_annot);
+                            
+                            if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value))
+                                if(isfield(etc_render_fsbrain,'fig_label_gui'))
+                                    if(~isempty(etc_render_fsbrain.fig_label_gui))
+                                        if(isvalid(etc_render_fsbrain.fig_label_gui))
+                                            %etc_render_fsbrain.fig_label_gui=[];
+                                            handles=guidata(etc_render_fsbrain.fig_label_gui);
+                                            set(handles.listbox_label,'string',{etc_render_fsbrain.label_ctab.struct_names{:}});
+                                            set(handles.listbox_label,'value',1);
+                                            set(handles.listbox_label,'min',0);
+                                            set(handles.listbox_label,'max',length(etc_render_fsbrain.label_ctab.struct_names));
+                                            
+                                            etc_render_fsbrain.fcvdata_orig=etc_render_fsbrain.h.FaceVertexCData;
+                                            etc_render_fsbrain.label_register=zeros(1,length(etc_render_fsbrain.label_ctab.struct_names));
+                                            
+                                            figure(etc_render_fsbrain.fig_label_gui);
+                                        else
+                                            etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
+                                            set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
+                                            pos=get(etc_render_fsbrain.fig_label_gui,'pos');
+                                            pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                                            set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
+                                            
+                                            handles=guidata(etc_render_fsbrain.fig_label_gui);
+                                            set(handles.listbox_label,'string',{etc_render_fsbrain.label_ctab.struct_names{:}});
+                                            set(handles.listbox_label,'value',1);
+                                            set(handles.listbox_label,'min',0);
+                                            set(handles.listbox_label,'max',length(etc_render_fsbrain.label_ctab.struct_names));
+                                            
+                                            %etc_render_fsbrain.fcvdata_orig=etc_render_fsbrain.h.FaceVertexCData;
+                                            etc_render_fsbrain.label_register=zeros(1,length(etc_render_fsbrain.label_ctab.struct_names));
+                                        end;
+                                    else
+                                        etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
+                                        set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
+                                        pos=get(etc_render_fsbrain.fig_label_gui,'pos');
+                                        pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                                        set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
+                                    end;
+                                else
+                                    etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
+                                    set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
+                                    pos=get(etc_render_fsbrain.fig_label_gui,'pos');
+                                    pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                                    set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
+                                end;
+                            end;
                         otherwise
                     end;
                 catch ME
                 end;
                 
                 %if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
-                if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value))
-                     if(isfield(etc_render_fsbrain,'fig_label_gui'))
-                        if(~isempty(etc_render_fsbrain.fig_label_gui))
-                            if(isvalid(etc_render_fsbrain.fig_label_gui))
-                                %etc_render_fsbrain.fig_label_gui=[];
-                                handles=guidata(etc_render_fsbrain.fig_label_gui);
-                                set(handles.listbox_label,'string',{etc_render_fsbrain.label_ctab.struct_names{:}});
-                                set(handles.listbox_label,'value',1);
-                                set(handles.listbox_label,'min',0);
-                                set(handles.listbox_label,'max',length(etc_render_fsbrain.label_ctab.struct_names));
-                    
-                                etc_render_fsbrain.fcvdata_orig=etc_render_fsbrain.h.FaceVertexCData;
-                                etc_render_fsbrain.label_register=zeros(1,length(etc_render_fsbrain.label_ctab.struct_names));
-                                
-                                figure(etc_render_fsbrain.fig_label_gui);
-                            else
-                                etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
-                                set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
-                                pos=get(etc_render_fsbrain.fig_label_gui,'pos');
-                                pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
-                                set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
-                                
-                                handles=guidata(etc_render_fsbrain.fig_label_gui);
-                                set(handles.listbox_label,'string',{etc_render_fsbrain.label_ctab.struct_names{:}});
-                                set(handles.listbox_label,'value',1);
-                                set(handles.listbox_label,'min',0);
-                                set(handles.listbox_label,'max',length(etc_render_fsbrain.label_ctab.struct_names));
-                    
-                                %etc_render_fsbrain.fcvdata_orig=etc_render_fsbrain.h.FaceVertexCData;
-                                etc_render_fsbrain.label_register=zeros(1,length(etc_render_fsbrain.label_ctab.struct_names));
-                            end;
-                        else
-                            etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
-                            set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
-                            pos=get(etc_render_fsbrain.fig_label_gui,'pos');
-                            pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
-                            set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
-                        end;
-                    else
-                        etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
-                        set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
-                        pos=get(etc_render_fsbrain.fig_label_gui,'pos');
-                        pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
-                        set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
-                    end;
-                end;
+                
                 
             case 'c' %colorbar;
                 figure(etc_render_fsbrain.fig_brain);
