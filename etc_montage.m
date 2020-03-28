@@ -1,4 +1,4 @@
-function ccimg=etc_montage(layout,varargin)
+function [ccimg,map]=etc_montage(layout,varargin)
 
 mont_file=[];
 mont_data=[];
@@ -13,6 +13,8 @@ font_color=[0 1 1];
 flag_frame=1;
 flag_display=0;
 horizontalalignment='left';
+
+map=[];
 
 for i=1:length(varargin)/2
 	option=varargin{i*2-1};
@@ -164,5 +166,8 @@ for i=1:nn
 end;
 
 set(gcf,'invert','off');
+if(isempty(map))
+    map=colormap(gcf);
+end;
 %print('-dtiff',sprintf('%s_shift_%s.tif',orient{oo},view{k}));
 

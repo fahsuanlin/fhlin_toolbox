@@ -65,6 +65,9 @@ if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_
     fprintf('annotated label loaded...\n');
     %set(handles.listbox_label,'value',4);
     set(handles.listbox_label,'string',{etc_render_fsbrain.label_ctab.struct_names{:}});
+    set(handles.listbox_label,'value',1);
+    set(handles.listbox_label,'min',0);
+    set(handles.listbox_label,'max',length(etc_render_fsbrain.label_ctab.struct_names));
     guidata(hObject, handles);
 end;
 
@@ -101,44 +104,22 @@ try
         select_idx=get(hObject,'Value');
         
         try
-            label_number=etc_render_fsbrain.label_ctab.table(select_idx,5);
-            vidx=find(etc_render_fsbrain.label_value==label_number);
-            figure(etc_render_fsbrain.fig_brain);
-            
-            %lia=ismember(etc_render_fsbrain.h.Faces,vidx);
-            %fvcdata_orig=etc_render_fsbrain.h.FaceVertexCData;
-            %fvcdata_label=fvcdata_orig;
-            
-            if(isfield(etc_render_fsbrain,'label_h'))
-                if(~isempty(etc_render_fsbrain.label_h))
-                    delete(etc_render_fsbrain.label_h);
-                    etc_render_fsbrain.label_h=[];
+            for ss=1:length(select_idx)
                 
-                    etc_render_fsbrain.label_idx=[];
+                label_number=etc_render_fsbrain.label_ctab.table(select_idx(ss),5);
+                vidx=find((etc_render_fsbrain.label_value)==label_number);
+                %figure(etc_render_fsbrain.fig_brain);
                 
-                    etc_render_fsbrain.h.FaceVertexCData=etc_render_fsbrain.fvcdata_old;
-                else                   
-                    etc_render_fsbrain.label_idx=vidx;
-
-                    etc_render_fsbrain.fvcdata_old=etc_render_fsbrain.h.FaceVertexCData;
+                if(etc_render_fsbrain.label_register(select_idx(ss))==0)
+                    cc=etc_render_fsbrain.label_ctab.table(select_idx(ss),1:3)./255;
+                    etc_render_fsbrain.h.FaceVertexCData(vidx,:)=repmat(cc(:)',[length(vidx),1]);
+                    etc_render_fsbrain.label_register(select_idx(ss))=1;
+                else
+                    etc_render_fsbrain.h.FaceVertexCData(vidx,:)=etc_render_fsbrain.fvdata(vidx,:);
+                    etc_render_fsbrain.label_register(select_idx(ss))=0;
                 end;
-            else
-                etc_render_fsbrain.label_idx=vidx;
+            end;
 
-            end;
-            
-            if(etc_render_fsbrain.label_select_idx~=select_idx)
-                etc_render_fsbrain.label_h=plot3(etc_render_fsbrain.vertex_coords(vidx,1),etc_render_fsbrain.vertex_coords(vidx,2),etc_render_fsbrain.vertex_coords(vidx,3),'.');
-                cc=etc_render_fsbrain.label_ctab.table(select_idx,1:3)./255;
-                set(etc_render_fsbrain.label_h,'color',cc,'MarkerSize',1,'Visible','off');
-                etc_render_fsbrain.label_select_idx=select_idx;
-                
-                etc_render_fsbrain.fvcdata_old=etc_render_fsbrain.h.FaceVertexCData;
-                etc_render_fsbrain.h.FaceVertexCData(vidx,:)=repmat(cc(:)',[length(vidx),1]);
-                
-            else
-                etc_render_fsbrain.label_select_idx=-1;
-            end;
             figure(etc_render_fsbrain.fig_label_gui);
             
         catch ME
