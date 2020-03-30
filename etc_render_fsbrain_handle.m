@@ -423,6 +423,10 @@ switch lower(param)
                                 
                                 obj=findobj(etc_render_fsbrain.fig_gui,'tag','checkbox_overlay_aux_vol');
                                 set(obj,'enable','on');
+                                obj=findobj(etc_render_fsbrain.fig_gui,'tag','slider_overlay_aux_vol');
+                                set(obj,'enable','on');
+                                obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
+                                set(obj,'enable','on');
                                 
                                 draw_pointer();
                             end;
@@ -447,6 +451,10 @@ switch lower(param)
                                 set(obj,'max',length(etc_render_fsbrain.lut.name));
                                 
                                 obj=findobj(etc_render_fsbrain.fig_gui,'tag','checkbox_overlay_aux_vol');
+                                set(obj,'enable','on');
+                                obj=findobj(etc_render_fsbrain.fig_gui,'tag','slider_overlay_aux_vol');
+                                set(obj,'enable','on');
+                                obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
                                 set(obj,'enable','on');
                                 
                                 draw_pointer();
@@ -1467,6 +1475,7 @@ try
                         obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
                         idx=get(obj,'value');
                         
+                        etc_render_fsbrain.overlay_aux_stc=[];
                         for ii=1:length(idx)
                             mask=zeros(size(etc_render_fsbrain.overlay_vol_mask_img));
                             mask_idx=find(etc_render_fsbrain.overlay_vol_mask_img==etc_render_fsbrain.lut.number(idx(ii)));
@@ -1478,6 +1487,12 @@ try
                                 mask_c=mask_c+cat(3,mask.*etc_render_fsbrain.lut.r(idx(ii))./255,mask.*etc_render_fsbrain.lut.g(idx(ii))./255,mask.*etc_render_fsbrain.lut.b(idx(ii))./255);
                                 mask_all=mask_all+mask;                                
                             end;
+                            
+%                             if(~isempty(etc_render_fsbrain.overlay_vol))
+%                                 mask_idx=find(etc_render_fsbrain.overlay_vol_mask.vol(:)==etc_render_fsbrain.lut.number(idx(ii)));
+%                                 tmp=reshape(etc_render_fsbrain.overlay_vol.vol,[size(etc_render_fsbrain.overlay_vol.vol,1)*size(etc_render_fsbrain.overlay_vol.vol,2)*size(etc_render_fsbrain.overlay_vol.vol,3),size(etc_render_fsbrain.overlay_vol.vol,4)]);
+%                                 etc_render_fsbrain.overlay_aux_stc(1,:,ii)=mean(tmp(mask_idx,:),1);
+%                             end;
                         end;
                         h=image(mask_c); hold on;
                         set(h,'alphadata',etc_render_fsbrain.overlay_vol_mask_alpha.*mask_all);
@@ -1803,9 +1818,21 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
         
         if(isempty(etc_render_fsbrain.overlay_stc_timeVec))
             try
-                delete(etc_render_fsbrain.handle_fig_stc_timecourse)
+                delete(etc_render_fsbrain.handle_fig_stc_timecourse);
+            catch ME
+            end;
+            
+            try
                 delete(etc_render_fsbrain.handle_fig_stc_aux_timecourse);
-                delete(etc_render_fsbrain.handle_fig_stc_roi_timecourse)
+            catch ME
+            end;
+            
+            try
+                delete(etc_render_fsbrain.handle_fig_stc_roi_timecourse);
+            catch ME
+            end;
+            
+            try
                 delete(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse);
             catch ME
             end;
@@ -1868,19 +1895,56 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
                             data=etc_render_fsbrain.overlay_aux_stc(itx_idx,:,:);
                             hold on; etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse=plot(squeeze(mean(data,1)));
                             cc=get(gca,'ColorOrder');
-                            for ii=1:length(h)
+                            for ii=1:length(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse)
                                 set(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse(ii),'linewidth',1,'color',cc(rem(ii,8),:),'linestyle',':');
                             end;
                         end;
                     end;
                 end;
             end;
+            
+            buffer=[];
+            if(~isempty(etc_render_fsbrain.overlay_vol_mask))
+                if(etc_render_fsbrain.overlay_flag_vol_mask)
+                    
+                    obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
+                    idx=get(obj,'value');
+                    
+                    etc_render_fsbrain.overlay_aux_stc=[];
+                    for ii=1:length(idx)
+                        
+                        if(~isempty(etc_render_fsbrain.overlay_vol))
+                            mask_idx=find(etc_render_fsbrain.overlay_vol_mask.vol(:)==etc_render_fsbrain.lut.number(idx(ii)));
+                            tmp=reshape(etc_render_fsbrain.overlay_vol.vol,[size(etc_render_fsbrain.overlay_vol.vol,1)*size(etc_render_fsbrain.overlay_vol.vol,2)*size(etc_render_fsbrain.overlay_vol.vol,3),size(etc_render_fsbrain.overlay_vol.vol,4)]);
+                            buffer(1,:,ii)=mean(tmp(mask_idx,:),1);
+                        end;
+                    end;
+                end;
+            end;
+            hold on; etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse=plot(etc_render_fsbrain.overlay_stc_timeVec, squeeze(buffer(1,:,:)));
+            cc=get(gca,'ColorOrder');
+            for ii=1:length(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse)
+                set(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse(ii),'linewidth',1,'color',cc(rem(ii,8),:),'linestyle',':');
+            end;
+            
             hold off;
         else
             try
                 delete(etc_render_fsbrain.handle_fig_stc_timecourse);
+            catch ME
+            end;
+            
+            try
                 delete(etc_render_fsbrain.handle_fig_stc_aux_timecourse);
+            catch ME
+            end;
+            
+            try
                 delete(etc_render_fsbrain.handle_fig_stc_roi_timecourse);
+            catch ME
+            end;
+            
+            try
                 delete(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse);
             catch ME
             end;
@@ -1941,6 +2005,33 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
                     end;
                 end;
             end;
+            
+            
+            buffer=[];
+            if(~isempty(etc_render_fsbrain.overlay_vol_mask))
+                if(etc_render_fsbrain.overlay_flag_vol_mask)
+                    
+                    obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
+                    idx=get(obj,'value');
+                    
+                    etc_render_fsbrain.overlay_aux_stc=[];
+                    for ii=1:length(idx)
+                        
+                        if(~isempty(etc_render_fsbrain.overlay_vol))
+                            mask_idx=find(etc_render_fsbrain.overlay_vol_mask.vol(:)==etc_render_fsbrain.lut.number(idx(ii)));
+                            tmp=reshape(etc_render_fsbrain.overlay_vol.vol,[size(etc_render_fsbrain.overlay_vol.vol,1)*size(etc_render_fsbrain.overlay_vol.vol,2)*size(etc_render_fsbrain.overlay_vol.vol,3),size(etc_render_fsbrain.overlay_vol.vol,4)]);
+                            buffer(1,:,ii)=mean(tmp(mask_idx,:),1);
+                        end;
+                    end;
+                end;
+            end;
+            hold on; etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse=plot(etc_render_fsbrain.overlay_stc_timeVec, squeeze(buffer(1,:,:)));
+            cc=get(gca,'ColorOrder');
+            for ii=1:length(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse)
+                set(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse(ii),'linewidth',1,'color',cc(rem(ii,8),:),'linestyle',':');
+            end;
+            
+                
             
             hold off;
             

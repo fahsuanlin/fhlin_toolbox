@@ -1478,7 +1478,6 @@ global etc_render_fsbrain;
 etc_render_fsbrain.overlay_flag_vol_mask=get(hObject,'Value');
 etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
 
-
 % --- Executes on selection change in listbox_overlay_vol_mask.
 function listbox_overlay_vol_mask_Callback(hObject, eventdata, handles)
 % hObject    handle to listbox_overlay_vol_mask (see GCBO)
@@ -1492,6 +1491,7 @@ global etc_render_fsbrain;
 %obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
 %                    idx=get(obj,'value');
 etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
+etc_render_fsbrain_handle('draw_stc');
 
 % --- Executes during object creation, after setting all properties.
 function listbox_overlay_vol_mask_CreateFcn(hObject, eventdata, handles)
