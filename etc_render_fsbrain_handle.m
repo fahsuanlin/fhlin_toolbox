@@ -13,6 +13,10 @@ for i=1:length(varargin)/2
     switch lower(option_name)
         case 'c0'
             cc='c0';
+        case 'cs'
+            cc='cs';
+        case 'cv'
+            cc='cv';
         case 'cc'
             cc=option;
         case 'surface_coord'
@@ -517,58 +521,35 @@ switch lower(param)
                 %if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
                 
                 
-            case 'c' %colorbar;
-                figure(etc_render_fsbrain.fig_brain);
-                if(isfield(etc_render_fsbrain,'h_colorbar_pos'))
-                    if(isempty(etc_render_fsbrain.h_colorbar_pos))
-                        if(etc_render_fsbrain.overlay_value_flag_pos|etc_render_fsbrain.overlay_value_flag_neg)
-                            etc_render_fsbrain.brain_axis_pos=get(etc_render_fsbrain.brain_axis,'pos');
-                            set(etc_render_fsbrain.brain_axis,'pos',[etc_render_fsbrain.brain_axis_pos(1) 0.2 etc_render_fsbrain.brain_axis_pos(3) 0.8]);
-                            etc_render_fsbrain.h_colorbar=subplot('position',[etc_render_fsbrain.brain_axis_pos(1) 0.0 etc_render_fsbrain.brain_axis_pos(3) 0.2]);
-                            
-                            cmap=[etc_render_fsbrain.overlay_cmap; etc_render_fsbrain.overlay_cmap_neg];
-                            hold on;
-                            
-                            if(etc_render_fsbrain.overlay_value_flag_pos)
-                                etc_render_fsbrain.h_colorbar_pos=subplot('position',[0.4 0.05 0.2 0.02]);
-                                image([1:size(etc_render_fsbrain.overlay_cmap,1)]); axis off; colormap(cmap);
-                                h=text(-3,1,sprintf('%1.3f',min(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','right','color',[1 1 1]-etc_render_fsbrain.bg_color);
-                                h=text(size(etc_render_fsbrain.overlay_cmap,1)+3,1,sprintf('%1.3f',max(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','left','color',[1 1 1]-etc_render_fsbrain.bg_color);
-                            else
-                                etc_render_fsbrain.h_colorbar_pos=[];
-                            end;
-                            if(etc_render_fsbrain.overlay_value_flag_neg)
-                                etc_render_fsbrain.h_colorbar_neg=subplot('position',[0.4 0.10 0.2 0.02]);
-                                image([size(etc_render_fsbrain.overlay_cmap,1)+1:size(cmap,1)]); axis off; colormap(cmap);
-                                h=text(-3,1,sprintf('-%1.3f',min(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','right','color',[1 1 1]-etc_render_fsbrain.bg_color);
-                                h=text(size(etc_render_fsbrain.overlay_cmap,1)+3,1,sprintf('-%1.3f',max(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','left','color',[1 1 1]-etc_render_fsbrain.bg_color);
-                            else
-                                etc_render_fsbrain.h_colorbar_neg=[];
-                            end;
-                        end;
-                        
-                        if(ishandle(etc_render_fsbrain.fig_gui))
-                            set(findobj(etc_render_fsbrain.fig_gui,'tag','checkbox_show_colorbar'),'value',1);
-                        end;
-                    else
-                        delete(etc_render_fsbrain.h_colorbar_pos);
-                        etc_render_fsbrain.h_colorbar_pos=[];
-                        delete(etc_render_fsbrain.h_colorbar_neg);
-                        etc_render_fsbrain.h_colorbar_neg=[];
-                        set(etc_render_fsbrain.brain_axis,'pos',etc_render_fsbrain.brain_axis_pos);
-                        
-                        if(ishandle(etc_render_fsbrain.fig_gui))
-                            set(findobj(etc_render_fsbrain.fig_gui,'tag','checkbox_show_colorbar'),'value',0);
-                        end;
-                    end;
+            case 'c' %colorbar on/off by key press
+                etc_render_fsbrain.flag_colorbar=~etc_render_fsbrain.flag_colorbar;
+                etc_render_fsbrain.flag_colorbar_vol=~etc_render_fsbrain.flag_colorbar_vol;
+                
+                set(findobj(etc_render_fsbrain.fig_gui,'tag','checkbox_show_colorbar'),'value',etc_render_fsbrain.flag_colorbar);
+                set(findobj(etc_render_fsbrain.fig_gui,'tag','checkbox_show_vol_colorbar'),'value',etc_render_fsbrain.flag_colorbar_vol);
+                
+                etc_render_fsbrain_handle('kb','cs','cs'); %update colorbar
+
+            case 'cs' %colorbar update (surface)
+                if(~etc_render_fsbrain.flag_colorbar)
+                    delete(etc_render_fsbrain.h_colorbar_pos);
+                    etc_render_fsbrain.h_colorbar_pos=[];
+                    delete(etc_render_fsbrain.h_colorbar_neg);
+                    etc_render_fsbrain.h_colorbar_neg=[];
+                    set(etc_render_fsbrain.brain_axis,'pos',etc_render_fsbrain.brain_axis_pos);
                 else
                     if(etc_render_fsbrain.overlay_value_flag_pos|etc_render_fsbrain.overlay_value_flag_neg)
-                        etc_render_fsbrain.brain_axis=gca;
-                        etc_render_fsbrain.brain_axis_pos=get(gca,'pos');
+                        if(isempty(etc_render_fsbrain.h_colorbar_pos)&&isempty(etc_render_fsbrain.h_colorbar_neg))
+                            etc_render_fsbrain.brain_axis_pos=get(etc_render_fsbrain.brain_axis,'pos');
+                        end;
                         set(etc_render_fsbrain.brain_axis,'pos',[etc_render_fsbrain.brain_axis_pos(1) 0.2 etc_render_fsbrain.brain_axis_pos(3) 0.8]);
+                        figure(etc_render_fsbrain.fig_brain);
                         etc_render_fsbrain.h_colorbar=subplot('position',[etc_render_fsbrain.brain_axis_pos(1) 0.0 etc_render_fsbrain.brain_axis_pos(3) 0.2]);
                         
+                        %figure(etc_render_fsbrain.fig_brain);
+
                         cmap=[etc_render_fsbrain.overlay_cmap; etc_render_fsbrain.overlay_cmap_neg];
+                        hold on;
                         
                         if(etc_render_fsbrain.overlay_value_flag_pos)
                             etc_render_fsbrain.h_colorbar_pos=subplot('position',[0.4 0.05 0.2 0.02]);
@@ -578,7 +559,7 @@ switch lower(param)
                         else
                             etc_render_fsbrain.h_colorbar_pos=[];
                         end;
-                        
+
                         if(etc_render_fsbrain.overlay_value_flag_neg)
                             etc_render_fsbrain.h_colorbar_neg=subplot('position',[0.4 0.10 0.2 0.02]);
                             image([size(etc_render_fsbrain.overlay_cmap,1)+1:size(cmap,1)]); axis off; colormap(cmap);
@@ -587,35 +568,63 @@ switch lower(param)
                         else
                             etc_render_fsbrain.h_colorbar_neg=[];
                         end;
+                    else
+                        delete(etc_render_fsbrain.h_colorbar_pos);
+                        etc_render_fsbrain.h_colorbar_pos=[];
+                        delete(etc_render_fsbrain.h_colorbar_neg);
+                        etc_render_fsbrain.h_colorbar_neg=[];
+                        set(etc_render_fsbrain.brain_axis,'pos',etc_render_fsbrain.brain_axis_pos);
                     end;
                 end;
-            case 'c0' %enforce showing colorbar
-                figure(etc_render_fsbrain.fig_brain);
                 
-                etc_render_fsbrain.brain_axis_pos=get(etc_render_fsbrain.brain_axis,'pos');
-                set(etc_render_fsbrain.brain_axis,'pos',[etc_render_fsbrain.brain_axis_pos(1) 0.2 etc_render_fsbrain.brain_axis_pos(3) 0.8]);
-                etc_render_fsbrain.h_colorbar=subplot('position',[etc_render_fsbrain.brain_axis_pos(1) 0.0 etc_render_fsbrain.brain_axis_pos(3) 0.2]);
-                
-                cmap=[etc_render_fsbrain.overlay_cmap; etc_render_fsbrain.overlay_cmap_neg];
-                hold on;
-                
-                if(etc_render_fsbrain.overlay_value_flag_pos)
-                    etc_render_fsbrain.h_colorbar_pos=subplot('position',[0.4 0.05 0.2 0.02]);
-                    image([1:size(etc_render_fsbrain.overlay_cmap,1)]); axis off; colormap(cmap);
-                    h=text(-3,1,sprintf('%1.3f',min(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','right','color',[1 1 1]-etc_render_fsbrain.bg_color);
-                    h=text(size(etc_render_fsbrain.overlay_cmap,1)+3,1,sprintf('%1.3f',max(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','left','color',[1 1 1]-etc_render_fsbrain.bg_color);
+            case 'cv' %colorbar update (volume)
+                if(~etc_render_fsbrain.flag_colorbar_vol)
+                    delete(etc_render_fsbrain.h_colorbar_vol_pos);
+                    etc_render_fsbrain.h_colorbar_vol_pos=[];
+                    delete(etc_render_fsbrain.h_colorbar_vol_neg);
+                    etc_render_fsbrain.h_colorbar_vol_neg=[];
+                    %set(etc_render_fsbrain.brain_axis,'pos',etc_render_fsbrain.brain_axis_pos);
                 else
-                    etc_render_fsbrain.h_colorbar_pos=[];
+                    if(etc_render_fsbrain.overlay_value_flag_pos|etc_render_fsbrain.overlay_value_flag_neg)
+                        %if(isempty(etc_render_fsbrain.h_colorbar_vol_pos)&&isempty(etc_render_fsbrain.h_colorbar_vol_neg))
+                        %    etc_render_fsbrain.brain_axis_pos=get(etc_render_fsbrain.brain_axis,'pos');
+                        %end;
+                        %set(etc_render_fsbrain.brain_axis,'pos',[etc_render_fsbrain.brain_axis_pos(1) 0.2 etc_render_fsbrain.brain_axis_pos(3) 0.8]);
+                        figure(etc_render_fsbrain.fig_vol); hold on;
+                        %etc_render_fsbrain.h_colorbar_vol=subplot('position',[etc_render_fsbrain.brain_axis_pos(1) 0.0 etc_render_fsbrain.brain_axis_pos(3) 0.2]);
+                        
+                        %figure(etc_render_fsbrain.fig_vol);
+                        
+                        cmap=[etc_render_fsbrain.overlay_cmap; etc_render_fsbrain.overlay_cmap_neg];
+                        hold on;
+                        
+                        if(etc_render_fsbrain.overlay_value_flag_pos)
+                            etc_render_fsbrain.h_colorbar_vol_pos=axes('position',[0.6 0.05 0.2 0.02]);
+                            set(etc_render_fsbrain.h_colorbar_vol_pos,'color','none');
+                            image([1:size(etc_render_fsbrain.overlay_cmap,1)]); axis off; colormap(cmap);
+                            h=text(-3,1,sprintf('%1.3f',min(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','right','color',[1 1 1].*0.8);
+                            h=text(size(etc_render_fsbrain.overlay_cmap,1)+3,1,sprintf('%1.3f',max(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','left','color',[1 1 1].*0.8);
+                        else
+                            etc_render_fsbrain.h_colorbar_vol_pos=[];
+                        end;
+                        
+                        if(etc_render_fsbrain.overlay_value_flag_neg)
+                            etc_render_fsbrain.h_colorbar_vol_neg=axes('position',[0.6 0.10 0.2 0.02]);
+                            set(etc_render_fsbrain.h_colorbar_vol_neg,'color','none');
+                            image([size(etc_render_fsbrain.overlay_cmap,1)+1:size(cmap,1)]); axis off; colormap(cmap);
+                            h=text(-3,1,sprintf('-%1.3f',min(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','right','color',[1 1 1].*0.8);
+                            h=text(size(etc_render_fsbrain.overlay_cmap,1)+3,1,sprintf('-%1.3f',max(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','left','color',[1 1 1].*0.8);
+                        else
+                            etc_render_fsbrain.h_colorbar_vol_neg=[];
+                        end;
+                    else
+                        delete(etc_render_fsbrain.h_colorbar_vol_pos);
+                        etc_render_fsbrain.h_colorbar_vol_pos=[];
+                        delete(etc_render_fsbrain.h_colorbar_vol_neg);
+                        etc_render_fsbrain.h_colorbar_vol_neg=[];
+                        %set(etc_render_fsbrain.brain_axis,'pos',etc_render_fsbrain.brain_axis_pos);
+                    end;
                 end;
-                if(etc_render_fsbrain.overlay_value_flag_neg)
-                    etc_render_fsbrain.h_colorbar_neg=subplot('position',[0.4 0.10 0.2 0.02]);
-                    image([size(etc_render_fsbrain.overlay_cmap,1)+1:size(cmap,1)]); axis off; colormap(cmap);
-                    h=text(-3,1,sprintf('-%1.3f',min(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','right','color',[1 1 1]-etc_render_fsbrain.bg_color);
-                    h=text(size(etc_render_fsbrain.overlay_cmap,1)+3,1,sprintf('-%1.3f',max(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','left','color',[1 1 1]-etc_render_fsbrain.bg_color);
-                else
-                    etc_render_fsbrain.h_colorbar_neg=[];
-                end;
-                
             case 'y' %cluster
                 
                 
@@ -1224,7 +1233,7 @@ try
             
             etc_render_fsbrain.fig_vol=figure;
             pos=get(etc_render_fsbrain.fig_brain,'pos');
-            set(etc_render_fsbrain.fig_vol,'pos',[pos(1)-pos(3), pos(2), pos(3), pos(4)]);
+            set(etc_render_fsbrain.fig_vol,'pos',[pos(1)-pos(3)*2, pos(2), pos(3)*2, pos(4)*2]);
             
             xlim=[];
             ylim=[];
@@ -1239,7 +1248,7 @@ try
         if(~isempty(etc_render_fsbrain.vol_vox))
             etc_render_fsbrain.fig_vol=figure;
             pos=get(etc_render_fsbrain.fig_brain,'pos');
-            set(etc_render_fsbrain.fig_vol,'pos',[pos(1)-pos(3), pos(2), pos(3), pos(4)]);
+            set(etc_render_fsbrain.fig_vol,'pos',[pos(1)-pos(3)*2, pos(2), pos(3)*2, pos(4)*2]);
             
             xlim=[];
             ylim=[];
@@ -1337,6 +1346,12 @@ try
                     end;
                     
                 else
+                    img_cor_overlay=[];
+                    img_ax_overlay=[];
+                    img_sag_overlay=[];
+                end;
+                
+                if(~etc_render_fsbrain.overlay_vol_flag_render)
                     img_cor_overlay=[];
                     img_ax_overlay=[];
                     img_sag_overlay=[];
@@ -1921,10 +1936,12 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
                     end;
                 end;
             end;
-            hold on; etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse=plot(etc_render_fsbrain.overlay_stc_timeVec, squeeze(buffer(1,:,:)));
-            cc=get(gca,'ColorOrder');
-            for ii=1:length(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse)
-                set(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse(ii),'linewidth',1,'color',cc(rem(ii,8),:),'linestyle',':');
+            if(~isempty(buffer))
+                hold on; etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse=plot(etc_render_fsbrain.overlay_stc_timeVec, squeeze(buffer(1,:,:)));
+                cc=get(gca,'ColorOrder');
+                for ii=1:length(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse)
+                    set(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse(ii),'linewidth',1,'color',cc(rem(ii,8),:),'linestyle',':');
+                end;
             end;
             
             hold off;
@@ -2025,10 +2042,12 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
                     end;
                 end;
             end;
-            hold on; etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse=plot(etc_render_fsbrain.overlay_stc_timeVec, squeeze(buffer(1,:,:)));
-            cc=get(gca,'ColorOrder');
-            for ii=1:length(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse)
-                set(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse(ii),'linewidth',1,'color',cc(rem(ii,8),:),'linestyle',':');
+            if(~isempty(buffer))
+                hold on; etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse=plot(etc_render_fsbrain.overlay_stc_timeVec, squeeze(buffer(1,:,:)));
+                cc=get(gca,'ColorOrder');
+                for ii=1:length(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse)
+                    set(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse(ii),'linewidth',1,'color',cc(rem(ii,8),:),'linestyle','--');
+                end;
             end;
             
                 
@@ -2115,8 +2134,8 @@ if(etc_render_fsbrain.overlay_flag_render)
                 ovs=ov;
             end;
             
-            if(~isempty(find(etc_render_fsbrain.overlay_value>0))) etc_render_fsbrain.overlay_value_flag_pos=1; end;
-            if(~isempty(find(etc_render_fsbrain.overlay_value<0))) etc_render_fsbrain.overlay_value_flag_neg=1; end;
+            %if(~isempty(find(etc_render_fsbrain.overlay_value>0))) etc_render_fsbrain.overlay_value_flag_pos=1; end;
+            %if(~isempty(find(etc_render_fsbrain.overlay_value<0))) etc_render_fsbrain.overlay_value_flag_neg=1; end;
         else
             ovs=[];
             for h_idx=1:length(etc_render_fsbrain.overlay_value)
@@ -2129,8 +2148,8 @@ if(etc_render_fsbrain.overlay_flag_render)
                 else
                     ovs=cat(1,ovs,ov);
                 end;
-                if(~isempty(find(etc_render_fsbrain.overlay_value{h_idx}>0))) etc_render_fsbrain.overlay_value_flag_pos=1; end;
-                if(~isempty(find(etc_render_fsbrain.overlay_value{h_idx}<0))) etc_render_fsbrain.overlay_value_flag_neg=1; end;
+                %if(~isempty(find(etc_render_fsbrain.overlay_value{h_idx}>0))) etc_render_fsbrain.overlay_value_flag_pos=1; end;
+                %if(~isempty(find(etc_render_fsbrain.overlay_value{h_idx}<0))) etc_render_fsbrain.overlay_value_flag_neg=1; end;
             end;
         end;
         

@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_gui
 
-% Last Modified by GUIDE v2.5 27-Mar-2020 19:04:14
+% Last Modified by GUIDE v2.5 31-Mar-2020 00:09:00
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -158,25 +158,37 @@ end;
 
 %colorbar check box
 set(handles.checkbox_show_colorbar,'value',0);
+set(handles.checkbox_show_vol_colorbar,'value',0);
 if(isfield(etc_render_fsbrain,'h_colorbar_pos'))
     if(~isempty(etc_render_fsbrain.h_colorbar_pos))
         set(handles.checkbox_show_colorbar,'value',1);
+        set(handles.checkbox_show_vol_colorbar,'value',1);
     end;
 end;
 
 if(get(handles.checkbox_show_colorbar,'value'))
-%if(~isempty(etc_render_fsbrain.overlay_value)||~isempty(etc_render_fsbrain.overlay_stc))
     set(handles.checkbox_show_colorbar,'enable','on');
 else
     set(handles.checkbox_show_colorbar,'enable','off');
 end;
+if(get(handles.checkbox_show_vol_colorbar,'value'))
+    set(handles.checkbox_show_vol_colorbar,'enable','on');
+else
+    set(handles.checkbox_show_vol_colorbar,'enable','off');
+end;
 
 if(~isempty(etc_render_fsbrain.overlay_value)||~isempty(etc_render_fsbrain.overlay_stc))
     set(handles.checkbox_show_colorbar,'enable','on');
+    set(handles.checkbox_show_vol_colorbar,'enable','on');
     set(handles.checkbox_show_overlay,'enable','on');
+    set(handles.checkbox_show_vol_overlay,'enable','on');
+    set(handles.checkbox_show_vol_colorbar,'enable','on');
 else
     set(handles.checkbox_show_colorbar,'enable','off');
+    set(handles.checkbox_show_vol_colorbar,'enable','off');
     set(handles.checkbox_show_overlay,'enable','off');
+    set(handles.checkbox_show_vol_overlay,'enable','on');
+    set(handles.checkbox_show_vol_colorbar,'enable','off');
 end;
 
 if(~isempty(etc_render_fsbrain.aux_point_coords))
@@ -240,12 +252,14 @@ if(isempty(etc_render_fsbrain.lut))
     set(handles.listbox_overlay_vol_mask,'string',{});
     set(handles.listbox_overlay_vol_mask,'enable','off');
     set(handles.checkbox_overlay_aux_vol,'enable','off');                                                        
-    set(handles.slider_overlay_aux_vol,'enable','off');
+    set(handles.slider_overlay_aux_vol,'enable','off');                                                          
+    set(handles.pushbutton_overlay_aux_vol,'enable','off');
 else
     set(handles.listbox_overlay_vol_mask,'string',etc_render_fsbrain.lut.name);
     set(handles.listbox_overlay_vol_mask,'enable','on');
     set(handles.checkbox_overlay_aux_vol,'enable','on');                                                        
     set(handles.slider_overlay_aux_vol,'enable','on');
+    set(handles.pushbutton_overlay_aux_vol,'enable','on');
 end;                            
 
 % Update handles structure
@@ -368,9 +382,14 @@ etc_render_fsbrain.overlay_threshold=[mm,mx];
 etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
 %etc_render_fsbrain_handle('draw_pointer','surface_coord',[],'min_dist_idx',[],'click_vertex_vox',[]);    
 etc_render_fsbrain_handle('redraw');
-if(~isempty(etc_render_fsbrain.h_colorbar_pos))
-    etc_render_fsbrain_handle('kb','c0','c0'); %update colorbar
+if(~isempty(etc_render_fsbrain.h_colorbar_pos)|~isempty(etc_render_fsbrain.h_colorbar_neg))
+    etc_render_fsbrain_handle('kb','cs','cs'); %update colorbar
 end;
+if(~isempty(etc_render_fsbrain.h_colorbar_vol_pos)|~isempty(etc_render_fsbrain.h_colorbar_vol_neg))
+    etc_render_fsbrain_handle('kb','cv','cv'); %update colorbar
+end;
+
+
 % --- Executes during object creation, after setting all properties.
 function edit_threshold_min_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to edit_threshold_min (see GCBO)
@@ -402,8 +421,11 @@ etc_render_fsbrain.overlay_threshold=[mm,mx];
 etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
 %etc_render_fsbrain_handle('draw_pointer','surface_coord',[],'min_dist_idx',[],'click_vertex_vox',[]);    
 etc_render_fsbrain_handle('redraw');
-if(~isempty(etc_render_fsbrain.h_colorbar_pos))
-    etc_render_fsbrain_handle('kb','c0','c0'); %update colorbar
+if(~isempty(etc_render_fsbrain.h_colorbar_pos)|~isempty(etc_render_fsbrain.h_colorbar_neg))
+    etc_render_fsbrain_handle('kb','cs','cs'); %update colorbar
+end;
+if(~isempty(etc_render_fsbrain.h_colorbar_vol_pos)|~isempty(etc_render_fsbrain.h_colorbar_vol_neg))
+    etc_render_fsbrain_handle('kb','cv','cv'); %update colorbar
 end;
 
 
@@ -551,8 +573,12 @@ function checkbox_show_colorbar_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of checkbox_show_colorbar
 global etc_render_fsbrain
+
+etc_render_fsbrain.flag_colorbar=get(hObject,'Value');
+                
 set(etc_render_fsbrain.fig_brain,'currentchar','c');
-etc_render_fsbrain_handle('kb','cc','c');
+%etc_render_fsbrain_handle('kb','cc','c');
+etc_render_fsbrain_handle('kb','cs','cs'); %update colorbar
 
 % --- Executes during object creation, after setting all properties.
 function checkbox_show_colorbar_CreateFcn(hObject, eventdata, handles)
@@ -840,10 +866,15 @@ function checkbox_overlay_truncate_neg_Callback(hObject, eventdata, handles)
 global etc_render_fsbrain
 
 etc_render_fsbrain.flag_overlay_truncate_neg=get(hObject,'Value');
+etc_render_fsbrain.overlay_value_flag_neg=~etc_render_fsbrain.flag_overlay_truncate_neg;
+
 
 etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
+etc_render_fsbrain_handle('kb','cv','cv'); %update colorbar
 
 etc_render_fsbrain_handle('redraw');
+etc_render_fsbrain_handle('kb','cs','cs'); %update colorbar
+
 
 % --- Executes on button press in checkbox_overlay_truncate_pos.
 function checkbox_overlay_truncate_pos_Callback(hObject, eventdata, handles)
@@ -855,6 +886,10 @@ function checkbox_overlay_truncate_pos_Callback(hObject, eventdata, handles)
 global etc_render_fsbrain
 
 etc_render_fsbrain.flag_overlay_truncate_pos=get(hObject,'Value');
+etc_render_fsbrain.overlay_value_flag_pos=~etc_render_fsbrain.flag_overlay_truncate_pos;
+
+etc_render_fsbrain_handle('kb','cs','cs'); %update colorbar
+etc_render_fsbrain_handle('kb','cv','cv'); %update colorbar
 
 etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
 
@@ -1053,9 +1088,39 @@ function button_overlay_surface_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global etc_render_fsbrain;
 
-etc_render_fsbrain_handle('kb','cc','f');
+%etc_render_fsbrain_handle('kb','cc','f');
+etc_render_fsbrain_handle('kb','cs','cs'); %update colorbar
 
+%timeVec slider
+try
+    set(handles.slider_timeVec,'Enable','off');
+    set(handles.edit_timeVec,'Enable','off');
     
+    if(isfield(etc_render_fsbrain,'overlay_stc_timeVec_idx'))
+        if(~isempty(etc_render_fsbrain.overlay_stc_timeVec))
+            if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
+                set(handles.slider_timeVec,'Enable','on');
+                set(handles.slider_timeVec,'min',1);
+                set(handles.slider_timeVec,'max',size(etc_render_fsbrain.overlay_stc,2));
+                if(etc_render_fsbrain.overlay_stc_timeVec_idx<=size(etc_render_fsbrain.overlay_stc,2))
+                else
+                    fprintf('reseting timeVec index...\n');
+                    etc_render_fsbrain.overlay_stc_timeVec_idx=1;
+                end;
+                set(handles.slider_timeVec,'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
+                
+                set(handles.edit_timeVec,'Enable','on');
+                set(handles.edit_timeVec,'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
+                set(handles.edit_timeVec,'string',sprintf('%1.1f',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx)));
+            end;
+        end;
+    end;
+catch
+end;
+set(handles.text_timeVec_unit,'String',etc_render_fsbrain.overlay_stc_timeVec_unit);
+
+
+
 etc_render_fsbrain.overlay_vol=[];
 etc_render_fsbrain.overlay_vol_stc=[];
 etc_render_fsbrain.overlay_aux_vol=[];
@@ -1144,11 +1209,15 @@ if(~isempty(etc_render_fsbrain.overlay_value)||~isempty(etc_render_fsbrain.overl
     set(handles.checkbox_show_colorbar,'enable','on');
     set(handles.checkbox_show_overlay,'enable','on');
     set(handles.checkbox_show_overlay,'value',1);
+    set(handles.checkbox_show_vol_overlay,'enable','on');
+    set(handles.checkbox_show_vol_overlay,'value',1);
     etc_render_fsbrain.overlay_flag_render=1;
 else
     set(handles.checkbox_show_colorbar,'enable','off');
     set(handles.checkbox_show_overlay,'enable','off');
     set(handles.checkbox_show_overlay,'value',0);
+    set(handles.checkbox_show_vol_overlay,'enable','off');
+    set(handles.checkbox_show_vol_overlay,'value',0);
     etc_render_fsbrain.overlay_flag_render=0;
 end;
 %colorbar check box
@@ -1188,14 +1257,46 @@ if(isempty(etc_render_fsbrain.vol))
     return;
 end;
 
-[filename, pathname, filterindex] = uigetfile({'*.mgz; *.mgz; *.COR; *.nii; *.gz','volume'}, 'Pick a file');
-
+[filename, pathname, filterindex] = uigetfile({'*.mgh; *.mgz','mgh/mgz volume'});
 if(filename>0)
     etc_render_fsbrain.overlay_value=[];
     etc_render_fsbrain.overlay_stc=[];
     
     fprintf('loading [%s]...\n',filename);
     etc_render_fsbrain.overlay_vol=MRIread(sprintf('%s/%s',pathname,filename));
+    
+    
+    
+    %timeVec slider
+    try
+        set(handles.slider_timeVec,'Enable','off');
+        set(handles.edit_timeVec,'Enable','off');
+        
+        if(isfield(etc_render_fsbrain,'overlay_stc_timeVec_idx'))
+            if(~isempty(etc_render_fsbrain.overlay_stc_timeVec))
+                if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
+                    set(handles.slider_timeVec,'Enable','on');
+                    set(handles.slider_timeVec,'min',1);
+                    set(handles.slider_timeVec,'max',size(etc_render_fsbrain.overlay_vol.vol,4));
+                    if(etc_render_fsbrain.overlay_stc_timeVec_idx<=size(etc_render_fsbrain.overlay_vol.vol,4))
+                    else
+                        fprintf('reseting timeVec index...\n');
+                        etc_render_fsbrain.overlay_stc_timeVec_idx=1;
+                    end;
+                    set(handles.slider_timeVec,'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
+                    
+                    set(handles.edit_timeVec,'Enable','on');
+                    set(handles.edit_timeVec,'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
+                    set(handles.edit_timeVec,'string',sprintf('%1.1f',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx)));
+                end;
+            end;
+        end;
+    catch
+    end;
+    set(handles.text_timeVec_unit,'String',etc_render_fsbrain.overlay_stc_timeVec_unit);
+    
+    
+    
     
     sz=size(etc_render_fsbrain.overlay_vol.vol);
     if(ndims(etc_render_fsbrain.overlay_vol.vol)==4)
@@ -1212,6 +1313,7 @@ if(filename>0)
         fprintf('preparing volume overlay...');
         
         offset=0;
+        etc_render_fsbrain.overlay_vol_stc=[];
         for hemi_idx=1:2
             
             %choose 10,242 sources arbitrarily for cortical soruces
@@ -1405,11 +1507,15 @@ if(filename>0)
         set(handles.checkbox_show_colorbar,'enable','on');
         set(handles.checkbox_show_overlay,'enable','on');
         set(handles.checkbox_show_overlay,'value',1);
+        set(handles.checkbox_show_vol_overlay,'enable','on');
+        set(handles.checkbox_show_vol_overlay,'value',1);
         etc_render_fsbrain.overlay_flag_render=1;
     else
         set(handles.checkbox_show_colorbar,'enable','off');
         set(handles.checkbox_show_overlay,'enable','off');
         set(handles.checkbox_show_overlay,'value',0);
+        set(handles.checkbox_show_vol_overlay,'enable','off');
+        set(handles.checkbox_show_vol_overlay,'value',0);
         etc_render_fsbrain.overlay_flag_render=0;
     end;
     %colorbar check box
@@ -1490,6 +1596,7 @@ global etc_render_fsbrain;
 
 %obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
 %                    idx=get(obj,'value');
+
 etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
 etc_render_fsbrain_handle('draw_stc');
 
@@ -1585,3 +1692,38 @@ try
 catch ME
 end;
 
+
+% --- Executes on button press in pushbutton_overlay_aux_vol.
+function pushbutton_overlay_aux_vol_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_overlay_aux_vol (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in checkbox_show_vol_overlay.
+function checkbox_show_vol_overlay_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_show_vol_overlay (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_show_vol_overlay
+global etc_render_fsbrain
+etc_render_fsbrain.overlay_vol_flag_render=get(hObject,'value');
+%etc_render_fsbrain_handle('redraw');
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
+etc_render_fsbrain_handle('kb','cv','cv'); %update colorbar
+
+% --- Executes on button press in checkbox_show_vol_colorbar.
+function checkbox_show_vol_colorbar_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_show_vol_colorbar (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_show_vol_colorbar
+global etc_render_fsbrain
+
+etc_render_fsbrain.flag_colorbar_vol=get(hObject,'Value');
+
+set(etc_render_fsbrain.fig_brain,'currentchar','c');
+%etc_render_fsbrain_handle('kb','cc','c');
+etc_render_fsbrain_handle('kb','cv','cv'); %update colorbar
