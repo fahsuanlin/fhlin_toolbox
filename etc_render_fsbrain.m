@@ -44,6 +44,7 @@ overlay_aux_vol=[];
 overlay_vol_stc=[];
 overlay_aux_vol_stc=[];
 overlay_value=[];
+overlay_vol_value=[];
 overlay_stc=[];
 overlay_aux_stc=[];
 overlay_stc_hemi=[];
@@ -137,6 +138,7 @@ show_nearest_brain_surface_location_flag=1;
 show_brain_surface_location_flag=1;
 show_contact_names_flag=1;
 show_all_contacts_mri_flag=1;
+show_all_contacts_mri_depth=2;
 show_all_contacts_brain_surface_flag=1;
 electrode_update_contact_view_flag=1;
 
@@ -261,6 +263,8 @@ for idx=1:length(varargin)/2
             show_contact_names_flag=option_value;
         case 'show_all_contacts_mri_flag'
             show_all_contacts_mri_flag=option_value;
+        case 'show_all_contacts_mri_depth'
+            show_all_contacts_mri_depth=option_value;
         case 'show_all_contacts_brain_surface_flag'
             show_all_contacts_brain_surface_flag=option_value;
         case 'electrode_update_contact_view_flag'
@@ -879,6 +883,7 @@ etc_render_fsbrain.show_brain_surface_location_flag=show_brain_surface_location_
 etc_render_fsbrain.show_contact_names_flag=show_contact_names_flag;
 etc_render_fsbrain.electrode_update_contact_view_flag=electrode_update_contact_view_flag;
 etc_render_fsbrain.show_all_contacts_mri_flag=show_all_contacts_mri_flag;
+etc_render_fsbrain.show_all_contacts_mri_depth=show_all_contacts_mri_depth;
 etc_render_fsbrain.show_all_contacts_brain_surface_flag=show_all_contacts_brain_surface_flag;
 
 etc_render_fsbrain.overlay_vol=overlay_vol;
@@ -886,6 +891,7 @@ etc_render_fsbrain.overlay_vol_stc=overlay_vol_stc;
 etc_render_fsbrain.overlay_aux_vol=overlay_aux_vol;
 etc_render_fsbrain.overlay_aux_vol_stc=overlay_aux_vol_stc;
 etc_render_fsbrain.overlay_value=overlay_value;
+etc_render_fsbrain.overlay_vol_value=overlay_vol_value;
 etc_render_fsbrain.overlay_stc=overlay_stc;
 etc_render_fsbrain.overlay_aux_stc=overlay_aux_stc;
 etc_render_fsbrain.overlay_stc_hemi=overlay_stc_hemi;
@@ -998,7 +1004,7 @@ etc_render_fsbrain.h_colorbar_neg=[];
 etc_render_fsbrain.h_colorbar_vol=[];
 etc_render_fsbrain.h_colorbar_vol_pos=[];
 etc_render_fsbrain.h_colorbar_vol_neg=[];
-
+etc_render_fsbrain.brain_axis_pos=[];
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 %setup call-back function

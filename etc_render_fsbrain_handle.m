@@ -299,15 +299,22 @@ switch lower(param)
                             end;
                         end;
                     end;
-                    etc_trace(etc_render_fsbrain.overlay_stc,'fs',fs,'ch_names',etc_render_fsbrain.aux_point_name,'aux_data',aux_data,'time_begin',time_begin);
+                    
                     
                     global etc_trace_obj;
-                    if(isvalid(etc_trace_obj.fig_trace))
-                        etc_trace_handle('bd','time_idx',etc_render_fsbrain.overlay_stc_timeVec_idx);
+
+                    if(isempty(etc_trace_obj))
+                        etc_trace(etc_render_fsbrain.overlay_stc,'fs',fs,'ch_names',etc_render_fsbrain.aux_point_name,'aux_data',aux_data,'time_begin',time_begin,'trace_selected_idx',etc_render_fsbrain.click_overlay_vertex,'ylim',[-max(etc_render_fsbrain.overlay_threshold) max(etc_render_fsbrain.overlay_threshold)]);
+                        %etc_trcae_gui_update_time;
+                    else
+                        etc_trace(etc_render_fsbrain.overlay_stc,'fs',fs,'ch_names',etc_render_fsbrain.aux_point_name,'aux_data',aux_data,'time_begin',time_begin,'trigger',etc_trace_obj.trigger,'time_select_idx',etc_render_fsbrain.overlay_stc_timeVec_idx,'trace_selected_idx', etc_render_fsbrain.click_overlay_vertex,'ylim',[-max(etc_render_fsbrain.overlay_threshold) max(etc_render_fsbrain.overlay_threshold)]);
+                        %etc_trcae_gui_update_time;
                     end;
+                    %if(isvalid(etc_trace_obj.fig_trace))
+                    %    etc_trace_handle('bd','time_idx',etc_render_fsbrain.overlay_stc_timeVec_idx);
+                    %end;
                     
-                    global etc_trace_obj;
-                    
+                   
                     if(~isempty(etc_trace_obj))
                         try
                             etc_trace_obj.topo.vertex=etc_render_fsbrain.vertex_coords;
@@ -405,6 +412,13 @@ switch lower(param)
                                 s.table=[220          60         120          0        1];
                                 etc_render_fsbrain.label_ctab=s;
                             end;
+                            etc_render_fsbrain.label_register=zeros(1,length(etc_render_fsbrain.label_ctab.struct_names));
+                            
+                            etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
+                            set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
+                            pos=get(etc_render_fsbrain.fig_label_gui,'pos');
+                            pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                            set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
                         case '.mgz'
                             file_annot=sprintf('%s/%s',pathname,filename);
                             etc_render_fsbrain.overlay_vol_mask=MRIread(file_annot);
@@ -536,7 +550,9 @@ switch lower(param)
                     etc_render_fsbrain.h_colorbar_pos=[];
                     delete(etc_render_fsbrain.h_colorbar_neg);
                     etc_render_fsbrain.h_colorbar_neg=[];
-                    set(etc_render_fsbrain.brain_axis,'pos',etc_render_fsbrain.brain_axis_pos);
+                    if(~isempty(etc_render_fsbrain.brain_axis_pos))
+                        set(etc_render_fsbrain.brain_axis,'pos',etc_render_fsbrain.brain_axis_pos);
+                    end;
                 else
                     if(etc_render_fsbrain.overlay_value_flag_pos|etc_render_fsbrain.overlay_value_flag_neg)
                         if(isempty(etc_render_fsbrain.h_colorbar_pos)&&isempty(etc_render_fsbrain.h_colorbar_neg))
@@ -573,7 +589,9 @@ switch lower(param)
                         etc_render_fsbrain.h_colorbar_pos=[];
                         delete(etc_render_fsbrain.h_colorbar_neg);
                         etc_render_fsbrain.h_colorbar_neg=[];
-                        set(etc_render_fsbrain.brain_axis,'pos',etc_render_fsbrain.brain_axis_pos);
+                        if(~isempty(etc_render_fsbrain.brain_axis_pos))
+                            set(etc_render_fsbrain.brain_axis,'pos',etc_render_fsbrain.brain_axis_pos);
+                        end;
                     end;
                 end;
                 
@@ -583,7 +601,7 @@ switch lower(param)
                     etc_render_fsbrain.h_colorbar_vol_pos=[];
                     delete(etc_render_fsbrain.h_colorbar_vol_neg);
                     etc_render_fsbrain.h_colorbar_vol_neg=[];
-                    %set(etc_render_fsbrain.brain_axis,'pos',etc_render_fsbrain.brain_axis_pos);
+                    %set(etc_re'vnder_fsbrain.brain_axis,'pos',etc_render_fsbrain.brain_axis_pos);
                 else
                     if(etc_render_fsbrain.overlay_value_flag_pos|etc_render_fsbrain.overlay_value_flag_neg)
                         %if(isempty(etc_render_fsbrain.h_colorbar_vol_pos)&&isempty(etc_render_fsbrain.h_colorbar_vol_neg))
@@ -1052,6 +1070,14 @@ switch lower(param)
             redraw;
             figure(etc_render_fsbrain.fig_stc);
             
+            
+            global etc_trace_obj;
+            
+            if(~isempty(etc_trace_obj))
+                etc_trace_obj.time_select_idx=etc_render_fsbrain.overlay_stc_timeVec_idx;
+                etc_trcae_gui_update_time;
+            end;
+            
         end;
         
         global etc_trace_obj;
@@ -1145,9 +1171,9 @@ try
         [min_dist,min_dist_idx]=min(dist);
     end;
     if(isempty(etc_render_fsbrain.ovs))
-        fprintf('the nearest vertex on the surface: IDX=[%d] {x, y, z} = {%2.2f %2.2f %2.2f} \n',min_dist_idx,vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3));
+        fprintf('the nearest vertex on the surface: IDX=[%d] @ {%2.2f %2.2f %2.2f} \n',min_dist_idx,vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3));
     else
-        fprintf('the nearest vertex on the surface: IDX=[%d] {x, y, z} = {%2.2f %2.2f %2.2f} <<%2.2f>> \n',min_dist_idx,vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3),etc_render_fsbrain.ovs(min_dist_idx));
+        fprintf('the nearest vertex on the surface: IDX=[%d]::<<%2.2f>> @ {%2.2f %2.2f %2.2f} \n',min_dist_idx,etc_render_fsbrain.ovs(min_dist_idx), vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3));
     end;
     etc_render_fsbrain.click_coord_round=[vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3)];
     etc_render_fsbrain.click_vertex=min_dist_idx;
@@ -1590,11 +1616,11 @@ try
                     surface_coord=etc_render_fsbrain.aux2_point_coords(v_idx,:);
                     
                     
-                    if(strcmp(etc_render_fsbrain.surf,'orig'))
+                    if(strcmp(etc_render_fsbrain.surf,'orig')|strcmp(etc_render_fsbrain.surf,'smoothwm')|strcmp(etc_render_fsbrain.surf,'pial'))
                         
                     else
                         if(v_idx==1)
-                            fprintf('surface <%s> not "orig". Electrode contacts locations are mapped from this surface back to the "orig" volume.\n',etc_render_fsbrain.surf);
+                            fprintf('surface <%s> not "orig"/"pial"/"smoothwm". Electrode contacts locations are mapped from this surface back to the "orig" volume.\n',etc_render_fsbrain.surf);
                         end;
                         %tmp=etc_render_fsbrain.aux2_point_coords(count,:);
                         
@@ -1609,7 +1635,8 @@ try
                     
                     point_size=1e3;
                     
-                    D=2; %a constant controlling the visibility of contacts
+                    %D=2; %a constant controlling the visibility of contacts
+                    D=etc_render_fsbrain.show_all_contacts_mri_depth; %a constant controlling the visibility of contacts
                     alpha=exp(-(abs(click_vertex_vox(3)-round(etc_render_fsbrain.click_vertex_vox(3))))/D);
                     if(alpha>0.2)
                         etc_render_fsbrain.aux2_point_mri_cor_h(count)=scatter(etc_render_fsbrain.img_cor_padx+click_vertex_vox(1), etc_render_fsbrain.img_cor_pady+click_vertex_vox(2),point_size,[0.8500 0.3250 0.0980],'.');
@@ -1747,6 +1774,29 @@ try
         try
             figure(etc_render_fsbrain.fig_brain);
             
+            
+%             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% overlay at the clicked point
+%             vv=etc_render_fsbrain.vertex_coords;
+%             if(isempty(min_dist_idx))
+%                 dist=sqrt(sum((vv-repmat([pt(1),pt(2),pt(3)],[size(vv,1),1])).^2,2));
+%                 [min_dist,min_dist_idx]=min(dist);
+%             end;
+%             if(~iscell(etc_render_fsbrain.overlay_vertex))
+%                 fprintf('the clicked overlay surface vertex: location=[%d]::<<%2.2f>> @ {%2.2f %2.2f %2.2f} \n',min_dist_idx,etc_render_fsbrain.ovs(min_dist_idx),vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3));
+%             else
+%                 if(min_dist_idx>length(etc_render_fsbrain.overlay_vertex{1}))
+%                     offset=length(etc_render_fsbrain.overlay_vertex{1});
+%                     hemi_idx=2;
+%                 else
+%                     offset=0;
+%                     hemi_idx=1;
+%                 end;
+%                 fprintf('the clicked overlay vertex: hemi{%d} location=[%d]::<<%2.2f>> @ {%2.2f %2.2f %2.2f} \n',hemi_idx,min_dist_idx-offset,etc_render_fsbrain.ovs{hemi_idx}(min_dist_idx-offset),vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3));
+%             end;
+%             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% overlay at the clicked point
+            
+            
+            %%%% overlay at the valued vertex closest to the clicked point
             if(~iscell(etc_render_fsbrain.overlay_vertex))
                 vv=etc_render_fsbrain.vertex_coords;
                 vv=vv(etc_render_fsbrain.overlay_vertex+1,:);
@@ -1761,7 +1811,7 @@ try
             dist=sqrt(sum((vv-repmat([pt(1),pt(2),pt(3)],[size(vv,1),1])).^2,2));
             [min_overlay_dist,min_overlay_dist_idx]=min(dist);
             if(~iscell(etc_render_fsbrain.overlay_vertex))
-                fprintf('the nearest overlay surface vertex: location=[%d]::<<%2.2f>> @ (%2.2f %2.2f %2.2f) \n',min_overlay_dist_idx,etc_render_fsbrain.overlay_value(min_overlay_dist_idx),vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3));
+                fprintf('the nearest overlay surface vertex: location=[%d]::<<%2.2f>> @ {%2.2f %2.2f %2.2f} \n',min_overlay_dist_idx,etc_render_fsbrain.overlay_value(min_overlay_dist_idx),vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3));
             else
                 if(min_overlay_dist_idx>length(etc_render_fsbrain.overlay_vertex{1}))
                     offset=length(etc_render_fsbrain.overlay_vertex{1});
@@ -1770,8 +1820,10 @@ try
                     offset=0;
                     hemi_idx=1;
                 end;
-                fprintf('the nearest overlay vertex: hemi{%d} location=[%d]::<<%2.2f>> @ (%2.2f %2.2f %2.2f) \n',hemi_idx,min_overlay_dist_idx-offset,etc_render_fsbrain.overlay_value{hemi_idx}(min_overlay_dist_idx-offset),vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3));
+                fprintf('the nearest overlay vertex: hemi{%d} location=[%d]::<<%2.2f>> @ {%2.2f %2.2f %2.2f} \n',hemi_idx,min_overlay_dist_idx-offset,etc_render_fsbrain.overlay_value{hemi_idx}(min_overlay_dist_idx-offset),vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3));
             end;
+            %%%% overlay at the valued vertex closest to the clicked point
+            
             if(etc_render_fsbrain.flag_overlay_stc_surf)
                 etc_render_fsbrain.click_overlay_vertex=min_overlay_dist_idx;
             end;

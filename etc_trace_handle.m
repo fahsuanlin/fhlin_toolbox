@@ -24,7 +24,8 @@ if(isempty(etc_trace_obj))
 end;
 
 if(isempty(cc))
-    cc=get(etc_trace_obj.fig_trace,'currentchar');
+    %cc=get(etc_trace_obj.fig_trace,'currentchar');
+    cc=get(gcf,'currentchar');
 end;
 
 switch lower(param)
@@ -81,7 +82,7 @@ switch lower(param)
                 
                 pp0=get(etc_trace_obj.fig_trigger,'pos');
                 pp1=get(etc_trace_obj.fig_trace,'pos');
-                set(etc_trace_obj.fig_trigger,'pos',[pp1(1)-pp0(3), pp1(2),pp0(3), pp0(4)]);
+                set(etc_trace_obj.fig_trigger,'pos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
                 set(etc_trace_obj.fig_trigger,'Name','events');
                 set(etc_trace_obj.fig_trigger,'Resize','off');
                 
@@ -285,13 +286,90 @@ switch lower(param)
             otherwise
         end;
     case 'bd'
-        global etc_render_fsbrain
+        global etc_render_fsbrain;
+        global etc_trace_obj;
         
         %if(gcf==etc_trace_obj.fig_trace)
         %detect right mouse click
         clickType = get(gcf, 'SelectionType');
         if(strcmp(clickType,'alt'))
+            % right mouse clicked!!
             
+            time_idx_now=etc_trace_obj.time_select_idx;
+            class_now=etc_trace_obj.trigger_now;
+                        
+            all_time_idx=[];
+            all_class=[];
+            if(~isempty(etc_trace_obj.trigger))
+                all_time_idx=etc_trace_obj.trigger.time;
+                all_class=etc_trace_obj.trigger.event;
+            end;
+
+            
+            
+            idx=find(all_time_idx==time_idx_now);      
+            found=0;
+            if(~isempty(idx))
+                if(strcmp(all_class{idx(1)},class_now))
+                    found=1;
+                end;
+            end;
+            
+            if(~found)
+                fprintf('adding [%d] (sample) in class {%s}...\n',time_idx_now,class_now);
+                
+                if(isempty(etc_trace_obj.trigger))
+                    etc_trace_obj.trigger.time=time_idx_now;
+                    etc_trace_obj.trigger.event{1}=class_now;
+                else
+                    etc_trace_obj.trigger.time=cat(1,time_idx_now, etc_trace_obj.trigger.time(:));
+                    for i=1:length(etc_trace_obj.trigger.event)
+                        tmp{i+1}=etc_trace_obj.trigger.event{i};
+                    end;
+                    tmp{1}=class_now;
+                    etc_trace_obj.trigger.event=tmp;
+                end;
+
+                %update event list boxes
+                obj_time=findobj('tag','listbox_time');
+                obj_time_idx=findobj('tag','listbox_time_idx');
+                obj_class=findobj('tag','listbox_class');
+                
+                
+                str=[];
+                for i=1:length(etc_trace_obj.trigger.time)
+                    str{i}=sprintf('%d',etc_trace_obj.trigger.time(i));
+                end;
+                set(obj_time_idx,'string',str);
+                str=[];
+                for i=1:length(etc_trace_obj.trigger.time)
+                    str{i}=sprintf('%1.3f',(etc_trace_obj.trigger.time(i)-1)./etc_trace_obj.fs+etc_trace_obj.time_begin);
+                end;
+                set(obj_time,'string',str);
+                set(obj_class,'string',etc_trace_obj.trigger.event);
+
+    
+                %update event edits
+                hObject=findobj('tag','edit_local_trigger_time_idx');
+                set(hObject,'string',sprintf('%d',time_idx_now));
+                hObject=findobj('tag','edit_local_trigger_time');
+                set(hObject,'string',sprintf('%1.3f',(time_idx_now-1)/etc_trace_obj.fs+etc_trace_obj.time_begin));
+                hObject=findobj('tag','edit_local_trigger_class');
+                set(hObject,'string',sprintf('%s',class_now));
+
+                %update trace trigger
+                hObject=findobj('tag','listbox_trigger');
+                set(hObject,'string',unique(etc_trace_obj.trigger.event(:)));
+                
+            else
+                fprintf('duplicated [%d] (sample) in class {%s}...\n',all_time_idx(idx),class_now);
+                
+                obj_time.Value=idx;
+                obj_class.Value=idx;
+            end;
+            
+            
+        
         else
             if(isfield(etc_trace_obj,'time_select_line'))
                 try
@@ -305,7 +383,7 @@ switch lower(param)
             if(isempty(time_idx))
                 xx=get(gca,'currentpoint');
                 xx=xx(1);
-                etc_trace_obj.time_select_idx=round(xx)+etc_trace_obj.time_begin_idx;
+                etc_trace_obj.time_select_idx=round(xx)+etc_trace_obj.time_window_begin_idx;
             else
                 etc_trace_obj.time_select_idx=time_idx;
             end;
@@ -314,13 +392,15 @@ switch lower(param)
             if(~etc_trace_obj.flag_mark)
                 if(etc_trace_obj.config_current_time_flag)
                     figure(etc_trace_obj.fig_trace);
-                    etc_trace_obj.time_select_line=plot([etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1 etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1],ylim,'m','linewidth',2);
+                    %etc_trace_obj.time_select_line=plot([etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1 etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1],ylim,'m','linewidth',2);
+                    etc_trace_obj.time_select_line=plot([etc_trace_obj.time_select_idx-etc_trace_obj.time_window_begin_idx+1 etc_trace_obj.time_select_idx-etc_trace_obj.time_window_begin_idx+1],ylim,'m','linewidth',2);
                     set(etc_trace_obj.time_select_line,'color',etc_trace_obj.config_current_time_color);
                 end;
             else
                 if(etc_trace_obj.config_current_time_flag)
                     figure(etc_trace_obj.fig_trace);
-                    etc_trace_obj.time_select_line=plot([etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1 etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1],ylim,'r','linewidth',2);
+                    %etc_trace_obj.time_select_line=plot([etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1 etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1],ylim,'r','linewidth',2);
+                    etc_trace_obj.time_select_line=plot([etc_trace_obj.time_select_idx-etc_trace_obj.time_window_begin_idx+1 etc_trace_obj.time_select_idx-etc_trace_obj.time_window_begin_idx+1],ylim,'m','linewidth',2);                    
                 end;
             end;
             
@@ -328,14 +408,20 @@ switch lower(param)
             hObject=findobj('tag','edit_time_now_idx');
             set(hObject,'String',num2str(etc_trace_obj.time_select_idx));
             hObject=findobj('tag','edit_time_now');
-            set(hObject,'String',num2str((etc_trace_obj.time_select_idx-1)/etc_trace_obj.fs,'%1.3f'));
-            
+            set(hObject,'String',num2str((etc_trace_obj.time_select_idx-1)/etc_trace_obj.fs+etc_trace_obj.time_begin,'%1.3f'));
+
             %update trigger GUI
-            hObject=findobj('tag','edit_time');
+            hObject=findobj('tag','edit_local_trigger_time_idx');
             set(hObject,'String',num2str(etc_trace_obj.time_select_idx));
+            hObject=findobj('tag','edit_local_trigger_time');
+            set(hObject,'String',(etc_trace_obj.time_select_idx-1)/etc_trace_obj.fs+etc_trace_obj.time_begin);
             if(isfield(etc_trace_obj,'trigger_now'))
                 if(~isempty(etc_trace_obj.trigger_now))
-                    hObject=findobj('tag','edit_class');
+                    hObject=findobj('tag','edit_local_trigger_class');
+                    set(hObject,'String',num2str(etc_trace_obj.trigger_now));
+                else
+                    etc_trace_obj.trigger_now='def_0'; %default event name
+                    hObject=findobj('tag','edit_local_trigger_class');
                     set(hObject,'String',num2str(etc_trace_obj.trigger_now));
                 end;
             end;
@@ -443,9 +529,9 @@ switch lower(param)
                         end;
                     end;
                     
-                    if(~isempty(etc_render_fsbrain.overlay_stc))
-                        etc_render_fsbrain_handle('draw_stc');
-                    end
+                    %if(~isempty(etc_render_fsbrain.overlay_stc))
+                    %    etc_render_fsbrain_handle('draw_stc');
+                    %end
                     
                     if(ishandle(etc_render_fsbrain.fig_gui))
                         set(findobj(etc_render_fsbrain.fig_gui,'tag','slider_timeVec'),'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
@@ -458,13 +544,18 @@ switch lower(param)
                     etc_render_fsbrain_handle('redraw');
                     figure(etc_render_fsbrain.fig_stc);
                     
-                    etc_render_fsbrain.click_overlay_vertex=etc_trace_obj.trace_selected_idx;
-                    etc_render_fsbrain_handle('draw_stc');
-                    
+                    if(~isempty(etc_render_fsbrain.overlay_stc))
+                        if(~isempty(etc_trace_obj.trace_selected_idx))
+                            etc_render_fsbrain.click_overlay_vertex=etc_trace_obj.trace_selected_idx;
+                        end;
+                        etc_render_fsbrain_handle('draw_stc');
+                    end;                    
                 catch ME
                 end;
             end;
         end;
+        
+        figure(etc_trace_obj.fig_trace);
 end;
 
 return;
@@ -472,6 +563,10 @@ return;
 
 function redraw()
 global etc_trace_obj;
+
+if(~isvalid(etc_trace_obj.fig_trace))
+    return;
+end;
 
 figure(etc_trace_obj.fig_trace);
 tmp=get(etc_trace_obj.fig_trace,'child');
@@ -514,7 +609,8 @@ if(isfield(etc_trace_obj,'aux_data'))
             
             %vertical shift for display
             S=eye(size(tmp,1));
-            S(1:(size(tmp,1)-1),end)=(diff(sort(etc_trace_obj.ylim)).*[0:size(tmp,1)-2])';
+            S(1:(size(tmp,1)-1),end)=(diff(sort(etc_trace_obj.ylim)).*[0:size(tmp,1)-2])'; %typical 
+            %S(1:(size(tmp,1)-1),end)=(diff(sort(etc_trace_obj.ylim)).*ones(size(tmp,1)-1,1).*round(size(tmp,1)/2))'; %butterfly
             tmp=S*tmp;
             
             
@@ -532,14 +628,20 @@ if(isfield(etc_trace_obj,'aux_data'))
     end;
 end;
 
-if((etc_trace_obj.time_begin_idx>=1)&&(etc_trace_obj.time_end_idx<=size(etc_trace_obj.data,2)))
-    tmp=etc_trace_obj.data(:,etc_trace_obj.time_begin_idx:etc_trace_obj.time_end_idx);
-elseif((etc_trace_obj.time_begin_idx<1)&&(etc_trace_obj.time_end_idx<=size(etc_trace_obj.data,2)))
-    tmp=etc_trace_obj.data(:,1:etc_trace_obj.time_end_idx);
-elseif((etc_trace_obj.time_begin_idx>=1)&&(etc_trace_obj.time_end_idx>size(etc_trace_obj.data,2)))
-    tmp=etc_trace_obj.data(:,etc_trace_obj.time_begin_idx:end);
-else((etc_trace_obj.time_begin_idx<1)&&(etc_trace_obj.time_end_idx>size(etc_trace_obj.data,2)))
-    tmp=etc_trace_obj.data(:,1:end);
+% if((etc_trace_obj.time_begin_idx>=1)&&(etc_trace_obj.time_end_idx<=size(etc_trace_obj.data,2)))
+%     tmp=etc_trace_obj.data(:,etc_trace_obj.time_begin_idx:etc_trace_obj.time_end_idx);
+% elseif((etc_trace_obj.time_begin_idx<1)&&(etc_trace_obj.time_end_idx<=size(etc_trace_obj.data,2)))
+%     tmp=etc_trace_obj.data(:,1:etc_trace_obj.time_end_idx);
+% elseif((etc_trace_obj.time_begin_idx>=1)&&(etc_trace_obj.time_end_idx>size(etc_trace_obj.data,2)))
+%     tmp=etc_trace_obj.data(:,etc_trace_obj.time_begin_idx:end);
+% else((etc_trace_obj.time_begin_idx<1)&&(etc_trace_obj.time_end_idx>size(etc_trace_obj.data,2)))
+%     tmp=etc_trace_obj.data(:,1:end);
+% end;
+
+if((etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1)<=size(etc_trace_obj.data,2))
+    tmp=etc_trace_obj.data(:,etc_trace_obj.time_window_begin_idx:etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1);
+else
+    tmp=etc_trace_obj.data;
 end;
 tmp=cat(1,tmp,ones(1,size(tmp,2)));
 
@@ -554,7 +656,9 @@ tmp=etc_trace_obj.scaling{etc_trace_obj.montage_idx}*tmp;
 
 %vertical shift for display
 S=eye(size(tmp,1));
-S(1:(size(tmp,1)-1),end)=(diff(sort(etc_trace_obj.ylim)).*[0:size(tmp,1)-2])';
+S(1:(size(tmp,1)-1),end)=(diff(sort(etc_trace_obj.ylim)).*[0:size(tmp,1)-2])'; %typical 
+%S(1:(size(tmp,1)-1),end)=(diff(sort(etc_trace_obj.ylim)).*ones(size(tmp,1)-1,1).*round(size(tmp,1)/2))'; %butterfly
+            
 tmp=S*tmp;
 
 
@@ -617,18 +721,22 @@ end;
 
 global etc_render_fsbrain;
 try
-    etc_render_fsbrain.click_overlay_vertex=etc_trace_obj.trace_selected_idx;
+    if(~isempty(etc_trace_obj.trace_selected_idx))
+        etc_render_fsbrain.click_overlay_vertex=etc_trace_obj.trace_selected_idx;
+    end;
     etc_render_fsbrain_handel('draw_stc');
 catch ME
 end;
 
 try
     set(etc_trace_obj.axis_trace,'ylim',[min(etc_trace_obj.ylim) min(etc_trace_obj.ylim)+(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-1)*diff(sort(etc_trace_obj.ylim))]);
+    %set(etc_trace_obj.axis_trace,'xlim',[1 etc_trace_obj.time_duration_idx]);
+    %set(etc_trace_obj.axis_trace,'xtick',round([0:5]./5.*etc_trace_obj.time_duration_idx));
     set(etc_trace_obj.axis_trace,'xlim',[1 etc_trace_obj.time_duration_idx]);
-    set(etc_trace_obj.axis_trace,'xtick',round([0:5]./5.*etc_trace_obj.time_duration_idx));
+    set(etc_trace_obj.axis_trace,'xtick',round([0:5]./5.*etc_trace_obj.time_duration_idx)+1);
     set(etc_trace_obj.axis_trace,'ydir','reverse');
-    xx=(etc_trace_obj.time_begin_idx+round([0:5]./5.*etc_trace_obj.time_duration_idx))-1+etc_trace_obj.time_begin.*etc_trace_obj.fs;
-    set(etc_trace_obj.axis_trace,'xticklabel',cellstr(num2str((xx./etc_trace_obj.fs)')));
+    xx=(round([0:5]./5.*etc_trace_obj.time_duration_idx)+etc_trace_obj.time_window_begin_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin;
+    set(etc_trace_obj.axis_trace,'xticklabel',cellstr(num2str(xx')));
 catch ME
 end;
 
@@ -639,20 +747,20 @@ set(etc_trace_obj.axis_trace,'yticklabels',etc_trace_obj.montage_ch_name{etc_tra
 %plot trigger
 try
     %all triggers
-    idx=find((etc_trace_obj.trigger.time>=etc_trace_obj.time_begin_idx)&(etc_trace_obj.trigger.time<=etc_trace_obj.time_end_idx));
+    idx=find((etc_trace_obj.trigger.time>=etc_trace_obj.time_window_begin_idx)&(etc_trace_obj.trigger.time<=(etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx)));
     
     if(etc_trace_obj.config_current_trigger_flag)
-        h=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.trigger.time(idx)-etc_trace_obj.time_begin_idx,[2 1]),repmat(get(etc_trace_obj.axis_trace,'ylim')',[1 length(idx)]),'LineWidth',2,'LineStyle',':','Color',etc_trace_obj.config_current_trigger_color);
+        h=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.trigger.time(idx)-etc_trace_obj.time_window_begin_idx,[1 2])',repmat(get(etc_trace_obj.axis_trace,'ylim')',[1 length(idx)]),'LineWidth',2,'LineStyle',':','Color',etc_trace_obj.config_current_trigger_color);
     end;
     
     %current selected trigger
     trigger_idx=find(etc_trace_obj.trigger.event==etc_trace_obj.trigger_now);
     trigger_time_idx=etc_trace_obj.trigger.time(trigger_idx);
     
-    idx=find((etc_trace_obj.trigger.time(trigger_idx)>=etc_trace_obj.time_begin_idx)&(etc_trace_obj.trigger.time(trigger_idx)<=etc_trace_obj.time_end_idx));
+    idx=find((etc_trace_obj.trigger.time(trigger_idx)>=etc_trace_obj.time_window_begin_idx)&(etc_trace_obj.trigger.time(trigger_idx)<=(etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx)));
     
     if(etc_trace_obj.config_current_trigger_flag)
-        h=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.trigger.time(trigger_idx(idx))-etc_trace_obj.time_begin_idx,[2 1]),repmat(get(etc_trace_obj.axis_trace,'ylim')',[1 length(idx)]),'LineWidth',2,'LineStyle','-','Color',etc_trace_obj.config_current_trigger_color);
+        h=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.trigger.time(trigger_idx(idx))-etc_trace_obj.time_window_begin_idx,[1 2])',repmat(get(etc_trace_obj.axis_trace,'ylim')',[1 length(idx)]),'LineWidth',2,'LineStyle','-','Color',etc_trace_obj.config_current_trigger_color);
     end;
     
 catch ME
@@ -669,11 +777,14 @@ try
     ylim=get(etc_trace_obj.axis_trace,'ylim');
     if(~etc_trace_obj.flag_mark)
         if(etc_trace_obj.config_current_time_flag)
-            etc_trace_obj.time_select_line=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1,[2 1]),get(etc_trace_obj.axis_trace,'ylim')','LineWidth',2,'LineStyle','-','Color',etc_trace_obj.config_current_time_color);
+            %etc_trace_obj.time_select_line=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1,[2 1]),get(etc_trace_obj.axis_trace,'ylim')','LineWidth',2,'LineStyle','-','Color',etc_trace_obj.config_current_time_color);
+            etc_trace_obj.time_select_line=plot([etc_trace_obj.time_select_idx-etc_trace_obj.time_window_begin_idx+1 etc_trace_obj.time_select_idx-etc_trace_obj.time_window_begin_idx+1],ylim,'m','linewidth',2);
+            set(etc_trace_obj.time_select_line,'color',etc_trace_obj.config_current_time_color);
         end;
     else
         if(etc_trace_obj.config_current_trigger_flag)
-            etc_trace_obj.time_select_line=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1,[2 1]),get(etc_trace_obj.axis_trace,'ylim')','LineWidth',2,'LineStyle','-','Color','r');
+            %etc_trace_obj.time_select_line=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.time_select_idx-etc_trace_obj.time_begin_idx+1,[2 1]),get(etc_trace_obj.axis_trace,'ylim')','LineWidth',2,'LineStyle','-','Color','r');
+            etc_trace_obj.time_select_line=plot([etc_trace_obj.time_select_idx-etc_trace_obj.time_window_begin_idx+1 etc_trace_obj.time_select_idx-etc_trace_obj.time_window_begin_idx+1],ylim,'m','linewidth',2);                    
         end;
     end;
 catch ME
@@ -711,7 +822,19 @@ else
     etc_trace_obj.trace_selected_idx=Index;
 end;
 
+global etc_render_fsbrain;
+
+%fprintf('----\n');
+%etc_render_fsbrain.click_overlay_vertex
+
 redraw;
+etc_render_fsbrain.flag_overlay_stc_surf=1;
+etc_render_fsbrain.flag_overlay_stc_vol=0;
+etc_render_fsbrain_handle('draw_stc');
+
+figure(etc_trace_obj.fig_trace);
+%etc_render_fsbrain.click_overlay_vertex
+%fprintf('----\n');
 
 return;
 

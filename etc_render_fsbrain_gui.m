@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_gui
 
-% Last Modified by GUIDE v2.5 31-Mar-2020 00:09:00
+% Last Modified by GUIDE v2.5 01-Apr-2020 00:48:58
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -59,6 +59,7 @@ global etc_render_fsbrain;
 
 %surface opacity slider
 set(handles.slider_alpha,'value',get(etc_render_fsbrain.h,'facealpha'));
+set(handles.edit_alpha,'string',sprintf('%1.1f',get(etc_render_fsbrain.h,'facealpha')));
 
 %timeVec slider
 try
@@ -179,17 +180,23 @@ end;
 
 if(~isempty(etc_render_fsbrain.overlay_value)||~isempty(etc_render_fsbrain.overlay_stc))
     set(handles.checkbox_show_colorbar,'enable','on');
-    set(handles.checkbox_show_vol_colorbar,'enable','on');
     set(handles.checkbox_show_overlay,'enable','on');
+else
+    set(handles.checkbox_show_colorbar,'enable','off');
+    set(handles.checkbox_show_overlay,'enable','off');
+end;
+
+
+if(~isempty(etc_render_fsbrain.overlay_vol_value)||~isempty(etc_render_fsbrain.overlay_vol_stc))
+    set(handles.checkbox_show_vol_colorbar,'enable','on');
     set(handles.checkbox_show_vol_overlay,'enable','on');
     set(handles.checkbox_show_vol_colorbar,'enable','on');
 else
-    set(handles.checkbox_show_colorbar,'enable','off');
     set(handles.checkbox_show_vol_colorbar,'enable','off');
-    set(handles.checkbox_show_overlay,'enable','off');
-    set(handles.checkbox_show_vol_overlay,'enable','on');
+    set(handles.checkbox_show_vol_overlay,'enable','off');
     set(handles.checkbox_show_vol_colorbar,'enable','off');
 end;
+
 
 if(~isempty(etc_render_fsbrain.aux_point_coords))
     set(handles.pushbutton_aux_point_color,'BackgroundColor',etc_render_fsbrain.aux_point_color);
@@ -323,7 +330,12 @@ etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.clic
 
 etc_render_fsbrain_handle('redraw');
 
+global etc_trace_obj;
 
+if(~isempty(etc_trace_obj))
+    etc_trace_obj.time_select_idx=etc_render_fsbrain.overlay_stc_timeVec_idx;
+    etc_trcae_gui_update_time;
+end;
 
 
 % --- Executes during object creation, after setting all properties.
@@ -539,6 +551,13 @@ if(isfield(etc_render_fsbrain,'click_coord'))
 end;
 etc_render_fsbrain_handle('redraw');
 
+global etc_trace_obj;
+
+if(~isempty(etc_trace_obj))
+    etc_trace_obj.time_select_idx=etc_render_fsbrain.overlay_stc_timeVec_idx;
+    etc_trcae_gui_update_time;
+end;
+
 
 
 % --- Executes during object creation, after setting all properties.
@@ -640,12 +659,14 @@ function slider_alpha_Callback(hObject, eventdata, handles)
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 global etc_render_fsbrain;
 
-set(etc_render_fsbrain.h,'facealpha',get(hObject,'Value'));
 etc_render_fsbrain.alpha=get(hObject,'Value');
+
+set(etc_render_fsbrain.h,'facealpha',etc_render_fsbrain.alpha);
+
+set(handles.slider_alpha,'value',etc_render_fsbrain.alpha);
+set(handles.edit_alpha,'string',sprintf('%1.1f',get(etc_render_fsbrain.h,'facealpha')));
 guidata(hObject, handles);
 
-h=findobj('tag','slider_alpha');
-set(h,'value',get(hObject,'Value'));
 
 % --- Executes during object creation, after setting all properties.
 function slider_alpha_CreateFcn(hObject, eventdata, handles)
@@ -1727,3 +1748,35 @@ etc_render_fsbrain.flag_colorbar_vol=get(hObject,'Value');
 set(etc_render_fsbrain.fig_brain,'currentchar','c');
 %etc_render_fsbrain_handle('kb','cc','c');
 etc_render_fsbrain_handle('kb','cv','cv'); %update colorbar
+
+
+
+function edit_alpha_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_alpha (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_alpha as text
+%        str2double(get(hObject,'String')) returns contents of edit_alpha as a double
+global etc_render_fsbrain;
+
+etc_render_fsbrain.alpha=str2double(get(hObject,'String'));
+
+set(etc_render_fsbrain.h,'facealpha',etc_render_fsbrain.alpha);
+
+set(findobj('Tag','slider_alpha'),'value',etc_render_fsbrain.alpha);
+set(handles.edit_alpha,'string',sprintf('%1.1f',get(etc_render_fsbrain.h,'facealpha')));
+guidata(hObject, handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_alpha_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_alpha (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

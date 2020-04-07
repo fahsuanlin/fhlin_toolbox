@@ -15,6 +15,8 @@ vol_face=[];
 vol_vertex_hemi={};
 vol_face_hemi={};
 
+lut=[];
+
 %color
 default_solid_color=[256 180 100]./256;
 %default_solid_color=[214, 185, 133]./256;
@@ -27,6 +29,9 @@ topo_cmap=tmp(161:end,:);
 %topo_cmap_neg=winter(80); %overlay colormap;
 %topo_cmap_neg=flipud(tmp(1:128,:));
 topo_cmap_neg=flipud(tmp(1:96,:));
+
+
+
 
 %overlay
 topo_value=[];
@@ -76,6 +81,10 @@ topo_exclude=[];
 topo_include_fstem='';
 topo_include=[];
 
+overlay_vol_mask_alpha=0.5;
+overlay_vol_mask=[];
+overlay_flag_vol_mask=1;
+
 topo=[]; %topology structure; with "vertex", "face", "ch_names", "electrode_idx" 4 fields.
 
 %electrode
@@ -97,13 +106,28 @@ cluster_file={};
 alpha=1;
 view_angle=[];
 
+% flag_redraw=0;
+% flag_camlight=1;
+% flag_colorbar=0;
+% show_nearest_brain_surface_location_flag=1;
+% show_contact_names_flag=1;
+% show_all_contacts_mri_flag=1;
+% electrode_update_contact_view_flag=0;
+
+
 flag_redraw=0;
 flag_camlight=1;
 flag_colorbar=0;
+flag_colorbar_vol=0; %
 show_nearest_brain_surface_location_flag=1;
+show_brain_surface_location_flag=1; %
 show_contact_names_flag=1;
 show_all_contacts_mri_flag=1;
+show_all_contacts_mri_depth=2; %
+show_all_contacts_brain_surface_flag=1; %  
 electrode_update_contact_view_flag=0;
+
+
 
 click_point_size=28;
 click_point_color=[1 0 1];
@@ -194,6 +218,12 @@ for idx=1:length(varargin)/2
             topo_truncate_pos=option_value;
         case 'topo_truncate_neg'
             topo_truncate_neg=option_value;
+        case 'overlay_vol_mask_alpha'
+            overlay_vol_mask_alpha=option_value;
+        case 'overlay_vol_mask'
+            overlay_vol_mask=option_value;
+        case 'overlay_flag_vol_mask'
+            overlay_flag_vol_mask=option_value;
         case 'default_solid_color'
             default_solid_color=option_value;
         case 'cluster_file'
@@ -206,14 +236,22 @@ for idx=1:length(varargin)/2
             flag_camlight=option_value;
         case 'flag_colorbar'
             flag_colorbar=option_value;
+        case 'flag_colorbar_vol'
+            flag_colorbar_vol=option_value;
         case 'flag_hold_fig_stc_timecourse'
             flag_hold_fig_stc_timecourse=option_value;
         case 'show_nearest_brain_surface_location_flag'
             show_nearest_brain_surface_location_flag=option_value;
+        case 'show_brain_surface_location_flag'
+            show_brain_surface_location_flag=option_value;
         case'show_contact_names_flag'
             show_contact_names_flag=option_value;
         case'show_all_contacts_mri_flag'
             show_all_contacts_mri_flag=option_value;
+        case'show_all_contacts_mri_depth'
+            show_all_contacts_mri_depth=option_value;
+        case 'show_all_contacts_brain_surface_flag'
+            show_all_contacts_brain_surface_flag=option_value;
         case 'electrode_update_contact_view_flag'
             electrode_update_contact_view_flag=option_value;
         case 'view_angle'
@@ -256,6 +294,7 @@ end;
 %0: solid color
 fvdata=repmat(default_solid_color,[size(vol_vertex,1),1]);
 
+ovs=[];
 topo_flag_render=0;
 %2: curvature and overlay color
 if(~isempty(topo_value))
@@ -427,6 +466,7 @@ etc_render_fsbrain.faces_hemi=vol_face;
 etc_render_fsbrain.vertex_coords_hemi=vol_vertex;
 etc_render_fsbrain.fvdata=fvdata;
 etc_render_fsbrain.curv=[];
+etc_render_fsbrain.ovs=ovs;
 %etc_render_fsbrain.curv_hemi=curv_hemi;
 etc_render_fsbrain.overlay_value=topo_value;
 
@@ -437,6 +477,7 @@ etc_render_fsbrain.curv_neg_color=[];
 etc_render_fsbrain.default_solid_color=default_solid_color;
 etc_render_fsbrain.alpha=alpha;
 
+
 etc_render_fsbrain.fig_brain=gcf;
 etc_render_fsbrain.fig_stc=[];
 etc_render_fsbrain.fig_gui=[];
@@ -444,12 +485,20 @@ etc_render_fsbrain.fig_vol=[];
 etc_render_fsbrain.fig_coord_gui=[];
 etc_render_fsbrain.fig_label_gui=[];
 etc_render_fsbrain.show_nearest_brain_surface_location_flag=show_nearest_brain_surface_location_flag;
+etc_render_fsbrain.show_brain_surface_location_flag=show_brain_surface_location_flag;
 etc_render_fsbrain.show_contact_names_flag=show_contact_names_flag;
 etc_render_fsbrain.electrode_update_contact_view_flag=electrode_update_contact_view_flag;
 etc_render_fsbrain.show_all_contacts_mri_flag=show_all_contacts_mri_flag;
+etc_render_fsbrain.show_all_contacts_mri_depth=show_all_contacts_mri_depth;
+etc_render_fsbrain.show_all_contacts_brain_surface_flag=show_all_contacts_brain_surface_flag;
 
 etc_render_fsbrain.vol_vox=[];
 
+etc_render_fsbrain.overlay_vol=[];
+etc_render_fsbrain.overlay_vol_stc=[];
+etc_render_fsbrain.overlay_aux_vol=[];
+etc_render_fsbrain.overlay_aux_vol_stc=[];
+etc_render_fsbrain.overlay_vol_value=[];
 etc_render_fsbrain.overlay_value=topo_value;
 etc_render_fsbrain.overlay_stc=topo_stc;
 etc_render_fsbrain.overlay_aux_stc=topo_aux_stc;
@@ -478,6 +527,14 @@ etc_render_fsbrain.overlay_regrid_zero_flag=topo_regrid_zero_flag;
 etc_render_fsbrain.overlay_Ds=topo_Ds;
 etc_render_fsbrain.flag_overlay_truncate_pos=topo_truncate_pos;
 etc_render_fsbrain.flag_overlay_truncate_neg=topo_truncate_neg;
+
+etc_render_fsbrain.flag_colorbar=flag_colorbar;
+etc_render_fsbrain.flag_colorbar_vol=flag_colorbar_vol;
+
+etc_render_fsbrain.overlay_vol_mask_alpha=overlay_vol_mask_alpha;
+etc_render_fsbrain.overlay_vol_mask=overlay_vol_mask;
+etc_render_fsbrain.overlay_flag_vol_mask=overlay_flag_vol_mask;
+etc_render_fsbrain.lut=lut;
 
 etc_render_fsbrain.label_vertex=label_vertex;
 etc_render_fsbrain.label_value=label_value;
@@ -524,6 +581,19 @@ etc_render_fsbrain.register_translate_dist=1e-3; %default: 1 mm
 etc_render_fsbrain.topo=topo;
 
 etc_render_fsbrain.electrode=electrode;
+etc_render_fsbrain.fig_electrode_gui=[];
+
+etc_render_fsbrain.click_coord=[];
+etc_render_fsbrain.surface_coord=[];
+etc_render_fsbrain.click_vertex_vox=[];
+
+etc_render_fsbrain.h_colorbar=[];
+etc_render_fsbrain.h_colorbar_pos=[];
+etc_render_fsbrain.h_colorbar_neg=[];
+etc_render_fsbrain.h_colorbar_vol=[];
+etc_render_fsbrain.h_colorbar_vol_pos=[];
+etc_render_fsbrain.h_colorbar_vol_neg=[];
+etc_render_fsbrain.brain_axis_pos=[];
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%

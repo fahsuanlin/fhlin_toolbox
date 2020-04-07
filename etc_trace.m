@@ -7,7 +7,10 @@ duration=5; %second
 all_duration=[0.1 0.5 1 2 5]; %seconds
 
 time_begin=0; %second;
+time_select_idx=[];
 h=[];
+
+trace_selected_idx=[];
 
 trigger=[];
 aux_data={};
@@ -44,8 +47,12 @@ for i=1:length(varargin)/2
             duration=option_value;
         case 'time_begin'
             time_begin=option_value;
+        case 'time_select_idx'
+            time_select_idx=option_value;
         case 'trigger'
             trigger=option_value;
+        case 'trace_selected_idx'
+            trace_selected_idx=option_value;
         case 'ch_names'
             ch_names=option_value;
         case 'aux_data'
@@ -117,18 +124,17 @@ etc_trace_obj.ylim=ylim;
 
 idx=find(all_duration<size(data,2)/etc_trace_obj.fs);
 if(isempty(idx))
-    fprintf('not enough data points; must be longer than 0.1 s. error!\n');
-    return;
+    %fprintf('not enough data points; must be longer than 0.1 s. error!\n');
+    %return;
+    duration=all_duration(1);
 else
     duration=all_duration(idx(end));
 end;
-etc_trace_obj.time_duration_idx=round(duration.*fs);
-etc_trace_obj.time_begin_idx=1;
 etc_trace_obj.time_begin=time_begin;
-etc_trace_obj.time_end_idx=etc_trace_obj.time_begin_idx+etc_trace_obj.time_duration_idx;
-if(etc_trace_obj.time_end_idx>size(data,2))
-    etc_trace_obj.time_end_idx=size(data,2);
-end;
+etc_trace_obj.time_select_idx=time_select_idx;
+etc_trace_obj.time_duration_idx=round(duration.*fs);
+etc_trace_obj.time_window_begin_idx=1;
+etc_trace_obj.flag_time_window_auto_adjust=1;
 
 etc_trace_obj.trigger=trigger;
 
@@ -213,13 +219,11 @@ etc_trace_obj.scaling{1}=[scaling{1}, zeros(size(scaling{1},1),1)
 etc_trace_obj.data=data;
 etc_trace_obj.aux_data=aux_data;
 
-etc_trace_obj.fig_trace=etc_trace_gui;
-
 etc_trace_obj.topo=topo;
 
 etc_trace_obj.flag_mark=flag_mark;
 
-etc_trace_obj.trace_selected_idx=[];
+etc_trace_obj.trace_selected_idx=trace_selected_idx;
 
 etc_trace_obj.config_trace_center_frac=config_trace_center_frac;
 etc_trace_obj.config_trace_width=config_trace_width;
@@ -233,13 +237,6 @@ etc_trace_obj.config_current_trigger_color=config_current_trigger_color;
 etc_trace_obj.config_current_trigger_flag=config_current_trigger_flag;
 etc_trace_obj.config_current_time_flag=config_current_time_flag;
 
-set(etc_trace_obj.fig_trace,'WindowButtonDownFcn','etc_trace_handle(''bd'')');
-set(etc_trace_obj.fig_trace,'KeyPressFcn','etc_trace_handle(''kb'')');
-set(etc_trace_obj.fig_trace,'HandleVisibility','on')
-set(etc_trace_obj.fig_trace,'invert','off');
-set(etc_trace_obj.fig_trace,'Name','');
-set(etc_trace_obj.fig_trace,'DeleteFcn','etc_trace_handle(''del'')');
-set(etc_trace_obj.fig_trace,'CloseRequestFcn','etc_trace_handle(''del'')');
 
 etc_trace_obj.fig_topology=figure('visible','off');
 delete(etc_trace_obj.fig_topology); %make it invalid
@@ -247,6 +244,16 @@ etc_trace_obj.fig_trigger=figure('visible','off');
 delete(etc_trace_obj.fig_trigger); %make it invalid
 etc_trace_obj.fig_montage=figure('visible','off');
 delete(etc_trace_obj.fig_montage); %make it invalid
+
+etc_trace_obj.fig_trace=etc_trace_gui;
+
+set(etc_trace_obj.fig_trace,'WindowButtonDownFcn','etc_trace_handle(''bd'')');
+set(etc_trace_obj.fig_trace,'KeyPressFcn','etc_trace_handle(''kb'')');
+set(etc_trace_obj.fig_trace,'HandleVisibility','on')
+set(etc_trace_obj.fig_trace,'invert','off');
+set(etc_trace_obj.fig_trace,'Name','');
+set(etc_trace_obj.fig_trace,'DeleteFcn','etc_trace_handle(''del'')');
+set(etc_trace_obj.fig_trace,'CloseRequestFcn','etc_trace_handle(''del'')');
 
 etc_trace_handle('redraw');
 
