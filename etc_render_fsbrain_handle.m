@@ -1075,7 +1075,8 @@ switch lower(param)
             
             if(~isempty(etc_trace_obj))
                 etc_trace_obj.time_select_idx=etc_render_fsbrain.overlay_stc_timeVec_idx;
-                etc_trcae_gui_update_time;
+                etc_trace_obj.flag_time_window_auto_adjust=0;
+                etc_trcae_gui_update_time('flag_redraw',0);
             end;
             
         end;
@@ -1083,7 +1084,7 @@ switch lower(param)
         global etc_trace_obj;
         if(~isempty(etc_trace_obj))
             if(isvalid(etc_trace_obj.fig_trace))
-                etc_trace_handle('bd','time_idx',etc_render_fsbrain.overlay_stc_timeVec_idx);
+                %etc_trace_handle('bd','time_idx',etc_render_fsbrain.overlay_stc_timeVec_idx);
             end;
         end;
 end;

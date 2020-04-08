@@ -73,68 +73,80 @@ end;
 d=dir(sprintf('%s',getenv('SUBJECTS_DIR')));
 str={};
 count=1;
-for idx=1:length(d)
-    if(~strcmp(d(idx).name,'.'))
+if(~isempty(d))
+    for idx=1:length(d)
         if(~strcmp(d(idx).name,'.'))
-            if(d(idx).name(1)~='.')
-                str{count}=d(idx).name;
-                if(strcmp(str{count},etc_render_fsbrain.subject))
-                    subject_idx=count;
-                end;
-                count=count+1;
-            end;
-        end;
-    end;
-end;
-set(handles.listbox_subject,'string',str);
-set(handles.listbox_subject,'value',subject_idx);
-guidata(hObject, handles);
-
-
-d=dir(sprintf('%s/%s/mri',getenv('SUBJECTS_DIR'),etc_render_fsbrain.subject));
-str={};
-count=1;
-vol_idx=[];
-for idx=1:length(d)
-    if(d(idx).name(1)~='.')
-        str{count}=d(idx).name;
-        if(isfield(etc_render_fsbrain,'vol'))
-            if(~isempty(etc_render_fsbrain.vol))
-                [dummy,ff,stem]=fileparts(etc_render_fsbrain.vol.fspec);
-                if(strcmp(str{count},sprintf('%s%s',ff,stem)))
-                    vol_idx=count;
+            if(~strcmp(d(idx).name,'.'))
+                if(d(idx).name(1)~='.')
+                    str{count}=d(idx).name;
+                    if(strcmp(str{count},etc_render_fsbrain.subject))
+                        subject_idx=count;
+                    end;
+                    count=count+1;
                 end;
             end;
         end;
-        count=count+1;
     end;
+    set(handles.listbox_subject,'string',str);
+    set(handles.listbox_subject,'value',subject_idx);
+    guidata(hObject, handles);
 end;
-set(handles.listbox_vol,'string',str);
-if(~isempty(vol_idx))
-    set(handles.listbox_vol,'value',vol_idx);
-end;
-guidata(hObject, handles);
 
-d=dir(sprintf('%s/%s/surf',getenv('SUBJECTS_DIR'),etc_render_fsbrain.subject));
-str={};
-count=1;
-for idx=1:length(d)
-    if(~strcmp(d(idx).name,'.'))
-        if(~strcmp(d(idx).name,'.'))
-            if(d(idx).name(1)~='.')
-                str{count}=d(idx).name;
-                if(strcmp(str{count},sprintf('%s.%s',etc_render_fsbrain.hemi,etc_render_fsbrain.surf)))
-                    surf_idx=count;
+if(isfield(etc_render_fsbrain,'subject'))
+    if(~isempty(etc_render_fsbrain.subject))
+        d=dir(sprintf('%s/%s/mri',getenv('SUBJECTS_DIR'),etc_render_fsbrain.subject));
+        str={};
+        count=1;
+        vol_idx=[];
+        if(~isempty(d))
+            for idx=1:length(d)
+                if(d(idx).name(1)~='.')
+                    str{count}=d(idx).name;
+                    if(isfield(etc_render_fsbrain,'vol'))
+                        if(~isempty(etc_render_fsbrain.vol))
+                            [dummy,ff,stem]=fileparts(etc_render_fsbrain.vol.fspec);
+                            if(strcmp(str{count},sprintf('%s%s',ff,stem)))
+                                vol_idx=count;
+                            end;
+                        end;
+                    end;
+                    count=count+1;
                 end;
-                count=count+1;
             end;
+            set(handles.listbox_vol,'string',str);
+            if(~isempty(vol_idx))
+                set(handles.listbox_vol,'value',vol_idx);
+            end;
+            guidata(hObject, handles);
         end;
     end;
 end;
-set(handles.listbox_surf,'string',str);
-set(handles.listbox_surf,'value',surf_idx);
-guidata(hObject, handles);
 
+if(isfield(etc_render_fsbrain,'subject'))
+    if(~isempty(etc_render_fsbrain.subject))
+        d=dir(sprintf('%s/%s/surf',getenv('SUBJECTS_DIR'),etc_render_fsbrain.subject));
+        str={};
+        count=1;
+        if(~isempty(d))
+            for idx=1:length(d)
+                if(~strcmp(d(idx).name,'.'))
+                    if(~strcmp(d(idx).name,'.'))
+                        if(d(idx).name(1)~='.')
+                            str{count}=d(idx).name;
+                            if(strcmp(str{count},sprintf('%s.%s',etc_render_fsbrain.hemi,etc_render_fsbrain.surf)))
+                                surf_idx=count;
+                            end;
+                            count=count+1;
+                        end;
+                    end;
+                end;
+            end;
+            set(handles.listbox_surf,'string',str);
+            set(handles.listbox_surf,'value',surf_idx);
+            guidata(hObject, handles);
+        end;
+    end;
+end;
 
 % --- Outputs from this function are returned to the command line.
 function varargout = etc_render_fsbrain_subject_OutputFcn(hObject, eventdata, handles) 

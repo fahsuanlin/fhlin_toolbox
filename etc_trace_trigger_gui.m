@@ -22,7 +22,7 @@ function varargout = etc_trace_trigger_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_trigger_gui
 
-% Last Modified by GUIDE v2.5 07-Apr-2020 17:45:20
+% Last Modified by GUIDE v2.5 07-Apr-2020 23:21:05
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -182,6 +182,10 @@ IndexC = strfind(all_trigger,etc_trace_obj.trigger_now);
 Index = find(not(cellfun('isempty',IndexC)));
 set(obj_listbox_trigger,'Value',Index);
 
+hObject=findobj('tag','edit_trigger_time_idx');
+set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
+hObject=findobj('tag','edit_trigger_time');
+set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
 
 %
 % etc_trace_obj.data
@@ -260,6 +264,11 @@ all_trigger=unique(all_trigger);
 IndexC = strfind(all_trigger,etc_trace_obj.trigger_now);
 Index = find(not(cellfun('isempty',IndexC)));
 set(obj_listbox_trigger,'Value',Index);
+
+hObject=findobj('tag','edit_trigger_time_idx');
+set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
+hObject=findobj('tag','edit_trigger_time');
+set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
 
 
 %
@@ -685,11 +694,64 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
 end;
 
 
-% --- Executes on button press in button_trigger_load.
-function button_trigger_load_Callback(hObject, eventdata, handles)
-% hObject    handle to button_trigger_load (see GCBO)
+% --- Executes on button press in button_trigger_loadfile.
+function button_trigger_loadfile_Callback(hObject, eventdata, handles)
+% hObject    handle to button_trigger_loadfile (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+
+[filename, pathname, filterindex] = uigetfile(fullfile(pwd,'*.mat'),'select a trigger matlab data file...');
+tmp=load(filename);
+                
+fn=fieldnames(tmp);
+
+
+fprintf('load a variable with fields ''time'' and ''event''\n');
+
+[indx,tf] = listdlg('PromptString','Select a variable...',...
+    'SelectionMode','single',...
+    'ListString',fn);
+if(indx)
+    try
+        var=fn{indx};
+        evalin('base',sprintf('global etc_trace_obj; if(isfield(%s,''time'')&&isfield(%s,''event'')) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var,var));
+        fprintf('Trying to load variable [%s] as the trigger...',var);
+        if(etc_trace_obj.tmp)
+            %evalin('base',sprintf('global etc_render_fsbrain; etc_render_fsbrain.aux_point_name=%s;',var));
+            evalin('base',sprintf('etc_trace_obj.trigger.time=%s.time; etc_trace_obj.trigger.event=%s.event;',var,var));
+
+            fprintf('Done!\n');
+        else
+            fprintf('Rejected!\n');
+        end;
+        
+    catch ME
+    end;
+end;
+
+if(etc_trace_obj.tmp)
+    
+    %update list boxes
+    str=[];
+    for i=1:length(etc_trace_obj.trigger.time)
+        str{i}=sprintf('%d',etc_trace_obj.trigger.time(i));
+    end;
+    set(handles.listbox_time_idx,'string',str);
+    set(handles.listbox_time_idx,'Value',1);
+    
+    str=[];
+    for i=1:length(etc_trace_obj.trigger.time)
+        str{i}=sprintf('%1.3f',(etc_trace_obj.trigger.time(i)-1)./etc_trace_obj.fs+etc_trace_obj.time_begin);
+    end;
+    set(handles.listbox_time,'string',str);
+    set(handles.listbox_time,'Value',1);
+    
+    set(handles.listbox_class,'string',etc_trace_obj.trigger.event);
+    set(handles.listbox_class,'Value',1);
+end;
+
 
 
 % --- Executes on button press in button_trigger_save.
@@ -698,6 +760,17 @@ function button_trigger_save_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+global etc_trace_obj;
+
+[file, path] = uiputfile({'*.mat'});
+if isequal(file,0) || isequal(path,0)
+    
+else
+    fn=fullfile(path,file);
+    fprintf('saving trigger as [%s]...\n',fullfile(path,file));
+    trigger=etc_trace_obj.trigger;
+    save(fullfile(path,file),'trigger');
+end
 
 % --- Executes on selection change in listbox_time.
 function listbox_time_Callback(hObject, eventdata, handles)
@@ -726,11 +799,11 @@ contents = cellstr(get(obj_listbox_class,'String'));
 etc_trace_obj.trigger_now=contents{selected_value};
 
 
-hObject=findobj('tag','edit_trigger_time_idx');
+hObject=findobj('tag','edit_local_trigger_time_idx');
 set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
-hObject=findobj('tag','edit_trigger_time');
+hObject=findobj('tag','edit_local_trigger_time');
 set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
-hObject=findobj('tag','edit_trigger_class');
+hObject=findobj('tag','edit_local_trigger_class');
 set(hObject,'String',etc_trace_obj.trigger_now);
 
 %update trigger info in the trace window
@@ -742,6 +815,11 @@ all_trigger=unique(all_trigger);
 IndexC = strfind(all_trigger,etc_trace_obj.trigger_now);
 Index = find(not(cellfun('isempty',IndexC)));
 set(obj_listbox_trigger,'Value',Index);
+
+hObject=findobj('tag','edit_trigger_time_idx');
+set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
+hObject=findobj('tag','edit_trigger_time');
+set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
 
 
 %
@@ -935,4 +1013,212 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
         catch ME
         end;
     end;
+end;
+
+
+% --- Executes on button press in pushbutton_listbox_time_idx.
+function pushbutton_listbox_time_idx_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_listbox_time_idx (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+
+if(~isempty(etc_trace_obj.trigger))
+    if(~isempty(etc_trace_obj.trigger.time))
+        
+        obj_listbox_time=findobj('tag','listbox_time');
+        obj_listbox_time_idx=findobj('tag','listbox_time_idx');
+        obj_listbox_class=findobj('tag','listbox_class');
+        
+        all_trigger=get(obj_listbox_class,'String');
+        
+        contents = cellstr(get(obj_listbox_time,'String'));
+        all_time=cellfun(@str2double,contents);
+        
+        contents = cellstr(get(obj_listbox_time_idx,'String'));
+        all_time_idx=cellfun(@str2double,contents);
+        
+        
+        [dummy,idx]=sort(all_time_idx);
+        
+        all_trigger=all_trigger(idx);
+        all_time=all_time(idx);
+        all_time_idx=all_time_idx(idx);
+        
+        etc_trace_obj.trigger.time=all_time_idx;
+        etc_trace_obj.trigger.event=all_trigger;
+        
+        %update time/class listboxes
+        str=[];
+        for i=1:length(etc_trace_obj.trigger.time)
+            str{i}=sprintf('%d',etc_trace_obj.trigger.time(i));
+        end;
+        set(handles.listbox_time_idx,'string',str);
+        str=[];
+        for i=1:length(etc_trace_obj.trigger.time)
+            str{i}=sprintf('%1.3f',(etc_trace_obj.trigger.time(i)-1)./etc_trace_obj.fs+etc_trace_obj.time_begin);
+        end;
+        set(handles.listbox_time,'string',str);
+        set(handles.listbox_class,'string',etc_trace_obj.trigger.event);
+        
+        
+    end;
+end;
+
+
+% --- Executes on button press in pushbutton_listbox_time.
+function pushbutton_listbox_time_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_listbox_time (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+
+if(~isempty(etc_trace_obj.trigger))
+    if(~isempty(etc_trace_obj.trigger.time))
+        
+        obj_listbox_time=findobj('tag','listbox_time');
+        obj_listbox_time_idx=findobj('tag','listbox_time_idx');
+        obj_listbox_class=findobj('tag','listbox_class');
+        
+        all_trigger=get(obj_listbox_class,'String');
+        
+        contents = cellstr(get(obj_listbox_time,'String'));
+        all_time=cellfun(@str2double,contents);
+        
+        contents = cellstr(get(obj_listbox_time_idx,'String'));
+        all_time_idx=cellfun(@str2double,contents);
+        
+        
+        [dummy,idx]=sort(all_time);
+        
+        all_trigger=all_trigger(idx);
+        all_time=all_time(idx);
+        all_time_idx=all_time_idx(idx);
+        
+        etc_trace_obj.trigger.time=all_time_idx;
+        etc_trace_obj.trigger.event=all_trigger;
+        
+        %update time/class listboxes
+        str=[];
+        for i=1:length(etc_trace_obj.trigger.time)
+            str{i}=sprintf('%d',etc_trace_obj.trigger.time(i));
+        end;
+        set(handles.listbox_time_idx,'string',str);
+        str=[];
+        for i=1:length(etc_trace_obj.trigger.time)
+            str{i}=sprintf('%1.3f',(etc_trace_obj.trigger.time(i)-1)./etc_trace_obj.fs+etc_trace_obj.time_begin);
+        end;
+        set(handles.listbox_time,'string',str);
+        set(handles.listbox_class,'string',etc_trace_obj.trigger.event);
+        
+        
+    end;
+end;
+
+
+% --- Executes on button press in pushbutton_listbox_class.
+function pushbutton_listbox_class_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_listbox_class (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+
+if(~isempty(etc_trace_obj.trigger))
+    if(~isempty(etc_trace_obj.trigger.time))
+        
+        obj_listbox_time=findobj('tag','listbox_time');
+        obj_listbox_time_idx=findobj('tag','listbox_time_idx');
+        obj_listbox_class=findobj('tag','listbox_class');
+        
+        all_trigger=get(obj_listbox_class,'String');
+        
+        contents = cellstr(get(obj_listbox_time,'String'));
+        all_time=cellfun(@str2double,contents);
+        
+        contents = cellstr(get(obj_listbox_time_idx,'String'));
+        all_time_idx=cellfun(@str2double,contents);
+        
+        
+        [dummy,idx]=sort(all_trigger);
+        
+        all_trigger=all_trigger(idx);
+        all_time=all_time(idx);
+        all_time_idx=all_time_idx(idx);
+        
+        etc_trace_obj.trigger.time=all_time_idx;
+        etc_trace_obj.trigger.event=all_trigger;
+        
+        %update time/class listboxes
+        str=[];
+        for i=1:length(etc_trace_obj.trigger.time)
+            str{i}=sprintf('%d',etc_trace_obj.trigger.time(i));
+        end;
+        set(handles.listbox_time_idx,'string',str);
+        str=[];
+        for i=1:length(etc_trace_obj.trigger.time)
+            str{i}=sprintf('%1.3f',(etc_trace_obj.trigger.time(i)-1)./etc_trace_obj.fs+etc_trace_obj.time_begin);
+        end;
+        set(handles.listbox_time,'string',str);
+        set(handles.listbox_class,'string',etc_trace_obj.trigger.event);
+        
+        
+    end;
+end;
+
+
+% --- Executes on button press in button_trigger_loadvar.
+function button_trigger_loadvar_Callback(hObject, eventdata, handles)
+% hObject    handle to button_trigger_loadvar (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+v = evalin('base', 'whos');
+fn={v.name};
+
+fprintf('load a variable with fields ''time'' and ''event''\n');
+
+[indx,tf] = listdlg('PromptString','Select a variable...',...
+    'SelectionMode','single',...
+    'ListString',fn);
+if(indx)
+    try
+        var=fn{indx};
+        evalin('base',sprintf('global etc_trace_obj; if(isfield(%s,''time'')&&isfield(%s,''event'')) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var,var));
+        fprintf('Trying to load variable [%s] as the trigger...',var);
+        if(etc_trace_obj.tmp)
+            %evalin('base',sprintf('global etc_render_fsbrain; etc_render_fsbrain.aux_point_name=%s;',var));
+            evalin('base',sprintf('etc_trace_obj.trigger.time=%s.time; etc_trace_obj.trigger.event=%s.event;',var,var));
+
+            fprintf('Done!\n');
+        else
+            fprintf('Rejected!\n');
+        end;
+        
+    catch ME
+    end;
+end;
+
+if(etc_trace_obj.tmp)
+    
+    %update list boxes
+    str=[];
+    for i=1:length(etc_trace_obj.trigger.time)
+        str{i}=sprintf('%d',etc_trace_obj.trigger.time(i));
+    end;
+    set(handles.listbox_time_idx,'string',str);
+    set(handles.listbox_time_idx,'Value',1);
+    
+    str=[];
+    for i=1:length(etc_trace_obj.trigger.time)
+        str{i}=sprintf('%1.3f',(etc_trace_obj.trigger.time(i)-1)./etc_trace_obj.fs+etc_trace_obj.time_begin);
+    end;
+    set(handles.listbox_time,'string',str);
+    set(handles.listbox_time,'Value',1);
+    
+    set(handles.listbox_class,'string',etc_trace_obj.trigger.event);
+    set(handles.listbox_class,'Value',1);
 end;

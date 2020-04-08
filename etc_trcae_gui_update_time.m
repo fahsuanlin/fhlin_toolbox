@@ -13,13 +13,15 @@ global etc_trace_obj;
 % etc_trace_obj.flag_time_window_auto_adjust=1;
 %
 
+flag_redraw=1;
+
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
     
     switch lower(option)
-        case ''
-            
+        case 'flag_redraw'
+            flag_redraw=option_value;
         otherwise
             fprintf('unknown option [%s].error!\n',option);
     end;
@@ -102,8 +104,9 @@ try
         set(hObject,'String',sprintf('%d',etc_trace_obj.time_select_idx));
     end;
         
-    
-    etc_trace_handle('redraw');
+    if(flag_redraw)
+        etc_trace_handle('redraw');
+    end;
     etc_trace_handle('bd','time_idx',etc_trace_obj.time_select_idx);
 catch ME
 end;
