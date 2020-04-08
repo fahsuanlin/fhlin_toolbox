@@ -34,13 +34,53 @@ switch lower(param)
     case 'redraw'
         redraw;
     case 'del'
+        
         try
             delete(etc_trace_obj.fig_topology);
+        catch ME
+            if(isfield(etc_trace_obj,'fig_topology'))
+                close(etc_trace_obj.fig_topology,'force');
+            else
+                close(gcf,'force');
+            end;
+        end;
+        try
             delete(etc_trace_obj.fig_trigger);
+        catch ME
+            if(isfield(etc_trace_obj,'fig_trigger'))
+                close(etc_trace_obj.fig_trigger,'force');
+            else
+                close(gcf,'force');
+            end;
+        end; 
+        try
+            delete(etc_trace_obj.fig_config);
+        catch ME
+            if(isfield(etc_trace_obj,'fig_config'))
+                close(etc_trace_obj.fig_config,'force');
+            else
+                close(gcf,'force');
+            end;
+        end; 
+        try
             delete(etc_trace_obj.fig_montage);
+        catch ME
+            if(isfield(etc_trace_obj,'fig_montage'))
+                close(etc_trace_obj.fig_montage,'force');
+            else
+                close(gcf,'force');
+            end;
+        end;
+        try
             delete(etc_trace_obj.fig_trace);
         catch ME
-        end;
+            if(isfield(etc_trace_obj,'fig_trace'))
+                close(etc_trace_obj.fig_trace,'force');
+            else
+                close(gcf,'force');
+            end;
+        end;        
+        
     case 'kb'
         switch(cc)
             case 'h'
@@ -594,8 +634,13 @@ if(isfield(etc_trace_obj,'aux_data'))
             
             %%montage
             %tmp=etc_trace_obj.M*tmp;
-            
-            tmp=etc_trace_obj.aux_data{ii}(:,etc_trace_obj.time_begin_idx:etc_trace_obj.time_end_idx);
+                       
+            if((etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1)<=size(etc_trace_obj.data,2))
+                tmp=etc_trace_obj.aux_data{ii}(:,etc_trace_obj.time_window_begin_idx:etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1);
+            else
+                tmp=etc_trace_obj.aux_data{ii};
+            end;
+
             tmp=cat(1,tmp,ones(1,size(tmp,2)));
             
             %select channels;
@@ -621,7 +666,7 @@ if(isfield(etc_trace_obj,'aux_data'))
             if(etc_trace_obj.config_aux_trace_flag)
                 %hh=plot(etc_trace_obj.axis_trace, tmp,'color',etc_trace_obj.config_aux_trace_color);
                 hh=plot(etc_trace_obj.axis_trace, tmp,'color',cc(mod(ii-1,7)+1,:));
-                set(hh,'linewidth',etc_trace_obj.config_aux_trace_width);
+                set(hh,'linewidth',etc_trace_obj.config_aux_trace_width,'color',etc_trace_obj.config_aux_trace_color);
             end;
             hold(etc_trace_obj.axis_trace,'on');
         end;

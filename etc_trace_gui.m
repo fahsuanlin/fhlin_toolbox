@@ -85,6 +85,19 @@ set(handles.listbox_time_duration,'string',{duration(:)});
 set(handles.listbox_time_duration,'value',idx); %default: 5 s
 guidata(hObject, handles);
 
+if(isfield(etc_trace_obj,'trigger_time_idx'))
+    hObject=findobj('tag','edit_trigger_time_idx');
+    set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
+    hObject=findobj('tag','edit_trigger_time');
+    set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+else
+    hObject=findobj('tag','edit_trigger_time_idx');
+    set(hObject,'String','');
+    hObject=findobj('tag','edit_trigger_time');
+    set(hObject,'String','');    
+end;
+
+
 
             %create a context menu....not successful....
             cm = uicontextmenu;

@@ -178,8 +178,10 @@ all_trigger=get(obj_listbox_class,'String');
 obj_listbox_trigger=findobj('tag','listbox_trigger');
 set(obj_listbox_trigger,'string',unique(all_trigger));
 all_trigger=unique(all_trigger);
-IndexC = strfind(all_trigger,etc_trace_obj.trigger_now);
-Index = find(not(cellfun('isempty',IndexC)));
+%IndexC = strfind(all_trigger,etc_trace_obj.trigger_now);
+%Index = find(not(cellfun('isempty',IndexC)));
+IndexC = strcmp(all_trigger,etc_trace_obj.trigger_now);
+Index = find(IndexC);
 set(obj_listbox_trigger,'Value',Index);
 
 hObject=findobj('tag','edit_trigger_time_idx');
@@ -261,8 +263,10 @@ all_trigger=get(obj_listbox_class,'String');
 obj_listbox_trigger=findobj('tag','listbox_trigger');
 set(obj_listbox_trigger,'string',unique(all_trigger));
 all_trigger=unique(all_trigger);
-IndexC = strfind(all_trigger,etc_trace_obj.trigger_now);
-Index = find(not(cellfun('isempty',IndexC)));
+%IndexC = strfind(all_trigger,etc_trace_obj.trigger_now);
+%Index = find(not(cellfun('isempty',IndexC)));
+IndexC = strcmp(all_trigger,etc_trace_obj.trigger_now);
+Index = find(IndexC);
 set(obj_listbox_trigger,'Value',Index);
 
 hObject=findobj('tag','edit_trigger_time_idx');
@@ -539,8 +543,10 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
                 obj_listbox_trigger=findobj('tag','listbox_trigger');
                 set(obj_listbox_trigger,'string',unique(all_trigger));
                 all_trigger=unique(all_trigger);
-                IndexC = strfind(all_trigger,etc_trace_obj.trigger_now);
-                Index = find(not(cellfun('isempty',IndexC)));
+                %IndexC = strfind(all_trigger,etc_trace_obj.trigger_now);
+                %Index = find(not(cellfun('isempty',IndexC)));
+                IndexC = strcmp(all_trigger,etc_trace_obj.trigger_now);
+                Index = find(IndexC);
                 set(obj_listbox_trigger,'Value',Index);
                 
                 hObject=findobj('tag','edit_trigger_time_idx');
@@ -658,8 +664,10 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
                 obj_listbox_trigger=findobj('tag','listbox_trigger');
                 set(obj_listbox_trigger,'string',unique(all_trigger));
                 all_trigger=unique(all_trigger);
-                IndexC = strfind(all_trigger,etc_trace_obj.trigger_now);
-                Index = find(not(cellfun('isempty',IndexC)));
+                %IndexC = strfind(all_trigger,etc_trace_obj.trigger_now);
+                %Index = find(not(cellfun('isempty',IndexC)));
+                IndexC = strcmp(all_trigger,etc_trace_obj.trigger_now);
+                Index = find(IndexC);
                 set(obj_listbox_trigger,'Value',Index);
                 
                 hObject=findobj('tag','edit_trigger_time_idx');
@@ -812,8 +820,10 @@ all_trigger=get(obj_listbox_class,'String');
 obj_listbox_trigger=findobj('tag','listbox_trigger');
 set(obj_listbox_trigger,'string',unique(all_trigger));
 all_trigger=unique(all_trigger);
-IndexC = strfind(all_trigger,etc_trace_obj.trigger_now);
-Index = find(not(cellfun('isempty',IndexC)));
+%IndexC = strfind(all_trigger,etc_trace_obj.trigger_now);
+%Index = find(not(cellfun('isempty',IndexC)));
+IndexC = strcmp(all_trigger,etc_trace_obj.trigger_now);
+Index = find(IndexC);
 set(obj_listbox_trigger,'Value',Index);
 
 hObject=findobj('tag','edit_trigger_time_idx');
