@@ -129,6 +129,8 @@ cluster_file={};
 %etc
 alpha=1;
 view_angle=[]; 
+lim=[];
+camposition=[];
 
 flag_redraw=0;
 flag_camlight=1;
@@ -271,6 +273,10 @@ for idx=1:length(varargin)/2
             electrode_update_contact_view_flag=option_value;
         case 'view_angle'
             view_angle=option_value;
+        case 'lim'
+            lim=option_value;
+        case 'camposition'
+            camposition=option_value;
         case 'bg_color'
             bg_color=option_value;
         case 'topo_label'
@@ -784,16 +790,26 @@ end;
 % main routine for rendering...
 %%%%%%%%%%%%%%%%%%%%%%%%
 h=patch('Faces',faces+1,'Vertices',vertex_coords,'FaceVertexCData',fvdata,'facealpha',alpha,'CDataMapping','direct','facecolor','interp','edgecolor','none');   
+material dull;
+
+axis off vis3d equal;
 
 if(~flag_redraw)
-    xmin=min(vertex_coords(:,1));
-    xmax=max(vertex_coords(:,1));
-    ymin=min(vertex_coords(:,2));
-    ymax=max(vertex_coords(:,2));
-    zmin=min(vertex_coords(:,3));
-    zmax=max(vertex_coords(:,3));
+    if(isempty(lim))
+        xmin=min(vertex_coords(:,1));
+        xmax=max(vertex_coords(:,1));
+        ymin=min(vertex_coords(:,2));
+        ymax=max(vertex_coords(:,2));
+        zmin=min(vertex_coords(:,3));
+        zmax=max(vertex_coords(:,3));
+        lim=[xlim(:)' ylim(:)' zlim(:)'];
+    else
+        xlim=lim(1:2);
+        ylim=lim(3:4);
+        zlim=lim(5:6);
+    end;
     set(gca,'xlim',[xmin xmax],'ylim',[ymin ymax],'zlim',[zmin zmax]);
-    axis off vis3d equal tight;
+    
     if(~isempty(overlay_threshold))
         set(gca,'climmode','manual','clim',overlay_threshold);
     end;
@@ -801,12 +817,16 @@ if(~flag_redraw)
     
     view(view_angle(1), view_angle(2));
     
-    cp=campos;
-    cp=cp./norm(cp);
+    if(isempty(camposition))
+        cp=camposition;
+        cp=cp./norm(cp);
+        
+        campos(1300.*cp);
+        camposition=1300.*cp;
+    else
+        campos(camposition);
+    end;
     
-    campos(1300.*cp);
-    
-    material dull;
     if(flag_camlight)
        camlight(-90,0);
        camlight(90,0);    
@@ -866,6 +886,8 @@ etc_render_fsbrain.ovs=ovs;
 %etc_render_fsbrain.curv_hemi=curv_hemi;
 
 etc_render_fsbrain.view_angle=view_angle;
+etc_render_fsbrain.lim=lim;
+etc_render_fsbrain.camposition=camposition;
 etc_render_fsbrain.bg_color=bg_color;
 etc_render_fsbrain.curv_pos_color=curv_pos_color;
 etc_render_fsbrain.curv_neg_color=curv_neg_color;

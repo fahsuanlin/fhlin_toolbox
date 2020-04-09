@@ -508,8 +508,10 @@ if(isempty(etc_trace_obj))
     return;
 end;
 
-IndexC = strfind(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
-trigger_match_idx = find(not(cellfun('isempty',IndexC)));
+%IndexC = strfind(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
+%trigger_match_idx = find(not(cellfun('isempty',IndexC)));
+IndexC = strcmp(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
+trigger_match_idx = find(IndexC);
 trigger_match_time_idx=etc_trace_obj.trigger.time(trigger_match_idx);
 trigger_match_time_idx=sort(trigger_match_time_idx);
 fprintf('[%d] trigger {%s} found at time index [%s].\n',length(trigger_match_idx),etc_trace_obj.trigger_now,mat2str(trigger_match_time_idx));
@@ -539,8 +541,10 @@ hObject=findobj('tag','edit_trigger_time_idx');
 set(hObject,'String',sprintf('%d',trigger_match_time_idx(idx)));
 
 %update even/trigger window
-for ii=1:length(etc_trace_obj.trigger.time)
-    if((etc_trace_obj.trigger.time(ii)==trigger_match_time_idx(idx))&&(strcmp(etc_trace_obj.trigger.event{ii},etc_trace_obj.trigger_now)))
+hObject=findobj('tag','listbox_time_idx');
+t_idx=cellfun(@str2num,hObject.String);
+for ii=1:length(t_idx)
+    if((t_idx(ii)==trigger_match_time_idx(idx))&&(strcmp(etc_trace_obj.trigger.event{ii},etc_trace_obj.trigger_now)))
         break;
     end;
 end;
@@ -578,8 +582,10 @@ if(isempty(etc_trace_obj))
     return;
 end;
 
-IndexC = strfind(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
-trigger_match_idx = find(not(cellfun('isempty',IndexC)));
+%IndexC = strfind(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
+%trigger_match_idx = find(not(cellfun('isempty',IndexC)));
+IndexC = strcmp(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
+trigger_match_idx = find(IndexC);
 trigger_match_time_idx=etc_trace_obj.trigger.time(trigger_match_idx);
 trigger_match_time_idx=sort(trigger_match_time_idx);
 fprintf('[%d] trigger {%s} found at time index %s.\n',length(trigger_match_idx),etc_trace_obj.trigger_now,mat2str(trigger_match_time_idx));
@@ -608,8 +614,10 @@ hObject=findobj('tag','edit_trigger_time_idx');
 set(hObject,'String',sprintf('%d',trigger_match_time_idx(idx)));
 
 %update even/trigger window
-for ii=1:length(etc_trace_obj.trigger.time)
-    if((etc_trace_obj.trigger.time(ii)==trigger_match_time_idx(idx))&&(strcmp(etc_trace_obj.trigger.event{ii},etc_trace_obj.trigger_now)))
+hObject=findobj('tag','listbox_time_idx');
+t_idx=cellfun(@str2num,hObject.String);
+for ii=1:length(t_idx)
+    if((t_idx(ii)==trigger_match_time_idx(idx))&&(strcmp(etc_trace_obj.trigger.event{ii},etc_trace_obj.trigger_now)))
         break;
     end;
 end;

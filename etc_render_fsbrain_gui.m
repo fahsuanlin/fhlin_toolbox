@@ -890,11 +890,13 @@ etc_render_fsbrain.flag_overlay_truncate_neg=get(hObject,'Value');
 etc_render_fsbrain.overlay_value_flag_neg=~etc_render_fsbrain.flag_overlay_truncate_neg;
 
 
+etc_render_fsbrain_handle('kb','cs','cs'); %update colorbar
+if(~isempty(etc_render_fsbrain.fig_vol))
+    etc_render_fsbrain_handle('kb','cv','cv'); %update colorbar
+end;
 etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
-etc_render_fsbrain_handle('kb','cv','cv'); %update colorbar
 
 etc_render_fsbrain_handle('redraw');
-etc_render_fsbrain_handle('kb','cs','cs'); %update colorbar
 
 
 % --- Executes on button press in checkbox_overlay_truncate_pos.
@@ -910,8 +912,9 @@ etc_render_fsbrain.flag_overlay_truncate_pos=get(hObject,'Value');
 etc_render_fsbrain.overlay_value_flag_pos=~etc_render_fsbrain.flag_overlay_truncate_pos;
 
 etc_render_fsbrain_handle('kb','cs','cs'); %update colorbar
-etc_render_fsbrain_handle('kb','cv','cv'); %update colorbar
-
+if(~isempty(etc_render_fsbrain.fig_vol))
+    etc_render_fsbrain_handle('kb','cv','cv'); %update colorbar
+end;
 etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
 
 etc_render_fsbrain_handle('redraw');

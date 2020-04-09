@@ -186,10 +186,12 @@ switch lower(param)
                                                 
                                             else
                                                 etc_trace_obj.fig_topology=figure;
+                                                set(etc_trace_obj.fig_topology,'CloseRequestFcn','etc_render_fsbrain_handle(''del'')'); 
                                                 flag_camlight=1;
                                             end;
                                         else
                                             etc_trace_obj.fig_topology=figure;
+                                            set(etc_trace_obj.fig_topology,'CloseRequestFcn','etc_render_fsbrain_handle(''del'')'); 
                                             flag_camlight=1;
                                         end;
                                         
@@ -209,8 +211,10 @@ switch lower(param)
                                     end;
                                 end;
                             else
-                                if(~isempty(etc_render_fsbrain))
-                                    etc_trace_obj.fig_topology=etc_render_fsbrain.fig_brain;
+                                if(isfield(etc_render_fsbrain,'fig_brain'))
+                                    if(isvalid(etc_render_fsbrain.fig_brain))
+                                        etc_trace_obj.fig_topology=etc_render_fsbrain.fig_brain;
+                                    end;
                                 end;
                                 if(isfield(etc_trace_obj,'fig_topology'))
                                     if(isvalid(etc_trace_obj.fig_topology))
@@ -218,24 +222,31 @@ switch lower(param)
                                         flag_camlight=0;
                                     else
                                         etc_trace_obj.fig_topology=figure;
+                                        set(etc_trace_obj.fig_topology,'CloseRequestFcn','etc_render_fsbrain_handle(''del'')'); 
                                         flag_camlight=1;
                                     end;
                                 else
                                     etc_trace_obj.fig_topology=figure;
+                                    set(etc_trace_obj.fig_topology,'CloseRequestFcn','etc_render_fsbrain_handle(''del'')'); 
                                     flag_camlight=1;
                                 end;
                                 
-                                if(isempty(etc_render_fsbrain))
-                                    etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',10,'topo_threshold',[abs(diff(etc_trace_obj.ylim))/4 abs(diff(etc_trace_obj.ylim))/2 ],'flag_camlight',flag_camlight);
+                                if(isfield(etc_render_fsbrain,'overlay_stc'))
+                                    if(~isempty(etc_render_fsbrain.overlay_stc))
+                                        %delete(etc_render_fsbrain.click_point);
+                                        %delete(etc_render_fsbrain.click_vertex_point);
+                                        %delete(etc_render_fsbrain.click_overlay_vertex_point);
+                                        
+                                        %etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',etc_render_fsbrain.overlay_smooth,'topo_threshold',etc_render_fsbrain.overlay_threshold,'flag_camlight',flag_camlight,'view_angle',etc_render_fsbrain.view_angle);
+                                        etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_stc',etc_render_fsbrain.overlay_stc,'topo_stc_timeVec',etc_render_fsbrain.overlay_stc_timeVec,'topo_stc_timeVec_unit',etc_render_fsbrain.overlay_stc_timeVec_unit,'topo_stc_timeVec_idx',etc_render_fsbrain.overlay_stc_timeVec_idx,'topo_smooth',etc_render_fsbrain.overlay_smooth,'topo_threshold',etc_render_fsbrain.overlay_threshold,'flag_camlight',flag_camlight,'view_angle',etc_render_fsbrain.view_angle);
+                                        %etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',etc_render_fsbrain.overlay_smooth,'topo_threshold',etc_render_fsbrain.overlay_threshold,'flag_camlight',flag_camlight,'view_angle',etc_render_fsbrain.view_angle);
+                                    else
+                                        %etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',etc_render_fsbrain.overlay_smooth,'topo_threshold',etc_render_fsbrain.overlay_threshold,'flag_camlight',flag_camlight,'view_angle',etc_render_fsbrain.view_angle);
+                                        etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',10,'topo_threshold',[abs(diff(etc_trace_obj.ylim))/4 abs(diff(etc_trace_obj.ylim))/2 ],'flag_camlight',flag_camlight,'view_angle',etc_render_fsbrain.view_angle,'lim',etc_render_fsbrain.lim,'camposition',etc_render_fsbrain.camposition);
+                                    end;
                                 else
-                                    %delete(etc_render_fsbrain.click_point);
-                                    %delete(etc_render_fsbrain.click_vertex_point);
-                                    %delete(etc_render_fsbrain.click_overlay_vertex_point);
-                                    
-                                    %etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',etc_render_fsbrain.overlay_smooth,'topo_threshold',etc_render_fsbrain.overlay_threshold,'flag_camlight',flag_camlight,'view_angle',etc_render_fsbrain.view_angle);
-                                    etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_stc',etc_render_fsbrain.overlay_stc,'topo_stc_timeVec',etc_render_fsbrain.overlay_stc_timeVec,'topo_stc_timeVec_unit',etc_render_fsbrain.overlay_stc_timeVec_unit,'topo_stc_timeVec_idx',etc_render_fsbrain.overlay_stc_timeVec_idx,'topo_smooth',etc_render_fsbrain.overlay_smooth,'topo_threshold',etc_render_fsbrain.overlay_threshold,'flag_camlight',flag_camlight,'view_angle',etc_render_fsbrain.view_angle);
                                     %etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',etc_render_fsbrain.overlay_smooth,'topo_threshold',etc_render_fsbrain.overlay_threshold,'flag_camlight',flag_camlight,'view_angle',etc_render_fsbrain.view_angle);
-                                    
+                                    etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',10,'topo_threshold',[abs(diff(etc_trace_obj.ylim))/4 abs(diff(etc_trace_obj.ylim))/2 ],'flag_camlight',flag_camlight);
                                 end;
                             end;
                         catch ME
@@ -479,7 +490,7 @@ switch lower(param)
                     [aa bb]=view;
                     etc_render_fsbrain.view_angle=[aa bb];
                     
-                    if(isempty(etc_trace_obj.topo))
+                    if(isempty(etc_trace_obj.topo)) %create new topology figure;
                         [filename, pathname, filterindex] = uigetfile({'*.mat','topology Matlab file'}, 'Pick a topology definition file');
                         if(filename>0)
                             try
@@ -508,14 +519,17 @@ switch lower(param)
                             
                             global etc_render_fsbrain;
                             if(isempty(etc_render_fsbrain))
-                                etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',10,'topo_threshold',[abs(diff(etc_trace_obj.ylim))/4 abs(diff(etc_trace_obj.ylim))/2 ],'flag_camlight',flag_camlight);
+                                if(length(data(etc_trace_obj.topo.electrode_data_idx))==length(etc_trace_obj.topo.electrode_idx))
+                                    etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',10,'topo_threshold',[abs(diff(etc_trace_obj.ylim))/4 abs(diff(etc_trace_obj.ylim))/2 ],'flag_camlight',flag_camlight);
+                                end;
                             else
                                 try
                                     delete(etc_render_fsbrain.click_point);
                                     delete(etc_render_fsbrain.click_vertex_point);
                                     delete(etc_render_fsbrain.click_overlay_vertex_point);
-                                    
-                                    etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',etc_render_fsbrain.overlay_smooth,'topo_threshold',etc_render_fsbrain.overlay_threshold,'flag_camlight',flag_camlight,'view_angle',etc_render_fsbrain.view_angle);
+                                    if(length(data(etc_trace_obj.topo.electrode_data_idx))==length(etc_trace_obj.topo.electrode_idx))
+                                        etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',etc_render_fsbrain.overlay_smooth,'topo_threshold',etc_render_fsbrain.overlay_threshold,'flag_camlight',flag_camlight,'view_angle',etc_render_fsbrain.view_angle);
+                                    end;
                                 catch ME
                                 end;
                             end;
@@ -524,14 +538,18 @@ switch lower(param)
                     else
                         global etc_render_fsbrain;
                         if(isempty(etc_render_fsbrain))
-                            etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',10,'topo_threshold',[abs(diff(etc_trace_obj.ylim))/4 abs(diff(etc_trace_obj.ylim))/2 ],'flag_camlight',flag_camlight);
+                            if(length(data(etc_trace_obj.topo.electrode_data_idx))==length(etc_trace_obj.topo.electrode_idx))
+                                etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',10,'topo_threshold',[abs(diff(etc_trace_obj.ylim))/4 abs(diff(etc_trace_obj.ylim))/2 ],'flag_camlight',flag_camlight);
+                            end;
                         else
                             try
                                 delete(etc_render_fsbrain.click_point);
                                 delete(etc_render_fsbrain.click_vertex_point);
                                 delete(etc_render_fsbrain.click_overlay_vertex_point);
                                 
-                                etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',etc_render_fsbrain.overlay_smooth,'topo_threshold',etc_render_fsbrain.overlay_threshold,'flag_camlight',flag_camlight,'view_angle',etc_render_fsbrain.view_angle);
+                                etc_render_fsbrain.overlay_value=data(etc_trace_obj.topo.electrode_data_idx);
+                                etc_render_fsbrain_handle('redraw');
+                                
                             catch ME
                             end;
                         end;
@@ -575,7 +593,6 @@ switch lower(param)
                     
                     if(ishandle(etc_render_fsbrain.fig_gui))
                         set(findobj(etc_render_fsbrain.fig_gui,'tag','slider_timeVec'),'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
-                        
                         set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_timeVec'),'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
                         set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_timeVec'),'string',sprintf('%1.0f',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx)));
                     end;
@@ -873,10 +890,14 @@ global etc_render_fsbrain;
 %etc_render_fsbrain.click_overlay_vertex
 
 redraw;
-etc_render_fsbrain.flag_overlay_stc_surf=1;
-etc_render_fsbrain.flag_overlay_stc_vol=0;
-etc_render_fsbrain_handle('draw_stc');
 
+if(isfield(etc_render_fsbrain,'overlay_stc'))
+    if(~isempty(etc_render_fsbrain.overlay_stc))
+        etc_render_fsbrain.flag_overlay_stc_surf=1;
+        etc_render_fsbrain.flag_overlay_stc_vol=0;
+        etc_render_fsbrain_handle('draw_stc');
+    end;
+end;
 figure(etc_trace_obj.fig_trace);
 %etc_render_fsbrain.click_overlay_vertex
 %fprintf('----\n');

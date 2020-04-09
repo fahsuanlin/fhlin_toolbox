@@ -64,6 +64,19 @@ global etc_trace_obj;
 if(~isempty(etc_trace_obj.trigger))
     fprintf('events loaded...\n');
     
+    %convert trigger names from numbers/integers to strings
+    try
+        if(~iscell(etc_trace_obj.trigger.event))
+            ev=etc_trace_obj.trigger.event;
+            str={};
+            for idx=1:length(ev)
+                str{idx}=sprintf('%d',ev(idx));
+            end;
+            etc_trace_obj.trigger.event=str;
+        end;
+    catch ME
+    end;
+    
     %update time/class listboxes
     str=[];
     for i=1:length(etc_trace_obj.trigger.time)

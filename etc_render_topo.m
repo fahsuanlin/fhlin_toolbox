@@ -104,7 +104,9 @@ cluster_file={};
 
 %etc
 alpha=1;
-view_angle=[];
+view_angle=[]; 
+lim=[];
+camposition=[];
 
 % flag_redraw=0;
 % flag_camlight=1;
@@ -256,6 +258,10 @@ for idx=1:length(varargin)/2
             electrode_update_contact_view_flag=option_value;
         case 'view_angle'
             view_angle=option_value;
+        case 'lim'
+            lim=option_value;
+        case 'camposition'
+            camposition=option_value;
         case 'bg_color'
             bg_color=option_value;
         case 'label_vertex'
@@ -378,6 +384,13 @@ if(isempty(view_angle))
 end;
 view(view_angle(1), view_angle(2));
 
+if(~isempty(lim))
+    axis(lim);
+end;
+if(~isempty(camposition))
+    campos(camposition);
+end;
+
 hold on;
 [sx,sy,sz] = sphere(8);
 %sr=0.005;
@@ -471,6 +484,8 @@ etc_render_fsbrain.ovs=ovs;
 etc_render_fsbrain.overlay_value=topo_value;
 
 etc_render_fsbrain.view_angle=view_angle;
+etc_render_fsbrain.lim=lim;
+etc_render_fsbrain.camposition=camposition;
 etc_render_fsbrain.bg_color=bg_color;
 etc_render_fsbrain.curv_pos_color=[];
 etc_render_fsbrain.curv_neg_color=[];

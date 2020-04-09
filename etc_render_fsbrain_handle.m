@@ -112,6 +112,8 @@ switch lower(param)
                         etc_render_fsbrain.overlay_stc_hemi=etc_render_fsbrain.overlay_stc;
                         
                         etc_render_fsbrain.overlay_flag_render=1;
+                        etc_render_fsbrain.overlay_value_flag_pos=1;
+                        etc_render_fsbrain.overlay_value_flag_neg=1;
                     elseif(findstr(filename,'.w')) %w file
                         [ww,vv]=inverse_read_wfile(sprintf('%s/%s',pathname,filename));
                         if(findstr(filename,'-lh'))
@@ -124,6 +126,8 @@ switch lower(param)
                         etc_render_fsbrain.stc_hemi=hemi;
                         
                         etc_render_fsbrain.overlay_flag_render=1;
+                        etc_render_fsbrain.overlay_value_flag_pos=1;
+                        etc_render_fsbrain.overlay_value_flag_neg=1;
                         
                     end;
                     etc_render_fsbrain.overlay_Ds=[];
@@ -300,9 +304,8 @@ switch lower(param)
                         end;
                     end;
                     
-                    
+                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%                    
                     global etc_trace_obj;
-
                     if(isempty(etc_trace_obj))
                         etc_trace(etc_render_fsbrain.overlay_stc,'fs',fs,'ch_names',etc_render_fsbrain.aux_point_name,'aux_data',aux_data,'time_begin',time_begin,'trace_selected_idx',etc_render_fsbrain.click_overlay_vertex,'ylim',[-max(etc_render_fsbrain.overlay_threshold) max(etc_render_fsbrain.overlay_threshold)]);
                         %etc_trcae_gui_update_time;
@@ -310,9 +313,9 @@ switch lower(param)
                         etc_trace(etc_render_fsbrain.overlay_stc,'fs',fs,'ch_names',etc_render_fsbrain.aux_point_name,'aux_data',aux_data,'time_begin',time_begin,'trigger',etc_trace_obj.trigger,'time_select_idx',etc_render_fsbrain.overlay_stc_timeVec_idx,'trace_selected_idx', etc_render_fsbrain.click_overlay_vertex,'ylim',[-max(etc_render_fsbrain.overlay_threshold) max(etc_render_fsbrain.overlay_threshold)]);
                         %etc_trcae_gui_update_time;
                     end;
-                    %if(isvalid(etc_trace_obj.fig_trace))
-                    %    etc_trace_handle('bd','time_idx',etc_render_fsbrain.overlay_stc_timeVec_idx);
-                    %end;
+                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%                    
+                    
+
                     
                    
                     if(~isempty(etc_trace_obj))
@@ -790,17 +793,17 @@ switch lower(param)
             if(isfield(etc_render_fsbrain,'fig_subject'))
                 close(etc_render_fsbrain.fig_subject,'force');
             else
-                close(gcf,'force');
+                %close(gcf,'force');
             end;
         end;
         
-         try
+        try
             delete(etc_render_fsbrain.fig_sensor_gui);
         catch ME
             if(isfield(etc_render_fsbrain,'fig_sensor_gui'))
                 close(etc_render_fsbrain.fig_sensor_gui,'force');
             else
-                close(gcf,'force');
+                %close(gcf,'force');
             end;
         end;
         
@@ -810,7 +813,7 @@ switch lower(param)
             if(isfield(etc_render_fsbrain,'fig_register'))
                 close(etc_render_fsbrain.fig_register,'force');
             else
-                close(gcf,'force');
+                %close(gcf,'force');
             end;
         end;
         
@@ -820,7 +823,7 @@ switch lower(param)
             if(isfield(etc_render_fsbrain,'fig_stc'))
                 close(etc_render_fsbrain.fig_stc,'force');
             else
-                close(gcf,'force');
+                %close(gcf,'force');
             end;
         end;
         
@@ -830,7 +833,7 @@ switch lower(param)
             if(isfield(etc_render_fsbrain,'fig_coord_gui'))
                 close(etc_render_fsbrain.fig_coord_gui,'force');
             else
-                close(gcf,'force');
+                %close(gcf,'force');
             end;
         end;
         
@@ -840,7 +843,7 @@ switch lower(param)
             if(isfield(etc_render_fsbrain,'fig_label_gui'))
                 close(etc_render_fsbrain.fig_label_gui,'force');
             else
-                close(gcf,'force');
+                %close(gcf,'force');
             end;
         end;
         
@@ -850,7 +853,7 @@ switch lower(param)
             if(isfield(etc_render_fsbrain,'fig_electrode_gui'))
                 close(etc_render_fsbrain.fig_electrode_gui,'force');
             else
-                close(gcf,'force');
+                %close(gcf,'force');
             end;
         end;
         
@@ -860,7 +863,7 @@ switch lower(param)
             if(isfield(etc_render_fsbrain,'fig_gui'))
                 close(etc_render_fsbrain.fig_gui,'force');
             else
-                close(gcf,'force');
+                %close(gcf,'force');
             end;
         end;
         
@@ -870,11 +873,21 @@ switch lower(param)
             if(isfield(etc_render_fsbrain,'fig_vol'))
                 close(etc_render_fsbrain.fig_vol,'force');
             else
-                close(gcf,'force');
+                %close(gcf,'force');
             end;
         end;
         
         try
+            [az,el]=view;
+            etc_render_fsbrain.view_angle=[az,el];
+            camposition=campos;
+            etc_render_fsbrain.camposition;
+            axes(etc_render_fsbrain.brain_axis);
+            xlim=get(gca,'xlim');
+            ylim=get(gca,'ylim');
+            zlim=get(gca,'zlim');
+            etc_render_fsbrain.lim=[xlim(:)' ylim(:)' zlim(:)'];
+            
             delete(etc_render_fsbrain.fig_brain);
         catch ME
             if(isfield(etc_render_fsbrain,'fig_brain'))
@@ -2141,7 +2154,6 @@ else
     figure(etc_render_fsbrain.fig_brain);
 end;
 
-
 %set axes
 if(~isvalid(etc_render_fsbrain.brain_axis))
     etc_render_fsbrain.brain_axis=gca;
@@ -2180,7 +2192,7 @@ if(etc_render_fsbrain.overlay_flag_render)
         if(~iscell(etc_render_fsbrain.overlay_value))
             ov=zeros(size(etc_render_fsbrain.vertex_coords,1),1);
             ov(etc_render_fsbrain.overlay_vertex+1)=etc_render_fsbrain.overlay_value;
-            
+
             if(~isempty(etc_render_fsbrain.overlay_smooth))
                 [ovs,dd0,dd1,etc_render_fsbrain.overlay_Ds]=inverse_smooth('','vertex',etc_render_fsbrain.vertex_coords','face',etc_render_fsbrain.faces','value_idx',etc_render_fsbrain.overlay_vertex+1,'value',ov,'step',etc_render_fsbrain.overlay_smooth,'flag_fixval',etc_render_fsbrain.overlay_fixval_flag,'exc_vertex',etc_render_fsbrain.overlay_exclude,'inc_vertex',etc_render_fsbrain.overlay_include,'flag_regrid',etc_render_fsbrain.overlay_regrid_flag,'flag_regrid_zero',etc_render_fsbrain.overlay_regrid_zero_flag,'Ds',etc_render_fsbrain.overlay_Ds,'n_ratio',length(ov)/length(etc_render_fsbrain.overlay_value));
             else
@@ -2242,7 +2254,6 @@ material dull;
 etc_render_fsbrain.h=h;
 
 axis off vis3d equal;
-axis(etc_render_fsbrain.lim);
 
 if(~isempty(etc_render_fsbrain.overlay_threshold))
         h=findobj('tag','edit_threshold_min');
@@ -2263,6 +2274,8 @@ set(gcf,'color',etc_render_fsbrain.bg_color);
 
 
 view(etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2));
+axis(etc_render_fsbrain.lim);
+campos(etc_render_fsbrain.camposition);
 
 % %add exploration toolbar
 % [vv date] = version;
