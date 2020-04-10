@@ -106,7 +106,7 @@ try
         
     if(flag_redraw)
         etc_trace_handle('redraw');
+        etc_trace_handle('bd','time_idx',etc_trace_obj.time_select_idx);
     end;
-    etc_trace_handle('bd','time_idx',etc_trace_obj.time_select_idx);
 catch ME
 end;

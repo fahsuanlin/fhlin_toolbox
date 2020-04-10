@@ -60,13 +60,19 @@ topo_truncate_pos=0;
 topo_truncate_neg=0;
 
 
+topo_label={};
+
 topo_aux_point_coords=[];
 topo_aux_point_coords_h=[];
 topo_aux_point_name={};
 topo_aux_point_name_h=[];
-topo_aux_point_color=[1 0 0];
-topo_aux_point_size=0.005;
+topo_aux_point_color=[0.39 0.83 0.07];
+topo_aux_point_size=0.002;
 topo_aux_point_label_flag=1;
+topo_aux_point_text_color=[0.39 0.83 0.07];
+topo_aux_point_text_size=20;
+
+
 
 topo_aux2_point_coords=[];
 topo_aux2_point_coords_h=[];
@@ -379,7 +385,6 @@ end;
 set(gcf,'color',bg_color);
 
 if(isempty(view_angle))
-    
     view_angle=[-135 20];
 end;
 view(view_angle(1), view_angle(2));
@@ -389,22 +394,17 @@ if(~isempty(lim))
 end;
 if(~isempty(camposition))
     campos(camposition);
+else
+    camposition=campos;
+    campos(camposition);    
 end;
 
 hold on;
+
 [sx,sy,sz] = sphere(8);
 %sr=0.005;
 sr=topo_aux_point_size;
-
-% for idx=1:size(topo_aux_point_coords,1)
-%     topo_aux_point_coords_h(idx)=surf(sx.*sr+topo_aux_point_coords(idx,1),sy.*sr+topo_aux_point_coords(idx,2),sz.*sr+topo_aux_point_coords(idx,3));
-%     set(topo_aux_point_coords_h(idx),'facecolor','r','edgecolor','none');
-%     if(~isempty(topo_aux_point_name))
-%         topo_aux_point_name_h(idx)=text(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3),topo_aux_point_name{idx}); hold on;
-%     end;
-% end;
-
-xx=[]; yy=[]; zz=[]; hold on;
+xx=[]; yy=[]; zz=[];
 for idx=1:size(topo_aux_point_coords,1)
     if(strcmp(topo_aux_point_name{idx},'.'))
         xx=cat(1,xx,sx.*sr./3+topo_aux_point_coords(idx,1));
@@ -415,20 +415,26 @@ for idx=1:size(topo_aux_point_coords,1)
         yy=cat(1,yy,sy.*sr+topo_aux_point_coords(idx,2));
         zz=cat(1,zz,sz.*sr+topo_aux_point_coords(idx,3));
     end;
-    if(~isempty(topo_aux_point_name))
-        if(strcmp(topo_aux_point_name{idx},'.'))
-            topo_aux_point_name_h(idx)=text(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3),''); hold on;
-        else
-            topo_aux_point_name_h(idx)=text(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3),topo_aux_point_name{idx}); hold on;
-            set(topo_aux_point_name_h(idx),'ButtonDownFcn',@aux_point_Callback,'PickableParts','all');
+    
+    if(topo_aux_point_label_flag)
+        if(~isempty(topo_aux_point_name))
+            if(strcmp(topo_aux_point_name{idx},'.'))
+                topo_aux_point_name_h(idx)=text(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3),''); hold on;
+                set(topo_aux_point_name_h(idx),'color',topo_aux_point_text_color);
+                set(topo_aux_point_name_h(idx),'fontsize',topo_aux_point_text_size);
+            else
+                topo_aux_point_name_h(idx)=text(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3),topo_aux_point_name{idx}); hold on;
+                set(topo_aux_point_name_h(idx),'color',topo_aux_point_text_color);
+                set(topo_aux_point_name_h(idx),'fontsize',topo_aux_point_text_size);
+            end;
         end;
     end;
 end;
 topo_aux_point_coords_h(1)=surf(xx,yy,zz);
+%set(topo_aux_point_coords_h(1),'facecolor','r','edgecolor','none');
 set(topo_aux_point_coords_h(1),'facecolor',topo_aux_point_color,'edgecolor','none');
-%set(topo_aux_point_coords_h(1),'facecolor','r','edgecolor','none','ButtonDownFcn',@(~,~)disp('click!\n'),'PickableParts','all');
-%set(topo_aux_point_coords_h(1),'facecolor','r','edgecolor','none','ButtonDownFcn',@aux_point_Callback,'PickableParts','all');
 
+    
 
 xx=[]; yy=[]; zz=[];
 for idx=1:size(topo_aux2_point_coords,1)
@@ -577,6 +583,8 @@ etc_render_fsbrain.aux_point_name_h=topo_aux_point_name_h;
 etc_render_fsbrain.aux_point_color=topo_aux_point_color;
 etc_render_fsbrain.aux_point_size=topo_aux_point_size;
 etc_render_fsbrain.aux_point_label_flag=topo_aux_point_label_flag;
+etc_render_fsbrain.aux_point_text_color=topo_aux_point_text_color;
+etc_render_fsbrain.aux_point_text_size=topo_aux_point_text_size;
 
 etc_render_fsbrain.aux2_point_coords=topo_aux2_point_coords;
 etc_render_fsbrain.aux2_point_coords_h=topo_aux2_point_coords_h;
@@ -616,6 +624,8 @@ etc_render_fsbrain.brain_axis_pos=[];
 %%%%%%%%%%%%%%%%%%%%%%%%
 set(gcf,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
 set(gcf,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
+set(gcf,'CloseRequestFcn','etc_render_fsbrain_handle(''del'')');
+set(gcf,'KeyPressFcn',@etc_render_fsbrain_kbhandle);
 set(gcf,'invert','off');
 
 hold on;

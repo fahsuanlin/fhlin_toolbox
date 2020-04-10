@@ -304,21 +304,16 @@ switch lower(param)
                         end;
                     end;
                     
-                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%                    
                     global etc_trace_obj;
-                    if(isempty(etc_trace_obj))
-                        etc_trace(etc_render_fsbrain.overlay_stc,'fs',fs,'ch_names',etc_render_fsbrain.aux_point_name,'aux_data',aux_data,'time_begin',time_begin,'trace_selected_idx',etc_render_fsbrain.click_overlay_vertex,'ylim',[-max(etc_render_fsbrain.overlay_threshold) max(etc_render_fsbrain.overlay_threshold)]);
-                        %etc_trcae_gui_update_time;
-                    else
-                        etc_trace(etc_render_fsbrain.overlay_stc,'fs',fs,'ch_names',etc_render_fsbrain.aux_point_name,'aux_data',aux_data,'time_begin',time_begin,'trigger',etc_trace_obj.trigger,'time_select_idx',etc_render_fsbrain.overlay_stc_timeVec_idx,'trace_selected_idx', etc_render_fsbrain.click_overlay_vertex,'ylim',[-max(etc_render_fsbrain.overlay_threshold) max(etc_render_fsbrain.overlay_threshold)]);
-                        %etc_trcae_gui_update_time;
-                    end;
-                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%                    
-                    
-
-                    
                    
-                    if(~isempty(etc_trace_obj))
+                    if(isempty(etc_render_fsbrain.aux_point_name))
+                        for ii=1:length(etc_render_fsbrain.overlay_vertex)
+                            etc_render_fsbrain.aux_point_name{ii}=sprintf('ch%03d',ii);
+                        end;
+                    end;
+                    
+                    etc_trace_obj.ch_names=etc_render_fsbrain.aux_point_name;
+                    %if(~isempty(etc_trace_obj))
                         try
                             etc_trace_obj.topo.vertex=etc_render_fsbrain.vertex_coords;
                             etc_trace_obj.topo.face=etc_render_fsbrain.faces;
@@ -334,11 +329,13 @@ switch lower(param)
                                     end;
                                 end;
                                 
-                                for jj=1:size(etc_render_fsbrain.aux_point_coords,1)
-                                    dd=etc_trace_obj.topo.vertex-repmat(etc_render_fsbrain.aux_point_coords(jj,:),[size(etc_trace_obj.topo.vertex,1) 1]);
-                                    dd=sum(dd.^2,2);
-                                    [dummy, electrode_idx(jj)]=min(dd);
-                                end;
+                                
+                                electrode_idx=etc_render_fsbrain.overlay_vertex;
+                                %or jj=1:size(etc_render_fsbrain.aux_point_coords,1)
+                                %    dd=etc_trace_obj.topo.vertex-repmat(etc_render_fsbrain.aux_point_coords(jj,:),[size(etc_trace_obj.topo.vertex,1) 1]);
+                                %    dd=sum(dd.^2,2);
+                                %    [dummy, electrode_idx(jj)]=min(dd);
+                                %end;
                                 
                                 etc_trace_obj.topo.ch_names=etc_render_fsbrain.aux_point_name(Index);
                                 etc_trace_obj.topo.electrode_idx=electrode_idx;
@@ -346,7 +343,28 @@ switch lower(param)
                             end;
                         catch ME
                         end;
+                    %end;
+                    
+                    
+                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%                    
+                    if(isempty(etc_trace_obj))
+                        etc_trace(etc_render_fsbrain.overlay_stc,'fs',fs,'ch_names',etc_render_fsbrain.aux_point_name,'aux_data',aux_data,'time_begin',time_begin,'trace_selected_idx',etc_render_fsbrain.click_overlay_vertex,'ylim',[-max(etc_render_fsbrain.overlay_threshold) max(etc_render_fsbrain.overlay_threshold)]);
+                        %etc_trcae_gui_update_time;
+                    else
+                        trigger=[];
+                        if(isfield(etc_trace_obj,'trigger'))
+                            if(~isempty(etc_trace_obj.trigger))
+                                trigger=etc_trace_obj.trigger;
+                            end;
+                        end;
+                           
+                        etc_trace(etc_render_fsbrain.overlay_stc,'fs',fs,'ch_names',etc_render_fsbrain.aux_point_name,'aux_data',aux_data,'time_begin',time_begin,'trigger',trigger,'time_select_idx',etc_render_fsbrain.overlay_stc_timeVec_idx,'trace_selected_idx', etc_render_fsbrain.click_overlay_vertex,'ylim',[-max(etc_render_fsbrain.overlay_threshold) max(etc_render_fsbrain.overlay_threshold)],'topo',etc_trace_obj.topo);
+                        %etc_trcae_gui_update_time;
                     end;
+                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%                    
+                    
+
+                    
                 end;
             case 't'
 %                 fprintf('\ntemporal integration...\n');
@@ -882,11 +900,11 @@ switch lower(param)
             etc_render_fsbrain.view_angle=[az,el];
             camposition=campos;
             etc_render_fsbrain.camposition;
-            axes(etc_render_fsbrain.brain_axis);
-            xlim=get(gca,'xlim');
-            ylim=get(gca,'ylim');
-            zlim=get(gca,'zlim');
+            xlim=get(etc_render_fsbrain.brain_axis,'xlim');
+            ylim=get(etc_render_fsbrain.brain_axis,'ylim');
+            zlim=get(etc_render_fsbrain.brain_axis,'zlim');
             etc_render_fsbrain.lim=[xlim(:)' ylim(:)' zlim(:)'];
+            etc_render_fsbrain.fig_brain_pos=get(etc_render_fsbrain.fig_brain,'position');
             
             delete(etc_render_fsbrain.fig_brain);
         catch ME
@@ -1072,15 +1090,15 @@ switch lower(param)
            
             if(ishandle(etc_render_fsbrain.fig_gui))
                 set(findobj(etc_render_fsbrain.fig_gui,'tag','slider_timeVec'),'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
-                
                 set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_timeVec'),'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
                 set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_timeVec'),'string',sprintf('%1.0f',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx)));
             end;
             
-            figure(etc_render_fsbrain.fig_brain);
-           
-            draw_pointer('pt',etc_render_fsbrain.click_coord,'min_dist_idx',etc_render_fsbrain.click_vertex,'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
-            redraw;
+            if(isvalid(etc_render_fsbrain.fig_brain))
+                figure(etc_render_fsbrain.fig_brain);
+                 redraw;
+                draw_pointer('pt',etc_render_fsbrain.click_coord,'min_dist_idx',etc_render_fsbrain.click_vertex,'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
+            end;
             figure(etc_render_fsbrain.fig_stc);
             
             
@@ -2153,8 +2171,12 @@ if(~isvalid(etc_render_fsbrain.fig_brain))
 else
     figure(etc_render_fsbrain.fig_brain);
 end;
+hold on;
 
 %set axes
+if(~isfield(etc_render_fsbrain,'brain_axis'))
+   etc_render_fsbrain.brain_axis=[];
+end;
 if(~isvalid(etc_render_fsbrain.brain_axis))
     etc_render_fsbrain.brain_axis=gca;
 else
@@ -2166,7 +2188,9 @@ else
 
     etc_render_fsbrain.lim=[xlim(:)' ylim(:)' zlim(:)'];
 end;
-[etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2)]=view;
+if(isempty(etc_render_fsbrain.view_angle))
+    [etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2)]=view;
+end;
 
 %delete brain patch object
 if(ishandle(etc_render_fsbrain.h))
@@ -2255,6 +2279,14 @@ etc_render_fsbrain.h=h;
 
 axis off vis3d equal;
 
+if(etc_render_fsbrain.flag_camlight)
+    camlight(-90,0);
+    camlight(90,0);
+    camlight(0,0);
+    camlight(180,0);
+end;
+
+
 if(~isempty(etc_render_fsbrain.overlay_threshold))
         h=findobj('tag','edit_threshold_min');
         set(h,'String',num2str(min(etc_render_fsbrain.overlay_threshold),'%1.1f'));
@@ -2273,9 +2305,9 @@ end;
 set(gcf,'color',etc_render_fsbrain.bg_color);
 
 
+campos(etc_render_fsbrain.camposition); 
 view(etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2));
 axis(etc_render_fsbrain.lim);
-campos(etc_render_fsbrain.camposition);
 
 % %add exploration toolbar
 % [vv date] = version;
@@ -2288,12 +2320,18 @@ campos(etc_render_fsbrain.camposition);
 try
     if(isfield(etc_render_fsbrain,'aux_point_coords'))
         if(~isempty(etc_render_fsbrain.aux_point_coords_h))
-            delete(etc_render_fsbrain.aux_point_coords_h(:));
+            try
+                delete(etc_render_fsbrain.aux_point_coords_h(:));
+            catch ME
+            end;
             etc_render_fsbrain.aux_point_coords_h=[];
         end;
         
         if(~isempty(etc_render_fsbrain.aux_point_name_h))
-            delete(etc_render_fsbrain.aux_point_name_h(:));
+            try
+                delete(etc_render_fsbrain.aux_point_name_h(:));
+            catch ME
+            end;
             etc_render_fsbrain.aux_point_name_h=[];
         end;
         
@@ -2338,21 +2376,33 @@ try
     
     if(isfield(etc_render_fsbrain,'aux2_point_coords'))
         if(~isempty(etc_render_fsbrain.aux2_point_coords_h))
-            delete(etc_render_fsbrain.aux2_point_coords_h(:));
+            try
+                delete(etc_render_fsbrain.aux2_point_coords_h(:));
+            catch ME
+            end;    
             etc_render_fsbrain.aux2_point_coords_h=[];
         end;
         
         if(~isempty(etc_render_fsbrain.selected_electrode_coords_h))
-            delete(etc_render_fsbrain.selected_electrode_coords_h(:));
+            try
+                delete(etc_render_fsbrain.selected_electrode_coords_h(:));
+            catch ME
+            end;
             etc_render_fsbrain.selected_electrode_coords_h=[];
         end;
         if(~isempty(etc_render_fsbrain.selected_contact_coords_h))
-            delete(etc_render_fsbrain.selected_contact_coords_h(:));
+            try
+                delete(etc_render_fsbrain.selected_contact_coords_h(:));
+            catch ME
+            end;
             etc_render_fsbrain.selected_contact_coords_h=[];
         end;        
         
         if(~isempty(etc_render_fsbrain.aux2_point_name_h))
-            delete(etc_render_fsbrain.aux2_point_name_h(:));
+            try
+                delete(etc_render_fsbrain.aux2_point_name_h(:));
+            catch ME
+            end;
             etc_render_fsbrain.aux2_point_name_h=[];
         end;
 

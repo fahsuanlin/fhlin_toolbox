@@ -107,14 +107,15 @@ end;
 etc_trace_obj.data;
 etc_trace_obj.fs;
 etc_trace_obj.time_begin;
-etc_trace_obj.time_select_idx=1;
+etc_trace_obj.time_select_idx;
 etc_trace_obj.time_window_begin_idx;
 etc_trace_obj.time_duration_idx;
 etc_trace_obj.flag_time_window_auto_adjust=1;
 
 %etc_trace_handle('redraw');
 
-etc_trcae_gui_update_time;
+etc_trcae_gui_update_time('flag_redraw',0);
+%etc_trcae_gui_update_time();
 
 
 

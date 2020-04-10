@@ -131,6 +131,7 @@ else
     duration=all_duration(idx(end));
 end;
 etc_trace_obj.time_begin=time_begin;
+if(isempty(time_select_idx)) time_select_idx=1; end;
 etc_trace_obj.time_select_idx=time_select_idx;
 etc_trace_obj.time_duration_idx=round(duration.*fs);
 etc_trace_obj.time_window_begin_idx=1;
