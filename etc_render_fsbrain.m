@@ -802,6 +802,9 @@ if(~flag_redraw)
         ymax=max(vertex_coords(:,2));
         zmin=min(vertex_coords(:,3));
         zmax=max(vertex_coords(:,3));
+        xlim=[xmin xmax];
+        ylim=[ymin ymax];
+        zlim=[zmin zmax];
         lim=[xlim(:)' ylim(:)' zlim(:)'];
     else
         xlim=lim(1:2);
@@ -818,7 +821,7 @@ if(~flag_redraw)
     view(view_angle(1), view_angle(2));
     
     if(isempty(camposition))
-        cp=camposition;
+        cp=campos;
         cp=cp./norm(cp);
         
         campos(1300.*cp);
@@ -832,6 +835,8 @@ if(~flag_redraw)
        camlight(90,0);    
        camlight(0,0);
        camlight(180,0);    
+       
+       flag_camlight=0;
     end;
 end;
 
@@ -893,6 +898,7 @@ etc_render_fsbrain.curv_pos_color=curv_pos_color;
 etc_render_fsbrain.curv_neg_color=curv_neg_color;
 etc_render_fsbrain.default_solid_color=default_solid_color;
 etc_render_fsbrain.alpha=alpha;
+etc_render_fsbrain.flag_camlight=flag_camlight;
 
 etc_render_fsbrain.fig_brain=gcf;
 etc_render_fsbrain.fig_stc=[];

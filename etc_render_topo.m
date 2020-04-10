@@ -469,6 +469,8 @@ if(flag_camlight)
     camlight(90,0);
     camlight(0,0);
     camlight(180,0);
+
+    flag_camlight=0;
 end;
 
 
@@ -497,6 +499,7 @@ etc_render_fsbrain.curv_pos_color=[];
 etc_render_fsbrain.curv_neg_color=[];
 etc_render_fsbrain.default_solid_color=default_solid_color;
 etc_render_fsbrain.alpha=alpha;
+etc_render_fsbrain.flag_camlight=flag_camlight;
 
 
 etc_render_fsbrain.fig_brain=gcf;
