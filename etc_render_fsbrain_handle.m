@@ -2304,10 +2304,9 @@ if(~isempty(etc_render_fsbrain.overlay_threshold))
 end;
 set(gcf,'color',etc_render_fsbrain.bg_color);
 
-
 campos(etc_render_fsbrain.camposition); 
-view(etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2));
 axis(etc_render_fsbrain.lim);
+view(etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2));
 
 % %add exploration toolbar
 % [vv date] = version;
