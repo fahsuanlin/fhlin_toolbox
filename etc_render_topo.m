@@ -15,6 +15,8 @@ vol_face=[];
 vol_vertex_hemi={};
 vol_face_hemi={};
 
+lut=[];
+
 %color
 default_solid_color=[256 180 100]./256;
 %default_solid_color=[214, 185, 133]./256;
@@ -27,6 +29,9 @@ topo_cmap=tmp(161:end,:);
 %topo_cmap_neg=winter(80); %overlay colormap;
 %topo_cmap_neg=flipud(tmp(1:128,:));
 topo_cmap_neg=flipud(tmp(1:96,:));
+
+
+
 
 %overlay
 topo_value=[];
@@ -55,13 +60,19 @@ topo_truncate_pos=0;
 topo_truncate_neg=0;
 
 
+topo_label={};
+
 topo_aux_point_coords=[];
 topo_aux_point_coords_h=[];
 topo_aux_point_name={};
 topo_aux_point_name_h=[];
-topo_aux_point_color=[1 0 0];
-topo_aux_point_size=0.005;
+topo_aux_point_color=[0.39 0.83 0.07];
+topo_aux_point_size=0.002;
 topo_aux_point_label_flag=1;
+topo_aux_point_text_color=[0.39 0.83 0.07];
+topo_aux_point_text_size=20;
+
+
 
 topo_aux2_point_coords=[];
 topo_aux2_point_coords_h=[];
@@ -75,6 +86,10 @@ topo_exclude=[];
 
 topo_include_fstem='';
 topo_include=[];
+
+overlay_vol_mask_alpha=0.5;
+overlay_vol_mask=[];
+overlay_flag_vol_mask=1;
 
 topo=[]; %topology structure; with "vertex", "face", "ch_names", "electrode_idx" 4 fields.
 
@@ -95,15 +110,32 @@ cluster_file={};
 
 %etc
 alpha=1;
-view_angle=[];
+view_angle=[]; 
+lim=[];
+camposition=[];
+
+% flag_redraw=0;
+% flag_camlight=1;
+% flag_colorbar=0;
+% show_nearest_brain_surface_location_flag=1;
+% show_contact_names_flag=1;
+% show_all_contacts_mri_flag=1;
+% electrode_update_contact_view_flag=0;
+
 
 flag_redraw=0;
 flag_camlight=1;
 flag_colorbar=0;
+flag_colorbar_vol=0; %
 show_nearest_brain_surface_location_flag=1;
+show_brain_surface_location_flag=1; %
 show_contact_names_flag=1;
 show_all_contacts_mri_flag=1;
+show_all_contacts_mri_depth=2; %
+show_all_contacts_brain_surface_flag=1; %  
 electrode_update_contact_view_flag=0;
+
+
 
 click_point_size=28;
 click_point_color=[1 0 1];
@@ -194,6 +226,12 @@ for idx=1:length(varargin)/2
             topo_truncate_pos=option_value;
         case 'topo_truncate_neg'
             topo_truncate_neg=option_value;
+        case 'overlay_vol_mask_alpha'
+            overlay_vol_mask_alpha=option_value;
+        case 'overlay_vol_mask'
+            overlay_vol_mask=option_value;
+        case 'overlay_flag_vol_mask'
+            overlay_flag_vol_mask=option_value;
         case 'default_solid_color'
             default_solid_color=option_value;
         case 'cluster_file'
@@ -206,18 +244,30 @@ for idx=1:length(varargin)/2
             flag_camlight=option_value;
         case 'flag_colorbar'
             flag_colorbar=option_value;
+        case 'flag_colorbar_vol'
+            flag_colorbar_vol=option_value;
         case 'flag_hold_fig_stc_timecourse'
             flag_hold_fig_stc_timecourse=option_value;
         case 'show_nearest_brain_surface_location_flag'
             show_nearest_brain_surface_location_flag=option_value;
+        case 'show_brain_surface_location_flag'
+            show_brain_surface_location_flag=option_value;
         case'show_contact_names_flag'
             show_contact_names_flag=option_value;
         case'show_all_contacts_mri_flag'
             show_all_contacts_mri_flag=option_value;
+        case'show_all_contacts_mri_depth'
+            show_all_contacts_mri_depth=option_value;
+        case 'show_all_contacts_brain_surface_flag'
+            show_all_contacts_brain_surface_flag=option_value;
         case 'electrode_update_contact_view_flag'
             electrode_update_contact_view_flag=option_value;
         case 'view_angle'
             view_angle=option_value;
+        case 'lim'
+            lim=option_value;
+        case 'camposition'
+            camposition=option_value;
         case 'bg_color'
             bg_color=option_value;
         case 'label_vertex'
@@ -256,6 +306,7 @@ end;
 %0: solid color
 fvdata=repmat(default_solid_color,[size(vol_vertex,1),1]);
 
+ovs=[];
 topo_flag_render=0;
 %2: curvature and overlay color
 if(~isempty(topo_value))
@@ -334,25 +385,26 @@ end;
 set(gcf,'color',bg_color);
 
 if(isempty(view_angle))
-    
     view_angle=[-135 20];
 end;
 view(view_angle(1), view_angle(2));
 
+if(~isempty(lim))
+    axis(lim);
+end;
+if(~isempty(camposition))
+    campos(camposition);
+else
+    camposition=campos;
+    campos(camposition);    
+end;
+
 hold on;
+
 [sx,sy,sz] = sphere(8);
 %sr=0.005;
 sr=topo_aux_point_size;
-
-% for idx=1:size(topo_aux_point_coords,1)
-%     topo_aux_point_coords_h(idx)=surf(sx.*sr+topo_aux_point_coords(idx,1),sy.*sr+topo_aux_point_coords(idx,2),sz.*sr+topo_aux_point_coords(idx,3));
-%     set(topo_aux_point_coords_h(idx),'facecolor','r','edgecolor','none');
-%     if(~isempty(topo_aux_point_name))
-%         topo_aux_point_name_h(idx)=text(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3),topo_aux_point_name{idx}); hold on;
-%     end;
-% end;
-
-xx=[]; yy=[]; zz=[]; hold on;
+xx=[]; yy=[]; zz=[];
 for idx=1:size(topo_aux_point_coords,1)
     if(strcmp(topo_aux_point_name{idx},'.'))
         xx=cat(1,xx,sx.*sr./3+topo_aux_point_coords(idx,1));
@@ -363,20 +415,26 @@ for idx=1:size(topo_aux_point_coords,1)
         yy=cat(1,yy,sy.*sr+topo_aux_point_coords(idx,2));
         zz=cat(1,zz,sz.*sr+topo_aux_point_coords(idx,3));
     end;
-    if(~isempty(topo_aux_point_name))
-        if(strcmp(topo_aux_point_name{idx},'.'))
-            topo_aux_point_name_h(idx)=text(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3),''); hold on;
-        else
-            topo_aux_point_name_h(idx)=text(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3),topo_aux_point_name{idx}); hold on;
-            set(topo_aux_point_name_h(idx),'ButtonDownFcn',@aux_point_Callback,'PickableParts','all');
+    
+    if(topo_aux_point_label_flag)
+        if(~isempty(topo_aux_point_name))
+            if(strcmp(topo_aux_point_name{idx},'.'))
+                topo_aux_point_name_h(idx)=text(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3),''); hold on;
+                set(topo_aux_point_name_h(idx),'color',topo_aux_point_text_color);
+                set(topo_aux_point_name_h(idx),'fontsize',topo_aux_point_text_size);
+            else
+                topo_aux_point_name_h(idx)=text(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3),topo_aux_point_name{idx}); hold on;
+                set(topo_aux_point_name_h(idx),'color',topo_aux_point_text_color);
+                set(topo_aux_point_name_h(idx),'fontsize',topo_aux_point_text_size);
+            end;
         end;
     end;
 end;
 topo_aux_point_coords_h(1)=surf(xx,yy,zz);
+%set(topo_aux_point_coords_h(1),'facecolor','r','edgecolor','none');
 set(topo_aux_point_coords_h(1),'facecolor',topo_aux_point_color,'edgecolor','none');
-%set(topo_aux_point_coords_h(1),'facecolor','r','edgecolor','none','ButtonDownFcn',@(~,~)disp('click!\n'),'PickableParts','all');
-%set(topo_aux_point_coords_h(1),'facecolor','r','edgecolor','none','ButtonDownFcn',@aux_point_Callback,'PickableParts','all');
 
+    
 
 xx=[]; yy=[]; zz=[];
 for idx=1:size(topo_aux2_point_coords,1)
@@ -411,6 +469,8 @@ if(flag_camlight)
     camlight(90,0);
     camlight(0,0);
     camlight(180,0);
+
+    flag_camlight=0;
 end;
 
 
@@ -427,15 +487,20 @@ etc_render_fsbrain.faces_hemi=vol_face;
 etc_render_fsbrain.vertex_coords_hemi=vol_vertex;
 etc_render_fsbrain.fvdata=fvdata;
 etc_render_fsbrain.curv=[];
+etc_render_fsbrain.ovs=ovs;
 %etc_render_fsbrain.curv_hemi=curv_hemi;
 etc_render_fsbrain.overlay_value=topo_value;
 
 etc_render_fsbrain.view_angle=view_angle;
+etc_render_fsbrain.lim=lim;
+etc_render_fsbrain.camposition=camposition;
 etc_render_fsbrain.bg_color=bg_color;
 etc_render_fsbrain.curv_pos_color=[];
 etc_render_fsbrain.curv_neg_color=[];
 etc_render_fsbrain.default_solid_color=default_solid_color;
 etc_render_fsbrain.alpha=alpha;
+etc_render_fsbrain.flag_camlight=flag_camlight;
+
 
 etc_render_fsbrain.fig_brain=gcf;
 etc_render_fsbrain.fig_stc=[];
@@ -444,12 +509,20 @@ etc_render_fsbrain.fig_vol=[];
 etc_render_fsbrain.fig_coord_gui=[];
 etc_render_fsbrain.fig_label_gui=[];
 etc_render_fsbrain.show_nearest_brain_surface_location_flag=show_nearest_brain_surface_location_flag;
+etc_render_fsbrain.show_brain_surface_location_flag=show_brain_surface_location_flag;
 etc_render_fsbrain.show_contact_names_flag=show_contact_names_flag;
 etc_render_fsbrain.electrode_update_contact_view_flag=electrode_update_contact_view_flag;
 etc_render_fsbrain.show_all_contacts_mri_flag=show_all_contacts_mri_flag;
+etc_render_fsbrain.show_all_contacts_mri_depth=show_all_contacts_mri_depth;
+etc_render_fsbrain.show_all_contacts_brain_surface_flag=show_all_contacts_brain_surface_flag;
 
 etc_render_fsbrain.vol_vox=[];
 
+etc_render_fsbrain.overlay_vol=[];
+etc_render_fsbrain.overlay_vol_stc=[];
+etc_render_fsbrain.overlay_aux_vol=[];
+etc_render_fsbrain.overlay_aux_vol_stc=[];
+etc_render_fsbrain.overlay_vol_value=[];
 etc_render_fsbrain.overlay_value=topo_value;
 etc_render_fsbrain.overlay_stc=topo_stc;
 etc_render_fsbrain.overlay_aux_stc=topo_aux_stc;
@@ -479,6 +552,14 @@ etc_render_fsbrain.overlay_Ds=topo_Ds;
 etc_render_fsbrain.flag_overlay_truncate_pos=topo_truncate_pos;
 etc_render_fsbrain.flag_overlay_truncate_neg=topo_truncate_neg;
 
+etc_render_fsbrain.flag_colorbar=flag_colorbar;
+etc_render_fsbrain.flag_colorbar_vol=flag_colorbar_vol;
+
+etc_render_fsbrain.overlay_vol_mask_alpha=overlay_vol_mask_alpha;
+etc_render_fsbrain.overlay_vol_mask=overlay_vol_mask;
+etc_render_fsbrain.overlay_flag_vol_mask=overlay_flag_vol_mask;
+etc_render_fsbrain.lut=lut;
+
 etc_render_fsbrain.label_vertex=label_vertex;
 etc_render_fsbrain.label_value=label_value;
 etc_render_fsbrain.label_ctab=label_ctab;
@@ -505,6 +586,8 @@ etc_render_fsbrain.aux_point_name_h=topo_aux_point_name_h;
 etc_render_fsbrain.aux_point_color=topo_aux_point_color;
 etc_render_fsbrain.aux_point_size=topo_aux_point_size;
 etc_render_fsbrain.aux_point_label_flag=topo_aux_point_label_flag;
+etc_render_fsbrain.aux_point_text_color=topo_aux_point_text_color;
+etc_render_fsbrain.aux_point_text_size=topo_aux_point_text_size;
 
 etc_render_fsbrain.aux2_point_coords=topo_aux2_point_coords;
 etc_render_fsbrain.aux2_point_coords_h=topo_aux2_point_coords_h;
@@ -524,6 +607,19 @@ etc_render_fsbrain.register_translate_dist=1e-3; %default: 1 mm
 etc_render_fsbrain.topo=topo;
 
 etc_render_fsbrain.electrode=electrode;
+etc_render_fsbrain.fig_electrode_gui=[];
+
+etc_render_fsbrain.click_coord=[];
+etc_render_fsbrain.surface_coord=[];
+etc_render_fsbrain.click_vertex_vox=[];
+
+etc_render_fsbrain.h_colorbar=[];
+etc_render_fsbrain.h_colorbar_pos=[];
+etc_render_fsbrain.h_colorbar_neg=[];
+etc_render_fsbrain.h_colorbar_vol=[];
+etc_render_fsbrain.h_colorbar_vol_pos=[];
+etc_render_fsbrain.h_colorbar_vol_neg=[];
+etc_render_fsbrain.brain_axis_pos=[];
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -531,6 +627,8 @@ etc_render_fsbrain.electrode=electrode;
 %%%%%%%%%%%%%%%%%%%%%%%%
 set(gcf,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
 set(gcf,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
+set(gcf,'CloseRequestFcn','etc_render_fsbrain_handle(''del'')');
+set(gcf,'KeyPressFcn',@etc_render_fsbrain_kbhandle);
 set(gcf,'invert','off');
 
 hold on;

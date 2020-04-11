@@ -44,6 +44,7 @@ overlay_aux_vol=[];
 overlay_vol_stc=[];
 overlay_aux_vol_stc=[];
 overlay_value=[];
+overlay_vol_value=[];
 overlay_stc=[];
 overlay_aux_stc=[];
 overlay_stc_hemi=[];
@@ -60,6 +61,7 @@ overlay_value_flag_neg=0;
 overlay_regrid_flag=0;
 overlay_regrid_zero_flag=0;
 overlay_flag_render=1;
+overlay_vol_flag_render=1;
 overlay_fixval_flag=0;
 overlay_Ds=[];
 
@@ -127,14 +129,18 @@ cluster_file={};
 %etc
 alpha=1;
 view_angle=[]; 
+lim=[];
+camposition=[];
 
 flag_redraw=0;
 flag_camlight=1;
 flag_colorbar=0;
+flag_colorbar_vol=0;
 show_nearest_brain_surface_location_flag=1;
 show_brain_surface_location_flag=1;
 show_contact_names_flag=1;
 show_all_contacts_mri_flag=1;
+show_all_contacts_mri_depth=2;
 show_all_contacts_brain_surface_flag=1;
 electrode_update_contact_view_flag=1;
 
@@ -183,6 +189,8 @@ for idx=1:length(varargin)/2
             overlay_vol_stc=option_value;
         case 'overlay_flag_render'
             overlay_flag_render=option_value;
+        case 'overlay_vol_flag_render'
+            overlay_vol_flag_render=option_value;
         case 'overlay_value'
             overlay_value=option_value;
         case 'overlay_stc'
@@ -245,6 +253,8 @@ for idx=1:length(varargin)/2
             flag_camlight=option_value;
         case 'flag_colorbar'
             flag_colorbar=option_value;
+        case 'flag_colorbar_vol'
+            flag_colorbar_vol=option_value;
         case 'flag_hold_fig_stc_timecourse'
             flag_hold_fig_stc_timecourse=option_value;
         case 'show_nearest_brain_surface_location_flag'
@@ -255,12 +265,18 @@ for idx=1:length(varargin)/2
             show_contact_names_flag=option_value;
         case 'show_all_contacts_mri_flag'
             show_all_contacts_mri_flag=option_value;
+        case 'show_all_contacts_mri_depth'
+            show_all_contacts_mri_depth=option_value;
         case 'show_all_contacts_brain_surface_flag'
             show_all_contacts_brain_surface_flag=option_value;
         case 'electrode_update_contact_view_flag'
             electrode_update_contact_view_flag=option_value;
         case 'view_angle'
             view_angle=option_value;
+        case 'lim'
+            lim=option_value;
+        case 'camposition'
+            camposition=option_value;
         case 'bg_color'
             bg_color=option_value;
         case 'topo_label'
@@ -774,16 +790,29 @@ end;
 % main routine for rendering...
 %%%%%%%%%%%%%%%%%%%%%%%%
 h=patch('Faces',faces+1,'Vertices',vertex_coords,'FaceVertexCData',fvdata,'facealpha',alpha,'CDataMapping','direct','facecolor','interp','edgecolor','none');   
+material dull;
+
+axis off vis3d equal;
 
 if(~flag_redraw)
-    xmin=min(vertex_coords(:,1));
-    xmax=max(vertex_coords(:,1));
-    ymin=min(vertex_coords(:,2));
-    ymax=max(vertex_coords(:,2));
-    zmin=min(vertex_coords(:,3));
-    zmax=max(vertex_coords(:,3));
+    if(isempty(lim))
+        xmin=min(vertex_coords(:,1));
+        xmax=max(vertex_coords(:,1));
+        ymin=min(vertex_coords(:,2));
+        ymax=max(vertex_coords(:,2));
+        zmin=min(vertex_coords(:,3));
+        zmax=max(vertex_coords(:,3));
+        xlim=[xmin xmax];
+        ylim=[ymin ymax];
+        zlim=[zmin zmax];
+        lim=[xlim(:)' ylim(:)' zlim(:)'];
+    else
+        xlim=lim(1:2);
+        ylim=lim(3:4);
+        zlim=lim(5:6);
+    end;
     set(gca,'xlim',[xmin xmax],'ylim',[ymin ymax],'zlim',[zmin zmax]);
-    axis off vis3d equal tight;
+    
     if(~isempty(overlay_threshold))
         set(gca,'climmode','manual','clim',overlay_threshold);
     end;
@@ -791,17 +820,23 @@ if(~flag_redraw)
     
     view(view_angle(1), view_angle(2));
     
-    cp=campos;
-    cp=cp./norm(cp);
+    if(isempty(camposition))
+        cp=campos;
+        cp=cp./norm(cp);
+        
+        campos(1300.*cp);
+        camposition=1300.*cp;
+    else
+        campos(camposition);
+    end;
     
-    campos(1300.*cp);
-    
-    material dull;
     if(flag_camlight)
        camlight(-90,0);
        camlight(90,0);    
        camlight(0,0);
        camlight(180,0);    
+       
+       flag_camlight=0;
     end;
 end;
 
@@ -856,11 +891,14 @@ etc_render_fsbrain.ovs=ovs;
 %etc_render_fsbrain.curv_hemi=curv_hemi;
 
 etc_render_fsbrain.view_angle=view_angle;
+etc_render_fsbrain.lim=lim;
+etc_render_fsbrain.camposition=camposition;
 etc_render_fsbrain.bg_color=bg_color;
 etc_render_fsbrain.curv_pos_color=curv_pos_color;
 etc_render_fsbrain.curv_neg_color=curv_neg_color;
 etc_render_fsbrain.default_solid_color=default_solid_color;
 etc_render_fsbrain.alpha=alpha;
+etc_render_fsbrain.flag_camlight=flag_camlight;
 
 etc_render_fsbrain.fig_brain=gcf;
 etc_render_fsbrain.fig_stc=[];
@@ -873,6 +911,7 @@ etc_render_fsbrain.show_brain_surface_location_flag=show_brain_surface_location_
 etc_render_fsbrain.show_contact_names_flag=show_contact_names_flag;
 etc_render_fsbrain.electrode_update_contact_view_flag=electrode_update_contact_view_flag;
 etc_render_fsbrain.show_all_contacts_mri_flag=show_all_contacts_mri_flag;
+etc_render_fsbrain.show_all_contacts_mri_depth=show_all_contacts_mri_depth;
 etc_render_fsbrain.show_all_contacts_brain_surface_flag=show_all_contacts_brain_surface_flag;
 
 etc_render_fsbrain.overlay_vol=overlay_vol;
@@ -880,6 +919,7 @@ etc_render_fsbrain.overlay_vol_stc=overlay_vol_stc;
 etc_render_fsbrain.overlay_aux_vol=overlay_aux_vol;
 etc_render_fsbrain.overlay_aux_vol_stc=overlay_aux_vol_stc;
 etc_render_fsbrain.overlay_value=overlay_value;
+etc_render_fsbrain.overlay_vol_value=overlay_vol_value;
 etc_render_fsbrain.overlay_stc=overlay_stc;
 etc_render_fsbrain.overlay_aux_stc=overlay_aux_stc;
 etc_render_fsbrain.overlay_stc_hemi=overlay_stc_hemi;
@@ -898,12 +938,16 @@ etc_render_fsbrain.overlay_value_flag_neg=overlay_value_flag_neg;
 etc_render_fsbrain.overlay_exclude=overlay_exclude;
 etc_render_fsbrain.overlay_include=overlay_include;
 etc_render_fsbrain.overlay_flag_render=overlay_flag_render;
+etc_render_fsbrain.overlay_vol_flag_render=overlay_vol_flag_render;
 etc_render_fsbrain.overlay_fixval_flag=overlay_fixval_flag;
 etc_render_fsbrain.overlay_regrid_flag=overlay_regrid_flag;
 etc_render_fsbrain.overlay_regrid_zero_flag=overlay_regrid_zero_flag;
 etc_render_fsbrain.overlay_Ds=overlay_Ds;
 etc_render_fsbrain.flag_overlay_truncate_pos=overlay_truncate_pos;
 etc_render_fsbrain.flag_overlay_truncate_neg=overlay_truncate_neg;
+
+etc_render_fsbrain.flag_colorbar=flag_colorbar;
+etc_render_fsbrain.flag_colorbar_vol=flag_colorbar_vol;
 
 etc_render_fsbrain.overlay_vol_mask_alpha=overlay_vol_mask_alpha;
 etc_render_fsbrain.overlay_vol_mask=overlay_vol_mask;
@@ -981,9 +1025,14 @@ etc_render_fsbrain.fig_electrode_gui=[];
 etc_render_fsbrain.click_coord=[];
 etc_render_fsbrain.surface_coord=[];
 etc_render_fsbrain.click_vertex_vox=[];
+
+etc_render_fsbrain.h_colorbar=[];
 etc_render_fsbrain.h_colorbar_pos=[];
-
-
+etc_render_fsbrain.h_colorbar_neg=[];
+etc_render_fsbrain.h_colorbar_vol=[];
+etc_render_fsbrain.h_colorbar_vol_pos=[];
+etc_render_fsbrain.h_colorbar_vol_neg=[];
+etc_render_fsbrain.brain_axis_pos=[];
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 %setup call-back function

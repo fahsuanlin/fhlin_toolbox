@@ -21,8 +21,7 @@ function varargout = etc_render_fsbrain_electrode_gui(varargin)
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
 % Edit the above text to modify the response to help etc_render_fsbrain_electrode_gui
-
-% Last Modified by GUIDE v2.5 22-Mar-2020 19:18:44
+% Last Modified by GUIDE v2.5 02-Apr-2020 01:34:29
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -75,6 +74,7 @@ set(handles.slider_alpha,'value',get(etc_render_fsbrain.h,'facealpha'));
 set(handles.checkbox_nearest_brain_surface,'value',etc_render_fsbrain.show_nearest_brain_surface_location_flag);
 set(handles.checkbox_show_contact_names,'value',etc_render_fsbrain.show_contact_names_flag);
 set(handles.checkbox_mri_view,'value',etc_render_fsbrain.show_all_contacts_mri_flag);
+set(handles.edit_mri_view_depth,'string',sprintf('%1.1f',etc_render_fsbrain.show_all_contacts_mri_depth));
 set(handles.checkbox_brain_surface,'value',etc_render_fsbrain.show_all_contacts_brain_surface_flag);
 
 if(~isempty(etc_render_fsbrain.electrode))
@@ -323,8 +323,8 @@ else
                 c{i}.Enable='off';
             end;
         end;
-        if(strcmp(c{i}.Tag,'pushbutton_goto')|~strcmp(etc_render_fsbrain.surf,'orig'))
-            if(isempty(etc_render_fsbrain.vol))
+        if(strcmp(c{i}.Tag,'pushbutton_goto'))
+            if(isempty(etc_render_fsbrain.vol|~strcmp(etc_render_fsbrain.surf,'orig')))
                 c{i}.Enable='off';
             end;
         end;
@@ -1556,6 +1556,9 @@ guidata(hObject, handles);
 
 h=findobj('tag','slider_alpha');
 set(h,'value',get(hObject,'Value'));
+h=findobj('tag','edit_alpha');
+set(h,'string',sprintf('%1.1f',get(etc_render_fsbrain.h,'facealpha')));
+
 
 
 % --- Executes during object creation, after setting all properties.
@@ -1964,10 +1967,10 @@ if(filename~=0)
                 
                 etc_render_fsbrain.aux2_point_coords(count,:)=etc_render_fsbrain.electrode(e_idx).coord(c_idx,:);
                 
-                if(strcmp(etc_render_fsbrain.surf,'orig'))
+                if(strcmp(etc_render_fsbrain.surf,'orig')|strcmp(etc_render_fsbrain.surf,'smoothwm')|strcmp(etc_render_fsbrain.surf,'pial'))
                     
                 else
-                    fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+                    fprintf('surface <%s> not "orig"/"smoothwm"/"pial". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
                     
                     tmp=etc_render_fsbrain.aux2_point_coords(count,:);
                     
@@ -2667,3 +2670,31 @@ return;
         
         
   
+
+
+
+function edit_mri_view_depth_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_mri_view_depth (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_mri_view_depth as text
+%        str2double(get(hObject,'String')) returns contents of edit_mri_view_depth as a double
+        
+global etc_render_fsbrain;
+
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord','min_dist_idx',[],'click_vertex_vox',[]);
+%etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord);
+        
+
+% --- Executes during object creation, after setting all properties.
+function edit_mri_view_depth_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_mri_view_depth (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

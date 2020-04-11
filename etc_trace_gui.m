@@ -22,7 +22,7 @@ function varargout = etc_trace_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_gui
 
-% Last Modified by GUIDE v2.5 11-Sep-2019 17:07:43
+% Last Modified by GUIDE v2.5 07-Apr-2020 20:23:11
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -56,6 +56,9 @@ function etc_trace_gui_OpeningFcn(hObject, eventdata, handles, varargin)
 
 %cla(handles.axis_trace);
 global etc_trace_obj;
+
+etc_trace_obj.fig_trace=gcf;
+
 etc_trace_obj.axis_trace=findobj('tag','axis_trace');
 
 handles.output=gcf;
@@ -66,9 +69,8 @@ guidata(hObject, handles);
 %trigger loading
 if(~isempty(etc_trace_obj.trigger))
     fprintf('trigger loaded...\n');
-    tmp=sort(etc_trace_obj.trigger.event);
-    trigger_type=tmp([find(diff(sort(tmp))) length(tmp)]);
-    set(handles.listbox_trigger,'string',{trigger_type(:)});
+    str=unique(etc_trace_obj.trigger.event);
+    set(handles.listbox_trigger,'string',str);
 else
     set(handles.listbox_trigger,'string',{});
 end;
@@ -77,14 +79,43 @@ guidata(hObject, handles);
 
 duration=[0.1 0.5 1 2 5 10 30];
 set(handles.listbox_time_duration,'string',{duration(:)});
-set(handles.listbox_time_duration,'value',5); %default: 5 s
+
+[dummy,idx]=min(abs(duration-etc_trace_obj.time_duration_idx./etc_trace_obj.fs));
+%set(handles.listbox_time_duration,'value',5); %default: 5 s
+set(handles.listbox_time_duration,'value',idx); %default: 5 s
 guidata(hObject, handles);
 
-%update trace GUI
-hObject=findobj('tag','edit_time_now_idx');
-set(hObject,'String','');
-hObject=findobj('tag','edit_time_now');
-set(hObject,'String','');
+if(isfield(etc_trace_obj,'trigger_time_idx'))
+    hObject=findobj('tag','edit_trigger_time_idx');
+    set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
+    hObject=findobj('tag','edit_trigger_time');
+    set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+else
+    hObject=findobj('tag','edit_trigger_time_idx');
+    set(hObject,'String','');
+    hObject=findobj('tag','edit_trigger_time');
+    set(hObject,'String','');    
+end;
+
+
+
+            %create a context menu....not successful....
+            cm = uicontextmenu;
+            m1 = uimenu(cm,'Text','test');
+            handles.axis_trac.UIContextMenu = cm;
+
+etc_trace_obj.data;
+etc_trace_obj.fs;
+etc_trace_obj.time_begin;
+etc_trace_obj.time_select_idx;
+etc_trace_obj.time_window_begin_idx;
+etc_trace_obj.time_duration_idx;
+etc_trace_obj.flag_time_window_auto_adjust=1;
+
+%etc_trace_handle('redraw');
+
+etc_trcae_gui_update_time('flag_redraw',0);
+%etc_trcae_gui_update_time();
 
 
 
@@ -108,36 +139,20 @@ function pushbutton_rrfast_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_rrfast (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
 global etc_trace_obj;
 
-if(isempty(etc_trace_obj))
-    return;
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
+etc_trace_obj.time_select_idx=etc_trace_obj.time_select_idx-etc_trace_obj.time_duration_idx;
+if(etc_trace_obj.time_select_idx<1)
+    etc_trace_obj.time_select_idx=1;
 end;
-
-if(etc_trace_obj.time_begin_idx-etc_trace_obj.time_duration_idx>1)
-    etc_trace_obj.time_begin_idx=etc_trace_obj.time_begin_idx-etc_trace_obj.time_duration_idx; %5 s advance
-    etc_trace_obj.time_end_idx=etc_trace_obj.time_end_idx-etc_trace_obj.time_duration_idx; %5 s advance
-    etc_trace_handle('redraw');
-else
-    etc_trace_obj.time_begin_idx=1; %back to the beginneing
-    etc_trace_obj.time_end_idx=etc_trace_obj.time_begin_idx+etc_trace_obj.time_duration_idx-1; %back to the beginning
-    etc_trace_handle('redraw');
-end;
-
-%time slider
-hObject_slider=findobj('tag','slider_time_idx');
-v=(etc_trace_obj.time_begin_idx-1)/(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx);
-set(hObject_slider,'value',v);
-
-%time edit
-hObject=findobj('tag','edit_time_begin_idx');
-set(hObject,'String',sprintf('%d',etc_trace_obj.time_begin_idx));
-hObject=findobj('tag','edit_time_end_idx');
-set(hObject,'String',sprintf('%d',etc_trace_obj.time_end_idx));
-hObject=findobj('tag','edit_time_begin');
-set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_begin_idx-1))./etc_trace_obj.fs));
-hObject=findobj('tag','edit_time_end');
-set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
+% etc_trace_obj.time_window_begin_idx
+% etc_trace_obj.time_duration_idx
+etc_trace_obj.flag_time_window_auto_adjust=1;
+etc_trcae_gui_update_time;
 
 % --- Executes on button press in pushbutton_rr.
 function pushbutton_rr_Callback(hObject, eventdata, handles)
@@ -147,106 +162,59 @@ function pushbutton_rr_Callback(hObject, eventdata, handles)
 
 global etc_trace_obj;
 
-if(isempty(etc_trace_obj))
-    return;
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
+etc_trace_obj.time_select_idx=etc_trace_obj.time_select_idx-round(etc_trace_obj.time_duration_idx./10);
+if(etc_trace_obj.time_select_idx<1)
+    etc_trace_obj.time_select_idx=1;
 end;
-
-if(etc_trace_obj.time_begin_idx-etc_trace_obj.fs.*1>1)
-    etc_trace_obj.time_begin_idx=etc_trace_obj.time_begin_idx-round(etc_trace_obj.time_duration_idx./5); %1 s advance
-    etc_trace_obj.time_end_idx=etc_trace_obj.time_end_idx-round(etc_trace_obj.time_duration_idx./5); %1 s advance
-    etc_trace_handle('redraw');
-else
-    etc_trace_obj.time_begin_idx=1; %back to the beginneing
-    etc_trace_obj.time_end_idx=etc_trace_obj.time_begin_idx+etc_trace_obj.time_duration_idx-1; %back to the beginning
-    etc_trace_handle('redraw');
-end;
-
-%time slider
-hObject_slider=findobj('tag','slider_time_idx');
-v=(etc_trace_obj.time_begin_idx-1)/(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx);
-set(hObject_slider,'value',v);
-
-%time edit
-hObject=findobj('tag','edit_time_begin_idx');
-set(hObject,'String',sprintf('%d',etc_trace_obj.time_begin_idx));
-hObject=findobj('tag','edit_time_end_idx');
-set(hObject,'String',sprintf('%d',etc_trace_obj.time_end_idx));
-hObject=findobj('tag','edit_time_begin');
-set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_begin_idx-1))./etc_trace_obj.fs));
-hObject=findobj('tag','edit_time_end');
-set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
+% etc_trace_obj.time_window_begin_idx
+% etc_trace_obj.time_duration_idx
+etc_trace_obj.flag_time_window_auto_adjust=1;
+etc_trcae_gui_update_time;
 
 % --- Executes on button press in pushbutton_ff.
 function pushbutton_ff_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_ff (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
 global etc_trace_obj;
 
-if(isempty(etc_trace_obj))
-    return;
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
+etc_trace_obj.time_select_idx=etc_trace_obj.time_select_idx+round(etc_trace_obj.time_duration_idx./10);
+if(etc_trace_obj.time_select_idx>size(etc_trace_obj.data,2))
+    etc_trace_obj.time_select_idx=size(etc_trace_obj.data,2);
 end;
+% etc_trace_obj.time_window_begin_idx
+% etc_trace_obj.time_duration_idx
+etc_trace_obj.flag_time_window_auto_adjust=1;
+etc_trcae_gui_update_time;
 
-if(etc_trace_obj.time_end_idx+etc_trace_obj.fs.*1<size(etc_trace_obj.data,2))
-    etc_trace_obj.time_begin_idx=etc_trace_obj.time_begin_idx+round(etc_trace_obj.time_duration_idx./5); %1 s advance
-    etc_trace_obj.time_end_idx=etc_trace_obj.time_end_idx+round(etc_trace_obj.time_duration_idx./5); %1 s advance
-    etc_trace_handle('redraw');
-else
-    etc_trace_obj.time_begin_idx=size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx+1; %go to the end
-    etc_trace_obj.time_end_idx=size(etc_trace_obj.data,2); %go to the end
-    etc_trace_handle('redraw');
-end;
 
-%time slider
-hObject_slider=findobj('tag','slider_time_idx');
-v=(etc_trace_obj.time_begin_idx-1)/(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx);
-set(hObject_slider,'value',v);
-
-%time edit
-hObject=findobj('tag','edit_time_begin_idx');
-set(hObject,'String',sprintf('%d',etc_trace_obj.time_begin_idx));
-hObject=findobj('tag','edit_time_end_idx');
-set(hObject,'String',sprintf('%d',etc_trace_obj.time_end_idx));
-hObject=findobj('tag','edit_time_begin');
-set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_begin_idx-1))./etc_trace_obj.fs));
-hObject=findobj('tag','edit_time_end');
-set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
 
 % --- Executes on button press in pushbutton_fffast.
 function pushbutton_fffast_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_fffast (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
 global etc_trace_obj;
 
-if(isempty(etc_trace_obj))
-    return;
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
+etc_trace_obj.time_select_idx=etc_trace_obj.time_select_idx+etc_trace_obj.time_duration_idx;
+if(etc_trace_obj.time_select_idx>size(etc_trace_obj.data,2))
+    etc_trace_obj.time_select_idx=size(etc_trace_obj.data,2);
 end;
-
-if(etc_trace_obj.time_end_idx+etc_trace_obj.time_duration_idx<size(etc_trace_obj.data,2))
-    etc_trace_obj.time_begin_idx=etc_trace_obj.time_begin_idx+etc_trace_obj.time_duration_idx; %5 s advance
-    etc_trace_obj.time_end_idx=etc_trace_obj.time_end_idx+etc_trace_obj.time_duration_idx; %5 s advance
-    etc_trace_handle('redraw');
-else
-    etc_trace_obj.time_begin_idx=size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx+1; %go to the end
-    etc_trace_obj.time_end_idx=size(etc_trace_obj.data,2); %go to the end
-    etc_trace_handle('redraw');
-end;
-
-%time slider
-hObject_slider=findobj('tag','slider_time_idx');
-v=(etc_trace_obj.time_begin_idx-1)/(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx);
-set(hObject_slider,'value',v);
-
-%time edit
-hObject=findobj('tag','edit_time_begin_idx');
-set(hObject,'String',sprintf('%d',etc_trace_obj.time_begin_idx));
-hObject=findobj('tag','edit_time_end_idx');
-set(hObject,'String',sprintf('%d',etc_trace_obj.time_end_idx));
-hObject=findobj('tag','edit_time_begin');
-set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_begin_idx-1))./etc_trace_obj.fs));
-hObject=findobj('tag','edit_time_end');
-set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
+% etc_trace_obj.time_window_begin_idx
+% etc_trace_obj.time_duration_idx
+etc_trace_obj.flag_time_window_auto_adjust=1;
+etc_trcae_gui_update_time;
 
 
 % --- Executes on slider movement.
@@ -260,28 +228,16 @@ function slider_time_idx_Callback(hObject, eventdata, handles)
 
 global etc_trace_obj;
 
-if(isempty(etc_trace_obj))
-    return;
-end;
-
-set(hObject,'enable','off');
-
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
 v=get(hObject,'Value');
-etc_trace_obj.time_begin_idx=round(v*(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx))+1;
-etc_trace_obj.time_end_idx=round(v*(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx))+etc_trace_obj.time_duration_idx;
-etc_trace_handle('redraw');
+etc_trace_obj.time_select_idx=round((size(etc_trace_obj.data,2)-1)*v+1);
+% etc_trace_obj.time_window_begin_idx
+% etc_trace_obj.time_duration_idx
+etc_trace_obj.flag_time_window_auto_adjust=1;
+etc_trcae_gui_update_time;
 
-set(hObject,'enable','on');
-
-%time edit
-hObject=findobj('tag','edit_time_begin_idx');
-set(hObject,'String',sprintf('%d',etc_trace_obj.time_begin_idx));
-hObject=findobj('tag','edit_time_end_idx');
-set(hObject,'String',sprintf('%d',etc_trace_obj.time_end_idx));
-hObject=findobj('tag','edit_time_begin');
-set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_begin_idx-1))./etc_trace_obj.fs));
-hObject=findobj('tag','edit_time_end');
-set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
 
 % --- Executes during object creation, after setting all properties.
 function slider_time_idx_CreateFcn(hObject, eventdata, handles)
@@ -294,11 +250,9 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 
-global etc_trace_obj;
-
-v=(etc_trace_obj.time_begin_idx-1)/(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx);
-
-set(hObject,'value',v);
+%global etc_trace_obj;
+%v=(etc_trace_obj.time_begin_idx-1)/(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx);
+%set(hObject,'value',v);
 
 % --- Executes on selection change in listbox_trigger.
 function listbox_trigger_Callback(hObject, eventdata, handles)
@@ -315,83 +269,64 @@ if(isempty(etc_trace_obj))
 end;
 
 contents = cellstr(get(hObject,'String'));
-select_idx=get(hObject,'Value');
+etc_trace_obj.trigger_now=contents{get(hObject,'Value')};
+fprintf('selected trigger = {%s}.\n',etc_trace_obj.trigger_now);
 
-try
-    etc_trace_obj.trigger_now=str2num(contents{select_idx});
-    trigger_idx=find(etc_trace_obj.trigger.event==str2num(contents{select_idx}));
-    trigger_time_idx=etc_trace_obj.trigger.time(trigger_idx);
-    [tmp,mmidx]=min(abs(trigger_time_idx-etc_trace_obj.time_begin_idx));
-    
-    %trigger time
-    etc_trace_obj.trigger_time_idx=trigger_time_idx(mmidx);
-    hObject=findobj('tag','edit_trigger_time_idx');
-    set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
-    hObject=findobj('tag','edit_trigger_time');
-    set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs));
-    
-    
-    etc_trace_obj.time_select_idx =etc_trace_obj.trigger_time_idx;
-
-    %update trace GUI
-    hObject=findobj('tag','edit_time_now_idx');
-    set(hObject,'String',num2str(etc_trace_obj.time_select_idx));
-    hObject=findobj('tag','edit_time_now');
-    set(hObject,'String',num2str((etc_trace_obj.time_select_idx-1)/etc_trace_obj.fs,'%1.3f'));
-
-    %update trigger gui
-    hObject=findobj('tag','listbox_time');
-    if(~isempty(hObject))
-        all_time =cellfun(@str2num,get(hObject,'String'));
-        hObject=findobj('tag','listbox_class');
-        all_class =cellfun(@str2num,get(hObject,'String'));
-        vv=find((all_time==etc_trace_obj.trigger_time_idx)&(all_class==etc_trace_obj.trigger_now));
-        hObject=findobj('tag','listbox_time');
-        set(hObject,'Value',vv(1));
-        hObject=findobj('tag','listbox_class');
-        set(hObject,'Value',vv(1));
-        
-        hObject=findobj('tag','edit_time');
-        set(hObject,'String',num2str(etc_trace_obj.trigger_time_idx));
-        hObject=findobj('tag','edit_class');
-        set(hObject,'String',num2str(etc_trace_obj.trigger_now));
-    end;
-    
-    a=trigger_time_idx(mmidx)-round(etc_trace_obj.time_duration_idx/(1/etc_trace_obj.config_trace_center_frac))+1;
-    b=a+etc_trace_obj.time_duration_idx;
-    if(a<1)
-        a=1;
-        b=a+etc_trace_obj.time_duration_idx;
-    end;
-    if(b>size(etc_trace_obj.data,2))
-        a=size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx;
-        b=size(etc_trace_obj.data,2);
-    end;
-    
-    if(a>=1&&b<=size(etc_trace_obj.data,2))
-        etc_trace_obj.time_begin_idx=a;
-        etc_trace_obj.time_end_idx=b;
-        
-        %time slider
-        hObject_slider=findobj('tag','slider_time_idx');
-        v=(etc_trace_obj.time_begin_idx-1)/(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx);
-        set(hObject_slider,'value',v);
-        
-        %time edit
-        hObject=findobj('tag','edit_time_begin_idx');
-        set(hObject,'String',sprintf('%d',etc_trace_obj.time_begin_idx));
-        hObject=findobj('tag','edit_time_end_idx');
-        set(hObject,'String',sprintf('%d',etc_trace_obj.time_end_idx));
-        hObject=findobj('tag','edit_time_begin');
-        set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_begin_idx-1))./etc_trace_obj.fs));
-        hObject=findobj('tag','edit_time_end');
-        set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
-        
-        etc_trace_handle('redraw');
-    end;
-    
-catch ME
+%update the default event/trigger name in the event/trigger window
+hObject=findobj('tag','edit_local_trigger_class');
+if(~isempty(hObject))
+    set(hObject,'string',etc_trace_obj.trigger_now);
 end;
+
+
+IndexC = strfind(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
+trigger_match_idx = find(not(cellfun('isempty',IndexC)));
+trigger_match_time_idx=etc_trace_obj.trigger.time(trigger_match_idx);
+trigger_match_time_idx=sort(trigger_match_time_idx);
+fprintf('[%d] trigger {%s} found at time index [%s].\n',length(trigger_match_idx),etc_trace_obj.trigger_now,mat2str(trigger_match_time_idx));
+
+%find the nearest one
+[dummy,idx]=min(abs(trigger_match_time_idx-etc_trace_obj.time_select_idx));
+if(idx<=1) idx=1; end;
+etc_trace_obj.time_select_idx=trigger_match_time_idx(idx);
+fprintf('now at the [%d]-th trigger {%s} found at time index [%s] <%1.3f s>.\n',idx,etc_trace_obj.trigger_now,mat2str(trigger_match_time_idx(idx)),trigger_match_time_idx(idx)./etc_trace_obj.fs+etc_trace_obj.time_begin);
+
+hObject=findobj('tag','edit_trigger_time');
+set(hObject,'String',sprintf('%1.3f',trigger_match_time_idx(idx)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+hObject=findobj('tag','edit_trigger_time_idx');
+set(hObject,'String',sprintf('%d',trigger_match_time_idx(idx)));
+
+
+%update even/trigger window
+hObject=findobj('tag','edit_local_trigger_time');
+set(hObject,'String',sprintf('%1.3f',trigger_match_time_idx(idx)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+hObject=findobj('tag','edit_local_trigger_time_idx');
+set(hObject,'String',sprintf('%d',trigger_match_time_idx(idx)));
+
+for ii=1:length(etc_trace_obj.trigger.time)
+    if((etc_trace_obj.trigger.time(ii)==trigger_match_time_idx(idx))&&(strcmp(etc_trace_obj.trigger.event{ii},etc_trace_obj.trigger_now)))
+        break;
+    end;
+end;
+hObject=findobj('tag','listbox_time');
+set(hObject,'Value',ii);
+hObject=findobj('tag','listbox_time_idx');
+set(hObject,'Value',ii);
+hObject=findobj('tag','listbox_class');
+set(hObject,'Value',ii);
+
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
+% etc_trace_obj.time_select_idx;
+% etc_trace_obj.time_window_begin_idx=round((str2double(get(hObject,'String'))-etc_trace_obj.time_begin).*etc_trace_obj.fs)+1;
+% etc_trace_obj.time_duration_idx
+% etc_trace_obj.flag_time_window_auto_adjust=0;
+% if((etc_trace_obj.time_window_begin_idx>=1)&&((etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1)<=size(etc_trace_obj.data,2)))
+     etc_trcae_gui_update_time;
+% end;
+
+
 
 
 % --- Executes during object creation, after setting all properties.
@@ -419,34 +354,18 @@ function edit_time_begin_idx_Callback(hObject, eventdata, handles)
 
 global etc_trace_obj;
 
-if(isempty(etc_trace_obj))
-    return;
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
+% etc_trace_obj.time_select_idx;
+etc_trace_obj.time_window_begin_idx=round(str2double(get(hObject,'String')));
+% etc_trace_obj.time_duration_idx
+etc_trace_obj.flag_time_window_auto_adjust=0;
+if((etc_trace_obj.time_window_begin_idx>=1)&&((etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1)<=size(etc_trace_obj.data,2)))
+    etc_trcae_gui_update_time;
 end;
 
-a=str2double(get(hObject,'String'));
-b=str2double(get(hObject,'String'))+etc_trace_obj.time_duration_idx-1;
 
-if(a>=1&&b<=size(etc_trace_obj.data,2))
-    etc_trace_obj.time_begin_idx=str2double(get(hObject,'String'));
-    etc_trace_obj.time_end_idx=str2double(get(hObject,'String'))+etc_trace_obj.time_duration_idx-1;
-    
-    %time slider
-    hObject_slider=findobj('tag','slider_time_idx');
-    v=(etc_trace_obj.time_begin_idx-1)/(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx);
-    set(hObject_slider,'value',v);
-    
-    %time edit
-    %hObject=findobj('tag','edit_time_begin_idx');
-    %set(hObject,'String',sprintf('%d',etc_trace_obj.time_begin_idx));
-    hObject=findobj('tag','edit_time_end_idx');
-    set(hObject,'String',sprintf('%d',etc_trace_obj.time_end_idx));
-    hObject=findobj('tag','edit_time_begin');
-    set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_begin_idx-1))./etc_trace_obj.fs));
-    hObject=findobj('tag','edit_time_end');
-    set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
-    
-    etc_trace_handle('redraw');
-end;
 
 % --- Executes during object creation, after setting all properties.
 function edit_time_begin_idx_CreateFcn(hObject, eventdata, handles)
@@ -460,8 +379,8 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-global etc_trace_obj;
-set(hObject,'String',sprintf('%d',etc_trace_obj.time_begin_idx));
+%global etc_trace_obj;
+%set(hObject,'String',sprintf('%d',etc_trace_obj.time_begin_idx));
 
 
 function edit_time_end_idx_Callback(hObject, eventdata, handles)
@@ -474,34 +393,17 @@ function edit_time_end_idx_Callback(hObject, eventdata, handles)
 
 global etc_trace_obj;
 
-if(isempty(etc_trace_obj))
-    return;
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
+% etc_trace_obj.time_select_idx;
+etc_trace_obj.time_window_begin_idx=round(str2double(get(hObject,'String')))-etc_trace_obj.time_duration_idx;
+% etc_trace_obj.time_duration_idx
+etc_trace_obj.flag_time_window_auto_adjust=0;
+if((etc_trace_obj.time_window_begin_idx>=1)&&((etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1)<=size(etc_trace_obj.data,2)))
+    etc_trcae_gui_update_time;
 end;
 
-a=str2double(get(hObject,'String'))-etc_trace_obj.time_duration_idx-1;
-b=str2double(get(hObject,'String'));
-
-if(a>=1&&b<=size(etc_trace_obj.data,2))
-    etc_trace_obj.time_begin_idx=str2double(get(hObject,'String'))-etc_trace_obj.time_duration_idx-1;
-    etc_trace_obj.time_end_idx=str2double(get(hObject,'String'));
-    
-    %time slider
-    hObject_slider=findobj('tag','slider_time_idx');
-    v=(etc_trace_obj.time_begin_idx-1)/(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx);
-    set(hObject_slider,'value',v);
-    
-    %time edit
-    hObject=findobj('tag','edit_time_begin_idx');
-    set(hObject,'String',sprintf('%d',etc_trace_obj.time_begin_idx));
-    %hObject=findobj('tag','edit_time_end_idx');
-    %set(hObject,'String',sprintf('%d',etc_trace_obj.time_end_idx));
-    hObject=findobj('tag','edit_time_begin');
-    set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_begin_idx-1))./etc_trace_obj.fs));
-    hObject=findobj('tag','edit_time_end');
-    set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
-    
-    etc_trace_handle('redraw');
-end;
 
 % --- Executes during object creation, after setting all properties.
 function edit_time_end_idx_CreateFcn(hObject, eventdata, handles)
@@ -515,8 +417,8 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-global etc_trace_obj;
-set(hObject,'String',sprintf('%d',etc_trace_obj.time_end_idx));
+%global etc_trace_obj;
+%set(hObject,'String',sprintf('%d',etc_trace_obj.time_end_idx));
 
 
 function edit_time_end_Callback(hObject, eventdata, handles)
@@ -529,33 +431,17 @@ function edit_time_end_Callback(hObject, eventdata, handles)
 
 global etc_trace_obj;
 
-if(isempty(etc_trace_obj))
-    return;
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
+% etc_trace_obj.time_select_idx;
+etc_trace_obj.time_window_begin_idx=round((str2double(get(hObject,'String'))-etc_trace_obj.time_begin)*etc_trace_obj.fs+1)-etc_trace_obj.time_duration_idx+1;
+% etc_trace_obj.time_duration_idx
+etc_trace_obj.flag_time_window_auto_adjust=0;
+if((etc_trace_obj.time_window_begin_idx>=1)&&((etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1)<=size(etc_trace_obj.data,2)))
+    etc_trcae_gui_update_time;
 end;
 
-a=round(str2double(get(hObject,'String')).*etc_trace_obj.fs)-etc_trace_obj.time_duration_idx+1;
-b=round(str2double(get(hObject,'String')).*etc_trace_obj.fs)+1;
-if(a>=1&&b<=size(etc_trace_obj.data,2))
-    etc_trace_obj.time_begin_idx=round(str2double(get(hObject,'String')).*etc_trace_obj.fs)-etc_trace_obj.time_duration_idx+1;
-    etc_trace_obj.time_end_idx=round(str2double(get(hObject,'String')).*etc_trace_obj.fs)+1;
-    
-    %time slider
-    hObject_slider=findobj('tag','slider_time_idx');
-    v=(etc_trace_obj.time_begin_idx-1)/(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx);
-    set(hObject_slider,'value',v);
-    
-    %time edit
-    hObject=findobj('tag','edit_time_begin_idx');
-    set(hObject,'String',sprintf('%d',etc_trace_obj.time_begin_idx));
-    hObject=findobj('tag','edit_time_end_idx');
-    set(hObject,'String',sprintf('%d',etc_trace_obj.time_end_idx));
-    hObject=findobj('tag','edit_time_begin');
-    set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_begin_idx-1))./etc_trace_obj.fs));
-    %hObject=findobj('tag','edit_time_end');
-    %set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
-    
-    etc_trace_handle('redraw');
-end;
 
 
 % --- Executes during object creation, after setting all properties.
@@ -570,8 +456,8 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-global etc_trace_obj;
-set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
+% global etc_trace_obj;
+% set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
 
 
 function edit_time_begin_Callback(hObject, eventdata, handles)
@@ -584,32 +470,15 @@ function edit_time_begin_Callback(hObject, eventdata, handles)
 
 global etc_trace_obj;
 
-if(isempty(etc_trace_obj))
-    return;
-end;
-
-a=round(str2double(get(hObject,'String')).*etc_trace_obj.fs)+1;
-b=round(str2double(get(hObject,'String')).*etc_trace_obj.fs)+etc_trace_obj.time_duration_idx+1;
-if(a>=1&&b<=size(etc_trace_obj.data,2))
-    etc_trace_obj.time_begin_idx=round(str2double(get(hObject,'String')).*etc_trace_obj.fs)+1;
-    etc_trace_obj.time_end_idx=round(str2double(get(hObject,'String')).*etc_trace_obj.fs)+etc_trace_obj.time_duration_idx+1;
-    
-    %time slider
-    hObject_slider=findobj('tag','slider_time_idx');
-    v=(etc_trace_obj.time_begin_idx-1)/(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx);
-    set(hObject_slider,'value',v);
-    
-    %time edit
-    hObject=findobj('tag','edit_time_begin_idx');
-    set(hObject,'String',sprintf('%d',etc_trace_obj.time_begin_idx));
-    hObject=findobj('tag','edit_time_end_idx');
-    set(hObject,'String',sprintf('%d',etc_trace_obj.time_end_idx));
-    %hObject=findobj('tag','edit_time_begin');
-    %set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_begin_idx-1))./etc_trace_obj.fs));
-    hObject=findobj('tag','edit_time_end');
-    set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
-    
-    etc_trace_handle('redraw');
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
+% etc_trace_obj.time_select_idx;
+etc_trace_obj.time_window_begin_idx=round((str2double(get(hObject,'String'))-etc_trace_obj.time_begin).*etc_trace_obj.fs)+1;
+% etc_trace_obj.time_duration_idx
+etc_trace_obj.flag_time_window_auto_adjust=0;
+if((etc_trace_obj.time_window_begin_idx>=1)&&((etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1)<=size(etc_trace_obj.data,2)))
+    etc_trcae_gui_update_time;
 end;
 
 % --- Executes during object creation, after setting all properties.
@@ -624,8 +493,8 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-global etc_trace_obj;
-set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_begin_idx-1))./etc_trace_obj.fs));
+% global etc_trace_obj;
+% set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_begin_idx-1))./etc_trace_obj.fs));
 
 
 % --- Executes on button press in pushbutton_trigger_rr.
@@ -640,72 +509,67 @@ if(isempty(etc_trace_obj))
     return;
 end;
 
-try
-    trigger_idx=find(etc_trace_obj.trigger.event==etc_trace_obj.trigger_now);
-    trigger_time_idx=etc_trace_obj.trigger.time(trigger_idx);
-    edit_trigger_time_idx_now=str2num(get(findobj('tag','edit_trigger_time_idx'),'String'));
-    [tmp,mmidx]=min(abs(trigger_time_idx-edit_trigger_time_idx_now));
-    mmidx=mmidx-1;
+%IndexC = strfind(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
+%trigger_match_idx = find(not(cellfun('isempty',IndexC)));
+IndexC = strcmp(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
+trigger_match_idx = find(IndexC);
+trigger_match_time_idx=etc_trace_obj.trigger.time(trigger_match_idx);
+trigger_match_time_idx=sort(trigger_match_time_idx);
+fprintf('[%d] trigger {%s} found at time index [%s].\n',length(trigger_match_idx),etc_trace_obj.trigger_now,mat2str(trigger_match_time_idx));
+
+if(isempty(find(trigger_match_time_idx==etc_trace_obj.time_select_idx))) %current time point is NOT inside trigger events
+    %find the nearest one
+    [dummy,idx]=min(abs(trigger_match_time_idx-etc_trace_obj.time_select_idx));
+else
+    tmp=trigger_match_time_idx-etc_trace_obj.time_select_idx+1;
     
-    %trigger time
-    etc_trace_obj.trigger_time_idx=trigger_time_idx(mmidx);
-    hObject=findobj('tag','edit_trigger_time_idx');
-    set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
-    hObject=findobj('tag','edit_trigger_time');
-    set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger_time_idx./etc_trace_obj.fs));
+    xx=find(tmp<0);
+    if(isempty(xx))
+        idx=1;
+    else
+        idx=xx(end);
+    end;
     
-    if(isvalid(etc_trace_obj.fig_trigger))
-        %update trigger gui
-        hObject=findobj('tag','listbox_time');
-        all_time =cellfun(@str2num,get(hObject,'String'));
-        set(hObject,'Value',find(all_time==etc_trace_obj.trigger_time_idx));
-        hObject=findobj('tag','listbox_class');
-        set(hObject,'Value',find(all_time==etc_trace_obj.trigger_time_idx));
-        
-        hObject=findobj('tag','edit_time');
-        set(hObject,'String',num2str(etc_trace_obj.trigger_time_idx));
-        hObject=findobj('tag','edit_class');
-        set(hObject,'String',num2str(etc_trace_obj.trigger_now));
-    end;
-    if(mmidx>=1)
-        
-        a=trigger_time_idx(mmidx)-round(etc_trace_obj.time_duration_idx/(1/etc_trace_obj.config_trace_center_frac))+1;
-        b=a+etc_trace_obj.time_duration_idx;
-        if(a<1) 
-            a=1;
-            b=a+etc_trace_obj.time_duration_idx;
-        end;
-        if(b>size(etc_trace_obj.data,2))
-            a=size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx;
-            b=size(etc_trace_obj.data,2);
-        end;
-        
-        if(a>=1&&b<=size(etc_trace_obj.data,2))
-            etc_trace_obj.time_begin_idx=a;
-            etc_trace_obj.time_end_idx=b;
-            
-            %time slider
-            hObject_slider=findobj('tag','slider_time_idx');
-            v=(etc_trace_obj.time_begin_idx-1)/(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx);
-            set(hObject_slider,'value',v);
-            
-            %time edit
-            hObject=findobj('tag','edit_time_begin_idx');
-            set(hObject,'String',sprintf('%d',etc_trace_obj.time_begin_idx));
-            hObject=findobj('tag','edit_time_end_idx');
-            set(hObject,'String',sprintf('%d',etc_trace_obj.time_end_idx));
-            hObject=findobj('tag','edit_time_begin');
-            set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_begin_idx-1))./etc_trace_obj.fs));
-            hObject=findobj('tag','edit_time_end');
-            set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
-            
-            etc_trace_handle('redraw');
-            etc_trace_handle('bd','time_idx',etc_trace_obj.trigger_time_idx);
-        end;
-    end;
-    figure(etc_trace_obj.fig_trace);    
-catch ME
+   
+    if(idx<=1) idx=1; end;
 end;
+etc_trace_obj.time_select_idx=trigger_match_time_idx(idx);
+fprintf('now at the [%d]-th trigger {%s} found at time index [%s] <%1.3f s>.\n',idx,etc_trace_obj.trigger_now,mat2str(trigger_match_time_idx(idx)),trigger_match_time_idx(idx)./etc_trace_obj.fs+etc_trace_obj.time_begin);
+
+hObject=findobj('tag','edit_trigger_time');
+set(hObject,'String',sprintf('%1.3f',trigger_match_time_idx(idx)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+hObject=findobj('tag','edit_trigger_time_idx');
+set(hObject,'String',sprintf('%d',trigger_match_time_idx(idx)));
+
+%update even/trigger window
+hObject=findobj('tag','listbox_time_idx');
+t_idx=cellfun(@str2num,hObject.String);
+for ii=1:length(t_idx)
+    if((t_idx(ii)==trigger_match_time_idx(idx))&&(strcmp(etc_trace_obj.trigger.event{ii},etc_trace_obj.trigger_now)))
+        break;
+    end;
+end;
+hObject=findobj('tag','listbox_time');
+set(hObject,'Value',ii);
+hObject=findobj('tag','listbox_time_idx');
+set(hObject,'Value',ii);
+hObject=findobj('tag','listbox_class');
+set(hObject,'Value',ii);
+
+
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
+% etc_trace_obj.time_select_idx;
+% etc_trace_obj.time_window_begin_idx=round((str2double(get(hObject,'String'))-etc_trace_obj.time_begin).*etc_trace_obj.fs)+1;
+% etc_trace_obj.time_duration_idx
+% etc_trace_obj.flag_time_window_auto_adjust=0;
+% if((etc_trace_obj.time_window_begin_idx>=1)&&((etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1)<=size(etc_trace_obj.data,2)))
+     etc_trcae_gui_update_time;
+% end;
+
+return;
+
 
 % --- Executes on button press in pushbutton_trigger_ff.
 function pushbutton_trigger_ff_Callback(hObject, eventdata, handles)
@@ -719,75 +583,64 @@ if(isempty(etc_trace_obj))
     return;
 end;
 
-try
-    trigger_idx=find(etc_trace_obj.trigger.event==etc_trace_obj.trigger_now);
-    trigger_time_idx=etc_trace_obj.trigger.time(trigger_idx);
-    edit_trigger_time_idx_now=str2num(get(findobj('tag','edit_trigger_time_idx'),'String'));
-    [tmp,mmidx]=min(abs(trigger_time_idx-edit_trigger_time_idx_now));
-    mmidx=mmidx+1;
+%IndexC = strfind(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
+%trigger_match_idx = find(not(cellfun('isempty',IndexC)));
+IndexC = strcmp(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
+trigger_match_idx = find(IndexC);
+trigger_match_time_idx=etc_trace_obj.trigger.time(trigger_match_idx);
+trigger_match_time_idx=sort(trigger_match_time_idx);
+fprintf('[%d] trigger {%s} found at time index %s.\n',length(trigger_match_idx),etc_trace_obj.trigger_now,mat2str(trigger_match_time_idx));
 
-    %trigger time
-    etc_trace_obj.trigger_time_idx=trigger_time_idx(mmidx);
-    hObject=findobj('tag','edit_trigger_time_idx');
-    set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
-    hObject=findobj('tag','edit_trigger_time');
-    set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger_time_idx./etc_trace_obj.fs));
-
-    if(isvalid(etc_trace_obj.fig_trigger))
-        %update trigger gui
-        hObject=findobj('tag','listbox_time');
-        all_time =cellfun(@str2num,get(hObject,'String'));
-        set(hObject,'Value',find(all_time==etc_trace_obj.trigger_time_idx));
-        hObject=findobj('tag','listbox_class');
-        set(hObject,'Value',find(all_time==etc_trace_obj.trigger_time_idx));
-        
-        hObject=findobj('tag','edit_time');
-        set(hObject,'String',num2str(etc_trace_obj.trigger_time_idx));
-        hObject=findobj('tag','edit_class');
-        set(hObject,'String',num2str(etc_trace_obj.trigger_now));
-    end;
+if(isempty(find(trigger_match_time_idx==etc_trace_obj.time_select_idx))) %current time point is NOT inside trigger events
+    %find the nearest one
+    [dummy,idx]=min(abs(trigger_match_time_idx-etc_trace_obj.time_select_idx));
+else
+    tmp=trigger_match_time_idx-etc_trace_obj.time_select_idx-1;
     
-    if(mmidx<=length(trigger_time_idx))
-        
-        a=trigger_time_idx(mmidx)-round(etc_trace_obj.time_duration_idx/(1/etc_trace_obj.config_trace_center_frac))+1;
-        b=a+etc_trace_obj.time_duration_idx;
-        if(a<1) 
-            a=1;
-            b=a+etc_trace_obj.time_duration_idx;
-        end;
-        if(b>size(etc_trace_obj.data,2))
-            a=size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx;
-            b=size(etc_trace_obj.data,2);
-        end;
-        
-        if(a>=1&&b<=size(etc_trace_obj.data,2))
-            etc_trace_obj.time_begin_idx=a;
-            etc_trace_obj.time_end_idx=b;
-            
-            %time slider
-            hObject_slider=findobj('tag','slider_time_idx');
-            v=(etc_trace_obj.time_begin_idx-1)/(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx);
-            set(hObject_slider,'value',v);
-            
-            %time edit
-            hObject=findobj('tag','edit_time_begin_idx');
-            set(hObject,'String',sprintf('%d',etc_trace_obj.time_begin_idx));
-            hObject=findobj('tag','edit_time_end_idx');
-            set(hObject,'String',sprintf('%d',etc_trace_obj.time_end_idx));
-            hObject=findobj('tag','edit_time_begin');
-            set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_begin_idx-1))./etc_trace_obj.fs));
-            hObject=findobj('tag','edit_time_end');
-            set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
-            
-            etc_trace_handle('redraw');
-            etc_trace_handle('bd','time_idx',etc_trace_obj.trigger_time_idx);
-
-        end;
+    xx=find(tmp>0);
+    if(isempty(xx))
+        idx=length(trigger_match_idx);
+    else
+        idx=xx(1);
     end;
-    figure(etc_trace_obj.fig_trace);
-catch ME
-end;
 
+    if(idx>=length(trigger_match_idx)) idx=length(trigger_match_idx); end;
+end;
+etc_trace_obj.time_select_idx=trigger_match_time_idx(idx);
+fprintf('now at the [%d]-th trigger {%s} found at time index [%s] <%1.3f s>.\n',idx,etc_trace_obj.trigger_now,mat2str(trigger_match_time_idx(idx)),trigger_match_time_idx(idx)./etc_trace_obj.fs+etc_trace_obj.time_begin);
+
+hObject=findobj('tag','edit_trigger_time');
+set(hObject,'String',sprintf('%1.3f',trigger_match_time_idx(idx)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+hObject=findobj('tag','edit_trigger_time_idx');
+set(hObject,'String',sprintf('%d',trigger_match_time_idx(idx)));
+
+%update even/trigger window
+hObject=findobj('tag','listbox_time_idx');
+t_idx=cellfun(@str2num,hObject.String);
+for ii=1:length(t_idx)
+    if((t_idx(ii)==trigger_match_time_idx(idx))&&(strcmp(etc_trace_obj.trigger.event{ii},etc_trace_obj.trigger_now)))
+        break;
+    end;
+end;
+hObject=findobj('tag','listbox_time');
+set(hObject,'Value',ii);
+hObject=findobj('tag','listbox_time_idx');
+set(hObject,'Value',ii);
+hObject=findobj('tag','listbox_class');
+set(hObject,'Value',ii);
+
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
+% etc_trace_obj.time_select_idx;
+% etc_trace_obj.time_window_begin_idx=round((str2double(get(hObject,'String'))-etc_trace_obj.time_begin).*etc_trace_obj.fs)+1;
+% etc_trace_obj.time_duration_idx
+% etc_trace_obj.flag_time_window_auto_adjust=0;
+% if((etc_trace_obj.time_window_begin_idx>=1)&&((etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1)<=size(etc_trace_obj.data,2)))
+     etc_trcae_gui_update_time;
+% end;
+
+return;
 
 % --- Executes on selection change in listbox_time_duration.
 function listbox_time_duration_Callback(hObject, eventdata, handles)
@@ -797,30 +650,18 @@ function listbox_time_duration_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns listbox_time_duration contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from listbox_time_duration
+
 global etc_trace_obj;
 
-if(isempty(etc_trace_obj))
-    return;
-end;
-
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
+% etc_trace_obj.time_select_idx;
+% etc_trace_obj.time_window_begin_idx;
 contents = cellstr(get(hObject,'String'));
 etc_trace_obj.time_duration_idx=round(str2num(contents{get(hObject,'Value')})*etc_trace_obj.fs);
-b=etc_trace_obj.time_begin_idx+etc_trace_obj.time_duration_idx-1;
-if(b<size(etc_trace_obj.data,2))
-    etc_trace_obj.time_end_idx=etc_trace_obj.time_begin_idx+etc_trace_obj.time_duration_idx-1;
-    
-    %time edit
-    hObject=findobj('tag','edit_time_begin_idx');
-    set(hObject,'String',sprintf('%d',etc_trace_obj.time_begin_idx));
-    hObject=findobj('tag','edit_time_end_idx');
-    set(hObject,'String',sprintf('%d',etc_trace_obj.time_end_idx));
-    hObject=findobj('tag','edit_time_begin');
-    set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_begin_idx-1))./etc_trace_obj.fs));
-    hObject=findobj('tag','edit_time_end');
-    set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
-    
-    etc_trace_handle('redraw');
-end;
+etc_trace_obj.flag_time_window_auto_adjust=1;
+etc_trcae_gui_update_time;
 
 
 % --- Executes during object creation, after setting all properties.
@@ -890,62 +731,20 @@ function edit_time_now_idx_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of edit_time_now_idx as text
 %        str2double(get(hObject,'String')) returns contents of edit_time_now_idx as a double
+
 global etc_trace_obj;
 
-if(isempty(etc_trace_obj))
-    return;
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
+etc_trace_obj.time_select_idx=round(str2double(get(hObject,'String')));
+% etc_trace_obj.time_window_begin_idx;
+% etc_trace_obj.time_duration_idx;
+etc_trace_obj.flag_time_window_auto_adjust=1;
+if((etc_trace_obj.time_select_idx)>=1&&(etc_trace_obj.time_select_idx<=size(etc_trace_obj.data,2)))
+    etc_trcae_gui_update_time;
 end;
-                
-etc_trace_obj.time_select_idx =str2double(get(hObject,'String'));
 
-
-%figure(etc_trace_obj.fig_trace);
-
-try
-    trigger_time_idx=etc_trace_obj.time_select_idx;
-    [tmp,mmidx]=min(abs(trigger_time_idx-etc_trace_obj.time_begin_idx-round(etc_trace_obj.time_duration_idx./(1/etc_trace_obj.config_trace_center_frac))));
-    
-    if(mmidx>=1)
-        a=trigger_time_idx-round(etc_trace_obj.time_duration_idx/(1/etc_trace_obj.config_trace_center_frac))+1;
-        b=a+etc_trace_obj.time_duration_idx;
-        
-        if(a<1) 
-            a=1;
-            b=a+etc_trace_obj.time_duration_idx;
-        end;
-        if(b>size(etc_trace_obj.data,2))
-            a=size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx;
-            b=size(etc_trace_obj.data,2);
-        end;
-                    
-        if(a>=1&&b<=size(etc_trace_obj.data,2))
-            etc_trace_obj.time_begin_idx=a;
-            etc_trace_obj.time_end_idx=b;
-            
-            %time slider
-            hObject_slider=findobj('tag','slider_time_idx');
-            v=(etc_trace_obj.time_begin_idx-1)/(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx);
-            set(hObject_slider,'value',v);
-            
-            %time edit
-            hObject=findobj('tag','edit_time_begin_idx');
-            set(hObject,'String',sprintf('%d',etc_trace_obj.time_begin_idx));
-            hObject=findobj('tag','edit_time_end_idx');
-            set(hObject,'String',sprintf('%d',etc_trace_obj.time_end_idx));
-            hObject=findobj('tag','edit_time_begin');
-            set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_begin_idx-1))./etc_trace_obj.fs));
-            hObject=findobj('tag','edit_time_end');
-            set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
-            
-            etc_trace_handle('redraw');
-        end;
-    end;
-    etc_trace_handle('bd','time_idx',trigger_time_idx);
-    
-%    figure(etc_trace_obj.fig_trigger);
-   
-catch ME
-end;
 
 % --- Executes during object creation, after setting all properties.
 function edit_time_now_idx_CreateFcn(hObject, eventdata, handles)
@@ -968,61 +767,19 @@ function edit_time_now_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of edit_time_now as text
 %        str2double(get(hObject,'String')) returns contents of edit_time_now as a double
+
 global etc_trace_obj;
 
-if(isempty(etc_trace_obj))
-    return;
-end;
-                
-etc_trace_obj.time_select_idx =round(str2double(get(hObject,'String')).*etc_trace_obj.fs)+1;
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
+etc_trace_obj.time_select_idx=round((str2double(get(hObject,'String'))-etc_trace_obj.time_begin)*etc_trace_obj.fs)+1;
+% etc_trace_obj.time_window_begin_idx;
+% etc_trace_obj.time_duration_idx;
+etc_trace_obj.flag_time_window_auto_adjust=1;
 
-
-%figure(etc_trace_obj.fig_trace);
-
-try
-    trigger_time_idx=etc_trace_obj.time_select_idx;
-    [tmp,mmidx]=min(abs(trigger_time_idx-etc_trace_obj.time_begin_idx-round(etc_trace_obj.time_duration_idx./(1/etc_trace_obj.config_trace_center_frac))));
-    
-    if(mmidx>=1)
-        a=trigger_time_idx-round(etc_trace_obj.time_duration_idx/(1/etc_trace_obj.config_trace_center_frac))+1;
-        b=a+etc_trace_obj.time_duration_idx;
-        
-        if(a<1) 
-            a=1;
-            b=a+etc_trace_obj.time_duration_idx;
-        end;
-        if(b>size(etc_trace_obj.data,2))
-            a=size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx;
-            b=size(etc_trace_obj.data,2);
-        end;
-                    
-        if(a>=1&&b<=size(etc_trace_obj.data,2))
-            etc_trace_obj.time_begin_idx=a;
-            etc_trace_obj.time_end_idx=b;
-            
-            %time slider
-            hObject_slider=findobj('tag','slider_time_idx');
-            v=(etc_trace_obj.time_begin_idx-1)/(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx);
-            set(hObject_slider,'value',v);
-            
-            %time edit
-            hObject=findobj('tag','edit_time_begin_idx');
-            set(hObject,'String',sprintf('%d',etc_trace_obj.time_begin_idx));
-            hObject=findobj('tag','edit_time_end_idx');
-            set(hObject,'String',sprintf('%d',etc_trace_obj.time_end_idx));
-            hObject=findobj('tag','edit_time_begin');
-            set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_begin_idx-1))./etc_trace_obj.fs));
-            hObject=findobj('tag','edit_time_end');
-            set(hObject,'String',sprintf('%1.3f',((etc_trace_obj.time_end_idx-1))./etc_trace_obj.fs));
-            
-            etc_trace_handle('redraw');
-        end;
-    end;
-    etc_trace_handle('bd','time_idx',trigger_time_idx);
-    
-%    figure(etc_trace_obj.fig_trigger);
-   
-catch ME
+if((etc_trace_obj.time_select_idx)>=1&&(etc_trace_obj.time_select_idx<=size(etc_trace_obj.data,2)))
+    etc_trcae_gui_update_time;
 end;
 
 % --- Executes during object creation, after setting all properties.
@@ -1046,3 +803,127 @@ function figure1_CloseRequestFcn(hObject, eventdata, handles)
 
 % Hint: delete(hObject) closes the figure
 delete(hObject);
+
+
+% --- Executes on button press in pushbutton_r.
+function pushbutton_r_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_r (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
+etc_trace_obj.time_select_idx=etc_trace_obj.time_select_idx-1;
+if(etc_trace_obj.time_select_idx<1)
+    etc_trace_obj.time_select_idx=1;
+end;
+% etc_trace_obj.time_window_begin_idx
+% etc_trace_obj.time_duration_idx
+etc_trace_obj.flag_time_window_auto_adjust=1;
+etc_trcae_gui_update_time;
+
+% --- Executes on button press in pushbutton_f.
+function pushbutton_f_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_f (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
+etc_trace_obj.time_select_idx=etc_trace_obj.time_select_idx+1;
+if(etc_trace_obj.time_select_idx>size(etc_trace_obj.data,2))
+    etc_trace_obj.time_select_idx=size(etc_trace_obj.data,2);
+end;
+% etc_trace_obj.time_window_begin_idx
+% etc_trace_obj.time_duration_idx
+etc_trace_obj.flag_time_window_auto_adjust=1;
+etc_trcae_gui_update_time;
+
+
+% --- Executes on button press in pushbutton_window_rr.
+function pushbutton_window_rr_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_window_rr (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global etc_trace_obj;
+
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
+% etc_trace_obj.time_select_idx
+% etc_trace_obj.time_window_begin_idx
+etc_trace_obj.time_window_begin_idx=etc_trace_obj.time_window_begin_idx-round(etc_trace_obj.time_duration_idx./10);
+if(etc_trace_obj.time_window_begin_idx<1)
+    etc_trace_obj.time_window_begin_idx=1;
+end;
+% etc_trace_obj.time_duration_idx
+etc_trace_obj.flag_time_window_auto_adjust=0;
+etc_trcae_gui_update_time;
+
+
+% --- Executes on button press in pushbutton_window_ff.
+function pushbutton_window_ff_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_window_ff (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global etc_trace_obj;
+
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
+% etc_trace_obj.time_select_idx
+% etc_trace_obj.time_window_begin_idx
+etc_trace_obj.time_window_begin_idx=etc_trace_obj.time_window_begin_idx+round(etc_trace_obj.time_duration_idx./10);
+if(etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1>size(etc_trace_obj.data,2))
+    etc_trace_obj.time_window_begin_idx=size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx+1;
+end;
+% etc_trace_obj.time_duration_idx
+etc_trace_obj.flag_time_window_auto_adjust=0;
+etc_trcae_gui_update_time;
+
+
+% --- Executes on button press in pushbutton_window_rrfast.
+function pushbutton_window_rrfast_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_window_rrfast (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
+% etc_trace_obj.time_select_idx
+% etc_trace_obj.time_window_begin_idx
+etc_trace_obj.time_window_begin_idx=etc_trace_obj.time_window_begin_idx-etc_trace_obj.time_duration_idx;
+if(etc_trace_obj.time_window_begin_idx<1)
+    etc_trace_obj.time_window_begin_idx=1;
+end;
+% etc_trace_obj.time_duration_idx
+etc_trace_obj.flag_time_window_auto_adjust=0;
+etc_trcae_gui_update_time;
+
+% --- Executes on button press in pushbutton_window_fffast.
+function pushbutton_window_fffast_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_window_fffast (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
+% etc_trace_obj.time_select_idx
+% etc_trace_obj.time_window_begin_idx
+etc_trace_obj.time_window_begin_idx=etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx;
+if(etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1>size(etc_trace_obj.data,2))
+    etc_trace_obj.time_window_begin_idx=size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx+1;
+end;
+% etc_trace_obj.time_duration_idx
+etc_trace_obj.flag_time_window_auto_adjust=0;
+etc_trcae_gui_update_time;

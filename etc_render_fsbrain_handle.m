@@ -13,6 +13,10 @@ for i=1:length(varargin)/2
     switch lower(option_name)
         case 'c0'
             cc='c0';
+        case 'cs'
+            cc='cs';
+        case 'cv'
+            cc='cv';
         case 'cc'
             cc=option;
         case 'surface_coord'
@@ -108,6 +112,8 @@ switch lower(param)
                         etc_render_fsbrain.overlay_stc_hemi=etc_render_fsbrain.overlay_stc;
                         
                         etc_render_fsbrain.overlay_flag_render=1;
+                        etc_render_fsbrain.overlay_value_flag_pos=1;
+                        etc_render_fsbrain.overlay_value_flag_neg=1;
                     elseif(findstr(filename,'.w')) %w file
                         [ww,vv]=inverse_read_wfile(sprintf('%s/%s',pathname,filename));
                         if(findstr(filename,'-lh'))
@@ -120,6 +126,8 @@ switch lower(param)
                         etc_render_fsbrain.stc_hemi=hemi;
                         
                         etc_render_fsbrain.overlay_flag_render=1;
+                        etc_render_fsbrain.overlay_value_flag_pos=1;
+                        etc_render_fsbrain.overlay_value_flag_neg=1;
                         
                     end;
                     etc_render_fsbrain.overlay_Ds=[];
@@ -295,16 +303,17 @@ switch lower(param)
                             end;
                         end;
                     end;
-                    etc_trace(etc_render_fsbrain.overlay_stc,'fs',fs,'ch_names',etc_render_fsbrain.aux_point_name,'aux_data',aux_data,'time_begin',time_begin);
                     
                     global etc_trace_obj;
-                    if(isvalid(etc_trace_obj.fig_trace))
-                        etc_trace_handle('bd','time_idx',etc_render_fsbrain.overlay_stc_timeVec_idx);
+                   
+                    if(isempty(etc_render_fsbrain.aux_point_name))
+                        for ii=1:length(etc_render_fsbrain.overlay_vertex)
+                            etc_render_fsbrain.aux_point_name{ii}=sprintf('ch%03d',ii);
+                        end;
                     end;
                     
-                    global etc_trace_obj;
-                    
-                    if(~isempty(etc_trace_obj))
+                    etc_trace_obj.ch_names=etc_render_fsbrain.aux_point_name;
+                    %if(~isempty(etc_trace_obj))
                         try
                             etc_trace_obj.topo.vertex=etc_render_fsbrain.vertex_coords;
                             etc_trace_obj.topo.face=etc_render_fsbrain.faces;
@@ -320,11 +329,13 @@ switch lower(param)
                                     end;
                                 end;
                                 
-                                for jj=1:size(etc_render_fsbrain.aux_point_coords,1)
-                                    dd=etc_trace_obj.topo.vertex-repmat(etc_render_fsbrain.aux_point_coords(jj,:),[size(etc_trace_obj.topo.vertex,1) 1]);
-                                    dd=sum(dd.^2,2);
-                                    [dummy, electrode_idx(jj)]=min(dd);
-                                end;
+                                
+                                electrode_idx=etc_render_fsbrain.overlay_vertex;
+                                %or jj=1:size(etc_render_fsbrain.aux_point_coords,1)
+                                %    dd=etc_trace_obj.topo.vertex-repmat(etc_render_fsbrain.aux_point_coords(jj,:),[size(etc_trace_obj.topo.vertex,1) 1]);
+                                %    dd=sum(dd.^2,2);
+                                %    [dummy, electrode_idx(jj)]=min(dd);
+                                %end;
                                 
                                 etc_trace_obj.topo.ch_names=etc_render_fsbrain.aux_point_name(Index);
                                 etc_trace_obj.topo.electrode_idx=electrode_idx;
@@ -332,7 +343,28 @@ switch lower(param)
                             end;
                         catch ME
                         end;
+                    %end;
+                    
+                    
+                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%                    
+                    if(isempty(etc_trace_obj))
+                        etc_trace(etc_render_fsbrain.overlay_stc,'fs',fs,'ch_names',etc_render_fsbrain.aux_point_name,'aux_data',aux_data,'time_begin',time_begin,'trace_selected_idx',etc_render_fsbrain.click_overlay_vertex,'ylim',[-max(etc_render_fsbrain.overlay_threshold) max(etc_render_fsbrain.overlay_threshold)]);
+                        %etc_trcae_gui_update_time;
+                    else
+                        trigger=[];
+                        if(isfield(etc_trace_obj,'trigger'))
+                            if(~isempty(etc_trace_obj.trigger))
+                                trigger=etc_trace_obj.trigger;
+                            end;
+                        end;
+                           
+                        etc_trace(etc_render_fsbrain.overlay_stc,'fs',fs,'ch_names',etc_render_fsbrain.aux_point_name,'aux_data',aux_data,'time_begin',time_begin,'trigger',trigger,'time_select_idx',etc_render_fsbrain.overlay_stc_timeVec_idx,'trace_selected_idx', etc_render_fsbrain.click_overlay_vertex,'ylim',[-max(etc_render_fsbrain.overlay_threshold) max(etc_render_fsbrain.overlay_threshold)],'topo',etc_trace_obj.topo);
+                        %etc_trcae_gui_update_time;
                     end;
+                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%                    
+                    
+
+                    
                 end;
             case 't'
 %                 fprintf('\ntemporal integration...\n');
@@ -401,6 +433,13 @@ switch lower(param)
                                 s.table=[220          60         120          0        1];
                                 etc_render_fsbrain.label_ctab=s;
                             end;
+                            etc_render_fsbrain.label_register=zeros(1,length(etc_render_fsbrain.label_ctab.struct_names));
+                            
+                            etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
+                            set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
+                            pos=get(etc_render_fsbrain.fig_label_gui,'pos');
+                            pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                            set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
                         case '.mgz'
                             file_annot=sprintf('%s/%s',pathname,filename);
                             etc_render_fsbrain.overlay_vol_mask=MRIread(file_annot);
@@ -422,6 +461,10 @@ switch lower(param)
                                 set(obj,'max',length(etc_render_fsbrain.lut.name));
                                 
                                 obj=findobj(etc_render_fsbrain.fig_gui,'tag','checkbox_overlay_aux_vol');
+                                set(obj,'enable','on');
+                                obj=findobj(etc_render_fsbrain.fig_gui,'tag','slider_overlay_aux_vol');
+                                set(obj,'enable','on');
+                                obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
                                 set(obj,'enable','on');
                                 
                                 draw_pointer();
@@ -447,6 +490,10 @@ switch lower(param)
                                 set(obj,'max',length(etc_render_fsbrain.lut.name));
                                 
                                 obj=findobj(etc_render_fsbrain.fig_gui,'tag','checkbox_overlay_aux_vol');
+                                set(obj,'enable','on');
+                                obj=findobj(etc_render_fsbrain.fig_gui,'tag','slider_overlay_aux_vol');
+                                set(obj,'enable','on');
+                                obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
                                 set(obj,'enable','on');
                                 
                                 draw_pointer();
@@ -509,58 +556,37 @@ switch lower(param)
                 %if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
                 
                 
-            case 'c' %colorbar;
-                figure(etc_render_fsbrain.fig_brain);
-                if(isfield(etc_render_fsbrain,'h_colorbar_pos'))
-                    if(isempty(etc_render_fsbrain.h_colorbar_pos))
-                        if(etc_render_fsbrain.overlay_value_flag_pos|etc_render_fsbrain.overlay_value_flag_neg)
-                            etc_render_fsbrain.brain_axis_pos=get(etc_render_fsbrain.brain_axis,'pos');
-                            set(etc_render_fsbrain.brain_axis,'pos',[etc_render_fsbrain.brain_axis_pos(1) 0.2 etc_render_fsbrain.brain_axis_pos(3) 0.8]);
-                            etc_render_fsbrain.h_colorbar=subplot('position',[etc_render_fsbrain.brain_axis_pos(1) 0.0 etc_render_fsbrain.brain_axis_pos(3) 0.2]);
-                            
-                            cmap=[etc_render_fsbrain.overlay_cmap; etc_render_fsbrain.overlay_cmap_neg];
-                            hold on;
-                            
-                            if(etc_render_fsbrain.overlay_value_flag_pos)
-                                etc_render_fsbrain.h_colorbar_pos=subplot('position',[0.4 0.05 0.2 0.02]);
-                                image([1:size(etc_render_fsbrain.overlay_cmap,1)]); axis off; colormap(cmap);
-                                h=text(-3,1,sprintf('%1.3f',min(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','right','color',[1 1 1]-etc_render_fsbrain.bg_color);
-                                h=text(size(etc_render_fsbrain.overlay_cmap,1)+3,1,sprintf('%1.3f',max(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','left','color',[1 1 1]-etc_render_fsbrain.bg_color);
-                            else
-                                etc_render_fsbrain.h_colorbar_pos=[];
-                            end;
-                            if(etc_render_fsbrain.overlay_value_flag_neg)
-                                etc_render_fsbrain.h_colorbar_neg=subplot('position',[0.4 0.10 0.2 0.02]);
-                                image([size(etc_render_fsbrain.overlay_cmap,1)+1:size(cmap,1)]); axis off; colormap(cmap);
-                                h=text(-3,1,sprintf('-%1.3f',min(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','right','color',[1 1 1]-etc_render_fsbrain.bg_color);
-                                h=text(size(etc_render_fsbrain.overlay_cmap,1)+3,1,sprintf('-%1.3f',max(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','left','color',[1 1 1]-etc_render_fsbrain.bg_color);
-                            else
-                                etc_render_fsbrain.h_colorbar_neg=[];
-                            end;
-                        end;
-                        
-                        if(ishandle(etc_render_fsbrain.fig_gui))
-                            set(findobj(etc_render_fsbrain.fig_gui,'tag','checkbox_show_colorbar'),'value',1);
-                        end;
-                    else
-                        delete(etc_render_fsbrain.h_colorbar_pos);
-                        etc_render_fsbrain.h_colorbar_pos=[];
-                        delete(etc_render_fsbrain.h_colorbar_neg);
-                        etc_render_fsbrain.h_colorbar_neg=[];
+            case 'c' %colorbar on/off by key press
+                etc_render_fsbrain.flag_colorbar=~etc_render_fsbrain.flag_colorbar;
+                etc_render_fsbrain.flag_colorbar_vol=~etc_render_fsbrain.flag_colorbar_vol;
+                
+                set(findobj(etc_render_fsbrain.fig_gui,'tag','checkbox_show_colorbar'),'value',etc_render_fsbrain.flag_colorbar);
+                set(findobj(etc_render_fsbrain.fig_gui,'tag','checkbox_show_vol_colorbar'),'value',etc_render_fsbrain.flag_colorbar_vol);
+                
+                etc_render_fsbrain_handle('kb','cs','cs'); %update colorbar
+
+            case 'cs' %colorbar update (surface)
+                if(~etc_render_fsbrain.flag_colorbar)
+                    delete(etc_render_fsbrain.h_colorbar_pos);
+                    etc_render_fsbrain.h_colorbar_pos=[];
+                    delete(etc_render_fsbrain.h_colorbar_neg);
+                    etc_render_fsbrain.h_colorbar_neg=[];
+                    if(~isempty(etc_render_fsbrain.brain_axis_pos))
                         set(etc_render_fsbrain.brain_axis,'pos',etc_render_fsbrain.brain_axis_pos);
-                        
-                        if(ishandle(etc_render_fsbrain.fig_gui))
-                            set(findobj(etc_render_fsbrain.fig_gui,'tag','checkbox_show_colorbar'),'value',0);
-                        end;
                     end;
                 else
                     if(etc_render_fsbrain.overlay_value_flag_pos|etc_render_fsbrain.overlay_value_flag_neg)
-                        etc_render_fsbrain.brain_axis=gca;
-                        etc_render_fsbrain.brain_axis_pos=get(gca,'pos');
+                        if(isempty(etc_render_fsbrain.h_colorbar_pos)&&isempty(etc_render_fsbrain.h_colorbar_neg))
+                            etc_render_fsbrain.brain_axis_pos=get(etc_render_fsbrain.brain_axis,'pos');
+                        end;
                         set(etc_render_fsbrain.brain_axis,'pos',[etc_render_fsbrain.brain_axis_pos(1) 0.2 etc_render_fsbrain.brain_axis_pos(3) 0.8]);
+                        figure(etc_render_fsbrain.fig_brain);
                         etc_render_fsbrain.h_colorbar=subplot('position',[etc_render_fsbrain.brain_axis_pos(1) 0.0 etc_render_fsbrain.brain_axis_pos(3) 0.2]);
                         
+                        %figure(etc_render_fsbrain.fig_brain);
+
                         cmap=[etc_render_fsbrain.overlay_cmap; etc_render_fsbrain.overlay_cmap_neg];
+                        hold on;
                         
                         if(etc_render_fsbrain.overlay_value_flag_pos)
                             etc_render_fsbrain.h_colorbar_pos=subplot('position',[0.4 0.05 0.2 0.02]);
@@ -570,7 +596,7 @@ switch lower(param)
                         else
                             etc_render_fsbrain.h_colorbar_pos=[];
                         end;
-                        
+
                         if(etc_render_fsbrain.overlay_value_flag_neg)
                             etc_render_fsbrain.h_colorbar_neg=subplot('position',[0.4 0.10 0.2 0.02]);
                             image([size(etc_render_fsbrain.overlay_cmap,1)+1:size(cmap,1)]); axis off; colormap(cmap);
@@ -579,35 +605,65 @@ switch lower(param)
                         else
                             etc_render_fsbrain.h_colorbar_neg=[];
                         end;
+                    else
+                        delete(etc_render_fsbrain.h_colorbar_pos);
+                        etc_render_fsbrain.h_colorbar_pos=[];
+                        delete(etc_render_fsbrain.h_colorbar_neg);
+                        etc_render_fsbrain.h_colorbar_neg=[];
+                        if(~isempty(etc_render_fsbrain.brain_axis_pos))
+                            set(etc_render_fsbrain.brain_axis,'pos',etc_render_fsbrain.brain_axis_pos);
+                        end;
                     end;
                 end;
-            case 'c0' %enforce showing colorbar
-                figure(etc_render_fsbrain.fig_brain);
                 
-                etc_render_fsbrain.brain_axis_pos=get(etc_render_fsbrain.brain_axis,'pos');
-                set(etc_render_fsbrain.brain_axis,'pos',[etc_render_fsbrain.brain_axis_pos(1) 0.2 etc_render_fsbrain.brain_axis_pos(3) 0.8]);
-                etc_render_fsbrain.h_colorbar=subplot('position',[etc_render_fsbrain.brain_axis_pos(1) 0.0 etc_render_fsbrain.brain_axis_pos(3) 0.2]);
-                
-                cmap=[etc_render_fsbrain.overlay_cmap; etc_render_fsbrain.overlay_cmap_neg];
-                hold on;
-                
-                if(etc_render_fsbrain.overlay_value_flag_pos)
-                    etc_render_fsbrain.h_colorbar_pos=subplot('position',[0.4 0.05 0.2 0.02]);
-                    image([1:size(etc_render_fsbrain.overlay_cmap,1)]); axis off; colormap(cmap);
-                    h=text(-3,1,sprintf('%1.3f',min(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','right','color',[1 1 1]-etc_render_fsbrain.bg_color);
-                    h=text(size(etc_render_fsbrain.overlay_cmap,1)+3,1,sprintf('%1.3f',max(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','left','color',[1 1 1]-etc_render_fsbrain.bg_color);
+            case 'cv' %colorbar update (volume)
+                if(~etc_render_fsbrain.flag_colorbar_vol)
+                    delete(etc_render_fsbrain.h_colorbar_vol_pos);
+                    etc_render_fsbrain.h_colorbar_vol_pos=[];
+                    delete(etc_render_fsbrain.h_colorbar_vol_neg);
+                    etc_render_fsbrain.h_colorbar_vol_neg=[];
+                    %set(etc_re'vnder_fsbrain.brain_axis,'pos',etc_render_fsbrain.brain_axis_pos);
                 else
-                    etc_render_fsbrain.h_colorbar_pos=[];
+                    if(etc_render_fsbrain.overlay_value_flag_pos|etc_render_fsbrain.overlay_value_flag_neg)
+                        %if(isempty(etc_render_fsbrain.h_colorbar_vol_pos)&&isempty(etc_render_fsbrain.h_colorbar_vol_neg))
+                        %    etc_render_fsbrain.brain_axis_pos=get(etc_render_fsbrain.brain_axis,'pos');
+                        %end;
+                        %set(etc_render_fsbrain.brain_axis,'pos',[etc_render_fsbrain.brain_axis_pos(1) 0.2 etc_render_fsbrain.brain_axis_pos(3) 0.8]);
+                        figure(etc_render_fsbrain.fig_vol); hold on;
+                        %etc_render_fsbrain.h_colorbar_vol=subplot('position',[etc_render_fsbrain.brain_axis_pos(1) 0.0 etc_render_fsbrain.brain_axis_pos(3) 0.2]);
+                        
+                        %figure(etc_render_fsbrain.fig_vol);
+                        
+                        cmap=[etc_render_fsbrain.overlay_cmap; etc_render_fsbrain.overlay_cmap_neg];
+                        hold on;
+                        
+                        if(etc_render_fsbrain.overlay_value_flag_pos)
+                            etc_render_fsbrain.h_colorbar_vol_pos=axes('position',[0.6 0.05 0.2 0.02]);
+                            set(etc_render_fsbrain.h_colorbar_vol_pos,'color','none');
+                            image([1:size(etc_render_fsbrain.overlay_cmap,1)]); axis off; colormap(cmap);
+                            h=text(-3,1,sprintf('%1.3f',min(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','right','color',[1 1 1].*0.8);
+                            h=text(size(etc_render_fsbrain.overlay_cmap,1)+3,1,sprintf('%1.3f',max(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','left','color',[1 1 1].*0.8);
+                        else
+                            etc_render_fsbrain.h_colorbar_vol_pos=[];
+                        end;
+                        
+                        if(etc_render_fsbrain.overlay_value_flag_neg)
+                            etc_render_fsbrain.h_colorbar_vol_neg=axes('position',[0.6 0.10 0.2 0.02]);
+                            set(etc_render_fsbrain.h_colorbar_vol_neg,'color','none');
+                            image([size(etc_render_fsbrain.overlay_cmap,1)+1:size(cmap,1)]); axis off; colormap(cmap);
+                            h=text(-3,1,sprintf('-%1.3f',min(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','right','color',[1 1 1].*0.8);
+                            h=text(size(etc_render_fsbrain.overlay_cmap,1)+3,1,sprintf('-%1.3f',max(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','left','color',[1 1 1].*0.8);
+                        else
+                            etc_render_fsbrain.h_colorbar_vol_neg=[];
+                        end;
+                    else
+                        delete(etc_render_fsbrain.h_colorbar_vol_pos);
+                        etc_render_fsbrain.h_colorbar_vol_pos=[];
+                        delete(etc_render_fsbrain.h_colorbar_vol_neg);
+                        etc_render_fsbrain.h_colorbar_vol_neg=[];
+                        %set(etc_render_fsbrain.brain_axis,'pos',etc_render_fsbrain.brain_axis_pos);
+                    end;
                 end;
-                if(etc_render_fsbrain.overlay_value_flag_neg)
-                    etc_render_fsbrain.h_colorbar_neg=subplot('position',[0.4 0.10 0.2 0.02]);
-                    image([size(etc_render_fsbrain.overlay_cmap,1)+1:size(cmap,1)]); axis off; colormap(cmap);
-                    h=text(-3,1,sprintf('-%1.3f',min(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','right','color',[1 1 1]-etc_render_fsbrain.bg_color);
-                    h=text(size(etc_render_fsbrain.overlay_cmap,1)+3,1,sprintf('-%1.3f',max(etc_render_fsbrain.overlay_threshold))); set(h,'fontname','helvetica','fontsize',14,'fontweight','bold','horizon','left','color',[1 1 1]-etc_render_fsbrain.bg_color);
-                else
-                    etc_render_fsbrain.h_colorbar_neg=[];
-                end;
-                
             case 'y' %cluster
                 
                 
@@ -755,17 +811,17 @@ switch lower(param)
             if(isfield(etc_render_fsbrain,'fig_subject'))
                 close(etc_render_fsbrain.fig_subject,'force');
             else
-                close(gcf,'force');
+                %close(gcf,'force');
             end;
         end;
         
-         try
+        try
             delete(etc_render_fsbrain.fig_sensor_gui);
         catch ME
             if(isfield(etc_render_fsbrain,'fig_sensor_gui'))
                 close(etc_render_fsbrain.fig_sensor_gui,'force');
             else
-                close(gcf,'force');
+                %close(gcf,'force');
             end;
         end;
         
@@ -775,7 +831,7 @@ switch lower(param)
             if(isfield(etc_render_fsbrain,'fig_register'))
                 close(etc_render_fsbrain.fig_register,'force');
             else
-                close(gcf,'force');
+                %close(gcf,'force');
             end;
         end;
         
@@ -785,7 +841,7 @@ switch lower(param)
             if(isfield(etc_render_fsbrain,'fig_stc'))
                 close(etc_render_fsbrain.fig_stc,'force');
             else
-                close(gcf,'force');
+                %close(gcf,'force');
             end;
         end;
         
@@ -795,7 +851,7 @@ switch lower(param)
             if(isfield(etc_render_fsbrain,'fig_coord_gui'))
                 close(etc_render_fsbrain.fig_coord_gui,'force');
             else
-                close(gcf,'force');
+                %close(gcf,'force');
             end;
         end;
         
@@ -805,7 +861,7 @@ switch lower(param)
             if(isfield(etc_render_fsbrain,'fig_label_gui'))
                 close(etc_render_fsbrain.fig_label_gui,'force');
             else
-                close(gcf,'force');
+                %close(gcf,'force');
             end;
         end;
         
@@ -815,7 +871,7 @@ switch lower(param)
             if(isfield(etc_render_fsbrain,'fig_electrode_gui'))
                 close(etc_render_fsbrain.fig_electrode_gui,'force');
             else
-                close(gcf,'force');
+                %close(gcf,'force');
             end;
         end;
         
@@ -825,7 +881,7 @@ switch lower(param)
             if(isfield(etc_render_fsbrain,'fig_gui'))
                 close(etc_render_fsbrain.fig_gui,'force');
             else
-                close(gcf,'force');
+                %close(gcf,'force');
             end;
         end;
         
@@ -835,11 +891,21 @@ switch lower(param)
             if(isfield(etc_render_fsbrain,'fig_vol'))
                 close(etc_render_fsbrain.fig_vol,'force');
             else
-                close(gcf,'force');
+                %close(gcf,'force');
             end;
         end;
         
         try
+            [az,el]=view;
+            etc_render_fsbrain.view_angle=[az,el];
+            camposition=campos;
+            etc_render_fsbrain.camposition;
+            xlim=get(etc_render_fsbrain.brain_axis,'xlim');
+            ylim=get(etc_render_fsbrain.brain_axis,'ylim');
+            zlim=get(etc_render_fsbrain.brain_axis,'zlim');
+            etc_render_fsbrain.lim=[xlim(:)' ylim(:)' zlim(:)'];
+            etc_render_fsbrain.fig_brain_pos=get(etc_render_fsbrain.fig_brain,'position');
+            
             delete(etc_render_fsbrain.fig_brain);
         catch ME
             if(isfield(etc_render_fsbrain,'fig_brain'))
@@ -1024,23 +1090,32 @@ switch lower(param)
            
             if(ishandle(etc_render_fsbrain.fig_gui))
                 set(findobj(etc_render_fsbrain.fig_gui,'tag','slider_timeVec'),'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
-                
                 set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_timeVec'),'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
                 set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_timeVec'),'string',sprintf('%1.0f',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx)));
             end;
             
-            figure(etc_render_fsbrain.fig_brain);
-           
-            draw_pointer('pt',etc_render_fsbrain.click_coord,'min_dist_idx',etc_render_fsbrain.click_vertex,'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
-            redraw;
+            if(isvalid(etc_render_fsbrain.fig_brain))
+                figure(etc_render_fsbrain.fig_brain);
+                 redraw;
+                draw_pointer('pt',etc_render_fsbrain.click_coord,'min_dist_idx',etc_render_fsbrain.click_vertex,'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
+            end;
             figure(etc_render_fsbrain.fig_stc);
+            
+            
+            global etc_trace_obj;
+            
+            if(~isempty(etc_trace_obj))
+                etc_trace_obj.time_select_idx=etc_render_fsbrain.overlay_stc_timeVec_idx;
+                etc_trace_obj.flag_time_window_auto_adjust=0;
+                etc_trcae_gui_update_time('flag_redraw',0);
+            end;
             
         end;
         
         global etc_trace_obj;
         if(~isempty(etc_trace_obj))
             if(isvalid(etc_trace_obj.fig_trace))
-                etc_trace_handle('bd','time_idx',etc_render_fsbrain.overlay_stc_timeVec_idx);
+                %etc_trace_handle('bd','time_idx',etc_render_fsbrain.overlay_stc_timeVec_idx);
             end;
         end;
 end;
@@ -1128,9 +1203,9 @@ try
         [min_dist,min_dist_idx]=min(dist);
     end;
     if(isempty(etc_render_fsbrain.ovs))
-        fprintf('the nearest vertex on the surface: IDX=[%d] {x, y, z} = {%2.2f %2.2f %2.2f} \n',min_dist_idx,vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3));
+        fprintf('the nearest vertex on the surface: IDX=[%d] @ {%2.2f %2.2f %2.2f} \n',min_dist_idx,vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3));
     else
-        fprintf('the nearest vertex on the surface: IDX=[%d] {x, y, z} = {%2.2f %2.2f %2.2f} <<%2.2f>> \n',min_dist_idx,vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3),etc_render_fsbrain.ovs(min_dist_idx));
+        fprintf('the nearest vertex on the surface: IDX=[%d]::<<%2.2f>> @ {%2.2f %2.2f %2.2f} \n',min_dist_idx,etc_render_fsbrain.ovs(min_dist_idx), vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3));
     end;
     etc_render_fsbrain.click_coord_round=[vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3)];
     etc_render_fsbrain.click_vertex=min_dist_idx;
@@ -1216,7 +1291,7 @@ try
             
             etc_render_fsbrain.fig_vol=figure;
             pos=get(etc_render_fsbrain.fig_brain,'pos');
-            set(etc_render_fsbrain.fig_vol,'pos',[pos(1)-pos(3), pos(2), pos(3), pos(4)]);
+            set(etc_render_fsbrain.fig_vol,'pos',[pos(1)-pos(3)*2, pos(2), pos(3)*2, pos(4)*2]);
             
             xlim=[];
             ylim=[];
@@ -1231,7 +1306,7 @@ try
         if(~isempty(etc_render_fsbrain.vol_vox))
             etc_render_fsbrain.fig_vol=figure;
             pos=get(etc_render_fsbrain.fig_brain,'pos');
-            set(etc_render_fsbrain.fig_vol,'pos',[pos(1)-pos(3), pos(2), pos(3), pos(4)]);
+            set(etc_render_fsbrain.fig_vol,'pos',[pos(1)-pos(3)*2, pos(2), pos(3)*2, pos(4)*2]);
             
             xlim=[];
             ylim=[];
@@ -1329,6 +1404,12 @@ try
                     end;
                     
                 else
+                    img_cor_overlay=[];
+                    img_ax_overlay=[];
+                    img_sag_overlay=[];
+                end;
+                
+                if(~etc_render_fsbrain.overlay_vol_flag_render)
                     img_cor_overlay=[];
                     img_ax_overlay=[];
                     img_sag_overlay=[];
@@ -1467,6 +1548,7 @@ try
                         obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
                         idx=get(obj,'value');
                         
+                        etc_render_fsbrain.overlay_aux_stc=[];
                         for ii=1:length(idx)
                             mask=zeros(size(etc_render_fsbrain.overlay_vol_mask_img));
                             mask_idx=find(etc_render_fsbrain.overlay_vol_mask_img==etc_render_fsbrain.lut.number(idx(ii)));
@@ -1478,6 +1560,12 @@ try
                                 mask_c=mask_c+cat(3,mask.*etc_render_fsbrain.lut.r(idx(ii))./255,mask.*etc_render_fsbrain.lut.g(idx(ii))./255,mask.*etc_render_fsbrain.lut.b(idx(ii))./255);
                                 mask_all=mask_all+mask;                                
                             end;
+                            
+%                             if(~isempty(etc_render_fsbrain.overlay_vol))
+%                                 mask_idx=find(etc_render_fsbrain.overlay_vol_mask.vol(:)==etc_render_fsbrain.lut.number(idx(ii)));
+%                                 tmp=reshape(etc_render_fsbrain.overlay_vol.vol,[size(etc_render_fsbrain.overlay_vol.vol,1)*size(etc_render_fsbrain.overlay_vol.vol,2)*size(etc_render_fsbrain.overlay_vol.vol,3),size(etc_render_fsbrain.overlay_vol.vol,4)]);
+%                                 etc_render_fsbrain.overlay_aux_stc(1,:,ii)=mean(tmp(mask_idx,:),1);
+%                             end;
                         end;
                         h=image(mask_c); hold on;
                         set(h,'alphadata',etc_render_fsbrain.overlay_vol_mask_alpha.*mask_all);
@@ -1560,11 +1648,11 @@ try
                     surface_coord=etc_render_fsbrain.aux2_point_coords(v_idx,:);
                     
                     
-                    if(strcmp(etc_render_fsbrain.surf,'orig'))
+                    if(strcmp(etc_render_fsbrain.surf,'orig')|strcmp(etc_render_fsbrain.surf,'smoothwm')|strcmp(etc_render_fsbrain.surf,'pial'))
                         
                     else
                         if(v_idx==1)
-                            fprintf('surface <%s> not "orig". Electrode contacts locations are mapped from this surface back to the "orig" volume.\n',etc_render_fsbrain.surf);
+                            fprintf('surface <%s> not "orig"/"pial"/"smoothwm". Electrode contacts locations are mapped from this surface back to the "orig" volume.\n',etc_render_fsbrain.surf);
                         end;
                         %tmp=etc_render_fsbrain.aux2_point_coords(count,:);
                         
@@ -1579,7 +1667,8 @@ try
                     
                     point_size=1e3;
                     
-                    D=2; %a constant controlling the visibility of contacts
+                    %D=2; %a constant controlling the visibility of contacts
+                    D=etc_render_fsbrain.show_all_contacts_mri_depth; %a constant controlling the visibility of contacts
                     alpha=exp(-(abs(click_vertex_vox(3)-round(etc_render_fsbrain.click_vertex_vox(3))))/D);
                     if(alpha>0.2)
                         etc_render_fsbrain.aux2_point_mri_cor_h(count)=scatter(etc_render_fsbrain.img_cor_padx+click_vertex_vox(1), etc_render_fsbrain.img_cor_pady+click_vertex_vox(2),point_size,[0.8500 0.3250 0.0980],'.');
@@ -1717,6 +1806,29 @@ try
         try
             figure(etc_render_fsbrain.fig_brain);
             
+            
+%             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% overlay at the clicked point
+%             vv=etc_render_fsbrain.vertex_coords;
+%             if(isempty(min_dist_idx))
+%                 dist=sqrt(sum((vv-repmat([pt(1),pt(2),pt(3)],[size(vv,1),1])).^2,2));
+%                 [min_dist,min_dist_idx]=min(dist);
+%             end;
+%             if(~iscell(etc_render_fsbrain.overlay_vertex))
+%                 fprintf('the clicked overlay surface vertex: location=[%d]::<<%2.2f>> @ {%2.2f %2.2f %2.2f} \n',min_dist_idx,etc_render_fsbrain.ovs(min_dist_idx),vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3));
+%             else
+%                 if(min_dist_idx>length(etc_render_fsbrain.overlay_vertex{1}))
+%                     offset=length(etc_render_fsbrain.overlay_vertex{1});
+%                     hemi_idx=2;
+%                 else
+%                     offset=0;
+%                     hemi_idx=1;
+%                 end;
+%                 fprintf('the clicked overlay vertex: hemi{%d} location=[%d]::<<%2.2f>> @ {%2.2f %2.2f %2.2f} \n',hemi_idx,min_dist_idx-offset,etc_render_fsbrain.ovs{hemi_idx}(min_dist_idx-offset),vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3));
+%             end;
+%             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% overlay at the clicked point
+            
+            
+            %%%% overlay at the valued vertex closest to the clicked point
             if(~iscell(etc_render_fsbrain.overlay_vertex))
                 vv=etc_render_fsbrain.vertex_coords;
                 vv=vv(etc_render_fsbrain.overlay_vertex+1,:);
@@ -1731,7 +1843,7 @@ try
             dist=sqrt(sum((vv-repmat([pt(1),pt(2),pt(3)],[size(vv,1),1])).^2,2));
             [min_overlay_dist,min_overlay_dist_idx]=min(dist);
             if(~iscell(etc_render_fsbrain.overlay_vertex))
-                fprintf('the nearest overlay surface vertex: location=[%d]::<<%2.2f>> @ (%2.2f %2.2f %2.2f) \n',min_overlay_dist_idx,etc_render_fsbrain.overlay_value(min_overlay_dist_idx),vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3));
+                fprintf('the nearest overlay surface vertex: location=[%d]::<<%2.2f>> @ {%2.2f %2.2f %2.2f} \n',min_overlay_dist_idx,etc_render_fsbrain.overlay_value(min_overlay_dist_idx),vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3));
             else
                 if(min_overlay_dist_idx>length(etc_render_fsbrain.overlay_vertex{1}))
                     offset=length(etc_render_fsbrain.overlay_vertex{1});
@@ -1740,8 +1852,10 @@ try
                     offset=0;
                     hemi_idx=1;
                 end;
-                fprintf('the nearest overlay vertex: hemi{%d} location=[%d]::<<%2.2f>> @ (%2.2f %2.2f %2.2f) \n',hemi_idx,min_overlay_dist_idx-offset,etc_render_fsbrain.overlay_value{hemi_idx}(min_overlay_dist_idx-offset),vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3));
+                fprintf('the nearest overlay vertex: hemi{%d} location=[%d]::<<%2.2f>> @ {%2.2f %2.2f %2.2f} \n',hemi_idx,min_overlay_dist_idx-offset,etc_render_fsbrain.overlay_value{hemi_idx}(min_overlay_dist_idx-offset),vv(min_overlay_dist_idx,1),vv(min_overlay_dist_idx,2),vv(min_overlay_dist_idx,3));
             end;
+            %%%% overlay at the valued vertex closest to the clicked point
+            
             if(etc_render_fsbrain.flag_overlay_stc_surf)
                 etc_render_fsbrain.click_overlay_vertex=min_overlay_dist_idx;
             end;
@@ -1803,9 +1917,21 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
         
         if(isempty(etc_render_fsbrain.overlay_stc_timeVec))
             try
-                delete(etc_render_fsbrain.handle_fig_stc_timecourse)
+                delete(etc_render_fsbrain.handle_fig_stc_timecourse);
+            catch ME
+            end;
+            
+            try
                 delete(etc_render_fsbrain.handle_fig_stc_aux_timecourse);
-                delete(etc_render_fsbrain.handle_fig_stc_roi_timecourse)
+            catch ME
+            end;
+            
+            try
+                delete(etc_render_fsbrain.handle_fig_stc_roi_timecourse);
+            catch ME
+            end;
+            
+            try
                 delete(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse);
             catch ME
             end;
@@ -1868,19 +1994,58 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
                             data=etc_render_fsbrain.overlay_aux_stc(itx_idx,:,:);
                             hold on; etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse=plot(squeeze(mean(data,1)));
                             cc=get(gca,'ColorOrder');
-                            for ii=1:length(h)
+                            for ii=1:length(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse)
                                 set(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse(ii),'linewidth',1,'color',cc(rem(ii,8),:),'linestyle',':');
                             end;
                         end;
                     end;
                 end;
             end;
+            
+            buffer=[];
+            if(~isempty(etc_render_fsbrain.overlay_vol_mask))
+                if(etc_render_fsbrain.overlay_flag_vol_mask)
+                    
+                    obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
+                    idx=get(obj,'value');
+                    
+                    etc_render_fsbrain.overlay_aux_stc=[];
+                    for ii=1:length(idx)
+                        
+                        if(~isempty(etc_render_fsbrain.overlay_vol))
+                            mask_idx=find(etc_render_fsbrain.overlay_vol_mask.vol(:)==etc_render_fsbrain.lut.number(idx(ii)));
+                            tmp=reshape(etc_render_fsbrain.overlay_vol.vol,[size(etc_render_fsbrain.overlay_vol.vol,1)*size(etc_render_fsbrain.overlay_vol.vol,2)*size(etc_render_fsbrain.overlay_vol.vol,3),size(etc_render_fsbrain.overlay_vol.vol,4)]);
+                            buffer(1,:,ii)=mean(tmp(mask_idx,:),1);
+                        end;
+                    end;
+                end;
+            end;
+            if(~isempty(buffer))
+                hold on; etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse=plot(etc_render_fsbrain.overlay_stc_timeVec, squeeze(buffer(1,:,:)));
+                cc=get(gca,'ColorOrder');
+                for ii=1:length(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse)
+                    set(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse(ii),'linewidth',1,'color',cc(rem(ii,8),:),'linestyle',':');
+                end;
+            end;
+            
             hold off;
         else
             try
                 delete(etc_render_fsbrain.handle_fig_stc_timecourse);
+            catch ME
+            end;
+            
+            try
                 delete(etc_render_fsbrain.handle_fig_stc_aux_timecourse);
+            catch ME
+            end;
+            
+            try
                 delete(etc_render_fsbrain.handle_fig_stc_roi_timecourse);
+            catch ME
+            end;
+            
+            try
                 delete(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse);
             catch ME
             end;
@@ -1942,6 +2107,35 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
                 end;
             end;
             
+            
+            buffer=[];
+            if(~isempty(etc_render_fsbrain.overlay_vol_mask))
+                if(etc_render_fsbrain.overlay_flag_vol_mask)
+                    
+                    obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
+                    idx=get(obj,'value');
+                    
+                    etc_render_fsbrain.overlay_aux_stc=[];
+                    for ii=1:length(idx)
+                        
+                        if(~isempty(etc_render_fsbrain.overlay_vol))
+                            mask_idx=find(etc_render_fsbrain.overlay_vol_mask.vol(:)==etc_render_fsbrain.lut.number(idx(ii)));
+                            tmp=reshape(etc_render_fsbrain.overlay_vol.vol,[size(etc_render_fsbrain.overlay_vol.vol,1)*size(etc_render_fsbrain.overlay_vol.vol,2)*size(etc_render_fsbrain.overlay_vol.vol,3),size(etc_render_fsbrain.overlay_vol.vol,4)]);
+                            buffer(1,:,ii)=mean(tmp(mask_idx,:),1);
+                        end;
+                    end;
+                end;
+            end;
+            if(~isempty(buffer))
+                hold on; etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse=plot(etc_render_fsbrain.overlay_stc_timeVec, squeeze(buffer(1,:,:)));
+                cc=get(gca,'ColorOrder');
+                for ii=1:length(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse)
+                    set(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse(ii),'linewidth',1,'color',cc(rem(ii,8),:),'linestyle','--');
+                end;
+            end;
+            
+                
+            
             hold off;
             
         end;
@@ -1977,9 +2171,12 @@ if(~isvalid(etc_render_fsbrain.fig_brain))
 else
     figure(etc_render_fsbrain.fig_brain);
 end;
-
+hold on;
 
 %set axes
+if(~isfield(etc_render_fsbrain,'brain_axis'))
+   etc_render_fsbrain.brain_axis=[];
+end;
 if(~isvalid(etc_render_fsbrain.brain_axis))
     etc_render_fsbrain.brain_axis=gca;
 else
@@ -1991,7 +2188,9 @@ else
 
     etc_render_fsbrain.lim=[xlim(:)' ylim(:)' zlim(:)'];
 end;
-[etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2)]=view;
+if(isempty(etc_render_fsbrain.view_angle))
+    [etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2)]=view;
+end;
 
 %delete brain patch object
 if(ishandle(etc_render_fsbrain.h))
@@ -2017,15 +2216,15 @@ if(etc_render_fsbrain.overlay_flag_render)
         if(~iscell(etc_render_fsbrain.overlay_value))
             ov=zeros(size(etc_render_fsbrain.vertex_coords,1),1);
             ov(etc_render_fsbrain.overlay_vertex+1)=etc_render_fsbrain.overlay_value;
-            
+
             if(~isempty(etc_render_fsbrain.overlay_smooth))
                 [ovs,dd0,dd1,etc_render_fsbrain.overlay_Ds]=inverse_smooth('','vertex',etc_render_fsbrain.vertex_coords','face',etc_render_fsbrain.faces','value_idx',etc_render_fsbrain.overlay_vertex+1,'value',ov,'step',etc_render_fsbrain.overlay_smooth,'flag_fixval',etc_render_fsbrain.overlay_fixval_flag,'exc_vertex',etc_render_fsbrain.overlay_exclude,'inc_vertex',etc_render_fsbrain.overlay_include,'flag_regrid',etc_render_fsbrain.overlay_regrid_flag,'flag_regrid_zero',etc_render_fsbrain.overlay_regrid_zero_flag,'Ds',etc_render_fsbrain.overlay_Ds,'n_ratio',length(ov)/length(etc_render_fsbrain.overlay_value));
             else
                 ovs=ov;
             end;
             
-            if(~isempty(find(etc_render_fsbrain.overlay_value>0))) etc_render_fsbrain.overlay_value_flag_pos=1; end;
-            if(~isempty(find(etc_render_fsbrain.overlay_value<0))) etc_render_fsbrain.overlay_value_flag_neg=1; end;
+            %if(~isempty(find(etc_render_fsbrain.overlay_value>0))) etc_render_fsbrain.overlay_value_flag_pos=1; end;
+            %if(~isempty(find(etc_render_fsbrain.overlay_value<0))) etc_render_fsbrain.overlay_value_flag_neg=1; end;
         else
             ovs=[];
             for h_idx=1:length(etc_render_fsbrain.overlay_value)
@@ -2038,8 +2237,8 @@ if(etc_render_fsbrain.overlay_flag_render)
                 else
                     ovs=cat(1,ovs,ov);
                 end;
-                if(~isempty(find(etc_render_fsbrain.overlay_value{h_idx}>0))) etc_render_fsbrain.overlay_value_flag_pos=1; end;
-                if(~isempty(find(etc_render_fsbrain.overlay_value{h_idx}<0))) etc_render_fsbrain.overlay_value_flag_neg=1; end;
+                %if(~isempty(find(etc_render_fsbrain.overlay_value{h_idx}>0))) etc_render_fsbrain.overlay_value_flag_pos=1; end;
+                %if(~isempty(find(etc_render_fsbrain.overlay_value{h_idx}<0))) etc_render_fsbrain.overlay_value_flag_neg=1; end;
             end;
         end;
         
@@ -2079,7 +2278,14 @@ material dull;
 etc_render_fsbrain.h=h;
 
 axis off vis3d equal;
-axis(etc_render_fsbrain.lim);
+
+if(etc_render_fsbrain.flag_camlight)
+    camlight(-90,0);
+    camlight(90,0);
+    camlight(0,0);
+    camlight(180,0);
+end;
+
 
 if(~isempty(etc_render_fsbrain.overlay_threshold))
         h=findobj('tag','edit_threshold_min');
@@ -2098,7 +2304,8 @@ if(~isempty(etc_render_fsbrain.overlay_threshold))
 end;
 set(gcf,'color',etc_render_fsbrain.bg_color);
 
-
+campos(etc_render_fsbrain.camposition); 
+axis(etc_render_fsbrain.lim);
 view(etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2));
 
 % %add exploration toolbar
@@ -2112,12 +2319,18 @@ view(etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2));
 try
     if(isfield(etc_render_fsbrain,'aux_point_coords'))
         if(~isempty(etc_render_fsbrain.aux_point_coords_h))
-            delete(etc_render_fsbrain.aux_point_coords_h(:));
+            try
+                delete(etc_render_fsbrain.aux_point_coords_h(:));
+            catch ME
+            end;
             etc_render_fsbrain.aux_point_coords_h=[];
         end;
         
         if(~isempty(etc_render_fsbrain.aux_point_name_h))
-            delete(etc_render_fsbrain.aux_point_name_h(:));
+            try
+                delete(etc_render_fsbrain.aux_point_name_h(:));
+            catch ME
+            end;
             etc_render_fsbrain.aux_point_name_h=[];
         end;
         
@@ -2162,21 +2375,33 @@ try
     
     if(isfield(etc_render_fsbrain,'aux2_point_coords'))
         if(~isempty(etc_render_fsbrain.aux2_point_coords_h))
-            delete(etc_render_fsbrain.aux2_point_coords_h(:));
+            try
+                delete(etc_render_fsbrain.aux2_point_coords_h(:));
+            catch ME
+            end;    
             etc_render_fsbrain.aux2_point_coords_h=[];
         end;
         
         if(~isempty(etc_render_fsbrain.selected_electrode_coords_h))
-            delete(etc_render_fsbrain.selected_electrode_coords_h(:));
+            try
+                delete(etc_render_fsbrain.selected_electrode_coords_h(:));
+            catch ME
+            end;
             etc_render_fsbrain.selected_electrode_coords_h=[];
         end;
         if(~isempty(etc_render_fsbrain.selected_contact_coords_h))
-            delete(etc_render_fsbrain.selected_contact_coords_h(:));
+            try
+                delete(etc_render_fsbrain.selected_contact_coords_h(:));
+            catch ME
+            end;
             etc_render_fsbrain.selected_contact_coords_h=[];
         end;        
         
         if(~isempty(etc_render_fsbrain.aux2_point_name_h))
-            delete(etc_render_fsbrain.aux2_point_name_h(:));
+            try
+                delete(etc_render_fsbrain.aux2_point_name_h(:));
+            catch ME
+            end;
             etc_render_fsbrain.aux2_point_name_h=[];
         end;
 

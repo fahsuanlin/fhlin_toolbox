@@ -210,6 +210,7 @@ for ch_idx=1:length(non_ecg_channel)
         end;
     else
         for trial_idx=1:length(qrs_i_raw)
+            fprintf('ch {%d|%d}...trial [%d|%d]...\r',ch_idx,length(non_ecg_channel),trial_idx,length(qrs_i_raw));
             if(bad_trials{non_ecg_channel(ch_idx)}(trial_idx))
                 eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)=nan; %bad trials; BCG artifact can propagate and thus mark data as NaN.
             else
@@ -228,34 +229,25 @@ for ch_idx=1:length(non_ecg_channel)
                         end;
                     end;
                     
-                    if(flag_bcgmc) %restore matrix 
-                        x=bcg_all{non_ecg_channel(ch_idx)};
+                    if(flag_bcgmc|flag_ppca) %restore matrix
+                        x=bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:);
                         sz=size(x);
                         IDX=find(~isnan(x(:)));
                         M = opRestriction(prod(sz), IDX);
                         % Sampled data
-                        y = M(x(:),1);
-                        x1=IST_MC(y,M,sz);
+                        yy = M(x(:),1);
+                        x1=IST_MC(yy,M,sz);
                         bcg_all{non_ecg_channel(ch_idx)}=x1;
-                        [U,S,V,numiter] = SVT([sz(1) sz(2)],IDX,x(IDX),5*sqrt(prod(sz)),1.2/(length(IDX)/prod(sz)));
+                        global VERBOSE;
+                        VERBOSE=0;
+                        [uu,ss,vv,V,numiter] = SVT([sz(1) sz(2)],IDX,x(IDX),5*sqrt(prod(sz)),1.2/(length(IDX)/prod(sz)));
+                    else
+                        %if(non_ecg_channel(ch_idx)==9) keyboard; end;
+                        [uu,ss,vv]=svd(bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:),'econ');
                     end;
                     
-                    if(flag_ppca) %restore matrix 
-                        x=bcg_all{non_ecg_channel(ch_idx)};
-                        sz=size(x);
-                        IDX=find(~isnan(x(:)));
-                        M = opRestriction(prod(sz), IDX);
-                        % Sampled data
-                        y = M(x(:),1);
-                        x1=IST_MC(y,M,sz);
-                        bcg_all{non_ecg_channel(ch_idx)}=x1;
-                        [U,S,V,numiter] = SVT([sz(1) sz(2)],IDX,x(IDX),5*sqrt(prod(sz)),1.2/(length(IDX)/prod(sz)));
-                    end;
-
-                    %if(non_ecg_channel(ch_idx)==9) keyboard; end;
-                    [uu,ss,vv]=svd(bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:),'econ');
-                                tt=cumsum(diag(ss).^2);
-                                tt=tt./tt(end);
+                    tt=cumsum(diag(ss).^2);
+                    tt=tt./tt(end);
                     %             tmp=find(tt>0.8);
                     %             if(isempty(bcg_nsvd))
                     %                 bcg_nsvd=tmp(1);
@@ -266,7 +258,7 @@ for ch_idx=1:length(non_ecg_channel)
                     
                     bcg_approx=uu(:,1:bcg_nsvd)*ss(1:bcg_nsvd,1:bcg_nsvd)*vv(:,1:bcg_nsvd)';
                     bcg_residual=bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:)-bcg_approx;
-                                       bcg_bases=vv(:,1:bcg_nsvd);
+                    bcg_bases=vv(:,1:bcg_nsvd);
                     
                     bcg_bnd_bases=zeros(size(bcg_bases,1),2);
                     bcg_bnd_bases(:,1)=1; % confound
