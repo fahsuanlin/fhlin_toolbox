@@ -231,13 +231,18 @@ for ch_idx=1:length(non_ecg_channel)
                     
                     if(flag_bcgmc|flag_ppca) %restore matrix
                         x=bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:);
+                        exclude_idx=find(sum(abs(x),2)<eps);
+                        if(~isempty(exclude_idx)) 
+                            trial_sel(exclude_idx)=[]; 
+                            x=bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:);
+                        end;
                         sz=size(x);
                         IDX=find(~isnan(x(:)));
                         M = opRestriction(prod(sz), IDX);
                         % Sampled data
                         yy = M(x(:),1);
                         x1=IST_MC(yy,M,sz);
-                        bcg_all{non_ecg_channel(ch_idx)}=x1;
+                        bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:)=x1;
                         global VERBOSE;
                         VERBOSE=0;
                         [uu,ss,vv,V,numiter] = SVT([sz(1) sz(2)],IDX,x(IDX),5*sqrt(prod(sz)),1.2/(length(IDX)/prod(sz)));
