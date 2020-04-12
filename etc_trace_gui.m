@@ -22,7 +22,7 @@ function varargout = etc_trace_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_gui
 
-% Last Modified by GUIDE v2.5 07-Apr-2020 20:23:11
+% Last Modified by GUIDE v2.5 11-Apr-2020 20:27:13
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -66,6 +66,11 @@ handles.output=gcf;
 % Update handles structure
 guidata(hObject, handles);
 
+%set view
+set(handles.listbox_view_style,'String',{'trace','butterfly','image'});
+set(handles.listbox_view_style,'Value',1); %default style: trace
+
+
 %trigger loading
 if(~isempty(etc_trace_obj.trigger))
     fprintf('trigger loaded...\n');
@@ -73,7 +78,7 @@ if(~isempty(etc_trace_obj.trigger))
     set(handles.listbox_trigger,'string',str);
 else
     set(handles.listbox_trigger,'string',{});
-end;
+end;%
 guidata(hObject, handles);
 
 
@@ -927,3 +932,26 @@ end;
 % etc_trace_obj.time_duration_idx
 etc_trace_obj.flag_time_window_auto_adjust=0;
 etc_trcae_gui_update_time;
+
+
+% --- Executes on selection change in listbox_view_style.
+function listbox_view_style_Callback(hObject, eventdata, handles)
+% hObject    handle to listbox_view_style (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns listbox_view_style contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from listbox_view_style
+
+
+% --- Executes during object creation, after setting all properties.
+function listbox_view_style_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to listbox_view_style (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
