@@ -162,7 +162,28 @@ for ch_idx=1:length(non_ecg_channel)
     fprintf('#');
     
     if(~flag_dyn_bcg)
-        [uu,ss,vv]=svd(bcg_all{non_ecg_channel(ch_idx)}(:,:),'econ');
+        
+        if(flag_bcgmc|flag_ppca) %restore matrix
+            x=bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:);
+            exclude_idx=find(sum(abs(x),2)<eps);
+            if(~isempty(exclude_idx))
+                trial_sel(exclude_idx)=[];
+                x=bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:);
+            end;
+            sz=size(x);
+            IDX=find(~isnan(x(:)));
+            M = opRestriction(prod(sz), IDX);
+            % Sampled data
+            yy = M(x(:),1);
+            %x1=IST_MC(yy,M,sz);
+            %bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:)=x1;
+            global VERBOSE;
+            VERBOSE=0;
+            [uu,ss,vv,V,numiter] = SVT([sz(1) sz(2)],IDX,x(IDX),5*sqrt(prod(sz)),1.2/(length(IDX)/prod(sz)));
+        else
+            %if(non_ecg_channel(ch_idx)==9) keyboard; end;
+            [uu,ss,vv]=svd(bcg_all{non_ecg_channel(ch_idx)}(:,:),'econ');
+        end;
         bcg_residual=uu(:,bcg_nsvd+1:end)*ss(bcg_nsvd+1:end,bcg_nsvd+1:end)*vv(:,bcg_nsvd+1:end)';
         
         bcg_bnd_bases=zeros(size(vv,1),2);
@@ -241,8 +262,8 @@ for ch_idx=1:length(non_ecg_channel)
                         M = opRestriction(prod(sz), IDX);
                         % Sampled data
                         yy = M(x(:),1);
-                        x1=IST_MC(yy,M,sz);
-                        bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:)=x1;
+                        %x1=IST_MC(yy,M,sz);
+                        %bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:)=x1;
                         global VERBOSE;
                         VERBOSE=0;
                         [uu,ss,vv,V,numiter] = SVT([sz(1) sz(2)],IDX,x(IDX),5*sqrt(prod(sz)),1.2/(length(IDX)/prod(sz)));
@@ -270,7 +291,8 @@ for ch_idx=1:length(non_ecg_channel)
                     bcg_bnd_bases(:,2)=[1:size(bcg_bases,1)]'./size(bcg_bases,1); % confound
                     
                     y0=y;
-                    beta=inv(bcg_bases'*bcg_bases)*(bcg_bases'*y);
+                    non_nan_idx=find(~isnan(y));
+                    beta=inv(bcg_bases(non_nan_idx,:)'*bcg_bases(non_nan_idx,:))*(bcg_bases(non_nan_idx,:)'*y(non_nan_idx));
                     bnd0=[y(1) y(end)];
                     y=y-bcg_bases(:,1:bcg_nsvd)*beta(1:bcg_nsvd);
                     bnd1=[y(1) y(end)];
