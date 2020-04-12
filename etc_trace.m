@@ -137,6 +137,18 @@ etc_trace_obj.time_duration_idx=round(duration.*fs);
 etc_trace_obj.time_window_begin_idx=1;
 etc_trace_obj.flag_time_window_auto_adjust=1;
 
+
+if(~isempty(trigger))
+    if(isfield(trigger,'event'))
+        if(~iscell(trigger.event))
+            str={};
+            for idx=1:length(trigger.event)
+                str{idx}=sprintf('%d',trigger.event(idx));
+            end;
+            trigger.event=str;
+        end;
+    end;
+end;
 etc_trace_obj.trigger=trigger;
 
 etc_trace_obj.ch_names=ch_names;

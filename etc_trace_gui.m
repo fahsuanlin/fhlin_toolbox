@@ -69,7 +69,22 @@ guidata(hObject, handles);
 %set view
 set(handles.listbox_view_style,'String',{'trace','butterfly','image'});
 set(handles.listbox_view_style,'Value',1); %default style: trace
-
+if(isfield(etc_trace_obj,'view_style'))
+    if(~isempty(etc_trace_obj.view_style))
+        switch lower(etc_trace_obj.view_style)
+            case 'trace'
+                set(handles.listbox_view_style,'Value',1); %default style: trace
+            case 'butterfly'
+                set(handles.listbox_view_style,'Value',2); %default style: trace
+            case 'image'
+                set(handles.listbox_view_style,'Value',3); %default style: trace
+        end
+    else
+        etc_trace_obj.view_style='trace';
+    end;
+else
+    etc_trace_obj.view_style='trace';
+end;
 
 %trigger loading
 if(~isempty(etc_trace_obj.trigger))
@@ -79,7 +94,7 @@ if(~isempty(etc_trace_obj.trigger))
 else
     set(handles.listbox_trigger,'string',{});
 end;%
-guidata(hObject, handles);
+%guidata(hObject, handles);
 
 
 duration=[0.1 0.5 1 2 5 10 30];
@@ -284,8 +299,10 @@ if(~isempty(hObject))
 end;
 
 
-IndexC = strfind(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
-trigger_match_idx = find(not(cellfun('isempty',IndexC)));
+%IndexC = strfind(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
+%trigger_match_idx = find(not(cellfun('isempty',IndexC)));
+IndexC = strcmp(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
+trigger_match_idx = find(IndexC);
 trigger_match_time_idx=etc_trace_obj.trigger.time(trigger_match_idx);
 trigger_match_time_idx=sort(trigger_match_time_idx);
 fprintf('[%d] trigger {%s} found at time index [%s].\n',length(trigger_match_idx),etc_trace_obj.trigger_now,mat2str(trigger_match_time_idx));
@@ -548,19 +565,20 @@ set(hObject,'String',sprintf('%d',trigger_match_time_idx(idx)));
 
 %update even/trigger window
 hObject=findobj('tag','listbox_time_idx');
-t_idx=cellfun(@str2num,hObject.String);
-for ii=1:length(t_idx)
-    if((t_idx(ii)==trigger_match_time_idx(idx))&&(strcmp(etc_trace_obj.trigger.event{ii},etc_trace_obj.trigger_now)))
-        break;
+if(~isempty(hObject))
+    t_idx=cellfun(@str2num,hObject.String);
+    for ii=1:length(t_idx)
+        if((t_idx(ii)==trigger_match_time_idx(idx))&&(strcmp(etc_trace_obj.trigger.event{ii},etc_trace_obj.trigger_now)))
+            break;
+        end;
     end;
+    hObject=findobj('tag','listbox_time');
+    set(hObject,'Value',ii);
+    hObject=findobj('tag','listbox_time_idx');
+    set(hObject,'Value',ii);
+    hObject=findobj('tag','listbox_class');
+    set(hObject,'Value',ii);
 end;
-hObject=findobj('tag','listbox_time');
-set(hObject,'Value',ii);
-hObject=findobj('tag','listbox_time_idx');
-set(hObject,'Value',ii);
-hObject=findobj('tag','listbox_class');
-set(hObject,'Value',ii);
-
 
 % etc_trace_obj.data
 % etc_trace_obj.fs
@@ -621,18 +639,20 @@ set(hObject,'String',sprintf('%d',trigger_match_time_idx(idx)));
 
 %update even/trigger window
 hObject=findobj('tag','listbox_time_idx');
-t_idx=cellfun(@str2num,hObject.String);
-for ii=1:length(t_idx)
-    if((t_idx(ii)==trigger_match_time_idx(idx))&&(strcmp(etc_trace_obj.trigger.event{ii},etc_trace_obj.trigger_now)))
-        break;
+if(~isempty(hObject))
+    t_idx=cellfun(@str2num,hObject.String);
+    for ii=1:length(t_idx)
+        if((t_idx(ii)==trigger_match_time_idx(idx))&&(strcmp(etc_trace_obj.trigger.event{ii},etc_trace_obj.trigger_now)))
+            break;
+        end;
     end;
+    hObject=findobj('tag','listbox_time');
+    set(hObject,'Value',ii);
+    hObject=findobj('tag','listbox_time_idx');
+    set(hObject,'Value',ii);
+    hObject=findobj('tag','listbox_class');
+    set(hObject,'Value',ii);
 end;
-hObject=findobj('tag','listbox_time');
-set(hObject,'Value',ii);
-hObject=findobj('tag','listbox_time_idx');
-set(hObject,'Value',ii);
-hObject=findobj('tag','listbox_class');
-set(hObject,'Value',ii);
 
 % etc_trace_obj.data
 % etc_trace_obj.fs
@@ -942,7 +962,12 @@ function listbox_view_style_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns listbox_view_style contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from listbox_view_style
+global etc_trace_obj;
 
+contents = cellstr(get(hObject,'String'));
+etc_trace_obj.view_style=contents{get(hObject,'Value')};
+
+etc_trace_handle('redraw');
 
 % --- Executes during object creation, after setting all properties.
 function listbox_view_style_CreateFcn(hObject, eventdata, handles)
