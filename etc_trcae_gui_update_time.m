@@ -44,8 +44,9 @@ try
     %v=(etc_trace_obj.time_begin_idx-1)/(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx);
     v=etc_trace_obj.time_select_idx/size(etc_trace_obj.data,2);
     hObject_slider=findobj('tag','slider_time_idx');
-    set(hObject_slider,'value',v);
-    
+    if(v<=hObject_slider.Max&&v>=hObject_slider.Min)
+        set(hObject_slider,'value',v);
+    end;
     
     if(etc_trace_obj.time_duration_idx<=size(etc_trace_obj.data,2))
         %time window now
@@ -82,6 +83,9 @@ try
             etc_trace_obj.time_window_begin_idx=etc_trace_obj.time_select_idx-round(etc_trace_obj.time_duration_idx*etc_trace_obj.config_trace_center_frac);
             if(etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1>size(etc_trace_obj.data,2))
                 etc_trace_obj.time_window_begin_idx=size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx+1;
+                if(etc_trace_obj.time_window_begin_idx<1)
+                    etc_trace_obj.time_window_begin_idx=1;
+                end;
             end;
             
         end;

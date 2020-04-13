@@ -164,12 +164,23 @@ for ch_idx=1:length(non_ecg_channel)
     if(~flag_dyn_bcg)
         
         if(flag_bcgmc|flag_ppca) %restore matrix
+            x=bcg_all{non_ecg_channel(ch_idx)};
+            x=max(x,[],2);
+            [dummy,idx]=sort(x);
+            idx1=round(length(x)*0.2);
+            idx2=round(length(x)*0.8);
+            if(idx2>=idx1+100)
+                idx2=idx1+100;
+            end;
+            trial_sel=[idx(idx1:idx2)];
+            
             x=bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:);
             exclude_idx=find(sum(abs(x),2)<eps);
             if(~isempty(exclude_idx))
                 trial_sel(exclude_idx)=[];
                 x=bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:);
             end;
+            
             sz=size(x);
             IDX=find(~isnan(x(:)));
             M = opRestriction(prod(sz), IDX);
@@ -182,7 +193,25 @@ for ch_idx=1:length(non_ecg_channel)
             [uu,ss,vv,V,numiter] = SVT([sz(1) sz(2)],IDX,x(IDX),5*sqrt(prod(sz)),1.2/(length(IDX)/prod(sz)));
         else
             %if(non_ecg_channel(ch_idx)==9) keyboard; end;
-            [uu,ss,vv]=svd(bcg_all{non_ecg_channel(ch_idx)}(:,:),'econ');
+            
+            x=bcg_all{non_ecg_channel(ch_idx)};
+            x=max(x,[],2);
+            [dummy,idx]=sort(x);
+            idx1=round(length(x)*0.2);
+            idx2=round(length(x)*0.8);
+            if(idx2>=idx1+100)
+                idx2=idx1+100;
+            end;
+            trial_sel=[idx(idx1:idx2)];
+            
+            x=bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:);
+            exclude_idx=find(sum(abs(x),2)<eps);
+            if(~isempty(exclude_idx))
+                trial_sel(exclude_idx)=[];
+                x=bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:);
+            end;
+            
+            [uu,ss,vv]=svd(x,'econ');
         end;
         bcg_residual=uu(:,bcg_nsvd+1:end)*ss(bcg_nsvd+1:end,bcg_nsvd+1:end)*vv(:,bcg_nsvd+1:end)';
         
@@ -197,16 +226,39 @@ for ch_idx=1:length(non_ecg_channel)
                 if(((qrs_i_raw(trial_idx)-BCG_tPre_sample)>0)&((qrs_i_raw(trial_idx)+BCG_tPost_sample)<=size(eeg,2)))
                     y=eeg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)';
                     
+%                     bnd0=[y(1) y(end)];
+%                     y=bcg_residual(trial_idx,:).';
+%                     bnd1=[y(1) y(end)];
+%                     
+%                     if(flag_anchor_ends)
+%                         y=y-bcg_bnd_bases*inv(bcg_bnd_bases([1,end],:)'*bcg_bnd_bases([1,end],:))*(bcg_bnd_bases([1,end],:)'*(bnd1-bnd0)');
+%                     end;
+%                     eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)=y';
+%                     
+%                     residual(non_ecg_channel(ch_idx),trial_idx,:)=y(:);
+                    bcg_approx=uu(:,1:bcg_nsvd)*ss(1:bcg_nsvd,1:bcg_nsvd)*vv(:,1:bcg_nsvd)';
+                    bcg_residual=bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:)-bcg_approx;
+                    bcg_bases=vv(:,1:bcg_nsvd);
+                    
+                    bcg_bnd_bases=zeros(size(bcg_bases,1),2);
+                    bcg_bnd_bases(:,1)=1; % confound
+                    bcg_bnd_bases(:,2)=[1:size(bcg_bases,1)]'./size(bcg_bases,1); % confound
+                    
+                    y0=y;
+                    non_nan_idx=find(~isnan(y));
+                    beta=inv(bcg_bases(non_nan_idx,:)'*bcg_bases(non_nan_idx,:))*(bcg_bases(non_nan_idx,:)'*y(non_nan_idx));
                     bnd0=[y(1) y(end)];
-                    y=bcg_residual(trial_idx,:).';
+                    y=y-bcg_bases(:,1:bcg_nsvd)*beta(1:bcg_nsvd);
                     bnd1=[y(1) y(end)];
                     
                     if(flag_anchor_ends)
                         y=y-bcg_bnd_bases*inv(bcg_bnd_bases([1,end],:)'*bcg_bnd_bases([1,end],:))*(bcg_bnd_bases([1,end],:)'*(bnd1-bnd0)');
                     end;
                     eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)=y';
-                    
+                                       
                     residual(non_ecg_channel(ch_idx),trial_idx,:)=y(:);
+                    bcg_artifact(non_ecg_channel(ch_idx),trial_idx,:)=y0(:)-y(:);
+                    
                     
                     if(flag_display)
                         if(isempty(fig_bcg))
@@ -272,8 +324,8 @@ for ch_idx=1:length(non_ecg_channel)
                         [uu,ss,vv]=svd(bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:),'econ');
                     end;
                     
-                    tt=cumsum(diag(ss).^2);
-                    tt=tt./tt(end);
+                    %tt=cumsum(diag(ss).^2);
+                    %tt=tt./tt(end);
                     %             tmp=find(tt>0.8);
                     %             if(isempty(bcg_nsvd))
                     %                 bcg_nsvd=tmp(1);
