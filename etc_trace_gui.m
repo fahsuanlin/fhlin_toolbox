@@ -22,7 +22,7 @@ function varargout = etc_trace_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_gui
 
-% Last Modified by GUIDE v2.5 14-Apr-2020 01:37:21
+% Last Modified by GUIDE v2.5 14-Apr-2020 16:40:22
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -67,6 +67,8 @@ handles.output=gcf;
 guidata(hObject, handles);
 
 %set view
+set(handles.listbox_colormap,'Value',1);
+set(handles.listbox_colormap,'Visible','off');
 set(handles.listbox_view_style,'String',{'trace','butterfly','image'});
 set(handles.listbox_view_style,'Value',1); %default style: trace
 if(isfield(etc_trace_obj,'view_style'))
@@ -118,6 +120,9 @@ else
 end;
 
 
+%scale 
+hObject=findobj('tag','edit_threshold');
+set(hObject,'String',num2str(mean(abs(etc_trace_obj.ylim))));
 
             %create a context menu....not successful....
             cm = uicontextmenu;
@@ -336,6 +341,17 @@ hObject=findobj('tag','listbox_time_idx');
 set(hObject,'Value',ii);
 hObject=findobj('tag','listbox_class');
 set(hObject,'Value',ii);
+
+%update average window
+hObject=findobj('tag','listbox_avg_trigger');
+str=get(hObject,'String');
+for i=1:length(str)
+    if(strcmp(str{i},etc_trace_obj.trigger_now))
+        break;
+    end;
+end;
+set(hObject,'Value',i);
+
 
 % etc_trace_obj.data
 % etc_trace_obj.fs
@@ -967,6 +983,31 @@ global etc_trace_obj;
 contents = cellstr(get(hObject,'String'));
 etc_trace_obj.view_style=contents{get(hObject,'Value')};
 
+if(strcmp(etc_trace_obj.view_style,'image'))
+    etc_trace_obj.colormap=colormap(parula);
+    etc_trace_obj.axis_colorbar=axes;
+    set(etc_trace_obj.axis_colorbar,'pos',[0.7 0.07 0.005 0.03],'xtick',[],'ytick',[],'xcolor','none','ycolor','none');
+    axes(etc_trace_obj.axis_colorbar); hold on;
+   
+    etc_trace_obj.h_colorbar=image(etc_trace_obj.axis_colorbar,([1,1:size(etc_trace_obj.colormap,1)])'); colormap(etc_trace_obj.colormap);
+    
+    obj=findobj('Tag','listbox_colormap');
+    set(obj,'visible','on');
+    set(obj,'String',{'parula','jet','rb'});
+    set(obj,'value',1);
+        
+    axes(etc_trace_obj.axis_trace);
+else
+    try
+        delete(etc_trace_obj.axis_colorbar);
+        
+        obj=findobj('Tag','listbox_colormap');
+        set(obj,'visible','off');
+    catch ME
+    end;
+    axes(etc_trace_obj.axis_trace);
+end;
+
 etc_trace_handle('redraw');
 
 % --- Executes during object creation, after setting all properties.
@@ -1001,7 +1042,9 @@ if(~etc_trace_obj.flag_trigger_avg)
     etc_trace_obj.flag_trigger_avg=get(hObject,'Value');
     
     etc_trace_obj.fig_avg=etc_trace_avg_gui;
-
+    pos0=get(etc_trace_obj.fig_trace,'pos');
+    pos1=get(etc_trace_obj.fig_avg,'pos');
+    set(etc_trace_obj.fig_avg,'pos',[pos0(1)+pos0(3) pos1(2) pos1(3) pos1(4)]);
     
 else %restore the original un-averaged trace.
     
@@ -1014,6 +1057,7 @@ else %restore the original un-averaged trace.
     etc_trace_obj.time_select_idx=etc_trace_obj.buffer.time_select_idx;
     etc_trace_obj.time_window_begin_idx=etc_trace_obj.buffer.time_window_begin_idx;
     etc_trace_obj.time_duration_idx=etc_trace_obj.buffer.time_duration_idx;
+    etc_trace_obj.ylim=etc_trace_obj.buffer.ylim;
 
     
     etc_trcae_gui_update_time;
@@ -1031,6 +1075,99 @@ else %restore the original un-averaged trace.
     hObject=findobj('tag','edit_trigger_time');
     set(hObject,'Enable','on');
 
+    hObject=findobj('tag','edit_threshold');
+    set(hObject,'String',num2str(mean(abs(etc_trace_obj.ylim))));
+
     etc_trace_obj.flag_trigger_avg=0;
 
 end;
+
+
+
+function edit_threshold_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_threshold (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_threshold as text
+%        str2double(get(hObject,'String')) returns contents of edit_threshold as a double
+global etc_trace_obj;
+
+%fprintf('current limits = %s\n',mat2str(etc_trace_obj.ylim));
+%def={num2str(etc_trace_obj.ylim)};
+%answer=inputdlg('change limits',sprintf('current threshold = %s',mat2str(etc_trace_obj.ylim)),1,def);
+answer=str2double(get(hObject,'String')) ;
+if(~isempty(answer))
+    %etc_trace_obj.ylim=str2num(answer{1});
+    etc_trace_obj.ylim=[-abs(answer) abs(answer)];
+    fprintf('updated time course limits = %s\n',mat2str(etc_trace_obj.ylim));
+    
+    global etc_render_fsbrain
+    if(~isempty(etc_render_fsbrain))
+        etc_render_fsbrain.overlay_threshold=[abs(diff(etc_trace_obj.ylim))/4 abs(diff(etc_trace_obj.ylim))/2 ];
+        etc_trace_handle('bd');
+    end;
+    
+    etc_trace_handle('redraw');
+end;
+
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_threshold_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_threshold (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in listbox_colormap.
+function listbox_colormap_Callback(hObject, eventdata, handles)
+% hObject    handle to listbox_colormap (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns listbox_colormap contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from listbox_colormap
+
+global etc_trace_obj;
+
+
+contents = cellstr(get(hObject,'String'));
+switch lower(contents{get(hObject,'Value')})
+    case 'parula'
+        etc_trace_obj.colormap=colormap(parula);
+    case 'jet'
+        etc_trace_obj.colormap=jet;
+    case 'rb'
+        a1=ones(1,64);
+        ag=linspace(0,1,64);
+        
+        rr=[a1,a1,fliplr(ag)];
+        gg=[ag,a1,fliplr(ag)];
+        bb=[ag,a1,a1];
+        
+        cmap=[rr(:),gg(:),bb(:)];
+        etc_trace_obj.colormap=cmap;
+end;
+
+
+etc_trace_handle('redraw');
+
+
+% --- Executes during object creation, after setting all properties.
+function listbox_colormap_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to listbox_colormap (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

@@ -616,8 +616,9 @@ if(~isvalid(etc_trace_obj.fig_trace))
 end;
 
 figure(etc_trace_obj.fig_trace);
-tmp=get(etc_trace_obj.fig_trace,'child');
-etc_trace_obj.axis_trace=tmp(end);
+%tmp=get(etc_trace_obj.fig_trace,'child');
+%etc_trace_obj.axis_trace=tmp(end);
+etc_trace_obj.axis_trace=findobj('Tag','axis_trace');
 cla(etc_trace_obj.axis_trace);
 
 hold(etc_trace_obj.axis_trace,'on');
@@ -772,7 +773,7 @@ if(etc_trace_obj.config_trace_flag)
                 hh(idx)=rectangle('pos',[0.5,idx-0.5,size(tmp,1),1],'edgecolor','c','visible','off');
             end;
             set(gca,'clim',etc_trace_obj.ylim);
-            
+            colormap(etc_trace_obj.colormap);
             
             %assign a tag for each trace
             for idx=1:length(hha)
