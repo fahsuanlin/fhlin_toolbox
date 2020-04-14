@@ -71,6 +71,17 @@ switch lower(param)
                 close(gcf,'force');
             end;
         end;
+        
+        try
+            delete(etc_trace_obj.fig_avg);
+        catch ME
+            if(isfield(etc_trace_obj,'fig_avg'))
+                close(etc_trace_obj.fig_avg,'force');
+            else
+                close(gcf,'force');
+            end;
+        end;        
+        
         try
             delete(etc_trace_obj.fig_trace);
         catch ME

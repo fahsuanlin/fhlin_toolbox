@@ -22,7 +22,7 @@ function varargout = etc_trace_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_gui
 
-% Last Modified by GUIDE v2.5 12-Apr-2020 23:04:01
+% Last Modified by GUIDE v2.5 14-Apr-2020 01:37:21
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -991,12 +991,46 @@ function checkbox_trigger_avg_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of checkbox_trigger_avg
 global etc_trace_obj;
 
-etc_trace_obj.flag_trigger_avg=get(hObject,'Value');
 
-if(etc_trace_obj.flag_trigger_avg) %calculate average based on the current trigger
+if(~isfield(etc_trace_obj,'flag_trigger_avg'))
+    etc_trace_obj.flag_trigger_avg=0;
+end;
+
+if(~etc_trace_obj.flag_trigger_avg)
+    set(hObject,'Value',0);
+    etc_trace_obj.flag_trigger_avg=get(hObject,'Value');
     
+    etc_trace_obj.fig_avg=etc_trace_avg_gui;
+
     
 else %restore the original un-averaged trace.
+    
+    %update data
+    etc_trace_obj.data=etc_trace_obj.buffer.data;
+    etc_trace_obj.aux_data=etc_trace_obj.buffer.aux_data;
+    etc_trace_obj.trigger_now=etc_trace_obj.buffer.trigger_now;   
+    etc_trace_obj.trigger=etc_trace_obj.buffer.trigger;
+    etc_trace_obj.time_begin=etc_trace_obj.buffer.time_begin;
+    etc_trace_obj.time_select_idx=etc_trace_obj.buffer.time_select_idx;
+    etc_trace_obj.time_window_begin_idx=etc_trace_obj.buffer.time_window_begin_idx;
+    etc_trace_obj.time_duration_idx=etc_trace_obj.buffer.time_duration_idx;
 
+    
+    etc_trcae_gui_update_time;
+
+    etc_trace_obj.buffer=[];
+    
+    hObject=findobj('tag','listbox_trigger');
+    set(hObject,'Enable','on');
+    hObject=findobj('tag','pushbutton_trigger_rr');
+    set(hObject,'Enable','on');
+    hObject=findobj('tag','pushbutton_trigger_ff');
+    set(hObject,'Enable','on');    
+    hObject=findobj('tag','edit_trigger_time_idx');
+    set(hObject,'Enable','on');  
+    hObject=findobj('tag','edit_trigger_time');
+    set(hObject,'Enable','on');
+
+    etc_trace_obj.flag_trigger_avg=0;
 
 end;

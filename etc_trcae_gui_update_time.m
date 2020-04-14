@@ -100,7 +100,11 @@ try
     set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.time_window_begin_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
     hObject=findobj('tag','edit_time_end');
     set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
-    
+    hObject=findobj('tag','listbox_time_duration');
+    contents = cellstr(get(hObject,'String'));
+    t=round(cellfun(@str2num,contents).*etc_trace_obj.fs);
+    [dummy,idx]=min(abs(etc_trace_obj.time_duration_idx-t));
+    set(hObject,'Value',idx);
     
     %trigger GUI
     hObject=findobj('tag','edit_time');

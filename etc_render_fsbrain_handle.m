@@ -100,20 +100,54 @@ switch lower(param)
                         else
                             hemi='rh';
                         end;
-                        etc_render_fsbrain.overlay_stc=stc;
-                        etc_render_fsbrain.overlay_vertex=vv;
-                        etc_render_fsbrain.overlay_stc_timeVec=timeVec;
-                        etc_render_fsbrain.stc_hemi=hemi;
-                        etc_render_fsbrain.overlay_stc_timeVec_unit='ms';
-                        set(findobj('tag','text_timeVec_unit'),'string',etc_render_fsbrain.overlay_stc_timeVec_unit);
                         
-                        [tmp,etc_render_fsbrain.overlay_stc_timeVec_idx]=max(sum(etc_render_fsbrain.overlay_stc.^2,1));
-                        etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
-                        etc_render_fsbrain.overlay_stc_hemi=etc_render_fsbrain.overlay_stc;
+                        answer = questdlg('replace main data or add as an auxillary data?','Menu',...
+                            'replace as new','add as aux. data','cancel','replace as new');
+                        % Handle response
+                        switch answer
+                            case 'replace as new'
+                                f_option = 1;
+                            case 'add as aux. data'
+                                f_option = 2;
+                            case 'cancel'
+                                f_option= 0;
+                        end
+                        if(f_option==1)
+                            
+                            etc_render_fsbrain.overlay_stc=stc;
+                            etc_render_fsbrain.overlay_vertex=vv;
+                            etc_render_fsbrain.overlay_stc_timeVec=timeVec;
+                            etc_render_fsbrain.stc_hemi=hemi;
+                            etc_render_fsbrain.overlay_stc_timeVec_unit='ms';
+                            set(findobj('tag','text_timeVec_unit'),'string',etc_render_fsbrain.overlay_stc_timeVec_unit);
+                            
+                            [tmp,etc_render_fsbrain.overlay_stc_timeVec_idx]=max(sum(etc_render_fsbrain.overlay_stc.^2,1));
+                            etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
+                            etc_render_fsbrain.overlay_stc_hemi=etc_render_fsbrain.overlay_stc;
+                            
+                            etc_render_fsbrain.overlay_flag_render=1;
+                            etc_render_fsbrain.overlay_value_flag_pos=1;
+                            etc_render_fsbrain.overlay_value_flag_neg=1;
+                        end;
+
+                        if(f_option==2)
+                            
+                            etc_render_fsbrain.overlay_aux_stc(:,:,end+1)=stc;
+%                             etc_render_fsbrain.overlay_vertex=vv;
+%                             etc_render_fsbrain.overlay_stc_timeVec=timeVec;
+%                             etc_render_fsbrain.stc_hemi=hemi;
+%                             etc_render_fsbrain.overlay_stc_timeVec_unit='ms';
+%                             set(findobj('tag','text_timeVec_unit'),'string',etc_render_fsbrain.overlay_stc_timeVec_unit);
+%                             
+%                             [tmp,etc_render_fsbrain.overlay_stc_timeVec_idx]=max(sum(etc_render_fsbrain.overlay_stc.^2,1));
+%                             etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
+%                             etc_render_fsbrain.overlay_stc_hemi=etc_render_fsbrain.overlay_stc;
+%                             
+%                             etc_render_fsbrain.overlay_flag_render=1;
+%                             etc_render_fsbrain.overlay_value_flag_pos=1;
+%                             etc_render_fsbrain.overlay_value_flag_neg=1;
+                        end;
                         
-                        etc_render_fsbrain.overlay_flag_render=1;
-                        etc_render_fsbrain.overlay_value_flag_pos=1;
-                        etc_render_fsbrain.overlay_value_flag_neg=1;
                     elseif(findstr(filename,'.w')) %w file
                         [ww,vv]=inverse_read_wfile(sprintf('%s/%s',pathname,filename));
                         if(findstr(filename,'-lh'))
