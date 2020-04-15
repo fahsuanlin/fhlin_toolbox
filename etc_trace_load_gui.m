@@ -62,15 +62,46 @@ global etc_trace_obj;
 
 
 %initialization
-set(handles.text_load_var,'String','');
-set(handles.edit_load_sf,'String','');
-set(handles.edit_load_time_begin,'String','0.0');
-set(handles.text_load_trigger,'String','');
-set(handles.text_load_label,'String','');
-set(handles.text_load_montage,'String','');
-set(handles.text_load_select,'String','');
-set(handles.text_load_scale,'String','');
-
+if(~isempty(etc_trace_obj.data))
+    set(handles.text_load_var,'String',mat2str(size(etc_trace_obj.data)));
+else
+    set(handles.text_load_var,'String','');
+end;
+if(~isempty(etc_trace_obj.fs))
+    set(handles.edit_load_sf,'String',num2str(etc_trace_obj.fs));
+else
+    set(handles.edit_load_sf,'String','');
+end;
+if(~isempty(etc_trace_obj.time_begin))
+    set(handles.edit_load_time_begin,'String',num2str(etc_trace_obj.time_begin));
+else
+    set(handles.edit_load_time_begin,'String','0.0');
+end;
+if(~isempty(etc_trace_obj.trigger))
+    set(handles.text_load_trigger,'String',sprintf('[%d] event/time',length(etc_trace_obj.trigger.time)));
+else
+    set(handles.text_load_trigger,'String','');
+end;
+if(~isempty(etc_trace_obj.ch_names))
+    set(handles.text_load_label,'String',sprintf('[%d] channel(s)',length(etc_trace_obj.ch_names)));
+else
+    set(handles.text_load_label,'String','');
+end;
+if(~isempty(etc_trace_obj.montage))
+    set(handles.text_load_montage,'String',sprintf('[%d] montage',length(etc_trace_obj.montage)));
+else
+    set(handles.text_load_montage,'String','');
+end;
+if(~isempty(etc_trace_obj.select))
+    set(handles.text_load_select,'String',mat2str(size(etc_trace_obj.select)));
+else
+    set(handles.text_load_select,'String','');
+end;
+if(~isempty(etc_trace_obj.scaling))
+    set(handles.text_load_scale,'String',sprintf('[%d] scaling',length(etc_trace_obj.scaling)));
+else
+    set(handles.text_load_scale,'String','');
+end;
 etc_trace_obj.load.montage=[];
 etc_trace_obj.load.select=[];
 etc_trace_obj.load.scale=[];
