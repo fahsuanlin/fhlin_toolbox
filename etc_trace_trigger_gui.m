@@ -724,6 +724,8 @@ global etc_trace_obj;
 
 
 [filename, pathname, filterindex] = uigetfile(fullfile(pwd,'*.mat'),'select a trigger matlab data file...');
+if(filename==0) return; end;
+
 tmp=load(filename);
                 
 fn=fieldnames(tmp);
@@ -734,6 +736,7 @@ fprintf('load a variable with fields ''time'' and ''event''\n');
 [indx,tf] = listdlg('PromptString','Select a variable...',...
     'SelectionMode','single',...
     'ListString',fn);
+etc_trace_obj.tmp=0;
 if(indx)
     try
         var=fn{indx};
@@ -1207,6 +1210,7 @@ fprintf('load a variable with fields ''time'' and ''event''\n');
 [indx,tf] = listdlg('PromptString','Select a variable...',...
     'SelectionMode','single',...
     'ListString',fn);
+etc_trace_obj.tmp=0;
 if(indx)
     try
         var=fn{indx};

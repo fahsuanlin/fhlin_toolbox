@@ -104,6 +104,8 @@ end;
 
 global etc_trace_obj;
 
+etc_trace_obj=[];
+
 try
     delete(etc_trace_obj.fig_trace);
 catch ME
@@ -250,6 +252,8 @@ etc_trace_obj.config_current_trigger_color=config_current_trigger_color;
 etc_trace_obj.config_current_trigger_flag=config_current_trigger_flag;
 etc_trace_obj.config_current_time_flag=config_current_time_flag;
 
+
+etc_trace_obj.montage_ch_name={};
 
 etc_trace_obj.fig_topology=figure('visible','off');
 delete(etc_trace_obj.fig_topology); %make it invalid

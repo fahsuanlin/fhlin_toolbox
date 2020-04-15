@@ -22,7 +22,7 @@ function varargout = etc_trace_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_gui
 
-% Last Modified by GUIDE v2.5 14-Apr-2020 16:40:22
+% Last Modified by GUIDE v2.5 14-Apr-2020 23:10:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -89,6 +89,7 @@ else
 end;
 
 %trigger loading
+str={};
 if(~isempty(etc_trace_obj.trigger))
     fprintf('trigger loaded...\n');
     str=unique(etc_trace_obj.trigger.event);
@@ -96,6 +97,21 @@ if(~isempty(etc_trace_obj.trigger))
 else
     set(handles.listbox_trigger,'string',{});
 end;%
+if(isfield(etc_trace_obj,'trigger_now'))
+    if(isempty(etc_trace_obj.trigger_now))
+        
+    else
+        IndexC = strcmp(str,etc_trace_obj.trigger_now);
+        set(handles.listbox_trigger,'Value',find(IndexC));
+    end;
+else
+    if(isempty(str))
+        etc_trace_obj.trigger_now='';
+    else
+        etc_trace_obj.trigger_now=str{1};
+        set(handles.listbox_trigger,'Value',1);        
+    end;
+end;
 %guidata(hObject, handles);
 
 
@@ -105,7 +121,8 @@ set(handles.listbox_time_duration,'string',{duration(:)});
 [dummy,idx]=min(abs(duration-etc_trace_obj.time_duration_idx./etc_trace_obj.fs));
 %set(handles.listbox_time_duration,'value',5); %default: 5 s
 set(handles.listbox_time_duration,'value',idx); %default: 5 s
-guidata(hObject, handles);
+etc_trace_obj.time_duration_idx=round(etc_trace_obj.fs*duration(idx));
+%guidata(hObject, handles);
 
 if(isfield(etc_trace_obj,'trigger_time_idx'))
     hObject=findobj('tag','edit_trigger_time_idx');
@@ -120,7 +137,7 @@ else
 end;
 
 
-%scale 
+%threshold 
 hObject=findobj('tag','edit_threshold');
 set(hObject,'String',num2str(mean(abs(etc_trace_obj.ylim))));
 
@@ -292,6 +309,8 @@ global etc_trace_obj;
 if(isempty(etc_trace_obj))
     return;
 end;
+
+if(isempty(etc_trace_obj.trigger)) return; end;
 
 contents = cellstr(get(hObject,'String'));
 etc_trace_obj.trigger_now=contents{get(hObject,'Value')};
@@ -547,6 +566,8 @@ if(isempty(etc_trace_obj))
     return;
 end;
 
+if(isempty(etc_trace_obj.trigger)) return; end;
+
 %IndexC = strfind(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
 %trigger_match_idx = find(not(cellfun('isempty',IndexC)));
 IndexC = strcmp(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
@@ -621,6 +642,8 @@ global etc_trace_obj;
 if(isempty(etc_trace_obj))
     return;
 end;
+
+if(isempty(etc_trace_obj.trigger)) return; end;
 
 %IndexC = strfind(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
 %trigger_match_idx = find(not(cellfun('isempty',IndexC)));
@@ -985,8 +1008,10 @@ etc_trace_obj.view_style=contents{get(hObject,'Value')};
 
 if(strcmp(etc_trace_obj.view_style,'image'))
     etc_trace_obj.colormap=colormap(parula);
-    etc_trace_obj.axis_colorbar=axes;
-    set(etc_trace_obj.axis_colorbar,'pos',[0.7 0.07 0.005 0.03],'xtick',[],'ytick',[],'xcolor','none','ycolor','none');
+    if(isempty(etc_trace_obj.axis_colorbar))
+        etc_trace_obj.axis_colorbar=axes;
+        set(etc_trace_obj.axis_colorbar,'pos',[0.7 0.07 0.005 0.03],'xtick',[],'ytick',[],'xcolor','none','ycolor','none');
+    end;
     axes(etc_trace_obj.axis_colorbar); hold on;
    
     etc_trace_obj.h_colorbar=image(etc_trace_obj.axis_colorbar,([1,1:size(etc_trace_obj.colormap,1)])'); colormap(etc_trace_obj.colormap);
@@ -1000,7 +1025,7 @@ if(strcmp(etc_trace_obj.view_style,'image'))
 else
     try
         delete(etc_trace_obj.axis_colorbar);
-        
+        etc_trace_obj.axis_colorbar=[];
         obj=findobj('Tag','listbox_colormap');
         set(obj,'visible','off');
     catch ME
@@ -1171,3 +1196,13 @@ function listbox_colormap_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in pushbutton_load.
+function pushbutton_load_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_load (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+etc_trace_obj.fig_load=etc_trace_load_gui;

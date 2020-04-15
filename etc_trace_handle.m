@@ -348,6 +348,8 @@ switch lower(param)
             
             time_idx_now=etc_trace_obj.time_select_idx;
             class_now=etc_trace_obj.trigger_now;
+            
+            if(isempty(class_now)) return; end;
                         
             all_time_idx=[];
             all_class=[];
@@ -411,6 +413,14 @@ switch lower(param)
                 %update trace trigger
                 hObject=findobj('tag','listbox_trigger');
                 set(hObject,'string',unique(etc_trace_obj.trigger.event(:)));
+                IndexC = strcmp(unique(etc_trace_obj.trigger.event(:)),etc_trace_obj.trigger_now);
+                tmp=find(IndexC);
+                set(hObject,'Value',tmp(1));
+                hObject=findobj('tag','edit_trigger_time');
+                set(hObject,'string',sprintf('%1.3f',(time_idx_now-1)/etc_trace_obj.fs+etc_trace_obj.time_begin));
+                hObject=findobj('tag','edit_trigger_time_idx');
+                set(hObject,'string',sprintf('%d',time_idx_now));
+
                 
             else
                 fprintf('duplicated [%d] (sample) in class {%s}...\n',all_time_idx(idx),class_now);
@@ -471,6 +481,7 @@ switch lower(param)
                     hObject=findobj('tag','edit_local_trigger_class');
                     set(hObject,'String',num2str(etc_trace_obj.trigger_now));
                 else
+                    fprintf('now the trigger is set for "def_0" (default trigger name)!\n');
                     etc_trace_obj.trigger_now='def_0'; %default event name
                     hObject=findobj('tag','edit_local_trigger_class');
                     set(hObject,'String',num2str(etc_trace_obj.trigger_now));
@@ -736,6 +747,7 @@ if(etc_trace_obj.config_trace_flag)
 
     switch(etc_trace_obj.view_style)
         case {'trace','butterfly'}
+            hh=[];
             hh=plot(etc_trace_obj.axis_trace, tmp,'color',etc_trace_obj.config_trace_color);
             set(hh,'linewidth',etc_trace_obj.config_trace_width);
             %assign a tag for each trace
@@ -768,6 +780,8 @@ if(etc_trace_obj.config_trace_flag)
 
         case 'image'
             %imagesc(1,1,tmp');
+            hha=[];
+            hh=[];
             for idx=1:size(tmp,2)
                 hha(idx)=imagesc(1,idx,tmp(:,idx)');
                 hh(idx)=rectangle('pos',[0.5,idx-0.5,size(tmp,1),1],'edgecolor','c','visible','off');
@@ -865,14 +879,18 @@ end;
 %plot electrode names
 switch(etc_trace_obj.view_style)
     case 'trace'
-        set(etc_trace_obj.axis_trace,'ytick',diff(sort(etc_trace_obj.ylim)).*[0:(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-1)-1]);
-        set(etc_trace_obj.axis_trace,'yticklabels',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
+        if(~isempty(etc_trace_obj.montage_ch_name))
+            set(etc_trace_obj.axis_trace,'ytick',diff(sort(etc_trace_obj.ylim)).*[0:(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-1)-1]);
+            set(etc_trace_obj.axis_trace,'yticklabels',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
+        end;
     case 'butterfly'
         set(etc_trace_obj.axis_trace,'ytick',(diff(sort(etc_trace_obj.ylim)).*round(size(tmp,2)/2)));
         set(etc_trace_obj.axis_trace,'yticklabels','all');
     case 'image'
-        set(etc_trace_obj.axis_trace,'ytick',[1:size(tmp,2)]);
-        set(etc_trace_obj.axis_trace,'yticklabels',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
+        if(~isempty(etc_trace_obj.montage_ch_name))
+            set(etc_trace_obj.axis_trace,'ytick',[1:size(tmp,2)]);
+            set(etc_trace_obj.axis_trace,'yticklabels',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
+        end;
 end;
 %plot trigger
 try
