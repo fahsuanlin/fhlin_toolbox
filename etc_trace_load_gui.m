@@ -22,7 +22,7 @@ function varargout = etc_trace_load_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_load_gui
 
-% Last Modified by GUIDE v2.5 15-Apr-2020 01:34:13
+% Last Modified by GUIDE v2.5 15-Apr-2020 13:52:35
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -122,6 +122,11 @@ function varargout = etc_trace_load_gui_OutputFcn(hObject, eventdata, handles)
 
 global etc_trace_obj;
 
+pos0=get(etc_trace_obj.fig_trace,'outerpos');
+pos1=get(handles.figure_load_gui,'outerpos');
+set(handles.figure_load_gui,'outerpos',[pos0(1)+pos0(3) pos0(2)+pos0(4)-pos1(4) pos1(3) pos1(4)]);
+
+
 waitfor(handles.figure_load_gui);
 
 %varargout{1} = handles.output;
@@ -137,19 +142,36 @@ global etc_trace_obj;
 
 
 %check variables....
-evalin('base',sprintf('etc_trace_obj.data=%s;',get(handles.text_load_var,'String')));
+if(~isempty(get(handles.text_load_var,'String')))
+    str=get(handles.text_load_var,'String');
+    if(str(1)~='[')
+        evalin('base',sprintf('etc_trace_obj.data=%s;',get(handles.text_load_var,'String')));
+    end;
+end;
 if(~isempty(get(handles.edit_load_sf,'String')))
-    evalin('base',sprintf('etc_trace_obj.fs=%s;',get(handles.edit_load_sf,'String')));
+    str=get(handles.edit_load_sf,'String');
+    if(str(1)~='[')
+        evalin('base',sprintf('etc_trace_obj.fs=%s;',get(handles.edit_load_sf,'String')));
+    end;
 end;
 evalin('base',sprintf('etc_trace_obj.time_begin=%s;',get(handles.edit_load_time_begin,'String')));
 if(~isempty(get(handles.text_load_trigger,'String')))
-    evalin('base',sprintf('etc_trace_obj.trigger=%s;',get(handles.text_load_trigger,'String')));
+    str=get(handles.text_load_trigger,'String');
+    if(str(1)~='[')
+        evalin('base',sprintf('etc_trace_obj.trigger=%s;',get(handles.text_load_trigger,'String')));
+    end;
 end;
 if(~isempty(get(handles.text_load_trigger,'String')))
-    evalin('base',sprintf('etc_trace_obj.trigger=%s;',get(handles.text_load_trigger,'String')));
+    str=get(handles.text_load_trigger,'String');
+    if(str(1)~='[')
+        evalin('base',sprintf('etc_trace_obj.trigger=%s;',get(handles.text_load_trigger,'String')));
+    end;
 end;
 if(~isempty(get(handles.text_load_label,'String')))
-    evalin('base',sprintf('etc_trace_obj.ch_names=%s;',get(handles.text_load_label,'String')));
+    str=get(handles.text_load_label,'String');
+    if(str(1)~='[')
+        evalin('base',sprintf('etc_trace_obj.ch_names=%s;',get(handles.text_load_label,'String')));
+    end;
 end;
 obj=findobj('Tag','listbox_time_duration');
 str=get(obj,'String');
@@ -161,7 +183,7 @@ ok=update_loaded_data(etc_trace_obj.load.montage,etc_trace_obj.load.select,etc_t
 
 etc_trace_obj.load_output=ok;
 
-close(handles.figure_load_gui);
+delete(handles.figure_load_gui);
 
 if(etc_trace_obj.load_output) %if everything is ok...
     etc_trcae_gui_update_time();
@@ -178,7 +200,7 @@ global etc_trace_obj;
 
 etc_trace_obj.load_output=0;
 
-close(handles.figure_load_gui);
+delete(handles.figure_load_gui);
 
 
 % --- Executes on button press in pushbutton_load_var.
@@ -290,10 +312,37 @@ if(indx)
         evalin('base',sprintf('etc_trace_obj.tmp=1;',var,var));
         fprintf('Trying to load variable [%s] as the trigger...',var);
         if(etc_trace_obj.tmp)
-            evalin('base',sprintf('etc_trace_obj.data=%s; ',var));
-
+            evalin('base',sprintf('etc_trace_obj.trigger=%s; ',var));
+            
             obj=findobj('Tag','text_load_trigger');
             set(obj,'String',sprintf('%s',var));
+            
+            %trigger loading
+            obj=findobj('Tag','listbox_trigger');
+            str={};
+            if(~isempty(etc_trace_obj.trigger))
+                str=unique(etc_trace_obj.trigger.event);
+                set(obj,'string',str);
+            else
+                set(obj,'string',{});
+            end;%
+            if(isfield(etc_trace_obj,'trigger_now'))
+                if(isempty(etc_trace_obj.trigger_now))
+                    
+                else
+                    IndexC = strcmp(str,etc_trace_obj.trigger_now);
+                    set(obj,'Value',find(IndexC));
+                end;
+            else
+                if(isempty(str))
+                    etc_trace_obj.trigger_now='';
+                else
+                    etc_trace_obj.trigger_now=str{1};
+                    set(obj,'Value',1);
+                end;
+            end;
+            
+            
             fprintf('Done!\n');
         else
             fprintf('error in loading the trigger variable...\n',var);
@@ -329,7 +378,7 @@ if(indx)
         evalin('base',sprintf('etc_trace_obj.tmp=1;',var,var));
         fprintf('Trying to load variable [%s] as channel labels...',var);
         if(etc_trace_obj.tmp)
-            evalin('base',sprintf('etc_trace_obj.data=%s; ',var));
+            evalin('base',sprintf('etc_trace_obj.ch_names=%s; ',var));
 
             obj=findobj('Tag','text_load_label');
             set(obj,'String',sprintf('%s',var));
@@ -601,4 +650,3 @@ catch ME
 end;
 
 return;
-

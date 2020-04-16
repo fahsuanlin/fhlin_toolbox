@@ -272,6 +272,16 @@ set(etc_trace_obj.fig_trace,'Name','');
 set(etc_trace_obj.fig_trace,'DeleteFcn','etc_trace_handle(''del'')');
 set(etc_trace_obj.fig_trace,'CloseRequestFcn','etc_trace_handle(''del'')');
 
+
 etc_trace_handle('redraw');
 
+pause(1);
+
+etc_trace_obj.fig_control=etc_trace_control_gui;
+
+pp0=get(etc_trace_obj.fig_control,'outerpos');
+pp1=get(etc_trace_obj.fig_trace,'outerpos');
+set(etc_trace_obj.fig_control,'outerpos',[pp1(1)+(pp1(3))/2-pp0(3)/2, pp1(2)-pp0(4),pp0(3), pp0(4)]);
+set(etc_trace_obj.fig_control,'Name','events');
+set(etc_trace_obj.fig_control,'Resize','off');
 return;

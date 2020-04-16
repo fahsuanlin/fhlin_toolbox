@@ -80,7 +80,17 @@ switch lower(param)
             else
                 close(gcf,'force');
             end;
-        end;        
+        end; 
+        
+%         try
+%             delete(etc_trace_obj.fig_load);
+%         catch ME
+%             if(isfield(etc_trace_obj,'fig_load'))
+%                 close(etc_trace_obj.fig_load,'force');
+%             else
+%                 close(gcf,'force');
+%             end;
+%         end;    
         
         try
             delete(etc_trace_obj.fig_trace);
@@ -90,7 +100,17 @@ switch lower(param)
             else
                 close(gcf,'force');
             end;
-        end;        
+        end;  
+        
+        try
+            delete(etc_trace_obj.fig_control);
+        catch ME
+            if(isfield(etc_trace_obj,'fig_control'))
+                close(etc_trace_obj.fig_control,'force');
+            else
+                close(gcf,'force');
+            end;
+        end;   
         
     case 'kb'
         switch(cc)
@@ -130,11 +150,12 @@ switch lower(param)
                     etc_trace_obj.fig_trigger=[];
                 end;
                 etc_trace_obj.fig_trigger=etc_trace_trigger_gui;
-                
-                pp0=get(etc_trace_obj.fig_trigger,'pos');
-                pp1=get(etc_trace_obj.fig_trace,'pos');
-                set(etc_trace_obj.fig_trigger,'pos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
-                set(etc_trace_obj.fig_trigger,'Name','events');
+
+                set(etc_trace_obj.fig_trigger,'Name','trigger','resize','off');
+
+                pp0=get(etc_trace_obj.fig_trigger,'outerpos');
+                pp1=get(etc_trace_obj.fig_trace,'outerpos');
+                set(etc_trace_obj.fig_trigger,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
                 set(etc_trace_obj.fig_trigger,'Resize','off');
                 
             case 'f'
@@ -144,12 +165,30 @@ switch lower(param)
                 end;
                 etc_trace_obj.fig_config=etc_trace_config_gui;
                 
-                pp0=get(etc_trace_obj.fig_config,'pos');
-                pp1=get(etc_trace_obj.fig_trace,'pos');
-                set(etc_trace_obj.fig_config,'pos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
+                pp0=get(etc_trace_obj.fig_config,'outerpos');
+                pp1=get(etc_trace_obj.fig_trace,'outerpos');
+                set(etc_trace_obj.fig_config,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
                 set(etc_trace_obj.fig_config,'Name','events');
                 set(etc_trace_obj.fig_config,'Resize','off');
+            case 'c'
+                fprintf('show controls....\n');
+                if(isfield(etc_trace_obj,'fig_control'))
+                    if(isvalid(etc_trace_obj.fig_control))
+                        figure(etc_trace_obj.fig_control);
+                    else
+                        etc_trace_obj.fig_control=[];
+                        etc_trace_obj.fig_control=etc_trace_control_gui;
+                    end;
+                else
+                    etc_trace_obj.fig_control=[];
+                    etc_trace_obj.fig_control=etc_trace_control_gui;
+                end;
                 
+                pp0=get(etc_trace_obj.fig_control,'outerpos');
+                pp1=get(etc_trace_obj.fig_trace,'outerpos');
+                set(etc_trace_obj.fig_control,'outerpos',[pp1(1)+(pp1(3))/2-pp0(3)/2, pp1(2)-pp0(4),pp0(3), pp0(4)]);
+                set(etc_trace_obj.fig_control,'Name','control');
+                set(etc_trace_obj.fig_control,'Resize','off');    
             case 't'
                 fprintf('show topology....\n');
                 
@@ -266,6 +305,9 @@ switch lower(param)
                 set(etc_trace_obj.fig_montage,'Name','montages');
                 set(etc_trace_obj.fig_montage,'Resize','off');
                 set(etc_trace_obj.fig_montage, 'Visible','on');
+                pp0=get(etc_trace_obj.fig_montage,'outerpos');
+                pp1=get(etc_trace_obj.fig_trace,'outerpos');
+                set(etc_trace_obj.fig_montage,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
                 
             case 'l' %a list box of all electrodes
                 if(isfield(etc_trace_obj,'fig_electrode_listbox'))
@@ -278,8 +320,13 @@ switch lower(param)
                 else
                     etc_trace_obj.fig_electrode_listbox = figure('Visible','off');
                 end;
+                set(etc_trace_obj.fig_electrode_listbox, 'Visible','on');
                 set(etc_trace_obj.fig_electrode_listbox,'pos',[200 600 200 200]);
-                set(etc_trace_obj.fig_electrode_listbox,'Name','electrodes');
+                %pp0=get(etc_trace_obj.fig_electrode_listbox,'outerpos');
+                %pp1=get(etc_trace_obj.fig_trace,'outerpos');
+                %set(etc_trace_obj.fig_electrode_listbox,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
+                %set(etc_trace_obj.fig_electrode_listbox,'outerpos',[pp1(1), pp1(2),pp0(3), pp0(4)]);
+                set(etc_trace_obj.fig_electrode_listbox,'Name','channels');
                 set(etc_trace_obj.fig_electrode_listbox,'Resize','off');
                 
                 if(isfield(etc_trace_obj,'trace_selected_idx'))
@@ -292,7 +339,6 @@ switch lower(param)
                     etc_trace_obj.electrode_listbox=uicontrol('Style', 'listbox','Position',[1 1 200 200],'string',etc_trace_obj.ch_names,'Callback',@etc_trace_electrode_listbox_callback);
                 end;
                 
-                set(etc_trace_obj.fig_electrode_listbox, 'Visible','on');
                 
             case 'd' %change overlay threshold or time course limits
                 
@@ -339,6 +385,8 @@ switch lower(param)
     case 'bd'
         global etc_render_fsbrain;
         global etc_trace_obj;
+        
+        figure(etc_trace_obj.fig_trace);
         
         %if(gcf==etc_trace_obj.fig_trace)
         %detect right mouse click

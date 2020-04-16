@@ -197,7 +197,7 @@ global etc_trace_obj;
 if(isempty(etc_trace_obj.trigger)) return; end;
 if(isempty(etc_trace_obj.trigger_now)) return; end;
 
-if(~etc_trace_obj.flag_trigger_avg)
+%if(~etc_trace_obj.flag_trigger_avg)
     IndexC = strcmp(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
     trigger_match_idx = find(IndexC);
     trigger_match_time_idx=etc_trace_obj.trigger.time(trigger_match_idx);
@@ -223,64 +223,126 @@ if(~etc_trace_obj.flag_trigger_avg)
     
     %%% calculate AVG....
     for idx=1:length(trigger_match_time_idx)
-        if((trigger_match_time_idx(idx)-time_pre_idx>=1)&&(trigger_match_time_idx(idx)+time_post_idx<=size(etc_trace_obj.data,2)))
-            if(isempty(tmp))
-                if(etc_trace_obj.avg.flag_baseline_correct)
-                    tmp=etc_trace_obj.data(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
-                    tmp=tmp-repmat(mean(tmp(:,1:time_pre_idx),2),[1 size(tmp,2)]);
+        if(~etc_trace_obj.flag_trigger_avg)
+            if((trigger_match_time_idx(idx)-time_pre_idx>=1)&&(trigger_match_time_idx(idx)+time_post_idx<=size(etc_trace_obj.data,2)))
+                if(isempty(tmp))
+                    if(etc_trace_obj.avg.flag_baseline_correct)
+                        tmp=etc_trace_obj.data(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                        tmp=tmp-repmat(mean(tmp(:,1:time_pre_idx),2),[1 size(tmp,2)]);
+                    else
+                        tmp=etc_trace_obj.data(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                    end;
+                    
+                    if(etc_trace_obj.avg.flag_trials)
+                        trials(:,:,n_avg+1)=tmp;
+                    end;
                 else
-                    tmp=etc_trace_obj.data(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                    if(etc_trace_obj.avg.flag_baseline_correct)
+                        ttmp=etc_trace_obj.data(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                        ttmp=ttmp-repmat(mean(ttmp(:,1:time_pre_idx),2),[1 size(ttmp,2)]);
+                        tmp=tmp+ttmp;
+                    else
+                        ttmp=etc_trace_obj.data(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                        tmp=tmp+ttmp;
+                    end;
+                    if(etc_trace_obj.avg.flag_trials)
+                        trials(:,:,n_avg+1)=ttmp;
+                    end;
                 end;
                 
-                if(etc_trace_obj.avg.flag_trials)
-                    trials(:,:,n_avg+1)=tmp;
-                end;
-            else
-                if(etc_trace_obj.avg.flag_baseline_correct)
-                    ttmp=etc_trace_obj.data(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
-                    ttmp=ttmp-repmat(mean(ttmp(:,1:time_pre_idx),2),[1 size(ttmp,2)]); 
-                    tmp=tmp+ttmp;
-                else
-                    ttmp=etc_trace_obj.data(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
-                    tmp=tmp+ttmp;
-                end;
-                if(etc_trace_obj.avg.flag_trials)
-                    trials(:,:,n_avg+1)=ttmp;
-                end;
-            end;
-            
-            for ii=1:length(etc_trace_obj.aux_data)
-                if(isempty(aux_tmp{ii}))
-                    if(etc_trace_obj.avg.flag_baseline_correct)
-                        ttmp=etc_trace_obj.aux_data{ii}(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
-                        ttmp=ttmp-repmat(mean(ttmp(:,1:time_pre_idx),2),[1 size(ttmp,2)]); 
-                        aux_tmp{ii}=ttmp;
+                for ii=1:length(etc_trace_obj.aux_data)
+                    if(isempty(aux_tmp{ii}))
+                        if(etc_trace_obj.avg.flag_baseline_correct)
+                            ttmp=etc_trace_obj.aux_data{ii}(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                            ttmp=ttmp-repmat(mean(ttmp(:,1:time_pre_idx),2),[1 size(ttmp,2)]);
+                            aux_tmp{ii}=ttmp;
+                        else
+                            ttmp=etc_trace_obj.aux_data{ii}(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                            aux_tmp{ii}=ttmp;
+                        end;
+                        if(etc_trace_obj.avg.flag_trials)
+                            aux_trials{ii}(:,:,n_avg+1)=ttmp;
+                        end;
                     else
-                        ttmp=etc_trace_obj.aux_data{ii}(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
-                        aux_tmp{ii}=ttmp;
+                        if(etc_trace_obj.avg.flag_baseline_correct)
+                            ttmp=etc_trace_obj.aux_data{ii}(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                            ttmp=ttmp-repmat(mean(ttmp(:,1:time_pre_idx),2),[1 size(ttmp,2)]);
+                            aux_tmp{ii}=aux_tmp{ii}+ttmp;
+                        else
+                            ttmp=etc_trace_obj.aux_data{ii}(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                            aux_tmp{ii}=aux_tmp{ii}+ttmp;
+                        end;
+                        if(etc_trace_obj.avg.flag_trials)
+                            aux_trials{ii}(:,:,n_avg+1)=ttmp;
+                        end;
+                    end;
+                end;
+                
+                %figure(10);
+                %subplot(211); plot(etc_trace_obj.data(1:31,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx)'); subplot(212); plot(etc_trace_obj.aux_data{idx}(1:31,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx)');
+                
+                n_avg=n_avg+1;
+            end;
+        else
+            if((trigger_match_time_idx(idx)-time_pre_idx>=1)&&(trigger_match_time_idx(idx)+time_post_idx<=size(etc_trace_obj.buffer.data,2)))
+                if(isempty(tmp))
+                    if(etc_trace_obj.avg.flag_baseline_correct)
+                        tmp=etc_trace_obj.buffer.data(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                        tmp=tmp-repmat(mean(tmp(:,1:time_pre_idx),2),[1 size(tmp,2)]);
+                    else
+                        tmp=etc_trace_obj.buffer.data(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                    end;
+                    
+                    if(etc_trace_obj.avg.flag_trials)
+                        trials(:,:,n_avg+1)=tmp;
+                    end;
+                else
+                    if(etc_trace_obj.avg.flag_baseline_correct)
+                        ttmp=etc_trace_obj.buffer.data(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                        ttmp=ttmp-repmat(mean(ttmp(:,1:time_pre_idx),2),[1 size(ttmp,2)]);
+                        tmp=tmp+ttmp;
+                    else
+                        ttmp=etc_trace_obj.buffer.data(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                        tmp=tmp+ttmp;
                     end;
                     if(etc_trace_obj.avg.flag_trials)
-                        aux_trials{ii}(:,:,n_avg+1)=ttmp;
-                    end;
-                else
-                    if(etc_trace_obj.avg.flag_baseline_correct)
-                        ttmp=etc_trace_obj.aux_data{ii}(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
-                        ttmp=ttmp-repmat(mean(ttmp(:,1:time_pre_idx),2),[1 size(ttmp,2)]); 
-                        aux_tmp{ii}=aux_tmp{ii}+ttmp;
-                    else
-                        ttmp=etc_trace_obj.aux_data{ii}(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
-                        aux_tmp{ii}=aux_tmp{ii}+ttmp;
-                    end;
-                    if(etc_trace_obj.avg.flag_trials)
-                        aux_trials{ii}(:,:,n_avg+1)=ttmp;
+                        trials(:,:,n_avg+1)=ttmp;
                     end;
                 end;
+                
+                for ii=1:length(etc_trace_obj.buffer.aux_data)
+                    if(isempty(aux_tmp{ii}))
+                        if(etc_trace_obj.avg.flag_baseline_correct)
+                            ttmp=etc_trace_obj.buffer.aux_data{ii}(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                            ttmp=ttmp-repmat(mean(ttmp(:,1:time_pre_idx),2),[1 size(ttmp,2)]);
+                            aux_tmp{ii}=ttmp;
+                        else
+                            ttmp=etc_trace_obj.buffer.aux_data{ii}(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                            aux_tmp{ii}=ttmp;
+                        end;
+                        if(etc_trace_obj.avg.flag_trials)
+                            aux_trials{ii}(:,:,n_avg+1)=ttmp;
+                        end;
+                    else
+                        if(etc_trace_obj.avg.flag_baseline_correct)
+                            ttmp=etc_trace_obj.buffer.aux_data{ii}(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                            ttmp=ttmp-repmat(mean(ttmp(:,1:time_pre_idx),2),[1 size(ttmp,2)]);
+                            aux_tmp{ii}=aux_tmp{ii}+ttmp;
+                        else
+                            ttmp=etc_trace_obj.buffer.aux_data{ii}(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                            aux_tmp{ii}=aux_tmp{ii}+ttmp;
+                        end;
+                        if(etc_trace_obj.avg.flag_trials)
+                            aux_trials{ii}(:,:,n_avg+1)=ttmp;
+                        end;
+                    end;
+                end;
+                
+                %figure(10);
+                %subplot(211); plot(etc_trace_obj.data(1:31,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx)'); subplot(212); plot(etc_trace_obj.aux_data{idx}(1:31,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx)');
+                
+                n_avg=n_avg+1;
             end;
-            
-            %figure(10);
-            %subplot(211); plot(etc_trace_obj.data(1:31,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx)'); subplot(212); plot(etc_trace_obj.aux_data{idx}(1:31,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx)');
-            
-            n_avg=n_avg+1;
         end;
     end;
     tmp=tmp./n_avg;
@@ -293,21 +355,22 @@ if(~etc_trace_obj.flag_trigger_avg)
     etc_trace_obj.avg.trials=trials;
     etc_trace_obj.avg.aux_trials=aux_trials;
 
-    %update data
-    etc_trace_obj.buffer.data=etc_trace_obj.data;
-    etc_trace_obj.buffer.aux_data=etc_trace_obj.aux_data;
-    etc_trace_obj.buffer.trigger_now=etc_trace_obj.trigger_now;
-    etc_trace_obj.buffer.trigger=etc_trace_obj.trigger;
-    etc_trace_obj.buffer.time_begin=etc_trace_obj.time_begin;
-    etc_trace_obj.buffer.time_select_idx=etc_trace_obj.time_select_idx;
-    etc_trace_obj.buffer.time_window_begin_idx=etc_trace_obj.time_window_begin_idx;
-    etc_trace_obj.buffer.time_duration_idx=etc_trace_obj.time_duration_idx;
-    etc_trace_obj.buffer.ylim=etc_trace_obj.ylim;
-    
+    if(~etc_trace_obj.flag_trigger_avg)
+        %update data
+        etc_trace_obj.buffer.data=etc_trace_obj.data;
+        etc_trace_obj.buffer.aux_data=etc_trace_obj.aux_data;
+        etc_trace_obj.buffer.trigger_now=etc_trace_obj.trigger_now;
+        etc_trace_obj.buffer.trigger=etc_trace_obj.trigger;
+        etc_trace_obj.buffer.time_begin=etc_trace_obj.time_begin;
+        etc_trace_obj.buffer.time_select_idx=etc_trace_obj.time_select_idx;
+        etc_trace_obj.buffer.time_window_begin_idx=etc_trace_obj.time_window_begin_idx;
+        etc_trace_obj.buffer.time_duration_idx=etc_trace_obj.time_duration_idx;
+        etc_trace_obj.buffer.ylim=etc_trace_obj.ylim;
+    end;
     
     etc_trace_obj.data=tmp;
     etc_trace_obj.aux_data=aux_tmp;
-    etc_trace_obj.trigger=[];
+    %etc_trace_obj.trigger=[];
     etc_trace_obj.time_begin=-etc_trace_obj.avg.time_pre;
     etc_trace_obj.time_select_idx=1;
     etc_trace_obj.time_window_begin_idx=1;
@@ -333,7 +396,7 @@ if(~etc_trace_obj.flag_trigger_avg)
     set(hObject,'Enable','off');
     
     etc_trace_obj.flag_trigger_avg=1;
-end;
+%end;
 
 
 % --- Executes on button press in pushbutton_avg_export.
