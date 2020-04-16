@@ -142,37 +142,37 @@ global etc_trace_obj;
 
 
 %check variables....
-if(~isempty(get(handles.text_load_var,'String')))
-    str=get(handles.text_load_var,'String');
-    if(str(1)~='[')
-        evalin('base',sprintf('etc_trace_obj.data=%s;',get(handles.text_load_var,'String')));
-    end;
-end;
-if(~isempty(get(handles.edit_load_sf,'String')))
-    str=get(handles.edit_load_sf,'String');
-    if(str(1)~='[')
-        evalin('base',sprintf('etc_trace_obj.fs=%s;',get(handles.edit_load_sf,'String')));
-    end;
-end;
-evalin('base',sprintf('etc_trace_obj.time_begin=%s;',get(handles.edit_load_time_begin,'String')));
-if(~isempty(get(handles.text_load_trigger,'String')))
-    str=get(handles.text_load_trigger,'String');
-    if(str(1)~='[')
-        evalin('base',sprintf('etc_trace_obj.trigger=%s;',get(handles.text_load_trigger,'String')));
-    end;
-end;
-if(~isempty(get(handles.text_load_trigger,'String')))
-    str=get(handles.text_load_trigger,'String');
-    if(str(1)~='[')
-        evalin('base',sprintf('etc_trace_obj.trigger=%s;',get(handles.text_load_trigger,'String')));
-    end;
-end;
-if(~isempty(get(handles.text_load_label,'String')))
-    str=get(handles.text_load_label,'String');
-    if(str(1)~='[')
-        evalin('base',sprintf('etc_trace_obj.ch_names=%s;',get(handles.text_load_label,'String')));
-    end;
-end;
+% if(~isempty(get(handles.text_load_var,'String')))
+%     str=get(handles.text_load_var,'String');
+%     if(str(1)~='[')
+%         evalin('base',sprintf('etc_trace_obj.data=%s;',get(handles.text_load_var,'String')));
+%     end;
+% end;
+% if(~isempty(get(handles.edit_load_sf,'String')))
+%     str=get(handles.edit_load_sf,'String');
+%     if(str(1)~='[')
+%         evalin('base',sprintf('etc_trace_obj.fs=%s;',get(handles.edit_load_sf,'String')));
+%     end;
+% end;
+% evalin('base',sprintf('etc_trace_obj.time_begin=%s;',get(handles.edit_load_time_begin,'String')));
+% if(~isempty(get(handles.text_load_trigger,'String')))
+%     str=get(handles.text_load_trigger,'String');
+%     if(str(1)~='[')
+%         evalin('base',sprintf('etc_trace_obj.trigger=%s;',get(handles.text_load_trigger,'String')));
+%     end;
+% end;
+% if(~isempty(get(handles.text_load_trigger,'String')))
+%     str=get(handles.text_load_trigger,'String');
+%     if(str(1)~='[')
+%         evalin('base',sprintf('etc_trace_obj.trigger=%s;',get(handles.text_load_trigger,'String')));
+%     end;
+% end;
+% if(~isempty(get(handles.text_load_label,'String')))
+%     str=get(handles.text_load_label,'String');
+%     if(str(1)~='[')
+%         evalin('base',sprintf('etc_trace_obj.ch_names=%s;',get(handles.text_load_label,'String')));
+%     end;
+% end;
 obj=findobj('Tag','listbox_time_duration');
 str=get(obj,'String');
 idx=get(obj,'Value');
@@ -317,30 +317,50 @@ if(indx)
             obj=findobj('Tag','text_load_trigger');
             set(obj,'String',sprintf('%s',var));
             
-            %trigger loading
-            obj=findobj('Tag','listbox_trigger');
-            str={};
-            if(~isempty(etc_trace_obj.trigger))
-                str=unique(etc_trace_obj.trigger.event);
-                set(obj,'string',str);
-            else
-                set(obj,'string',{});
-            end;%
-            if(isfield(etc_trace_obj,'trigger_now'))
-                if(isempty(etc_trace_obj.trigger_now))
-                    
-                else
-                    IndexC = strcmp(str,etc_trace_obj.trigger_now);
-                    set(obj,'Value',find(IndexC));
-                end;
-            else
-                if(isempty(str))
-                    etc_trace_obj.trigger_now='';
-                else
-                    etc_trace_obj.trigger_now=str{1};
-                    set(obj,'Value',1);
-                end;
-            end;
+%             %convert trigger into string, just in case....
+%             if(~isempty(etc_trace_obj.trigger))
+%                 if(isfield(etc_trace_obj.trigger,'event'))
+%                     if(~iscell(etc_trace_obj.trigger.event))
+%                         str={};
+%                         for idx=1:length(etc_trace_obj.trigger.event)
+%                             str{idx}=sprintf('%d',etc_trace_obj.trigger.event(idx));
+%                         end;
+%                         etc_trace_obj.trigger.event=str;
+%                     end;
+%                 end;
+%             end;
+%             
+%             %trigger loading
+%             obj=findobj('Tag','listbox_trigger');
+%             str={};
+%             if(~isempty(etc_trace_obj.trigger))
+%                 str=unique(etc_trace_obj.trigger.event);
+%                 set(obj,'string',str);
+%             else
+%                 set(obj,'string',{});
+%             end;%
+%             if(isfield(etc_trace_obj,'trigger_now'))
+%                 if(isempty(etc_trace_obj.trigger_now))
+%                     
+%                 else
+%                     IndexC = strcmp(str,etc_trace_obj.trigger_now);
+%                     if(isempty(find(IndexC)))
+%                         fprintf('current trigger [%s] not found in the loaded trigger...\n',etc_trace_obj.trigger_now);
+%                         fprintf('set current trigger to [%s]...\n',str{1});
+%                         etc_trace_obj.tigger_now=str{1};
+%                         set(obj,'Value',1);
+%                     else
+%                         set(obj,'Value',find(IndexC));
+%                     end;
+%                 end;
+%             else
+%                 if(isempty(str))
+%                     etc_trace_obj.trigger_now='';
+%                 else
+%                     etc_trace_obj.trigger_now=str{1};
+%                     set(obj,'Value',1);
+%                 end;
+%             end;
             
             
             fprintf('Done!\n');
@@ -614,12 +634,21 @@ try
     else
         set(obj,'string',{});
     end;%
+    
+    
     if(isfield(etc_trace_obj,'trigger_now'))
         if(isempty(etc_trace_obj.trigger_now))
             
         else
             IndexC = strcmp(str,etc_trace_obj.trigger_now);
-            set(obj,'Value',find(IndexC));
+            if(isempty(find(IndexC)))
+                fprintf('current trigger [%s] not found in the loaded trigger...\n',etc_trace_obj.trigger_now);
+                fprintf('set current trigger to [%s]...\n',str{1});
+                etc_trace_obj.tigger_now=str{1};
+                set(obj,'Value',1);
+            else
+                set(obj,'Value',find(IndexC));
+            end;
         end;
     else
         if(isempty(str))
@@ -629,6 +658,24 @@ try
             set(obj,'Value',1);
         end;
     end;
+    
+            
+%     if(isfield(etc_trace_obj,'trigger_now'))
+%         if(isempty(etc_trace_obj.trigger_now))
+%             
+%         else
+%             
+%             IndexC = strcmp(str,etc_trace_obj.trigger_now);
+%             set(obj,'Value',find(IndexC));
+%         end;
+%     else
+%         if(isempty(str))
+%             etc_trace_obj.trigger_now='';
+%         else
+%             etc_trace_obj.trigger_now=str{1};
+%             set(obj,'Value',1);
+%         end;
+%     end;
     %guidata(hObject, handles);
     
     if(isfield(etc_trace_obj,'trigger_time_idx'))
