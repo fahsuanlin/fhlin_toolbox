@@ -148,12 +148,12 @@ global etc_trace_obj;
 %         evalin('base',sprintf('etc_trace_obj.data=%s;',get(handles.text_load_var,'String')));
 %     end;
 % end;
-% if(~isempty(get(handles.edit_load_sf,'String')))
-%     str=get(handles.edit_load_sf,'String');
-%     if(str(1)~='[')
-%         evalin('base',sprintf('etc_trace_obj.fs=%s;',get(handles.edit_load_sf,'String')));
-%     end;
-% end;
+if(~isempty(get(handles.edit_load_sf,'String')))
+    str=get(handles.edit_load_sf,'String');
+    if(str(1)~='[')
+        evalin('base',sprintf('etc_trace_obj.fs=%s;',get(handles.edit_load_sf,'String')));
+    end;
+end;
 % evalin('base',sprintf('etc_trace_obj.time_begin=%s;',get(handles.edit_load_time_begin,'String')));
 % if(~isempty(get(handles.text_load_trigger,'String')))
 %     str=get(handles.text_load_trigger,'String');
@@ -226,11 +226,43 @@ if(indx)
         evalin('base',sprintf('global etc_trace_obj; if(ndims(%s)==2) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var,var));
         fprintf('Trying to load variable [%s] as the data...',var);
         if(etc_trace_obj.tmp)
-            evalin('base',sprintf('etc_trace_obj.data=%s; ',var));
+            answer = questdlg('main or auxillary data?','Menu',...
+                'main','auxillary','cancel','main');
+            % Handle response
+            switch answer
+                case 'main'
+                    f_option = 1;
+                case 'auxillary'
+                    f_option = 2;
+                case 'cancel'
+                    f_option= 0;
+            end
+            if(f_option==1) %main....
+                evalin('base',sprintf('etc_trace_obj.data=%s; ',var));
 
-            obj=findobj('Tag','text_load_var');
-            set(obj,'String',sprintf('%s',var));
+                obj=findobj('Tag','text_load_var');
+                set(obj,'String',sprintf('%s',var));
+                            
+                fprintf('main data loaded!\n');
+            elseif(f_option==2) %aux....
+                evalin('base',sprintf('if(size(%s,1)~=size(etc_trace_obj.data,1)) etc_trace_obj.tmp=0; else etc_trace_obj.tmp=1; end',var));
+                
+                if(etc_trace_obj.tmp==1)
+                    evalin('base',sprintf('tmp=length(etc_trace_obj.aux_data); etc_trace_obj.aux_data{tmp+1}=%s; ',var));
+                    if(size(etc_trace_obj.aux_data{end},2)<=size(etc_trace_obj.data,2)) %append 'nan' if aux data is too short....
+                        etc_trace_obj.aux_data{end}(:,end+1:size(etc_trace_obj.data,2))=nan;
+                    end;
+    
+                    obj=findobj('Tag','text_load_var');
+                    set(obj,'String',sprintf('%s (aux.)',var));
+                            
+                    fprintf('aixillary data loaded!\n');
+                end;
+            end;
+            
             fprintf('Done!\n');
+           
+            
         else
             fprintf('The chosen variable [%s] is not a 2D matrix. Rejected!\n',var);
         end;
@@ -309,13 +341,47 @@ if(indx)
     try
         var=fn{indx};
         %evalin('base',sprintf('global etc_trace_obj; if(ndims(%s)==2) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var,var));
-        evalin('base',sprintf('etc_trace_obj.tmp=1;',var,var));
+        evalin('base',sprintf('global etc_trace_obj; if(isfield(%s,''time'')&&isfield(%s,''event'')) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var,var));
+        %evalin('base',sprintf('etc_trace_obj.tmp=1;',var,var));
+        
         fprintf('Trying to load variable [%s] as the trigger...',var);
         if(etc_trace_obj.tmp)
-            evalin('base',sprintf('etc_trace_obj.trigger=%s; ',var));
             
-            obj=findobj('Tag','text_load_trigger');
-            set(obj,'String',sprintf('%s',var));
+            answer = questdlg('replace or merge with the existed trigger?','Menu',...
+                'replace','merge','cancel','replace');
+            % Handle response
+            switch answer
+                case 'replace'
+                    f_option = 1;
+                case 'merge'
+                    f_option = 2;
+                case 'cancel'
+                    f_option= 0;
+            end
+            if(f_option==1) %replace....
+                evalin('base',sprintf('etc_trace_obj.trigger=%s; ',var));
+                
+                obj=findobj('Tag','text_load_trigger');
+                set(obj,'String',sprintf('%s',var));                
+                
+                fprintf('trigger replaced/loaded!\n');
+            elseif(f_option==2)
+                evalin('base',sprintf('global trigger_tmp; trigger_tmp=%s; ',var));
+                global trigger_tmp;
+                
+                if(isempty(etc_trace_obj.trigger))
+                    etc_trace_obj.trigger=trigger_tmp;
+                else
+                    etc_trace_obj.trigger=etc_trigger_append(etc_trace_obj.trigger,trigger_tmp);
+                end;
+                clear trigger_tmp;
+                
+                obj=findobj('Tag','text_load_trigger');
+                set(obj,'String',sprintf('%s',var));                
+                
+                fprintf('trigger merged!\n');
+            end;
+
             
 %             %convert trigger into string, just in case....
 %             if(~isempty(etc_trace_obj.trigger))
@@ -363,7 +429,6 @@ if(indx)
 %             end;
             
             
-            fprintf('Done!\n');
         else
             fprintf('error in loading the trigger variable...\n',var);
         end;
@@ -659,24 +724,6 @@ try
         end;
     end;
     
-            
-%     if(isfield(etc_trace_obj,'trigger_now'))
-%         if(isempty(etc_trace_obj.trigger_now))
-%             
-%         else
-%             
-%             IndexC = strcmp(str,etc_trace_obj.trigger_now);
-%             set(obj,'Value',find(IndexC));
-%         end;
-%     else
-%         if(isempty(str))
-%             etc_trace_obj.trigger_now='';
-%         else
-%             etc_trace_obj.trigger_now=str{1};
-%             set(obj,'Value',1);
-%         end;
-%     end;
-    %guidata(hObject, handles);
     
     if(isfield(etc_trace_obj,'trigger_time_idx'))
         hObject=findobj('tag','edit_trigger_time_idx');

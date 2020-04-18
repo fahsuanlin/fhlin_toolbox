@@ -1130,7 +1130,8 @@ switch lower(param)
             
             if(isvalid(etc_render_fsbrain.fig_brain))
                 figure(etc_render_fsbrain.fig_brain);
-                 redraw;
+                etc_render_fsbrain.camposition=campos;
+                redraw;
                 draw_pointer('pt',etc_render_fsbrain.click_coord,'min_dist_idx',etc_render_fsbrain.click_vertex,'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
             end;
             figure(etc_render_fsbrain.fig_stc);
@@ -2222,9 +2223,12 @@ else
 
     etc_render_fsbrain.lim=[xlim(:)' ylim(:)' zlim(:)'];
 end;
-if(isempty(etc_render_fsbrain.view_angle))
+%if(isempty(etc_render_fsbrain.view_angle))
     [etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2)]=view;
-end;
+%end;
+%if(isempty(etc_render_fsbrain.camposition))
+    etc_render_fsbrain.camposition=campos;
+%end;
 
 %delete brain patch object
 if(ishandle(etc_render_fsbrain.h))
@@ -2338,9 +2342,9 @@ if(~isempty(etc_render_fsbrain.overlay_threshold))
 end;
 set(gcf,'color',etc_render_fsbrain.bg_color);
 
+view(etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2));
 campos(etc_render_fsbrain.camposition); 
 axis(etc_render_fsbrain.lim);
-view(etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2));
 
 % %add exploration toolbar
 % [vv date] = version;
