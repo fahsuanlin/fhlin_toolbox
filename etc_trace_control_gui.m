@@ -22,7 +22,7 @@ function varargout = etc_trace_control_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_control_gui
 
-% Last Modified by GUIDE v2.5 19-Apr-2020 02:00:55
+% Last Modified by GUIDE v2.5 19-Apr-2020 14:49:48
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -116,6 +116,12 @@ else
         etc_trace_obj.trigger_now=str{1};
         set(handles.listbox_trigger,'Value',1);
     end;
+end;
+
+if(isfield(etc_trace_obj,'trigger_add_rightclick'))
+    set(handles.checkbox_trigger_rightclick,'Value',etc_trace_obj.trigger_add_rightclick);    
+else
+    set(handles.checkbox_trigger_rightclick,'Value',0);
 end;
 %guidata(hObject, handles);
 
@@ -1216,176 +1222,8 @@ function pushbutton_loadfile_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global etc_trace_obj;
 
-%etc_trace_obj.fig_load=etc_trace_load_gui;
 
-[file,path] = uigetfile({'*.eeg; *.vhdr; *.vmrk','EEG'; '*.*','All files'},'Select a file');
-[dummy,fstem,ext]=fileparts(file);
-switch lower(ext)
-    case {'.eeg','.vmrk','.vhdr'}
-        fprintf('reading EEG file....\n');
-        
-        headerFile=sprintf('%s/%s%s',path,fstem,'.vhdr');
-        % first get the continuous data as a matlab array
-        etc_trace_obj.data = double(bva_loadeeg(headerFile));
-        
-        % meta information such as samplingRate (fs), labels, etc
-        [etc_trace_obj.fs etc_trace_obj.ch_names etc_trace_obj.meta] = bva_readheader(headerFile);
-        
-        %read maker file
-        markerFile=sprintf('%s/%s%s',path,fstem,'.vmrk');
-        etc_trace_obj.trigger=etc_read_vmrk(markerFile);
-       
-        flag_reref=0;
-        %re-referencing
-        if(flag_reref)
-            fprintf('\treferencing...\n');
-            eeg_ref=mean(etc_trace_obj.data ,1);
-            for ch_idx=1:size(etc_trace_obj.data,1)
-                etc_trace_obj.data (ch_idx,:)=etc_trace_obj.data -eeg_ref{f_idx};
-            end;
-        else
-            eeg_ref=[];
-        end;
-        
-        flag_hp=0;
-        %high-pass filtering
-        if(flag_hp)
-            fprintf('\tHP...\n');
-            %high-pass filtering (0.1 Hz)
-            Wn = 0.1*2/fs(f_idx);
-            N = 3; % order of 3 less processing
-            [a,b] = butter(N,Wn,'high'); %bandpass filtering
-            for ch_idx=1:size(etc_trace_obj.data,1)
-                etc_trace_obj.data(ch_idx,:) = filtfilt(a,b,etc_trace_obj.data(ch_idx,:));
-            end;
-        end;
-        
-        
-        time_trim=[];
-        %remove first few seconds (if needed....)
-        if(~isempty(time_trim))
-            time_trim_idx=round(time_trim*etc_trace_obj.fs);
-            
-            fprintf('trimming [%1.1f] s data {(%d) samples}....\n',time_trim, time_trim_idx);
-            etc_trace_obj.data=etc_trace_obj.data(:,time_trim_idx+1:end);
-            
-        end;
-        
-        hObject=findobj('tag','listbox_time_duration');
-        contents = cellstr(get(hObject,'String'));
-        ii=round(cellfun(@str2num,contents).*etc_trace_obj.fs);
-        [dummy,vv]=min(abs(ii-size(etc_trace_obj.data,2)));
-        round(str2num(contents{vv})*etc_trace_obj.fs);
-        etc_trace_obj.time_duration_idx=round(str2num(contents{vv})*etc_trace_obj.fs);
-        
-        etc_trace_obj.load.montage=[];
-        etc_trace_obj.load.select=[];
-        etc_trace_obj.load.scale=[];
-        
-        ok=etc_trace_update_loaded_data(etc_trace_obj.load.montage,etc_trace_obj.load.select,etc_trace_obj.load.scale);
-        
-        etc_trace_obj.load_output=ok;
-        
-        if(etc_trace_obj.load_output) %if everything is ok...
-            etc_trcae_gui_update_time();
-            %etc_trace_handle('redraw');
-        end;
-        
-    otherwise
-        fprintf('unknown format...\nerror!\n');
-end;
-
-% 
-% [dummy,fstem]=fileparts(headerFile{f_idx});
-% fprintf('reading [%s]...\n',fstem);
-% 
-% 
-% 
-% 
-% found_channel={};
-% for s_idx=1:length(select_channel)
-%     IndexC = strcmp(lower(label),lower(select_channel{s_idx})); %change all labels into lower case
-%     Index = find(IndexC);
-%     
-%     if(~isempty(Index))
-%         fprintf('\tChannel [%s] found:: index=%03d \r',select_channel{s_idx},Index);
-%         if(strcmp(lower(select_channel{s_idx}),'ecg'))
-%             ecg_channel=Index;
-%         else
-%             eeg_channel(s_idx)=Index;
-%         end;
-%         found_channel{end+1}=select_channel{s_idx};
-%     else
-%         fprintf('\tChannel [%s] not found! \r',select_channel{s_idx});
-%     end;
-% end;
-% fprintf('\n');
-% 
-% ecg_orig=eeg{f_idx}(ecg_channel,:)';
-% eeg_orig=eeg{f_idx}(eeg_channel,:);
-% ecg{f_idx}=eeg{f_idx}(ecg_channel,:)';
-% eeg{f_idx}=eeg{f_idx}(eeg_channel,:);
-% 
-% %re-referencing
-% if(flag_reref(f_idx))
-%     fprintf('\treferencing...\n');
-%     eeg_ref{f_idx}=mean(eeg{f_idx},1);
-%     for ch_idx=1:size(eeg{f_idx},1)
-%         eeg{f_idx}(ch_idx,:)=eeg{f_idx}(ch_idx,:)-eeg_ref{f_idx};
-%     end;
-% else
-%     eeg_ref{f_idx}=[];
-% end;
-% 
-% 
-% %read maker file
-% fprintf('\treading triggers...\n');
-% trigger{f_idx}=etc_read_vmrk(markerFile{f_idx});
-% 
-% 
-% if(flag_aas(f_idx))
-%     fprintf('\tAAS...\n');
-%     gradient_trigger{f_idx}=zeros(size(eeg{f_idx},2),1);
-%     iidx=find(trigger{f_idx}.event==trigger_token);
-%     gradient_trigger{f_idx}(trigger{f_idx}.time(iidx))=1e3;
-%     ecg{f_idx}=eeg_ga(ecg{f_idx},gradient_trigger{f_idx},TR,fs(f_idx),'flag_display',0,'flag_ma_aas',1,'flag_aas_svd',0,'flag_anchor_bnd',0,'n_ma_aas',7); %AAS on ECG
-%     ecg{f_idx}=sgolayfilt(ecg{f_idx},6,301); %smoothing out residual GA in ECG
-%     eeg{f_idx}=eeg_ga(eeg{f_idx},gradient_trigger{f_idx},TR,fs(f_idx),'flag_display',0,'flag_ma_aas',1,'flag_aas_svd',0,'flag_anchor_bnd',0,'n_ma_aas',7); %AAS on EEG
-% end;
-% 
-% 
-% %high-pass filtering
-% if(flag_hp(f_idx))
-%     fprintf('\tHP...\n');
-%     %high-pass filtering (0.1 Hz)
-%     Wn = 0.1*2/fs(f_idx);
-%     N = 3; % order of 3 less processing
-%     [a,b] = butter(N,Wn,'high'); %bandpass filtering
-%     for ch_idx=1:size(eeg{f_idx},1)
-%         eeg{f_idx}(ch_idx,:) = filtfilt(a,b,eeg{f_idx}(ch_idx,:));
-%     end;
-%     if(~isempty(eeg_ref{f_idx}))
-%         eeg_ref{f_idx}=filtfilt(a,b,eeg_ref{f_idx}(:))';
-%     end;
-%     
-%     ecg{f_idx}=filtfilt(a,b,ecg{f_idx}(:))';
-% end;
-% 
-% 
-% %remove first few seconds (if needed....)
-% if(~isempty(time_trim))
-%     time_trim_idx=round(time_trim*fs(f_idx));
-%     
-%     fprintf('trimming [%1.1f] s data {(%d) samples}....\n',time_trim, time_trim_idx);
-%     ecg{f_idx}=ecg{f_idx}(time_trim_idx+1:end);
-%     eeg{f_idx}=eeg{f_idx}(:,time_trim_idx+1:end);
-%     %trigger{f_idx}.time=trigger{f_idx}.time-time_trim_idx;
-%     
-%     %%update trigger info
-%     %idx=find(trigger{f_idx}.time<0);
-%     %trigger{f_idx}.time(idx)=[];
-%     %trigger{f_idx}.event(idx)=[];
-% end;
+etc_trace_obj.fig_loadfile=etc_trace_loadfile_gui;
 
 
 % --- Executes on button press in pushbutton_trigger_window.
@@ -1408,3 +1246,73 @@ pp0=get(etc_trace_obj.fig_trigger,'outerpos');
 pp1=get(etc_trace_obj.fig_trace,'outerpos');
 set(etc_trace_obj.fig_trigger,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
 set(etc_trace_obj.fig_trigger,'Resize','off');
+
+
+% --- Executes on button press in pushbutton_threshold_inc.
+function pushbutton_threshold_inc_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_threshold_inc (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+%fprintf('current limits = %s\n',mat2str(etc_trace_obj.ylim));
+%def={num2str(etc_trace_obj.ylim)};
+%answer=inputdlg('change limits',sprintf('current threshold = %s',mat2str(etc_trace_obj.ylim)),1,def);
+obj=findobj('Tag','edit_threshold');
+answer=str2double(get(obj,'String'));
+answer=round(answer.*1.2);
+set(obj,'String',num2str(answer));
+%if(~isempty(answer))
+    %etc_trace_obj.ylim=str2num(answer{1});
+    etc_trace_obj.ylim=[-abs(answer) abs(answer)];
+    fprintf('updated time course limits = %s\n',mat2str(etc_trace_obj.ylim));
+    
+    global etc_render_fsbrain
+    if(~isempty(etc_render_fsbrain))
+        etc_render_fsbrain.overlay_threshold=[abs(diff(etc_trace_obj.ylim))/4 abs(diff(etc_trace_obj.ylim))/2 ];
+        etc_trace_handle('bd');
+    end;
+    
+    etc_trace_handle('redraw');
+%end;
+
+% --- Executes on button press in pushbutton_threshold_dec.
+function pushbutton_threshold_dec_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_threshold_dec (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+%fprintf('current limits = %s\n',mat2str(etc_trace_obj.ylim));
+%def={num2str(etc_trace_obj.ylim)};
+%answer=inputdlg('change limits',sprintf('current threshold = %s',mat2str(etc_trace_obj.ylim)),1,def);
+obj=findobj('Tag','edit_threshold');
+answer=str2double(get(obj,'String'));
+answer=round(answer.*0.8);
+set(obj,'String',num2str(answer));
+%if(~isempty(answer))
+    %etc_trace_obj.ylim=str2num(answer{1});
+    etc_trace_obj.ylim=[-abs(answer) abs(answer)];
+    fprintf('updated time course limits = %s\n',mat2str(etc_trace_obj.ylim));
+    
+    global etc_render_fsbrain
+    if(~isempty(etc_render_fsbrain))
+        etc_render_fsbrain.overlay_threshold=[abs(diff(etc_trace_obj.ylim))/4 abs(diff(etc_trace_obj.ylim))/2 ];
+        etc_trace_handle('bd');
+    end;
+    
+    etc_trace_handle('redraw');
+%end;
+
+
+% --- Executes on button press in checkbox_trigger_rightclick.
+function checkbox_trigger_rightclick_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_trigger_rightclick (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+%
+% Hint: get(hObject,'Value') returns toggle state of checkbox_trigger_avg
+
+global etc_trace_obj;
+
+etc_trace_obj.trigger_add_rightclick=get(hObject,'Value');

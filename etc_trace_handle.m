@@ -403,6 +403,20 @@ switch lower(param)
             end;
             if(flag_ask)
                 add_trigger=etc_trace_trigger_add_question_gui;
+                switch add_trigger
+                    case 'No'
+                        etc_trace_obj.trigger_add_rightclick=0;
+                        obj=findobj('Tag','checkbox_trigger_rightclick');
+                        if(~isempty(obj))
+                            set(obj,'Value',0);
+                        end;
+                    case 'Yes'
+                        etc_trace_obj.trigger_add_rightclick=1;
+                        obj=findobj('Tag','checkbox_trigger_rightclick');
+                        if(~isempty(obj))
+                            set(obj,'Value',1);
+                        end;
+                end;
                 if(strcmp(add_trigger,'No')) return; end;
             end;
             
