@@ -145,7 +145,7 @@ switch lower(param)
                 %end;
                 %etc_trace_obj.flag_mark=~etc_trace_obj.flag_mark;
             case 'v'
-                fprintf('show events....\n');
+                fprintf('show triggers/events....\n');
                 if(isfield(etc_trace_obj,'fig_trigger'))
                     etc_trace_obj.fig_trigger=[];
                 end;
@@ -393,6 +393,18 @@ switch lower(param)
         clickType = get(gcf, 'SelectionType');
         if(strcmp(clickType,'alt'))
             % right mouse clicked!!
+            
+            flag_ask=1;
+
+            if(isfield(etc_trace_obj,'trigger_add_rightclick'))
+                if(etc_trace_obj.trigger_add_rightclick)
+                    flag_ask=0;
+                end;
+            end;
+            if(flag_ask)
+                add_trigger=etc_trace_trigger_add_question_gui;
+                if(strcmp(add_trigger,'No')) return; end;
+            end;
             
             time_idx_now=etc_trace_obj.time_select_idx;
             class_now=etc_trace_obj.trigger_now;

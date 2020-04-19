@@ -22,7 +22,7 @@ function varargout = etc_trace_control_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_control_gui
 
-% Last Modified by GUIDE v2.5 18-Apr-2020 21:17:34
+% Last Modified by GUIDE v2.5 19-Apr-2020 02:00:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1388,3 +1388,23 @@ end;
 % end;
 
 
+% --- Executes on button press in pushbutton_trigger_window.
+function pushbutton_trigger_window_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_trigger_window (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global etc_trace_obj;
+
+fprintf('show triggers/events....\n');
+if(isfield(etc_trace_obj,'fig_trigger'))
+    etc_trace_obj.fig_trigger=[];
+end;
+etc_trace_obj.fig_trigger=etc_trace_trigger_gui;
+
+set(etc_trace_obj.fig_trigger,'Name','trigger','resize','off');
+
+pp0=get(etc_trace_obj.fig_trigger,'outerpos');
+pp1=get(etc_trace_obj.fig_trace,'outerpos');
+set(etc_trace_obj.fig_trigger,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
+set(etc_trace_obj.fig_trigger,'Resize','off');
