@@ -22,16 +22,16 @@ function varargout = etc_trace_control_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_control_gui
 
-% Last Modified by GUIDE v2.5 15-Apr-2020 12:05:55
+% Last Modified by GUIDE v2.5 18-Apr-2020 21:17:34
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
-                   'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @etc_trace_control_gui_OpeningFcn, ...
-                   'gui_OutputFcn',  @etc_trace_control_gui_OutputFcn, ...
-                   'gui_LayoutFcn',  [] , ...
-                   'gui_Callback',   []);
+    'gui_Singleton',  gui_Singleton, ...
+    'gui_OpeningFcn', @etc_trace_control_gui_OpeningFcn, ...
+    'gui_OutputFcn',  @etc_trace_control_gui_OutputFcn, ...
+    'gui_LayoutFcn',  [] , ...
+    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
 end
@@ -114,7 +114,7 @@ else
         etc_trace_obj.trigger_now='';
     else
         etc_trace_obj.trigger_now=str{1};
-        set(handles.listbox_trigger,'Value',1);        
+        set(handles.listbox_trigger,'Value',1);
     end;
 end;
 %guidata(hObject, handles);
@@ -138,18 +138,18 @@ else
     hObject=findobj('tag','edit_trigger_time_idx');
     set(hObject,'String','');
     hObject=findobj('tag','edit_trigger_time');
-    set(hObject,'String','');    
+    set(hObject,'String','');
 end;
 
 
-%threshold 
+%threshold
 hObject=findobj('tag','edit_threshold');
 set(hObject,'String',num2str(mean(abs(etc_trace_obj.ylim))));
 
-            %create a context menu....not successful....
-            cm = uicontextmenu;
-            m1 = uimenu(cm,'Text','test');
-            handles.axis_trac.UIContextMenu = cm;
+%create a context menu....not successful....
+cm = uicontextmenu;
+m1 = uimenu(cm,'Text','test');
+handles.axis_trac.UIContextMenu = cm;
 
 etc_trace_obj.data;
 etc_trace_obj.fs;
@@ -165,7 +165,7 @@ etc_trcae_gui_update_time('flag_redraw',0);
 %etc_trcae_gui_update_time();
 
 % --- Outputs from this function are returned to the command line.
-function varargout = etc_trace_control_gui_OutputFcn(hObject, eventdata, handles) 
+function varargout = etc_trace_control_gui_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -380,7 +380,7 @@ set(hObject,'Value',i);
 % etc_trace_obj.time_duration_idx
 % etc_trace_obj.flag_time_window_auto_adjust=0;
 % if((etc_trace_obj.time_window_begin_idx>=1)&&((etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1)<=size(etc_trace_obj.data,2)))
-     etc_trcae_gui_update_time;
+etc_trcae_gui_update_time;
 % end;
 
 
@@ -589,7 +589,7 @@ else
         idx=xx(end);
     end;
     
-   
+    
     if(idx<=1) idx=1; end;
 end;
 etc_trace_obj.time_select_idx=trigger_match_time_idx(idx);
@@ -625,7 +625,7 @@ end;
 % etc_trace_obj.time_duration_idx
 % etc_trace_obj.flag_time_window_auto_adjust=0;
 % if((etc_trace_obj.time_window_begin_idx>=1)&&((etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1)<=size(etc_trace_obj.data,2)))
-     etc_trcae_gui_update_time;
+etc_trcae_gui_update_time;
 % end;
 
 return;
@@ -665,7 +665,7 @@ else
     else
         idx=xx(1);
     end;
-
+    
     if(idx>=length(trigger_match_idx)) idx=length(trigger_match_idx); end;
 end;
 etc_trace_obj.time_select_idx=trigger_match_time_idx(idx);
@@ -701,7 +701,7 @@ end;
 % etc_trace_obj.time_duration_idx
 % etc_trace_obj.flag_time_window_auto_adjust=0;
 % if((etc_trace_obj.time_window_begin_idx>=1)&&((etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1)<=size(etc_trace_obj.data,2)))
-     etc_trcae_gui_update_time;
+etc_trcae_gui_update_time;
 % end;
 
 return;
@@ -1014,14 +1014,14 @@ if(strcmp(etc_trace_obj.view_style,'image'))
         set(etc_trace_obj.axis_colorbar,'pos',[0.64 0.65 0.01 0.2],'xtick',[],'ytick',[],'xcolor','none','ycolor','none');
     end;
     axes(etc_trace_obj.axis_colorbar); hold on;
-   
+    
     etc_trace_obj.h_colorbar=image(etc_trace_obj.axis_colorbar,([1,1:size(etc_trace_obj.colormap,1)])'); colormap(etc_trace_obj.colormap);
     
     obj=findobj('Tag','listbox_colormap');
     set(obj,'visible','on');
     set(obj,'String',{'parula','jet','rb'});
     set(obj,'value',1);
-        
+    
     axes(etc_trace_obj.axis_trace);
 else
     try
@@ -1077,17 +1077,17 @@ else %restore the original un-averaged trace.
     %update data
     etc_trace_obj.data=etc_trace_obj.buffer.data;
     etc_trace_obj.aux_data=etc_trace_obj.buffer.aux_data;
-    etc_trace_obj.trigger_now=etc_trace_obj.buffer.trigger_now;   
+    etc_trace_obj.trigger_now=etc_trace_obj.buffer.trigger_now;
     etc_trace_obj.trigger=etc_trace_obj.buffer.trigger;
     etc_trace_obj.time_begin=etc_trace_obj.buffer.time_begin;
     etc_trace_obj.time_select_idx=etc_trace_obj.buffer.time_select_idx;
     etc_trace_obj.time_window_begin_idx=etc_trace_obj.buffer.time_window_begin_idx;
     etc_trace_obj.time_duration_idx=etc_trace_obj.buffer.time_duration_idx;
     etc_trace_obj.ylim=etc_trace_obj.buffer.ylim;
-
+    
     
     etc_trcae_gui_update_time;
-
+    
     etc_trace_obj.buffer=[];
     
     hObject=findobj('tag','listbox_trigger');
@@ -1095,17 +1095,17 @@ else %restore the original un-averaged trace.
     hObject=findobj('tag','pushbutton_trigger_rr');
     set(hObject,'Enable','on');
     hObject=findobj('tag','pushbutton_trigger_ff');
-    set(hObject,'Enable','on');    
+    set(hObject,'Enable','on');
     hObject=findobj('tag','edit_trigger_time_idx');
-    set(hObject,'Enable','on');  
+    set(hObject,'Enable','on');
     hObject=findobj('tag','edit_trigger_time');
     set(hObject,'Enable','on');
-
+    
     hObject=findobj('tag','edit_threshold');
     set(hObject,'String',num2str(mean(abs(etc_trace_obj.ylim))));
-
+    
     etc_trace_obj.flag_trigger_avg=0;
-
+    
 end;
 
 
@@ -1207,3 +1207,184 @@ function pushbutton_load_Callback(hObject, eventdata, handles)
 global etc_trace_obj;
 
 etc_trace_obj.fig_load=etc_trace_load_gui;
+
+
+% --- Executes on button press in pushbutton_loadfile.
+function pushbutton_loadfile_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_loadfile (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+%etc_trace_obj.fig_load=etc_trace_load_gui;
+
+[file,path] = uigetfile({'*.eeg; *.vhdr; *.vmrk','EEG'; '*.*','All files'},'Select a file');
+[dummy,fstem,ext]=fileparts(file);
+switch lower(ext)
+    case {'.eeg','.vmrk','.vhdr'}
+        fprintf('reading EEG file....\n');
+        
+        headerFile=sprintf('%s/%s%s',path,fstem,'.vhdr');
+        % first get the continuous data as a matlab array
+        etc_trace_obj.data = double(bva_loadeeg(headerFile));
+        
+        % meta information such as samplingRate (fs), labels, etc
+        [etc_trace_obj.fs etc_trace_obj.ch_names etc_trace_obj.meta] = bva_readheader(headerFile);
+        
+        %read maker file
+        markerFile=sprintf('%s/%s%s',path,fstem,'.vmrk');
+        etc_trace_obj.trigger=etc_read_vmrk(markerFile);
+       
+        flag_reref=0;
+        %re-referencing
+        if(flag_reref)
+            fprintf('\treferencing...\n');
+            eeg_ref=mean(etc_trace_obj.data ,1);
+            for ch_idx=1:size(etc_trace_obj.data,1)
+                etc_trace_obj.data (ch_idx,:)=etc_trace_obj.data -eeg_ref{f_idx};
+            end;
+        else
+            eeg_ref=[];
+        end;
+        
+        flag_hp=0;
+        %high-pass filtering
+        if(flag_hp)
+            fprintf('\tHP...\n');
+            %high-pass filtering (0.1 Hz)
+            Wn = 0.1*2/fs(f_idx);
+            N = 3; % order of 3 less processing
+            [a,b] = butter(N,Wn,'high'); %bandpass filtering
+            for ch_idx=1:size(etc_trace_obj.data,1)
+                etc_trace_obj.data(ch_idx,:) = filtfilt(a,b,etc_trace_obj.data(ch_idx,:));
+            end;
+        end;
+        
+        
+        time_trim=[];
+        %remove first few seconds (if needed....)
+        if(~isempty(time_trim))
+            time_trim_idx=round(time_trim*etc_trace_obj.fs);
+            
+            fprintf('trimming [%1.1f] s data {(%d) samples}....\n',time_trim, time_trim_idx);
+            etc_trace_obj.data=etc_trace_obj.data(:,time_trim_idx+1:end);
+            
+        end;
+        
+        hObject=findobj('tag','listbox_time_duration');
+        contents = cellstr(get(hObject,'String'));
+        ii=round(cellfun(@str2num,contents).*etc_trace_obj.fs);
+        [dummy,vv]=min(abs(ii-size(etc_trace_obj.data,2)));
+        round(str2num(contents{vv})*etc_trace_obj.fs);
+        etc_trace_obj.time_duration_idx=round(str2num(contents{vv})*etc_trace_obj.fs);
+        
+        etc_trace_obj.load.montage=[];
+        etc_trace_obj.load.select=[];
+        etc_trace_obj.load.scale=[];
+        
+        ok=etc_trace_update_loaded_data(etc_trace_obj.load.montage,etc_trace_obj.load.select,etc_trace_obj.load.scale);
+        
+        etc_trace_obj.load_output=ok;
+        
+        if(etc_trace_obj.load_output) %if everything is ok...
+            etc_trcae_gui_update_time();
+            %etc_trace_handle('redraw');
+        end;
+        
+    otherwise
+        fprintf('unknown format...\nerror!\n');
+end;
+
+% 
+% [dummy,fstem]=fileparts(headerFile{f_idx});
+% fprintf('reading [%s]...\n',fstem);
+% 
+% 
+% 
+% 
+% found_channel={};
+% for s_idx=1:length(select_channel)
+%     IndexC = strcmp(lower(label),lower(select_channel{s_idx})); %change all labels into lower case
+%     Index = find(IndexC);
+%     
+%     if(~isempty(Index))
+%         fprintf('\tChannel [%s] found:: index=%03d \r',select_channel{s_idx},Index);
+%         if(strcmp(lower(select_channel{s_idx}),'ecg'))
+%             ecg_channel=Index;
+%         else
+%             eeg_channel(s_idx)=Index;
+%         end;
+%         found_channel{end+1}=select_channel{s_idx};
+%     else
+%         fprintf('\tChannel [%s] not found! \r',select_channel{s_idx});
+%     end;
+% end;
+% fprintf('\n');
+% 
+% ecg_orig=eeg{f_idx}(ecg_channel,:)';
+% eeg_orig=eeg{f_idx}(eeg_channel,:);
+% ecg{f_idx}=eeg{f_idx}(ecg_channel,:)';
+% eeg{f_idx}=eeg{f_idx}(eeg_channel,:);
+% 
+% %re-referencing
+% if(flag_reref(f_idx))
+%     fprintf('\treferencing...\n');
+%     eeg_ref{f_idx}=mean(eeg{f_idx},1);
+%     for ch_idx=1:size(eeg{f_idx},1)
+%         eeg{f_idx}(ch_idx,:)=eeg{f_idx}(ch_idx,:)-eeg_ref{f_idx};
+%     end;
+% else
+%     eeg_ref{f_idx}=[];
+% end;
+% 
+% 
+% %read maker file
+% fprintf('\treading triggers...\n');
+% trigger{f_idx}=etc_read_vmrk(markerFile{f_idx});
+% 
+% 
+% if(flag_aas(f_idx))
+%     fprintf('\tAAS...\n');
+%     gradient_trigger{f_idx}=zeros(size(eeg{f_idx},2),1);
+%     iidx=find(trigger{f_idx}.event==trigger_token);
+%     gradient_trigger{f_idx}(trigger{f_idx}.time(iidx))=1e3;
+%     ecg{f_idx}=eeg_ga(ecg{f_idx},gradient_trigger{f_idx},TR,fs(f_idx),'flag_display',0,'flag_ma_aas',1,'flag_aas_svd',0,'flag_anchor_bnd',0,'n_ma_aas',7); %AAS on ECG
+%     ecg{f_idx}=sgolayfilt(ecg{f_idx},6,301); %smoothing out residual GA in ECG
+%     eeg{f_idx}=eeg_ga(eeg{f_idx},gradient_trigger{f_idx},TR,fs(f_idx),'flag_display',0,'flag_ma_aas',1,'flag_aas_svd',0,'flag_anchor_bnd',0,'n_ma_aas',7); %AAS on EEG
+% end;
+% 
+% 
+% %high-pass filtering
+% if(flag_hp(f_idx))
+%     fprintf('\tHP...\n');
+%     %high-pass filtering (0.1 Hz)
+%     Wn = 0.1*2/fs(f_idx);
+%     N = 3; % order of 3 less processing
+%     [a,b] = butter(N,Wn,'high'); %bandpass filtering
+%     for ch_idx=1:size(eeg{f_idx},1)
+%         eeg{f_idx}(ch_idx,:) = filtfilt(a,b,eeg{f_idx}(ch_idx,:));
+%     end;
+%     if(~isempty(eeg_ref{f_idx}))
+%         eeg_ref{f_idx}=filtfilt(a,b,eeg_ref{f_idx}(:))';
+%     end;
+%     
+%     ecg{f_idx}=filtfilt(a,b,ecg{f_idx}(:))';
+% end;
+% 
+% 
+% %remove first few seconds (if needed....)
+% if(~isempty(time_trim))
+%     time_trim_idx=round(time_trim*fs(f_idx));
+%     
+%     fprintf('trimming [%1.1f] s data {(%d) samples}....\n',time_trim, time_trim_idx);
+%     ecg{f_idx}=ecg{f_idx}(time_trim_idx+1:end);
+%     eeg{f_idx}=eeg{f_idx}(:,time_trim_idx+1:end);
+%     %trigger{f_idx}.time=trigger{f_idx}.time-time_trim_idx;
+%     
+%     %%update trigger info
+%     %idx=find(trigger{f_idx}.time<0);
+%     %trigger{f_idx}.time(idx)=[];
+%     %trigger{f_idx}.event(idx)=[];
+% end;
+
+

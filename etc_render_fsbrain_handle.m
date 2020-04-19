@@ -932,6 +932,7 @@ switch lower(param)
         try
             [az,el]=view;
             etc_render_fsbrain.view_angle=[az,el];
+            etc_render_fsbrain.view_angle;
             camposition=campos;
             etc_render_fsbrain.camposition;
             xlim=get(etc_render_fsbrain.brain_axis,'xlim');
@@ -2223,15 +2224,20 @@ else
 
     etc_render_fsbrain.lim=[xlim(:)' ylim(:)' zlim(:)'];
 end;
-%if(isempty(etc_render_fsbrain.view_angle))
-    [etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2)]=view;
-%end;
-%if(isempty(etc_render_fsbrain.camposition))
-    etc_render_fsbrain.camposition=campos;
-%end;
+
+% %if(isempty(etc_render_fsbrain.view_angle))
+%     [etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2)]=view;
+%     etc_render_fsbrain.view_angle
+% %end;
+% %if(isempty(etc_render_fsbrain.camposition))
+%     etc_render_fsbrain.camposition=campos;
+%     etc_render_fsbrain.camposition
+% %end;
 
 %delete brain patch object
 if(ishandle(etc_render_fsbrain.h))
+    [etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2)]=view;
+    etc_render_fsbrain.camposition=campos;
     delete(etc_render_fsbrain.h);
 end;
 

@@ -217,8 +217,8 @@ if(isempty(etc_trace_obj.trigger_now)) return; end;
     end;
     n_avg=0;
     
-    time_pre_idx=round(etc_trace_obj.fs*etc_trace_obj.avg.time_pre);
-    time_post_idx=round(etc_trace_obj.fs*etc_trace_obj.avg.time_post);
+    time_pre_idx=abs(round(etc_trace_obj.fs*etc_trace_obj.avg.time_pre));
+    time_post_idx=abs(round(etc_trace_obj.fs*etc_trace_obj.avg.time_post));
     
     
     %%% calculate AVG....
@@ -371,12 +371,16 @@ if(isempty(etc_trace_obj.trigger_now)) return; end;
     etc_trace_obj.data=tmp;
     etc_trace_obj.aux_data=aux_tmp;
     %etc_trace_obj.trigger=[];
-    etc_trace_obj.time_begin=-etc_trace_obj.avg.time_pre;
+    etc_trace_obj.time_begin=-abs(etc_trace_obj.avg.time_pre);
     etc_trace_obj.time_select_idx=1;
     etc_trace_obj.time_window_begin_idx=1;
+    
     hObject=findobj('tag','listbox_time_duration');
-    contents = cellstr(get(hObject,'String'));
-    etc_trace_obj.time_duration_idx=round(str2num(contents{get(hObject,'Value')})*etc_trace_obj.fs);
+    contents = cellstr(get(hObject,'String'));   
+    ii=round(cellfun(@str2num,contents).*etc_trace_obj.fs)
+    [dummy,vv]=min(abs(ii-size(etc_trace_obj.data,2)))
+    round(str2num(contents{vv})*etc_trace_obj.fs)
+    etc_trace_obj.time_duration_idx=round(str2num(contents{vv})*etc_trace_obj.fs);
     
     etc_trcae_gui_update_time;
     

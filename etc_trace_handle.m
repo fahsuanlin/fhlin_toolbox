@@ -168,7 +168,7 @@ switch lower(param)
                 pp0=get(etc_trace_obj.fig_config,'outerpos');
                 pp1=get(etc_trace_obj.fig_trace,'outerpos');
                 set(etc_trace_obj.fig_config,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
-                set(etc_trace_obj.fig_config,'Name','events');
+                set(etc_trace_obj.fig_config,'Name','display config.');
                 set(etc_trace_obj.fig_config,'Resize','off');
             case 'c'
                 fprintf('show controls....\n');
