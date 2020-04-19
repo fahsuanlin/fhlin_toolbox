@@ -66,7 +66,7 @@ global etc_trace_obj;
 
 etc_trace_obj.loadfile.trim=0;
 etc_trace_obj.loadfile.flag_hp=0;
-etc_trace_obj.loadfile.flag_ref=0;
+etc_trace_obj.loadfile.flag_reref=0;
 etc_trace_obj.loadfile.fstem='';
 etc_trace_obj.loadfile.ext='';
 etc_trace_obj.loadfile.path='';

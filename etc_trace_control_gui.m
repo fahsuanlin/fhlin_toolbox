@@ -22,7 +22,7 @@ function varargout = etc_trace_control_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_control_gui
 
-% Last Modified by GUIDE v2.5 19-Apr-2020 14:49:48
+% Last Modified by GUIDE v2.5 19-Apr-2020 16:33:19
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1316,3 +1316,13 @@ function checkbox_trigger_rightclick_Callback(hObject, eventdata, handles)
 global etc_trace_obj;
 
 etc_trace_obj.trigger_add_rightclick=get(hObject,'Value');
+
+
+% --- Executes on button press in pushbutton_info.
+function pushbutton_info_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_info (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+etc_trace_obj.fig_info=etc_trace_info_gui;
