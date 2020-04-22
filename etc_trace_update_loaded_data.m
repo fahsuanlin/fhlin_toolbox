@@ -5,6 +5,7 @@ ok=0;
 global etc_trace_obj;
 
 try
+    %update channel names
     if(isempty(etc_trace_obj.ch_names))
         for idx=1:size(etc_trace_obj.data,1)
             etc_trace_obj.ch_names{idx}=sprintf('%03d',idx);
@@ -67,16 +68,50 @@ try
             end;
             M(end+1,end+1)=1;
             
-            etc_trace_obj.montage{m_idx+1}.config_matrix=M;
-            etc_trace_obj.montage{m_idx+1}.config=montage{m_idx}.config;
-            etc_trace_obj.montage{m_idx+1}.name=montage{m_idx}.name;
+            etc_trace_obj.montage{m_idx+length(etc_trace_obj.montage)}.config_matrix=M;
+            etc_trace_obj.montage{m_idx+length(etc_trace_obj.montage)}.config=montage{m_idx}.config;
+            etc_trace_obj.montage{m_idx+length(etc_trace_obj.montage)}.name=montage{m_idx}.name;
             
             S=eye(size(etc_trace_obj.montage{end}.config,1)+1);
             S(ecg_idx,ecg_idx)=S(ecg_idx,ecg_idx)./10;
-            etc_trace_obj.scaling{m_idx+1}=S;
+            etc_trace_obj.scaling{m_idx+length(etc_trace_obj.montage)}=S;
         end;
-        etc_trace_obj.montage_idx=m_idx+1;
-    end;    
+        %choose the last montage
+        etc_trace_obj.montage_idx=m_idx+length(etc_trace_obj.montage);
+    end;
+    
+    %update channel name info
+    etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names={};
+    for idx=1:size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config,1)
+        m=etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix(idx,:);
+        ii=find(m>eps);
+        if(~isempty(ii))
+            ss=etc_trace_obj.ch_names{ii(1)};
+            if(length(ii)>1)
+                for ii_idx=2:length(ii)
+                    ss=sprintf('%s+%1.0fx%s',ss,m(ii(ii_idx)),etc_trace_obj.ch_names{ii(ii_idx)});
+                end;
+            end;
+        end;
+        
+        ii=find(-m>eps);
+        if(~isempty(ii))
+            ss=sprintf('%s%1.0fx%s',ss,m(ii(1)),etc_trace_obj.ch_names{ii(1)});
+            if(length(ii)>1)
+                for ii_idx=2:length(ii)
+                    ss=sprintf('%s-%1.0fx%s',ss,-m(ii(ii_idx)),etc_trace_obj.ch_names{ii(ii_idx)});
+                end;
+            end;
+        end;
+        etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names{idx}=ss;
+    end;
+    
+    %channel listbox
+    obj=findobj('Tag','listbox_channel');
+    if(~isempty(obj))
+        set(obj,'String',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
+    end;
+    
     
     
     if(isempty(select))

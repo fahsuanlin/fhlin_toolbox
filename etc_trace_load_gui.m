@@ -474,6 +474,7 @@ if(indx)
 
             obj=findobj('Tag','text_load_label');
             set(obj,'String',sprintf('%s',var));
+            
             fprintf('Done!\n');
         else
             fprintf('error in loading the channel variable...\n',var);

@@ -840,6 +840,7 @@ if(etc_trace_obj.config_trace_flag)
             hh=plot(etc_trace_obj.axis_trace, tmp,'color',etc_trace_obj.config_trace_color);
             set(hh,'linewidth',etc_trace_obj.config_trace_width);
             %assign a tag for each trace
+            etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names={};
             for idx=1:length(hh)
                 m=etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix(idx,:);
                 ii=find(m>eps);

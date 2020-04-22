@@ -90,10 +90,30 @@ if(length(etc_trace_obj.aux_data_idx)>0)
 end;
 
 %channel listbox
-%set(handles.listbox_channel,'String',etc_trace_obj.ch_names);
 set(handles.listbox_channel,'String',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
                  
-                
+
+% %view style colormap
+% if(~isfield(etc_trace_obj,'axis_colorbar')) 
+%     etc_trace_obj.axis_colorbar=[]; 
+% else
+%     if(~isvalid(etc_trace_obj.axis_colorbar))
+%         delete(etc_trace_obj.axis_colorbar);
+%         etc_trace_obj.axis_colorbar=[];
+%     end;
+% end;
+% if(isempty(etc_trace_obj.axis_colorbar))
+%     etc_trace_obj.axis_colorbar=axes;
+%     p=get(findobj('Tag','listbox_view_style'),'pos')
+%     set(etc_trace_obj.axis_colorbar,'pos',[0.6 0.3 0.01 0.2],'xtick',[],'ytick',[],'xcolor','none','ycolor','none');
+%     %set(etc_trace_obj.axis_colorbar,'pos',[p(1)+0.2 p(2) p(3) 1],'xtick',[],'ytick',[],'xcolor','none','ycolor','none','unit','characters');
+% end;
+% axes(etc_trace_obj.axis_colorbar); hold on;
+% if(isfield(etc_trace_obj,'colormap'))
+%     if(~isempty(etc_trace_obj.colormap))
+%         etc_trace_obj.h_colorbar=image(etc_trace_obj.axis_colorbar,([1,1:size(etc_trace_obj.colormap,1)])'); colormap(etc_trace_obj.colormap);
+%     end;
+% end;
 
 %set view
 set(handles.listbox_colormap,'Value',1);
@@ -1041,7 +1061,9 @@ if(strcmp(etc_trace_obj.view_style,'image'))
     if(~isfield(etc_trace_obj,'axis_colorbar')) etc_trace_obj.axis_colorbar=[]; end;
     if(isempty(etc_trace_obj.axis_colorbar))
         etc_trace_obj.axis_colorbar=axes;
-        set(etc_trace_obj.axis_colorbar,'pos',[0.64 0.65 0.01 0.2],'xtick',[],'ytick',[],'xcolor','none','ycolor','none');
+        p=get(findobj('Tag','listbox_view_style'),'pos');
+        set(etc_trace_obj.axis_colorbar,'pos',[0.6 0.3 0.01 0.2],'xtick',[],'ytick',[],'xcolor','none','ycolor','none');
+        %set(etc_trace_obj.axis_colorbar,'pos',[p(1)+0.2 p(2) p(3) 1],'xtick',[],'ytick',[],'xcolor','none','ycolor','none','unit','characters');
     end;
     axes(etc_trace_obj.axis_colorbar); hold on;
     
@@ -1212,6 +1234,17 @@ switch lower(contents{get(hObject,'Value')})
         etc_trace_obj.colormap=cmap;
 end;
 
+
+if(~isfield(etc_trace_obj,'axis_colorbar')) etc_trace_obj.axis_colorbar=[]; end;
+if(isempty(etc_trace_obj.axis_colorbar))
+    etc_trace_obj.axis_colorbar=axes;
+    p=get(findobj('Tag','listbox_view_style'),'pos')
+    set(etc_trace_obj.axis_colorbar,'pos',[0.6 0.3 0.01 0.2],'xtick',[],'ytick',[],'xcolor','none','ycolor','none');
+    %set(etc_trace_obj.axis_colorbar,'pos',[p(1)+0.2 p(2) p(3) 1],'xtick',[],'ytick',[],'xcolor','none','ycolor','none','unit','characters');
+end;
+axes(etc_trace_obj.axis_colorbar); hold on;
+
+etc_trace_obj.h_colorbar=image(etc_trace_obj.axis_colorbar,([1,1:size(etc_trace_obj.colormap,1)])'); colormap(etc_trace_obj.colormap);
 
 etc_trace_handle('redraw');
 
