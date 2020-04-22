@@ -775,9 +775,15 @@ if(isfield(etc_trace_obj,'aux_data'))
             %hh=plot(etc_trace_obj.axis_trace, tmp,'color',cc(ii,:));
             if(etc_trace_obj.config_aux_trace_flag)
                 %hh=plot(etc_trace_obj.axis_trace, tmp,'color',etc_trace_obj.config_aux_trace_color);
-                hh=plot(etc_trace_obj.axis_trace, tmp,'color',cc(mod(ii-1,7)+1,:));
+                hh_aux{ii}=plot(etc_trace_obj.axis_trace, tmp,'color',cc(mod(ii-1,7)+1,:));
                 %set(hh,'linewidth',etc_trace_obj.config_aux_trace_width,'color',etc_trace_obj.config_aux_trace_color);
-                set(hh,'linewidth',etc_trace_obj.config_aux_trace_width,'color',cc(mod(ii-1,7)+1,:));
+                set(hh_aux{ii},'linewidth',etc_trace_obj.config_aux_trace_width,'color',cc(mod(ii-1,7)+1,:));
+                
+                if(etc_trace_obj.aux_data_idx(ii))
+                    set(hh_aux{ii},'Visible','on');                    
+                else
+                    set(hh_aux{ii},'Visible','off');
+                end;
             end;
             hold(etc_trace_obj.axis_trace,'on');
         end;
@@ -834,6 +840,7 @@ if(etc_trace_obj.config_trace_flag)
             hh=plot(etc_trace_obj.axis_trace, tmp,'color',etc_trace_obj.config_trace_color);
             set(hh,'linewidth',etc_trace_obj.config_trace_width);
             %assign a tag for each trace
+            etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names={};
             for idx=1:length(hh)
                 m=etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix(idx,:);
                 ii=find(m>eps);
@@ -909,7 +916,16 @@ if(isfield(etc_trace_obj,'trace_selected_idx'))
         
         switch(etc_trace_obj.view_style)
             case {'trace','butterfly'}
-                set(hh(etc_trace_obj.trace_selected_idx),'linewidth',2,'color','b');
+                set(hh(etc_trace_obj.trace_selected_idx),'linewidth',4,'color','b');
+                for ii=1:length(etc_trace_obj.aux_data)
+                    set(hh_aux{ii}(etc_trace_obj.trace_selected_idx),'linewidth',4);
+                    
+                    if(etc_trace_obj.aux_data_idx(ii))
+                        set(hh_aux{ii},'Visible','on');
+                    else
+                        set(hh_aux{ii},'Visible','off');
+                    end;
+                end;
                 
                 if(isfield(etc_trace_obj,'electrode_listbox'))
                     if(isvalid(etc_trace_obj.electrode_listbox))
@@ -917,6 +933,11 @@ if(isfield(etc_trace_obj,'trace_selected_idx'))
                     else
                     end;
                 else
+                end;
+                
+                obj=findobj('Tag','listbox_channel');
+                if(~isempty(obj))
+                    set(obj,'Value', etc_trace_obj.trace_selected_idx);
                 end;
             case 'image'
                 set(hh(etc_trace_obj.trace_selected_idx),'linewidth',2,'edgecolor','c','visible','on');

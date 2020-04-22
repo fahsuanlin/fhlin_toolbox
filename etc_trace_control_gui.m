@@ -22,7 +22,7 @@ function varargout = etc_trace_control_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_control_gui
 
-% Last Modified by GUIDE v2.5 21-Apr-2020 02:03:12
+% Last Modified by GUIDE v2.5 22-Apr-2020 15:03:25
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -70,6 +70,50 @@ handles.output=gcf;
 
 % Update handles structure
 guidata(hObject, handles);
+
+%aux data listbox
+str={};
+for i=1:length(etc_trace_obj.aux_data)
+    aux_data_name=sprintf('aux_data_%02d',i);
+    if(isfield(etc_trace_obj,'aux_data_name'))
+        aux_data_name=etc_trace_obj.aux_data_name{i};
+    end;
+    str{i}=aux_data_name;
+end;
+set(handles.listbox_aux_data,'String',str);
+if(length(str)>0)
+    set(handles.listbox_aux_data,'min',0);
+    set(handles.listbox_aux_data,'max',length(str));
+end;    
+if(length(etc_trace_obj.aux_data_idx)>0)
+    set(handles.listbox_aux_data,'Value',find(etc_trace_obj.aux_data_idx));
+end;
+
+%channel listbox
+set(handles.listbox_channel,'String',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
+                 
+
+% %view style colormap
+% if(~isfield(etc_trace_obj,'axis_colorbar')) 
+%     etc_trace_obj.axis_colorbar=[]; 
+% else
+%     if(~isvalid(etc_trace_obj.axis_colorbar))
+%         delete(etc_trace_obj.axis_colorbar);
+%         etc_trace_obj.axis_colorbar=[];
+%     end;
+% end;
+% if(isempty(etc_trace_obj.axis_colorbar))
+%     etc_trace_obj.axis_colorbar=axes;
+%     p=get(findobj('Tag','listbox_view_style'),'pos')
+%     set(etc_trace_obj.axis_colorbar,'pos',[0.6 0.3 0.01 0.2],'xtick',[],'ytick',[],'xcolor','none','ycolor','none');
+%     %set(etc_trace_obj.axis_colorbar,'pos',[p(1)+0.2 p(2) p(3) 1],'xtick',[],'ytick',[],'xcolor','none','ycolor','none','unit','characters');
+% end;
+% axes(etc_trace_obj.axis_colorbar); hold on;
+% if(isfield(etc_trace_obj,'colormap'))
+%     if(~isempty(etc_trace_obj.colormap))
+%         etc_trace_obj.h_colorbar=image(etc_trace_obj.axis_colorbar,([1,1:size(etc_trace_obj.colormap,1)])'); colormap(etc_trace_obj.colormap);
+%     end;
+% end;
 
 %set view
 set(handles.listbox_colormap,'Value',1);
@@ -1017,7 +1061,9 @@ if(strcmp(etc_trace_obj.view_style,'image'))
     if(~isfield(etc_trace_obj,'axis_colorbar')) etc_trace_obj.axis_colorbar=[]; end;
     if(isempty(etc_trace_obj.axis_colorbar))
         etc_trace_obj.axis_colorbar=axes;
-        set(etc_trace_obj.axis_colorbar,'pos',[0.64 0.65 0.01 0.2],'xtick',[],'ytick',[],'xcolor','none','ycolor','none');
+        p=get(findobj('Tag','listbox_view_style'),'pos');
+        set(etc_trace_obj.axis_colorbar,'pos',[0.6 0.3 0.01 0.2],'xtick',[],'ytick',[],'xcolor','none','ycolor','none');
+        %set(etc_trace_obj.axis_colorbar,'pos',[p(1)+0.2 p(2) p(3) 1],'xtick',[],'ytick',[],'xcolor','none','ycolor','none','unit','characters');
     end;
     axes(etc_trace_obj.axis_colorbar); hold on;
     
@@ -1189,6 +1235,17 @@ switch lower(contents{get(hObject,'Value')})
 end;
 
 
+if(~isfield(etc_trace_obj,'axis_colorbar')) etc_trace_obj.axis_colorbar=[]; end;
+if(isempty(etc_trace_obj.axis_colorbar))
+    etc_trace_obj.axis_colorbar=axes;
+    p=get(findobj('Tag','listbox_view_style'),'pos')
+    set(etc_trace_obj.axis_colorbar,'pos',[0.6 0.3 0.01 0.2],'xtick',[],'ytick',[],'xcolor','none','ycolor','none');
+    %set(etc_trace_obj.axis_colorbar,'pos',[p(1)+0.2 p(2) p(3) 1],'xtick',[],'ytick',[],'xcolor','none','ycolor','none','unit','characters');
+end;
+axes(etc_trace_obj.axis_colorbar); hold on;
+
+etc_trace_obj.h_colorbar=image(etc_trace_obj.axis_colorbar,([1,1:size(etc_trace_obj.colormap,1)])'); colormap(etc_trace_obj.colormap);
+
 etc_trace_handle('redraw');
 
 
@@ -1345,6 +1402,21 @@ function listbox_aux_data_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns listbox_aux_data contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from listbox_aux_data
 
+global etc_trace_obj;
+
+etc_trace_obj.aux_data_idx=zeros(size(etc_trace_obj.aux_data_idx));
+etc_trace_obj.aux_data_idx(get(hObject,'Value'))=1;
+
+obj=findobj('Tag','listbox_info_auxdata');
+if(~isempty(obj))
+    if(length(etc_trace_obj.aux_data_idx)>0)
+        set(obj,'Value',find(etc_trace_obj.aux_data_idx));
+    end;
+end;
+
+etc_trace_handle('redraw');
+
+figure(etc_trace_obj.fig_control);
 
 % --- Executes during object creation, after setting all properties.
 function listbox_aux_data_CreateFcn(hObject, eventdata, handles)
@@ -1353,6 +1425,100 @@ function listbox_aux_data_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on key press with focus on listbox_aux_data and none of its controls.
+function listbox_aux_data_KeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to listbox_aux_data (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
+    contents = cellstr(get(hObject,'String'));
+    select_idx=get(hObject,'Value');
+    
+    if(~isempty(select_idx))
+        try
+            etc_trace_obj.aux_data(select_idx)=[];
+            etc_trace_obj.aux_data_name(select_idx)=[];
+            etc_trace_obj.aux_data_idx(select_idx)=[];
+            if(~isempty(etc_trace_obj.aux_data_idx))
+                if(sum(etc_trace_obj.aux_data_idx)<0.5)
+                    etc_trace_obj.aux_data_idx(1)=1;
+                end;
+            end;
+            
+            contents(select_idx)=[];
+            set(hObject,'String',contents);
+            set(hObject,'Value',1);
+            
+            %aux data listbox in the info window
+            str={};
+            for i=1:length(etc_trace_obj.aux_data) str{i}=etc_trace_obj.aux_data_name{i}; end;
+            obj=findobj('Tag','listbox_info_auxdata');
+            if(~isempty(obj))
+                set(obj,'String',str);
+                set(obj,'Min',0);
+                set(obj,'Max',length(str));
+                set(obj,'Value',etc_trace_obj.aux_data_idx);
+            end;
+            
+            %aux data listbox in the control window
+            str={};
+            for i=1:length(etc_trace_obj.aux_data) str{i}=etc_trace_obj.aux_data_name{i}; end;
+            obj=findobj('Tag','listbox_aux_data');
+            if(~isempty(obj))
+                set(obj,'String',str);
+                set(obj,'Min',0);
+                set(obj,'Max',length(str));
+                set(obj,'Value',etc_trace_obj.aux_data_idx);
+            end;
+            
+            
+            etc_trace_handle('redraw');
+            
+            %get focus back to trigger window
+            figure(etc_trace_obj.fig_control);
+            
+        catch ME
+        end;
+    end;
+end;
+
+
+% --- Executes on selection change in listbox_channel.
+function listbox_channel_Callback(hObject, eventdata, handles)
+% hObject    handle to listbox_channel (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns listbox_channel contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from listbox_channel
+
+global etc_trace_obj;
+
+Index=get(hObject,'Value');
+fprintf('[%s] selected in the list box\n',etc_trace_obj.ch_names{Index});
+etc_trace_obj.trace_selected_idx=Index;
+
+etc_trace_handle('redraw');
+
+
+% --- Executes during object creation, after setting all properties.
+function listbox_channel_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to listbox_channel (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
