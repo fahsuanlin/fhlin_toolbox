@@ -44,8 +44,10 @@ try
     %v=(etc_trace_obj.time_begin_idx-1)/(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx);
     v=etc_trace_obj.time_select_idx/size(etc_trace_obj.data,2);
     hObject_slider=findobj('tag','slider_time_idx');
-    if(v<=hObject_slider.Max&&v>=hObject_slider.Min)
-        set(hObject_slider,'value',v);
+    for i=1:length(hObject)
+        if(v<=hObject_slider(i).Max&&v>=hObject_slider(i).Min)
+            set(hObject_slider(i),'value',v);
+        end;
     end;
     
     if(etc_trace_obj.time_duration_idx<=size(etc_trace_obj.data,2))
@@ -100,7 +102,11 @@ try
     set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.time_window_begin_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
     hObject=findobj('tag','edit_time_end');
     set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
-    
+    hObject=findobj('tag','listbox_time_duration');
+    contents = cellstr(get(hObject(1),'String'));
+    t=round(cellfun(@str2num,contents).*etc_trace_obj.fs);
+    [dummy,idx]=min(abs(etc_trace_obj.time_duration_idx-t));
+    set(hObject,'Value',idx);
     
     %trigger GUI
     hObject=findobj('tag','edit_time');

@@ -17,13 +17,40 @@ function trigger_out=etc_trigger_append(trigger_orig,varargin)
 % fhlin@sep. 7 2019
 %
 
+if(~iscell(trigger_orig.event))
+    str={};
+    for idx=1:length(trigger_orig.event)
+        str{idx}=sprintf('%d',trigger_orig.event(idx));
+    end;
+    trigger_orig.event=str;
+end;
+
 trigger_out=trigger_orig;
 
+
+if(~iscell(trigger_orig.event))
+    str={};
+    for idx=1:length(trigger_orig.event)
+        str{idx}=sprintf('%d',trigger_orig.event(idx));
+    end;
+    trigger_orig.event=str;
+end;
+    
 for i=1:length(varargin)
     
-%    fprintf('appenediing trigger [%s]...\n',varargin{i});
+    %    fprintf('appenediing trigger [%s]...\n',varargin{i});
+    if(~iscell(varargin{i}.event))
+        str={};
+        for idx=1:length(varargin{i}.event)
+            str{idx}=sprintf('%d',varargin{i}.event(idx));
+        end;
+        varargin{i}.event=str;
+    end;
+    
+    
     time_old=trigger_out.time;
     event_old=trigger_out.event;
+    
     
     time_new=varargin{i}.time;
     event_new=varargin{i}.event;

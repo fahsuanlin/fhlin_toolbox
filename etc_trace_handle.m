@@ -71,6 +71,35 @@ switch lower(param)
                 close(gcf,'force');
             end;
         end;
+        
+        try
+            delete(etc_trace_obj.fig_avg);
+        catch ME
+            if(isfield(etc_trace_obj,'fig_avg'))
+                close(etc_trace_obj.fig_avg,'force');
+            else
+                close(gcf,'force');
+            end;
+        end; 
+        try
+            delete(etc_trace_obj.fig_info);
+        catch ME
+            if(isfield(etc_trace_obj,'fig_info'))
+                close(etc_trace_obj.fig_info,'force');
+            else
+                close(gcf,'force');
+            end;
+        end;         
+%         try
+%             delete(etc_trace_obj.fig_load);
+%         catch ME
+%             if(isfield(etc_trace_obj,'fig_load'))
+%                 close(etc_trace_obj.fig_load,'force');
+%             else
+%                 close(gcf,'force');
+%             end;
+%         end;    
+        
         try
             delete(etc_trace_obj.fig_trace);
         catch ME
@@ -79,7 +108,17 @@ switch lower(param)
             else
                 close(gcf,'force');
             end;
-        end;        
+        end;  
+        
+        try
+            delete(etc_trace_obj.fig_control);
+        catch ME
+            if(isfield(etc_trace_obj,'fig_control'))
+                close(etc_trace_obj.fig_control,'force');
+            else
+                close(gcf,'force');
+            end;
+        end;   
         
     case 'kb'
         switch(cc)
@@ -114,16 +153,17 @@ switch lower(param)
                 %end;
                 %etc_trace_obj.flag_mark=~etc_trace_obj.flag_mark;
             case 'v'
-                fprintf('show events....\n');
+                fprintf('show triggers/events....\n');
                 if(isfield(etc_trace_obj,'fig_trigger'))
                     etc_trace_obj.fig_trigger=[];
                 end;
                 etc_trace_obj.fig_trigger=etc_trace_trigger_gui;
-                
-                pp0=get(etc_trace_obj.fig_trigger,'pos');
-                pp1=get(etc_trace_obj.fig_trace,'pos');
-                set(etc_trace_obj.fig_trigger,'pos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
-                set(etc_trace_obj.fig_trigger,'Name','events');
+
+                set(etc_trace_obj.fig_trigger,'Name','trigger','resize','off');
+
+                pp0=get(etc_trace_obj.fig_trigger,'outerpos');
+                pp1=get(etc_trace_obj.fig_trace,'outerpos');
+                set(etc_trace_obj.fig_trigger,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
                 set(etc_trace_obj.fig_trigger,'Resize','off');
                 
             case 'f'
@@ -133,12 +173,30 @@ switch lower(param)
                 end;
                 etc_trace_obj.fig_config=etc_trace_config_gui;
                 
-                pp0=get(etc_trace_obj.fig_config,'pos');
-                pp1=get(etc_trace_obj.fig_trace,'pos');
-                set(etc_trace_obj.fig_config,'pos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
-                set(etc_trace_obj.fig_config,'Name','events');
+                pp0=get(etc_trace_obj.fig_config,'outerpos');
+                pp1=get(etc_trace_obj.fig_trace,'outerpos');
+                set(etc_trace_obj.fig_config,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
+                set(etc_trace_obj.fig_config,'Name','display config.');
                 set(etc_trace_obj.fig_config,'Resize','off');
+            case 'c'
+                fprintf('show controls....\n');
+                if(isfield(etc_trace_obj,'fig_control'))
+                    if(isvalid(etc_trace_obj.fig_control))
+                        figure(etc_trace_obj.fig_control);
+                    else
+                        etc_trace_obj.fig_control=[];
+                        etc_trace_obj.fig_control=etc_trace_control_gui;
+                    end;
+                else
+                    etc_trace_obj.fig_control=[];
+                    etc_trace_obj.fig_control=etc_trace_control_gui;
+                end;
                 
+                pp0=get(etc_trace_obj.fig_control,'outerpos');
+                pp1=get(etc_trace_obj.fig_trace,'outerpos');
+                set(etc_trace_obj.fig_control,'outerpos',[pp1(1)+(pp1(3))/2-pp0(3)/2, pp1(2)-pp0(4),pp0(3), pp0(4)]);
+                set(etc_trace_obj.fig_control,'Name','control');
+                set(etc_trace_obj.fig_control,'Resize','off');    
             case 't'
                 fprintf('show topology....\n');
                 
@@ -255,6 +313,9 @@ switch lower(param)
                 set(etc_trace_obj.fig_montage,'Name','montages');
                 set(etc_trace_obj.fig_montage,'Resize','off');
                 set(etc_trace_obj.fig_montage, 'Visible','on');
+                pp0=get(etc_trace_obj.fig_montage,'outerpos');
+                pp1=get(etc_trace_obj.fig_trace,'outerpos');
+                set(etc_trace_obj.fig_montage,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
                 
             case 'l' %a list box of all electrodes
                 if(isfield(etc_trace_obj,'fig_electrode_listbox'))
@@ -267,8 +328,13 @@ switch lower(param)
                 else
                     etc_trace_obj.fig_electrode_listbox = figure('Visible','off');
                 end;
+                set(etc_trace_obj.fig_electrode_listbox, 'Visible','on');
                 set(etc_trace_obj.fig_electrode_listbox,'pos',[200 600 200 200]);
-                set(etc_trace_obj.fig_electrode_listbox,'Name','electrodes');
+                %pp0=get(etc_trace_obj.fig_electrode_listbox,'outerpos');
+                %pp1=get(etc_trace_obj.fig_trace,'outerpos');
+                %set(etc_trace_obj.fig_electrode_listbox,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
+                %set(etc_trace_obj.fig_electrode_listbox,'outerpos',[pp1(1), pp1(2),pp0(3), pp0(4)]);
+                set(etc_trace_obj.fig_electrode_listbox,'Name','channels');
                 set(etc_trace_obj.fig_electrode_listbox,'Resize','off');
                 
                 if(isfield(etc_trace_obj,'trace_selected_idx'))
@@ -281,7 +347,6 @@ switch lower(param)
                     etc_trace_obj.electrode_listbox=uicontrol('Style', 'listbox','Position',[1 1 200 200],'string',etc_trace_obj.ch_names,'Callback',@etc_trace_electrode_listbox_callback);
                 end;
                 
-                set(etc_trace_obj.fig_electrode_listbox, 'Visible','on');
                 
             case 'd' %change overlay threshold or time course limits
                 
@@ -329,14 +394,44 @@ switch lower(param)
         global etc_render_fsbrain;
         global etc_trace_obj;
         
+        figure(etc_trace_obj.fig_trace);
+        
         %if(gcf==etc_trace_obj.fig_trace)
         %detect right mouse click
         clickType = get(gcf, 'SelectionType');
         if(strcmp(clickType,'alt'))
             % right mouse clicked!!
             
+            flag_ask=1;
+
+            if(isfield(etc_trace_obj,'trigger_add_rightclick'))
+                if(etc_trace_obj.trigger_add_rightclick)
+                    flag_ask=0;
+                end;
+            end;
+            if(flag_ask)
+                add_trigger=etc_trace_trigger_add_question_gui;
+                switch add_trigger
+                    case 'No'
+                        etc_trace_obj.trigger_add_rightclick=0;
+                        obj=findobj('Tag','checkbox_trigger_rightclick');
+                        if(~isempty(obj))
+                            set(obj,'Value',0);
+                        end;
+                    case 'Yes'
+                        etc_trace_obj.trigger_add_rightclick=1;
+                        obj=findobj('Tag','checkbox_trigger_rightclick');
+                        if(~isempty(obj))
+                            set(obj,'Value',1);
+                        end;
+                end;
+                if(strcmp(add_trigger,'No')) return; end;
+            end;
+            
             time_idx_now=etc_trace_obj.time_select_idx;
             class_now=etc_trace_obj.trigger_now;
+            
+            if(isempty(class_now)) return; end;
                         
             all_time_idx=[];
             all_class=[];
@@ -400,6 +495,14 @@ switch lower(param)
                 %update trace trigger
                 hObject=findobj('tag','listbox_trigger');
                 set(hObject,'string',unique(etc_trace_obj.trigger.event(:)));
+                IndexC = strcmp(unique(etc_trace_obj.trigger.event(:)),etc_trace_obj.trigger_now);
+                tmp=find(IndexC);
+                set(hObject,'Value',tmp(1));
+                hObject=findobj('tag','edit_trigger_time');
+                set(hObject,'string',sprintf('%1.3f',(time_idx_now-1)/etc_trace_obj.fs+etc_trace_obj.time_begin));
+                hObject=findobj('tag','edit_trigger_time_idx');
+                set(hObject,'string',sprintf('%d',time_idx_now));
+
                 
             else
                 fprintf('duplicated [%d] (sample) in class {%s}...\n',all_time_idx(idx),class_now);
@@ -460,6 +563,7 @@ switch lower(param)
                     hObject=findobj('tag','edit_local_trigger_class');
                     set(hObject,'String',num2str(etc_trace_obj.trigger_now));
                 else
+                    fprintf('now the trigger is set for "def_0" (default trigger name)!\n');
                     etc_trace_obj.trigger_now='def_0'; %default event name
                     hObject=findobj('tag','edit_local_trigger_class');
                     set(hObject,'String',num2str(etc_trace_obj.trigger_now));
@@ -605,8 +709,9 @@ if(~isvalid(etc_trace_obj.fig_trace))
 end;
 
 figure(etc_trace_obj.fig_trace);
-tmp=get(etc_trace_obj.fig_trace,'child');
-etc_trace_obj.axis_trace=tmp(end);
+%tmp=get(etc_trace_obj.fig_trace,'child');
+%etc_trace_obj.axis_trace=tmp(end);
+etc_trace_obj.axis_trace=findobj('Tag','axis_trace');
 cla(etc_trace_obj.axis_trace);
 
 hold(etc_trace_obj.axis_trace,'on');
@@ -671,7 +776,8 @@ if(isfield(etc_trace_obj,'aux_data'))
             if(etc_trace_obj.config_aux_trace_flag)
                 %hh=plot(etc_trace_obj.axis_trace, tmp,'color',etc_trace_obj.config_aux_trace_color);
                 hh=plot(etc_trace_obj.axis_trace, tmp,'color',cc(mod(ii-1,7)+1,:));
-                set(hh,'linewidth',etc_trace_obj.config_aux_trace_width,'color',etc_trace_obj.config_aux_trace_color);
+                %set(hh,'linewidth',etc_trace_obj.config_aux_trace_width,'color',etc_trace_obj.config_aux_trace_color);
+                set(hh,'linewidth',etc_trace_obj.config_aux_trace_width,'color',cc(mod(ii-1,7)+1,:));
             end;
             hold(etc_trace_obj.axis_trace,'on');
         end;
@@ -724,6 +830,7 @@ if(etc_trace_obj.config_trace_flag)
 
     switch(etc_trace_obj.view_style)
         case {'trace','butterfly'}
+            hh=[];
             hh=plot(etc_trace_obj.axis_trace, tmp,'color',etc_trace_obj.config_trace_color);
             set(hh,'linewidth',etc_trace_obj.config_trace_width);
             %assign a tag for each trace
@@ -756,12 +863,14 @@ if(etc_trace_obj.config_trace_flag)
 
         case 'image'
             %imagesc(1,1,tmp');
+            hha=[];
+            hh=[];
             for idx=1:size(tmp,2)
                 hha(idx)=imagesc(1,idx,tmp(:,idx)');
                 hh(idx)=rectangle('pos',[0.5,idx-0.5,size(tmp,1),1],'edgecolor','c','visible','off');
             end;
             set(gca,'clim',etc_trace_obj.ylim);
-            
+            colormap(etc_trace_obj.colormap);
             
             %assign a tag for each trace
             for idx=1:length(hha)
@@ -853,14 +962,18 @@ end;
 %plot electrode names
 switch(etc_trace_obj.view_style)
     case 'trace'
-        set(etc_trace_obj.axis_trace,'ytick',diff(sort(etc_trace_obj.ylim)).*[0:(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-1)-1]);
-        set(etc_trace_obj.axis_trace,'yticklabels',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
+        if(~isempty(etc_trace_obj.montage_ch_name))
+            set(etc_trace_obj.axis_trace,'ytick',diff(sort(etc_trace_obj.ylim)).*[0:(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-1)-1]);
+            set(etc_trace_obj.axis_trace,'yticklabels',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
+        end;
     case 'butterfly'
         set(etc_trace_obj.axis_trace,'ytick',(diff(sort(etc_trace_obj.ylim)).*round(size(tmp,2)/2)));
         set(etc_trace_obj.axis_trace,'yticklabels','all');
     case 'image'
-        set(etc_trace_obj.axis_trace,'ytick',[1:size(tmp,2)]);
-        set(etc_trace_obj.axis_trace,'yticklabels',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
+        if(~isempty(etc_trace_obj.montage_ch_name))
+            set(etc_trace_obj.axis_trace,'ytick',[1:size(tmp,2)]);
+            set(etc_trace_obj.axis_trace,'yticklabels',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
+        end;
 end;
 %plot trigger
 try

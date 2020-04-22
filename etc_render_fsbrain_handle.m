@@ -100,20 +100,54 @@ switch lower(param)
                         else
                             hemi='rh';
                         end;
-                        etc_render_fsbrain.overlay_stc=stc;
-                        etc_render_fsbrain.overlay_vertex=vv;
-                        etc_render_fsbrain.overlay_stc_timeVec=timeVec;
-                        etc_render_fsbrain.stc_hemi=hemi;
-                        etc_render_fsbrain.overlay_stc_timeVec_unit='ms';
-                        set(findobj('tag','text_timeVec_unit'),'string',etc_render_fsbrain.overlay_stc_timeVec_unit);
                         
-                        [tmp,etc_render_fsbrain.overlay_stc_timeVec_idx]=max(sum(etc_render_fsbrain.overlay_stc.^2,1));
-                        etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
-                        etc_render_fsbrain.overlay_stc_hemi=etc_render_fsbrain.overlay_stc;
+                        answer = questdlg('replace main data or add as an auxillary data?','Menu',...
+                            'replace as new','add as aux. data','cancel','replace as new');
+                        % Handle response
+                        switch answer
+                            case 'replace as new'
+                                f_option = 1;
+                            case 'add as aux. data'
+                                f_option = 2;
+                            case 'cancel'
+                                f_option= 0;
+                        end
+                        if(f_option==1)
+                            
+                            etc_render_fsbrain.overlay_stc=stc;
+                            etc_render_fsbrain.overlay_vertex=vv;
+                            etc_render_fsbrain.overlay_stc_timeVec=timeVec;
+                            etc_render_fsbrain.stc_hemi=hemi;
+                            etc_render_fsbrain.overlay_stc_timeVec_unit='ms';
+                            set(findobj('tag','text_timeVec_unit'),'string',etc_render_fsbrain.overlay_stc_timeVec_unit);
+                            
+                            [tmp,etc_render_fsbrain.overlay_stc_timeVec_idx]=max(sum(etc_render_fsbrain.overlay_stc.^2,1));
+                            etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
+                            etc_render_fsbrain.overlay_stc_hemi=etc_render_fsbrain.overlay_stc;
+                            
+                            etc_render_fsbrain.overlay_flag_render=1;
+                            etc_render_fsbrain.overlay_value_flag_pos=1;
+                            etc_render_fsbrain.overlay_value_flag_neg=1;
+                        end;
+
+                        if(f_option==2)
+                            
+                            etc_render_fsbrain.overlay_aux_stc(:,:,end+1)=stc;
+%                             etc_render_fsbrain.overlay_vertex=vv;
+%                             etc_render_fsbrain.overlay_stc_timeVec=timeVec;
+%                             etc_render_fsbrain.stc_hemi=hemi;
+%                             etc_render_fsbrain.overlay_stc_timeVec_unit='ms';
+%                             set(findobj('tag','text_timeVec_unit'),'string',etc_render_fsbrain.overlay_stc_timeVec_unit);
+%                             
+%                             [tmp,etc_render_fsbrain.overlay_stc_timeVec_idx]=max(sum(etc_render_fsbrain.overlay_stc.^2,1));
+%                             etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
+%                             etc_render_fsbrain.overlay_stc_hemi=etc_render_fsbrain.overlay_stc;
+%                             
+%                             etc_render_fsbrain.overlay_flag_render=1;
+%                             etc_render_fsbrain.overlay_value_flag_pos=1;
+%                             etc_render_fsbrain.overlay_value_flag_neg=1;
+                        end;
                         
-                        etc_render_fsbrain.overlay_flag_render=1;
-                        etc_render_fsbrain.overlay_value_flag_pos=1;
-                        etc_render_fsbrain.overlay_value_flag_neg=1;
                     elseif(findstr(filename,'.w')) %w file
                         [ww,vv]=inverse_read_wfile(sprintf('%s/%s',pathname,filename));
                         if(findstr(filename,'-lh'))
@@ -898,6 +932,7 @@ switch lower(param)
         try
             [az,el]=view;
             etc_render_fsbrain.view_angle=[az,el];
+            etc_render_fsbrain.view_angle;
             camposition=campos;
             etc_render_fsbrain.camposition;
             xlim=get(etc_render_fsbrain.brain_axis,'xlim');
@@ -1096,7 +1131,8 @@ switch lower(param)
             
             if(isvalid(etc_render_fsbrain.fig_brain))
                 figure(etc_render_fsbrain.fig_brain);
-                 redraw;
+                etc_render_fsbrain.camposition=campos;
+                redraw;
                 draw_pointer('pt',etc_render_fsbrain.click_coord,'min_dist_idx',etc_render_fsbrain.click_vertex,'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
             end;
             figure(etc_render_fsbrain.fig_stc);
@@ -2188,12 +2224,20 @@ else
 
     etc_render_fsbrain.lim=[xlim(:)' ylim(:)' zlim(:)'];
 end;
-if(isempty(etc_render_fsbrain.view_angle))
-    [etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2)]=view;
-end;
+
+% %if(isempty(etc_render_fsbrain.view_angle))
+%     [etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2)]=view;
+%     etc_render_fsbrain.view_angle
+% %end;
+% %if(isempty(etc_render_fsbrain.camposition))
+%     etc_render_fsbrain.camposition=campos;
+%     etc_render_fsbrain.camposition
+% %end;
 
 %delete brain patch object
 if(ishandle(etc_render_fsbrain.h))
+    [etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2)]=view;
+    etc_render_fsbrain.camposition=campos;
     delete(etc_render_fsbrain.h);
 end;
 
@@ -2304,9 +2348,9 @@ if(~isempty(etc_render_fsbrain.overlay_threshold))
 end;
 set(gcf,'color',etc_render_fsbrain.bg_color);
 
+view(etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2));
 campos(etc_render_fsbrain.camposition); 
 axis(etc_render_fsbrain.lim);
-view(etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2));
 
 % %add exploration toolbar
 % [vv date] = version;

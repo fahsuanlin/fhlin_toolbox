@@ -22,7 +22,7 @@ function varargout = etc_trace_trigger_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_trigger_gui
 
-% Last Modified by GUIDE v2.5 07-Apr-2020 23:21:05
+% Last Modified by GUIDE v2.5 17-Apr-2020 16:16:07
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -724,6 +724,8 @@ global etc_trace_obj;
 
 
 [filename, pathname, filterindex] = uigetfile(fullfile(pwd,'*.mat'),'select a trigger matlab data file...');
+if(filename==0) return; end;
+
 tmp=load(filename);
                 
 fn=fieldnames(tmp);
@@ -734,6 +736,7 @@ fprintf('load a variable with fields ''time'' and ''event''\n');
 [indx,tf] = listdlg('PromptString','Select a variable...',...
     'SelectionMode','single',...
     'ListString',fn);
+etc_trace_obj.tmp=0;
 if(indx)
     try
         var=fn{indx};
@@ -1207,16 +1210,99 @@ fprintf('load a variable with fields ''time'' and ''event''\n');
 [indx,tf] = listdlg('PromptString','Select a variable...',...
     'SelectionMode','single',...
     'ListString',fn);
+etc_trace_obj.tmp=0;
 if(indx)
     try
         var=fn{indx};
         evalin('base',sprintf('global etc_trace_obj; if(isfield(%s,''time'')&&isfield(%s,''event'')) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var,var));
         fprintf('Trying to load variable [%s] as the trigger...',var);
         if(etc_trace_obj.tmp)
-            %evalin('base',sprintf('global etc_render_fsbrain; etc_render_fsbrain.aux_point_name=%s;',var));
-            evalin('base',sprintf('etc_trace_obj.trigger.time=%s.time; etc_trace_obj.trigger.event=%s.event;',var,var));
+            
+            
+            answer = questdlg('replace or merge with the existed trigger?','Menu',...
+                'replace','merge','cancel','replace');
+            % Handle response
+            switch answer
+                case 'replace'
+                    f_option = 1;
+                case 'merge'
+                    f_option = 2;
+                case 'cancel'
+                    f_option= 0;
+            end
+            if(f_option==1) %replace....
+                evalin('base',sprintf('etc_trace_obj.trigger=%s; ',var));
+                
+                obj=findobj('Tag','text_load_trigger');
+                set(obj,'String',sprintf('%s',var));                
+                
+                fprintf('trigger replaced/loaded!\n');
+            elseif(f_option==2)
+                evalin('base',sprintf('global trigger_tmp; trigger_tmp=%s; ',var));
+                global trigger_tmp;
+                
+                if(isempty(etc_trace_obj.trigger))
+                    etc_trace_obj.trigger=trigger_tmp;
+                else
+                    etc_trace_obj.trigger=etc_trigger_append(etc_trace_obj.trigger,trigger_tmp);
+                end;
+                clear trigger_tmp;
+                
+                obj=findobj('Tag','text_load_trigger');
+                set(obj,'String',sprintf('%s',var));                
+                
+                fprintf('trigger merged!\n');
+            end;
+            
 
-            fprintf('Done!\n');
+            %trigger formatting
+            if(~isempty(etc_trace_obj.trigger))
+                if(isfield(etc_trace_obj.trigger,'event'))
+                    if(~iscell(etc_trace_obj.trigger.event))
+                        str={};
+                        for idx=1:length(etc_trace_obj.trigger.event)
+                            str{idx}=sprintf('%d',etc_trace_obj.trigger.event(idx));
+                        end;
+                        etc_trace_obj.trigger.event=str;
+                    end;
+                end;
+            end;
+            
+            %trigger loading
+            obj=findobj('Tag','listbox_trigger');
+            str={};
+            if(~isempty(etc_trace_obj.trigger))
+                fprintf('trigger loaded...\n');
+                str=unique(etc_trace_obj.trigger.event);
+                set(obj,'string',str);
+            else
+                set(obj,'string',{});
+            end;%
+            
+            
+            if(isfield(etc_trace_obj,'trigger_now'))
+                if(isempty(etc_trace_obj.trigger_now))
+                    
+                else
+                    IndexC = strcmp(str,etc_trace_obj.trigger_now);
+                    if(isempty(find(IndexC)))
+                        fprintf('current trigger [%s] not found in the loaded trigger...\n',etc_trace_obj.trigger_now);
+                        fprintf('set current trigger to [%s]...\n',str{1});
+                        etc_trace_obj.tigger_now=str{1};
+                        set(obj,'Value',1);
+                    else
+                        set(obj,'Value',find(IndexC));
+                    end;
+                end;
+            else
+                if(isempty(str))
+                    etc_trace_obj.trigger_now='';
+                else
+                    etc_trace_obj.trigger_now=str{1};
+                    set(obj,'Value',1);
+                end;
+            end;
+            
         else
             fprintf('Rejected!\n');
         end;
@@ -1245,3 +1331,38 @@ if(etc_trace_obj.tmp)
     set(handles.listbox_class,'string',etc_trace_obj.trigger.event);
     set(handles.listbox_class,'Value',1);
 end;
+
+
+% --- Executes on button press in button_trigger_clearvar.
+function button_trigger_clearvar_Callback(hObject, eventdata, handles)
+% hObject    handle to button_trigger_clearvar (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+answer = questdlg('Clear all triggers?','Menu',...
+    'clear','cancel','clear');
+if(strcmp(answer,'clear'))
+    etc_trace_obj.trigger=[];
+    
+    
+    %trigger loading
+    obj=findobj('Tag','listbox_trigger');
+    set(obj,'string',{});
+    set(obj,'Value',1);
+      
+    
+    
+    %update list boxes
+    set(handles.listbox_time_idx,'string',{});
+    set(handles.listbox_time_idx,'Value',1);
+    
+    set(handles.listbox_time,'string',{});
+    set(handles.listbox_time,'Value',1);
+    
+    set(handles.listbox_class,'string',{});
+    set(handles.listbox_class,'Value',1);
+    
+    
+end;
+

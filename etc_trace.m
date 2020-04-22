@@ -104,6 +104,8 @@ end;
 
 global etc_trace_obj;
 
+etc_trace_obj=[];
+
 try
     delete(etc_trace_obj.fig_trace);
 catch ME
@@ -251,6 +253,8 @@ etc_trace_obj.config_current_trigger_flag=config_current_trigger_flag;
 etc_trace_obj.config_current_time_flag=config_current_time_flag;
 
 
+etc_trace_obj.montage_ch_name={};
+
 etc_trace_obj.fig_topology=figure('visible','off');
 delete(etc_trace_obj.fig_topology); %make it invalid
 etc_trace_obj.fig_trigger=figure('visible','off');
@@ -268,6 +272,16 @@ set(etc_trace_obj.fig_trace,'Name','');
 set(etc_trace_obj.fig_trace,'DeleteFcn','etc_trace_handle(''del'')');
 set(etc_trace_obj.fig_trace,'CloseRequestFcn','etc_trace_handle(''del'')');
 
+
 etc_trace_handle('redraw');
 
+pause(1);
+
+etc_trace_obj.fig_control=etc_trace_control_gui;
+
+pp0=get(etc_trace_obj.fig_control,'outerpos');
+pp1=get(etc_trace_obj.fig_trace,'outerpos');
+set(etc_trace_obj.fig_control,'outerpos',[pp1(1)+(pp1(3))/2-pp0(3)/2, pp1(2)-pp0(4),pp0(3), pp0(4)]);
+set(etc_trace_obj.fig_control,'Name','events');
+set(etc_trace_obj.fig_control,'Resize','off');
 return;
