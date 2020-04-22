@@ -22,7 +22,7 @@ function varargout = etc_trace_info_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_info_gui
 
-% Last Modified by GUIDE v2.5 19-Apr-2020 16:41:22
+% Last Modified by GUIDE v2.5 21-Apr-2020 14:50:59
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -110,11 +110,12 @@ function listbox_info_chnames_Callback(hObject, eventdata, handles)
 global etc_trace_obj;
 
 str=get(handles.listbox_info_chnames,'String');
-str=str{get(handles.listbox_info_chnames,'Value')};
-IndexC = strcmp(str,etc_trace_obj.ch_names);
-
-str=set(handles.text_info_ch_number,'String',sprintf('#[%d] ch.',find(IndexC)));
-
+if(~isempty(str))
+    str=str{get(handles.listbox_info_chnames,'Value')};
+    IndexC = strcmp(str,etc_trace_obj.ch_names);
+    
+    str=set(handles.text_info_ch_number,'String',sprintf('#[%d] ch.',find(IndexC)));
+end;
 
 % --- Executes during object creation, after setting all properties.
 function listbox_info_chnames_CreateFcn(hObject, eventdata, handles)
@@ -137,7 +138,13 @@ function listbox_info_auxdata_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns listbox_info_auxdata contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from listbox_info_auxdata
+global etc_trace_obj;
 
+str=get(handles.listbox_info_trigger,'String');
+if(~isempty(str))
+    str=str{get(handles.listbox_info_trigger,'Value')};
+    
+end;
 
 % --- Executes during object creation, after setting all properties.
 function listbox_info_auxdata_CreateFcn(hObject, eventdata, handles)
@@ -163,15 +170,16 @@ function listbox_info_trigger_Callback(hObject, eventdata, handles)
 global etc_trace_obj;
 
 str=get(handles.listbox_info_trigger,'String');
-str=str{get(handles.listbox_info_trigger,'Value')};
-IndexC = strcmp(str,etc_trace_obj.trigger.event);
-trigger_match_idx = find(IndexC);
-trigger_match_time_idx=etc_trace_obj.trigger.time(trigger_match_idx);
-trigger_match_time_idx=sort(trigger_match_time_idx);
-fprintf('[%d] trigger {%s} found at time index [%s].\n',length(trigger_match_idx),str,mat2str(trigger_match_time_idx));
-
-str=set(handles.text_info_trigger_number,'String',sprintf('[%d] times',length(trigger_match_idx)));
-
+if(~isempty(str))
+    str=str{get(handles.listbox_info_trigger,'Value')};
+    IndexC = strcmp(str,etc_trace_obj.trigger.event);
+    trigger_match_idx = find(IndexC);
+    trigger_match_time_idx=etc_trace_obj.trigger.time(trigger_match_idx);
+    trigger_match_time_idx=sort(trigger_match_time_idx);
+    fprintf('[%d] trigger {%s} found at time index [%s].\n',length(trigger_match_idx),str,mat2str(trigger_match_time_idx));
+    
+    str=set(handles.text_info_trigger_number,'String',sprintf('[%d] times',length(trigger_match_idx)));
+end;
 
 
 
@@ -186,3 +194,37 @@ function listbox_info_trigger_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on key press with focus on listbox_info_auxdata and none of its controls.
+function listbox_info_auxdata_KeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to listbox_info_auxdata (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+
+global etc_trace_obj;
+
+if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
+    contents = cellstr(get(hObject,'String'));
+    select_idx=get(hObject,'Value');
+    
+    if(~isempty(select_idx))
+        try
+            etc_trace_obj.aux_data(select_idx)=[];
+            
+            contents(select_idx)=[];
+            set(hObject,'String',contents);
+            set(hObject,'Value',1);
+            
+            etc_trace_handle('redraw');
+            
+            %get focus back to trigger window
+            figure(etc_trace_obj.fig_info);
+            
+        catch ME
+        end;
+    end;
+end;

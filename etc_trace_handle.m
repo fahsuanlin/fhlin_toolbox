@@ -81,7 +81,15 @@ switch lower(param)
                 close(gcf,'force');
             end;
         end; 
-        
+        try
+            delete(etc_trace_obj.fig_info);
+        catch ME
+            if(isfield(etc_trace_obj,'fig_info'))
+                close(etc_trace_obj.fig_info,'force');
+            else
+                close(gcf,'force');
+            end;
+        end;         
 %         try
 %             delete(etc_trace_obj.fig_load);
 %         catch ME

@@ -110,28 +110,30 @@ try
     else
         set(obj,'string',{});
     end;%
-    
-    
-    if(isfield(etc_trace_obj,'trigger_now'))
-        if(isempty(etc_trace_obj.trigger_now))
-            
-        else
-            IndexC = strcmp(str,etc_trace_obj.trigger_now);
-            if(isempty(find(IndexC)))
-                fprintf('current trigger [%s] not found in the loaded trigger...\n',etc_trace_obj.trigger_now);
-                fprintf('set current trigger to [%s]...\n',str{1});
-                etc_trace_obj.tigger_now=str{1};
-                set(obj,'Value',1);
+    if(~isempty(str))
+        
+        
+        if(isfield(etc_trace_obj,'trigger_now'))
+            if(isempty(etc_trace_obj.trigger_now))
+                
             else
-                set(obj,'Value',find(IndexC));
+                IndexC = strcmp(str,etc_trace_obj.trigger_now);
+                if(isempty(find(IndexC)))
+                    fprintf('current trigger [%s] not found in the loaded trigger...\n',etc_trace_obj.trigger_now);
+                    fprintf('set current trigger to [%s]...\n',str{1});
+                    etc_trace_obj.tigger_now=str{1};
+                    set(obj,'Value',1);
+                else
+                    set(obj,'Value',find(IndexC));
+                end;
             end;
-        end;
-    else
-        if(isempty(str))
-            etc_trace_obj.trigger_now='';
         else
-            etc_trace_obj.trigger_now=str{1};
-            set(obj,'Value',1);
+            if(isempty(str))
+                etc_trace_obj.trigger_now='';
+            else
+                etc_trace_obj.trigger_now=str{1};
+                set(obj,'Value',1);
+            end;
         end;
     end;
     
