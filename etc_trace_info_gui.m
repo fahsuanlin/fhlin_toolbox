@@ -63,14 +63,21 @@ global etc_trace_obj;
 set(handles.text_info_datasize,'String',mat2str(size(etc_trace_obj.data)));
 set(handles.text_info_fs,'String',mat2str(etc_trace_obj.fs));
 set(handles.listbox_info_chnames,'String',etc_trace_obj.ch_names);
+
 str={};
-for i=1:length(etc_trace_obj.aux_data) str{i}=mat2str(size(etc_trace_obj.aux_data{i})); end;
+for i=1:length(etc_trace_obj.aux_data) str{i}=etc_trace_obj.aux_data_name{i}; end;
 set(handles.listbox_info_auxdata,'String',str);
+set(handles.listbox_info_auxdata,'Min',0);
+set(handles.listbox_info_auxdata,'Max',length(str));
+if(length(etc_trace_obj.aux_data_idx)>0)
+     set(handles.listbox_info_auxdata,'Value',find(etc_trace_obj.aux_data_idx));
+end;
+
 str={};
 try
     str=unique(etc_trace_obj.trigger.event);
-    if(~iscell(str)) 
-        for i=1:length(ev) ev_str{i}=num2str(ev(i)); end; 
+    if(~iscell(str))
+        for i=1:length(ev) ev_str{i}=num2str(ev(i)); end;
         str=ev_str;
     end;
 catch ME
@@ -146,6 +153,21 @@ if(~isempty(str))
     
 end;
 
+etc_trace_obj.aux_data_idx=zeros(size(etc_trace_obj.aux_data_idx));
+etc_trace_obj.aux_data_idx(get(hObject,'Value'))=1;
+
+obj=findobj('Tag','listbox_aux_data');
+if(~isempty(obj))
+    if(length(etc_trace_obj.aux_data_idx)>0)
+        set(obj,'Value',find(etc_trace_obj.aux_data_idx));
+    end;
+end;
+
+etc_trace_handle('redraw');
+
+figure(etc_trace_obj.fig_info);
+
+
 % --- Executes during object creation, after setting all properties.
 function listbox_info_auxdata_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to listbox_info_auxdata (see GCBO)
@@ -214,10 +236,40 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
     if(~isempty(select_idx))
         try
             etc_trace_obj.aux_data(select_idx)=[];
+            etc_trace_obj.aux_data_name(select_idx)=[];
+            etc_trace_obj.aux_data_idx(select_idx)=[];
+            if(~isempty(etc_trace_obj.aux_data_idx))
+                if(sum(etc_trace_obj.aux_data_idx)<0.5)
+                    etc_trace_obj.aux_data_idx(1)=1;
+                end;
+            end;
             
             contents(select_idx)=[];
             set(hObject,'String',contents);
             set(hObject,'Value',1);
+            
+            %aux data listbox in the info window
+            str={};
+            for i=1:length(etc_trace_obj.aux_data) str{i}=etc_trace_obj.aux_data_name{i}; end;
+            obj=findobj('Tag','listbox_info_auxdata');
+            if(~isempty(obj))
+                set(obj,'String',str);
+                set(obj,'Min',0);
+                set(obj,'Max',length(str));
+                set(obj,'Value',etc_trace_obj.aux_data_idx);
+            end;
+            
+            %aux data listbox in the control window
+            str={};
+            for i=1:length(etc_trace_obj.aux_data) str{i}=etc_trace_obj.aux_data_name{i}; end;
+            obj=findobj('Tag','listbox_aux_data');
+            if(~isempty(obj))
+                set(obj,'String',str);
+                set(obj,'Min',0);
+                set(obj,'Max',length(str));
+                set(obj,'Value',etc_trace_obj.aux_data_idx);
+            end;
+            
             
             etc_trace_handle('redraw');
             

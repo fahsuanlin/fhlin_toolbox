@@ -14,6 +14,8 @@ trace_selected_idx=[];
 
 trigger=[];
 aux_data={};
+aux_data_name={};
+aux_data_idx=[];
 ch_names={};
 
 topo=[]; %topology structure; with "vertex", "face", "ch_names", "electrode_idx" 4 fields.
@@ -233,6 +235,8 @@ etc_trace_obj.scaling{1}=[scaling{1}, zeros(size(scaling{1},1),1)
 
 etc_trace_obj.data=data;
 etc_trace_obj.aux_data=aux_data;
+etc_trace_obj.aux_data_name=aux_data_name;
+etc_trace_obj.aux_data_idx=aux_data_idx;
 
 etc_trace_obj.topo=topo;
 

@@ -60,6 +60,7 @@ function etc_trace_load_gui_OpeningFcn(hObject, eventdata, handles, varargin)
 
 global etc_trace_obj;
 
+etc_trace_obj.fig_load_gui=gcf;
 
 %initialization
 if(~isempty(etc_trace_obj.data))
@@ -252,17 +253,68 @@ if(indx)
                             
                 fprintf('main data loaded!\n');
             elseif(f_option==2) %aux....
+                
+                %name = auxdatad_name_dialog;
+                prompt = {'name for the aux. data'};
+                dlgtitle = '';
+                dims = [1 35];
+                definput = {sprintf('aux_%02d',length(etc_trace_obj.aux_data)+1)};
+                answer = inputdlg(prompt,dlgtitle,dims,definput);
+                name=answer{1};
+                
                 evalin('base',sprintf('if(size(%s,1)~=size(etc_trace_obj.data,1)) etc_trace_obj.tmp=0; else etc_trace_obj.tmp=1; end',var));
                 
                 if(etc_trace_obj.tmp==1)
-                    evalin('base',sprintf('tmp=length(etc_trace_obj.aux_data); etc_trace_obj.aux_data{tmp+1}=%s; ',var));
+                    evalin('base',sprintf('tmp=length(etc_trace_obj.aux_data); etc_trace_obj.aux_data{tmp+1}=%s;',var));
+                    evalin('base',sprintf('if(~isfield(etc_trace_obj,''aux_data_name'')) etc_trace_obj.aux_data_name={}; end;',name));
+                    evalin('base',sprintf('etc_trace_obj.aux_data_name{tmp+1}=''%s'';',name));
+                   
+                    
                     if(size(etc_trace_obj.aux_data{end},2)<=size(etc_trace_obj.data,2)) %append 'nan' if aux data is too short....
                         etc_trace_obj.aux_data{end}(:,end+1:size(etc_trace_obj.data,2))=nan;
                     end;
     
                     obj=findobj('Tag','text_load_var');
                     set(obj,'String',sprintf('%s (aux.)',var));
-                            
+ 
+                    %aux data listbox in the control window
+                    obj=findobj('Tag','listbox_aux_data');
+                    if(~isempty(obj))
+                        str=get(obj,'String');
+                        str{end+1}=name;
+                    end;
+                    set(obj,'String',str);
+                    
+                    etc_trace_obj.aux_data_idx(end+1)=1;
+                    
+                    %aux data listbox in the info window
+                    str={};
+                    for i=1:length(etc_trace_obj.aux_data) str{i}=etc_trace_obj.aux_data_name{i}; end;
+                    obj=findobj('Tag','listbox_info_auxdata');
+                    if(~isempty(obj))
+                        set(obj,'String',str);
+                        set(obj,'Min',0);
+                        set(obj,'Max',length(str));
+                        set(obj,'Value',[1:length(str)]);
+                        if(length(etc_trace_obj.aux_data_idx)>0)
+                            set(obj,'Value',find(etc_trace_obj.aux_data_idx));
+                        end;
+                    end;
+                    
+                    %aux data listbox in the control window
+                    str={};
+                    for i=1:length(etc_trace_obj.aux_data) str{i}=etc_trace_obj.aux_data_name{i}; end;
+                    obj=findobj('Tag','listbox_aux_data');
+                    if(~isempty(obj))
+                        set(obj,'String',str);
+                        set(obj,'Min',0);
+                        set(obj,'Max',length(str));
+                        set(obj,'Value',[1:length(str)]);
+                        if(length(etc_trace_obj.aux_data_idx)>0)
+                            set(obj,'Value',find(etc_trace_obj.aux_data_idx));
+                        end;
+                    end;
+                    
                     fprintf('aixillary data loaded!\n');
                 end;
             end;
@@ -277,8 +329,6 @@ if(indx)
     catch ME
     end;
 end;
-
-
 
 
 
@@ -347,9 +397,7 @@ etc_trace_obj.tmp=0;
 if(indx)
     try
         var=fn{indx};
-        %evalin('base',sprintf('global etc_trace_obj; if(ndims(%s)==2) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var,var));
         evalin('base',sprintf('global etc_trace_obj; if(isfield(%s,''time'')&&isfield(%s,''event'')) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var,var));
-        %evalin('base',sprintf('etc_trace_obj.tmp=1;',var,var));
         
         fprintf('Trying to load variable [%s] as the trigger...',var);
         if(etc_trace_obj.tmp)
@@ -387,55 +435,7 @@ if(indx)
                 set(obj,'String',sprintf('%s',var));                
                 
                 fprintf('trigger merged!\n');
-            end;
-
-            
-%             %convert trigger into string, just in case....
-%             if(~isempty(etc_trace_obj.trigger))
-%                 if(isfield(etc_trace_obj.trigger,'event'))
-%                     if(~iscell(etc_trace_obj.trigger.event))
-%                         str={};
-%                         for idx=1:length(etc_trace_obj.trigger.event)
-%                             str{idx}=sprintf('%d',etc_trace_obj.trigger.event(idx));
-%                         end;
-%                         etc_trace_obj.trigger.event=str;
-%                     end;
-%                 end;
-%             end;
-%             
-%             %trigger loading
-%             obj=findobj('Tag','listbox_trigger');
-%             str={};
-%             if(~isempty(etc_trace_obj.trigger))
-%                 str=unique(etc_trace_obj.trigger.event);
-%                 set(obj,'string',str);
-%             else
-%                 set(obj,'string',{});
-%             end;%
-%             if(isfield(etc_trace_obj,'trigger_now'))
-%                 if(isempty(etc_trace_obj.trigger_now))
-%                     
-%                 else
-%                     IndexC = strcmp(str,etc_trace_obj.trigger_now);
-%                     if(isempty(find(IndexC)))
-%                         fprintf('current trigger [%s] not found in the loaded trigger...\n',etc_trace_obj.trigger_now);
-%                         fprintf('set current trigger to [%s]...\n',str{1});
-%                         etc_trace_obj.tigger_now=str{1};
-%                         set(obj,'Value',1);
-%                     else
-%                         set(obj,'Value',find(IndexC));
-%                     end;
-%                 end;
-%             else
-%                 if(isempty(str))
-%                     etc_trace_obj.trigger_now='';
-%                 else
-%                     etc_trace_obj.trigger_now=str{1};
-%                     set(obj,'Value',1);
-%                 end;
-%             end;
-            
-            
+            end;           
         else
             fprintf('error in loading the trigger variable...\n',var);
         end;
@@ -595,3 +595,32 @@ end;
 
 
 
+    function name = auxdatad_name_dialog
+        global etc_trace_obj;
+        
+        pos0=get(etc_trace_obj.fig_load_gui,'outerpos'); 
+
+        d = dialog('OuterPosition',[pos0(1) pos0(2)-150 250 150],'Name','Name for the aux. data');
+        
+        edit = uicontrol('Parent',d,...
+            'Style','edit',...
+            'Tag','edit',...
+            'Position',[20 80 210 40],...
+            'String',sprintf('aux_%02d', length(etc_trace_obj.aux_data)+1));
+        
+        btn = uicontrol('Parent',d,...
+            'Position',[89 20 70 25],...
+            'String','Close',...
+            'Callback',@btn_callback);
+        
+        name='a';
+        
+        uiwait(d);
+        
+        function btn_callback(btn,event)
+            obj=findobj(gcf,'Tag','edit');
+            name=get(obj,'String');
+            delete(gcf);
+        
+    
+    
