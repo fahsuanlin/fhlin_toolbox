@@ -944,7 +944,11 @@ switch lower(param)
             delete(etc_render_fsbrain.fig_brain);
         catch ME
             if(isfield(etc_render_fsbrain,'fig_brain'))
-                close(etc_render_fsbrain.fig_brain,'force');
+                if(isvalid(etc_render_fsbrain.fig_brain))
+                    close(etc_render_fsbrain.fig_brain,'force');
+                else
+                    close(gcf,'force');
+                end;
             else
                 close(gcf,'force');
             end;

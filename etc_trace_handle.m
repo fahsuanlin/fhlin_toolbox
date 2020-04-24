@@ -228,6 +228,9 @@ switch lower(param)
                                             etc_trace_obj.topo.ch_names=electrode_name(Index);
                                             etc_trace_obj.topo.electrode_idx=electrode_idx(Index);
                                             etc_trace_obj.topo.electrode_data_idx=electrode_data_idx;
+                                        else
+                                            etc_trace_obj.topo=[];
+                                            fprintf('error in finding the corresponding channel names!\n'); return;
                                         end;
                                         
                                         %etc_trace_obj.topo.ch_names=electrode_name;
@@ -256,6 +259,7 @@ switch lower(param)
                                         etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',10,'topo_threshold',[abs(diff(etc_trace_obj.ylim))/4 abs(diff(etc_trace_obj.ylim))/2 ],'flag_camlight',flag_camlight,'topo_aux_point_name',etc_trace_obj.topo.ch_names, 'topo_aux_point_coords',etc_trace_obj.topo.vertex(etc_trace_obj.topo.electrode_idx,:));
 
                                     catch ME
+                                        etc_trace_obj.topo=[];
                                     end;
                                 end;
                             else %topo field exists in etc_trace_obj
@@ -762,7 +766,9 @@ if(isfield(etc_trace_obj,'aux_data'))
                 case 'trace'
                     S(1:(size(tmp,1)-1),end)=(diff(sort(etc_trace_obj.ylim)).*[0:size(tmp,1)-2])'; %typical 
                 case 'butterfly'
-                    S(1:(size(tmp,1)-1),end)=(diff(sort(etc_trace_obj.ylim)).*ones(size(tmp,1)-1,1).*round(size(tmp,1)/2))'; %butterfly
+                    %S(1:(size(tmp,1)-1),end)=(diff(sort(etc_trace_obj.ylim)).*ones(size(tmp,1)-1,1).*round(size(tmp,1)/2))'; %butterfly
+                    ss=mean([min(etc_trace_obj.ylim)-0.5 max(etc_trace_obj.ylim)+0.5+(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-2)*diff(sort(etc_trace_obj.ylim))]);
+                    S(1:(size(tmp,1)-1),end)=ss.*ones(size(tmp,1)-1,1)'; %butterfly                      
                 case 'image'
                     S(1:(size(tmp,1)-1),end)=0; %image
             end;
@@ -822,7 +828,9 @@ switch(etc_trace_obj.view_style)
     case 'trace'
         S(1:(size(tmp,1)-1),end)=(diff(sort(etc_trace_obj.ylim)).*[0:size(tmp,1)-2])'; %typical 
     case 'butterfly'
-        S(1:(size(tmp,1)-1),end)=(diff(sort(etc_trace_obj.ylim)).*ones(size(tmp,1)-1,1).*round(size(tmp,1)/2))'; %butterfly
+        %S(1:(size(tmp,1)-1),end)=(diff(sort(etc_trace_obj.ylim)).*ones(size(tmp,1)-1,1).*round(size(tmp,1)/2))'; %butterfly
+        ss=mean([min(etc_trace_obj.ylim)-0.5 max(etc_trace_obj.ylim)+0.5+(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-2)*diff(sort(etc_trace_obj.ylim))]);
+        S(1:(size(tmp,1)-1),end)=ss.*ones(size(tmp,1)-1,1)'; %butterfly        
     case 'image'
         S(1:(size(tmp,1)-1),end)=0; %image
 end;
@@ -968,9 +976,9 @@ end;
 try
     switch(etc_trace_obj.view_style)
         case {'trace','butterfly'}
-            set(etc_trace_obj.axis_trace,'ylim',[min(etc_trace_obj.ylim) min(etc_trace_obj.ylim)+(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-1)*diff(sort(etc_trace_obj.ylim))]);
+            set(etc_trace_obj.axis_trace,'ylim',[min(etc_trace_obj.ylim)-0.5 max(etc_trace_obj.ylim)+0.5+(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-2)*diff(sort(etc_trace_obj.ylim))]);
         case 'image'
-            set(etc_trace_obj.axis_trace,'ylim',[1 size(tmp,2)]);
+            set(etc_trace_obj.axis_trace,'ylim',[0.5 size(tmp,2)+0.5]);
     end;
     set(etc_trace_obj.axis_trace,'xlim',[1 etc_trace_obj.time_duration_idx]);
     set(etc_trace_obj.axis_trace,'xtick',round([0:5]./5.*etc_trace_obj.time_duration_idx)+1);
@@ -980,21 +988,25 @@ try
 catch ME
 end;
 
-%plot electrode names
-switch(etc_trace_obj.view_style)
-    case 'trace'
-        if(~isempty(etc_trace_obj.montage_ch_name))
-            set(etc_trace_obj.axis_trace,'ytick',diff(sort(etc_trace_obj.ylim)).*[0:(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-1)-1]);
-            set(etc_trace_obj.axis_trace,'yticklabels',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
-        end;
-    case 'butterfly'
-        set(etc_trace_obj.axis_trace,'ytick',(diff(sort(etc_trace_obj.ylim)).*round(size(tmp,2)/2)));
-        set(etc_trace_obj.axis_trace,'yticklabels','all');
-    case 'image'
-        if(~isempty(etc_trace_obj.montage_ch_name))
-            set(etc_trace_obj.axis_trace,'ytick',[1:size(tmp,2)]);
-            set(etc_trace_obj.axis_trace,'yticklabels',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
-        end;
+try
+    %plot electrode names
+    switch(etc_trace_obj.view_style)
+        case 'trace'
+            if(~isempty(etc_trace_obj.montage_ch_name))
+                set(etc_trace_obj.axis_trace,'ytick',diff(sort(etc_trace_obj.ylim)).*[0:(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-1)-1]);
+                set(etc_trace_obj.axis_trace,'yticklabels',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
+            end;
+        case 'butterfly'
+            set(etc_trace_obj.axis_trace,'ytick',(diff(sort(etc_trace_obj.ylim)).*round(size(tmp,2)/2)));
+            set(etc_trace_obj.axis_trace,'yticklabels','all');
+        case 'image'
+            if(~isempty(etc_trace_obj.montage_ch_name))
+                set(etc_trace_obj.axis_trace,'ytick',[1:size(tmp,2)]);
+                set(etc_trace_obj.axis_trace,'yticklabels',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
+            end;
+    end;
+    
+catch ME
 end;
 %plot trigger
 try

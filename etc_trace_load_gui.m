@@ -246,7 +246,12 @@ if(indx)
                     f_option= 0;
             end
             if(f_option==1) %main....
-                evalin('base',sprintf('etc_trace_obj.data=%s; ',var));
+                if(~etc_trace_obj.flag_trigger_avg)
+                    evalin('base',sprintf('etc_trace_obj.data=%s; ',var));
+                else
+                    evalin('base',sprintf('etc_trace_obj.buffer.data=%s; ',var));
+                end;       
+                
 
                 obj=findobj('Tag','text_load_var');
                 set(obj,'String',sprintf('%s',var));
@@ -265,13 +270,31 @@ if(indx)
                 evalin('base',sprintf('if(size(%s,1)~=size(etc_trace_obj.data,1)) etc_trace_obj.tmp=0; else etc_trace_obj.tmp=1; end',var));
                 
                 if(etc_trace_obj.tmp==1)
-                    evalin('base',sprintf('tmp=length(etc_trace_obj.aux_data); etc_trace_obj.aux_data{tmp+1}=%s;',var));
-                    evalin('base',sprintf('if(~isfield(etc_trace_obj,''aux_data_name'')) etc_trace_obj.aux_data_name={}; end;',name));
-                    evalin('base',sprintf('etc_trace_obj.aux_data_name{tmp+1}=''%s'';',name));
-                   
                     
-                    if(size(etc_trace_obj.aux_data{end},2)<=size(etc_trace_obj.data,2)) %append 'nan' if aux data is too short....
-                        etc_trace_obj.aux_data{end}(:,end+1:size(etc_trace_obj.data,2))=nan;
+                    if(~etc_trace_obj.flag_trigger_avg)
+                        evalin('base',sprintf('tmp=length(etc_trace_obj.aux_data); etc_trace_obj.aux_data{tmp+1}=%s;',var));
+                        evalin('base',sprintf('if(~isfield(etc_trace_obj,''aux_data_name'')) etc_trace_obj.aux_data_name={}; end;',name));
+                        evalin('base',sprintf('etc_trace_obj.aux_data_name{tmp+1}=''%s'';',name));
+                    else
+                        evalin('base',sprintf('tmp=length(etc_trace_obj.buffer.aux_data); etc_trace_obj.buffer.aux_data{tmp+1}=%s;',var));
+                        evalin('base',sprintf('if(~isfield(etc_trace_obj.buffer,''aux_data_name'')) etc_trace_obj.buffer.aux_data_name={}; end;',name));
+                        evalin('base',sprintf('etc_trace_obj.buffer.aux_data_name{tmp+1}=''%s'';',name));
+                    end;
+                    
+                    if(~etc_trace_obj.flag_trigger_avg)
+                        if(size(etc_trace_obj.aux_data{end},2)<=size(etc_trace_obj.data,2)) %append 'nan' if aux data is too short....
+                            etc_trace_obj.aux_data{end}(:,end+1:size(etc_trace_obj.data,2))=nan;
+                        end;
+                        
+                                            
+                        etc_trace_obj.aux_data_idx(end+1)=1;
+                    
+                    else
+                        if(size(etc_trace_obj.buffer.aux_data{end},2)<=size(etc_trace_obj.buffer.data,2)) %append 'nan' if aux data is too short....
+                            etc_trace_obj.buffer.aux_data{end}(:,end+1:size(etc_trace_obj.buffer.data,2))=nan;
+                        end;
+                        
+                        etc_trace_obj.buffer.aux_data_idx(end+1)=1;
                     end;
     
                     obj=findobj('Tag','text_load_var');
@@ -284,9 +307,7 @@ if(indx)
                         str{end+1}=name;
                     end;
                     set(obj,'String',str);
-                    
-                    etc_trace_obj.aux_data_idx(end+1)=1;
-                    
+
                     %aux data listbox in the info window
                     str={};
                     for i=1:length(etc_trace_obj.aux_data) str{i}=etc_trace_obj.aux_data_name{i}; end;
@@ -402,11 +423,11 @@ if(indx)
         fprintf('Trying to load variable [%s] as the trigger...',var);
         if(etc_trace_obj.tmp)
             
-            answer = questdlg('replace or merge with the existed trigger?','Menu',...
-                'replace','merge','cancel','replace');
+            answer = questdlg('take as new or merge with the existed trigger?','Menu',...
+                'take as new','merge','cancel','take as new');
             % Handle response
             switch answer
-                case 'replace'
+                case 'take as new'
                     f_option = 1;
                 case 'merge'
                     f_option = 2;
@@ -466,10 +487,10 @@ etc_trace_obj.tmp=0;
 if(indx)
     try
         var=fn{indx};
-        %evalin('base',sprintf('global etc_trace_obj; if(ndims(%s)==2) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var,var));
-        evalin('base',sprintf('etc_trace_obj.tmp=1;',var,var));
-        fprintf('Trying to load variable [%s] as channel labels...',var);
+        evalin('base',sprintf('global etc_trace_obj; if(length(%s)==size(etc_trace_obj.data,1)) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var));
+        %evalin('base',sprintf('etc_trace_obj.tmp=1;',var,var));
         if(etc_trace_obj.tmp)
+            fprintf('Trying to load variable [%s] as channel labels...',var);
             evalin('base',sprintf('etc_trace_obj.ch_names=%s; ',var));
 
             obj=findobj('Tag','text_load_label');
@@ -477,7 +498,7 @@ if(indx)
             
             fprintf('Done!\n');
         else
-            fprintf('error in loading the channel variable...\n',var);
+            fprintf('the first dimension of [%s] (%d) does not match that of data (%d). Error in loading the channel variable...\n',var,length(var),size(etc_trace_obj.data,1));
         end;
         
     catch ME

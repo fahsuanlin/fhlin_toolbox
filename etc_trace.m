@@ -279,7 +279,7 @@ set(etc_trace_obj.fig_trace,'CloseRequestFcn','etc_trace_handle(''del'')');
 
 etc_trace_handle('redraw');
 
-pause(1);
+pause(0.1);
 
 etc_trace_obj.fig_control=etc_trace_control_gui;
 

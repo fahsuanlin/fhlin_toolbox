@@ -22,7 +22,7 @@ function varargout = etc_trace_avg_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_avg_gui
 
-% Last Modified by GUIDE v2.5 14-Apr-2020 19:24:32
+% Last Modified by GUIDE v2.5 24-Apr-2020 01:02:39
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -103,6 +103,12 @@ for i=1:length(str)
 end;
 set(handles.listbox_avg_trigger,'Value',i);
 
+
+
+%TFR
+set(handles.checkbox_avg_tfr,'Value',0);
+set(handles.edit_avg_tfr_f,'String','');
+set(handles.edit_avg_tfr_cycle,'String','5');
 
 % UIWAIT makes etc_trace_avg_gui wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -203,9 +209,7 @@ if(isempty(etc_trace_obj.trigger_now)) return; end;
     trigger_match_time_idx=etc_trace_obj.trigger.time(trigger_match_idx);
     trigger_match_time_idx=sort(trigger_match_time_idx);
     fprintf('[%d] trigger {%s} found at time index [%s].\n',length(trigger_match_idx),etc_trace_obj.trigger_now,mat2str(trigger_match_time_idx));
-    
-    
-    
+       
     
     tmp=[];
     aux_tmp={};
@@ -220,7 +224,14 @@ if(isempty(etc_trace_obj.trigger_now)) return; end;
     time_pre_idx=abs(round(etc_trace_obj.fs*etc_trace_obj.avg.time_pre));
     time_post_idx=abs(round(etc_trace_obj.fs*etc_trace_obj.avg.time_post));
     
-    
+    try
+        flag_tfr=get(handles.checkbox_avg_tfr,'Value');
+        tfr_f=str2double(get(handles.edit_avg_tfr_f,'String'));
+        tfr_w=str2double(get(handles.edit_avg_tfr_cycle,'String'));
+    catch
+        flag_tfr=0;
+    end;
+        
     %%% calculate AVG....
     for idx=1:length(trigger_match_time_idx)
         if(~etc_trace_obj.flag_trigger_avg)
@@ -233,6 +244,10 @@ if(isempty(etc_trace_obj.trigger_now)) return; end;
                         tmp=etc_trace_obj.data(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
                     end;
                     
+                    if(flag_tfr)
+                        tmp=abs(inverse_waveletcoef(tfr_f,tmp,etc_trace_obj.fs,tfr_w));
+                    end;
+                    
                     if(etc_trace_obj.avg.flag_trials)
                         trials(:,:,n_avg+1)=tmp;
                     end;
@@ -240,9 +255,19 @@ if(isempty(etc_trace_obj.trigger_now)) return; end;
                     if(etc_trace_obj.avg.flag_baseline_correct)
                         ttmp=etc_trace_obj.data(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
                         ttmp=ttmp-repmat(mean(ttmp(:,1:time_pre_idx),2),[1 size(ttmp,2)]);
+                        
+                        if(flag_tfr)
+                            ttmp=abs(inverse_waveletcoef(tfr_f,ttmp,etc_trace_obj.fs,tfr_w));
+                        end;
+                        
                         tmp=tmp+ttmp;
                     else
                         ttmp=etc_trace_obj.data(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                        
+                        if(flag_tfr)
+                            ttmp=abs(inverse_waveletcoef(tfr_f,ttmp,etc_trace_obj.fs,tfr_w));
+                        end;
+                        
                         tmp=tmp+ttmp;
                     end;
                     if(etc_trace_obj.avg.flag_trials)
@@ -255,9 +280,19 @@ if(isempty(etc_trace_obj.trigger_now)) return; end;
                         if(etc_trace_obj.avg.flag_baseline_correct)
                             ttmp=etc_trace_obj.aux_data{ii}(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
                             ttmp=ttmp-repmat(mean(ttmp(:,1:time_pre_idx),2),[1 size(ttmp,2)]);
+                            
+                            if(flag_tfr)
+                                ttmp=abs(inverse_waveletcoef(tfr_f,ttmp,etc_trace_obj.fs,tfr_w));
+                            end;
+                            
                             aux_tmp{ii}=ttmp;
                         else
                             ttmp=etc_trace_obj.aux_data{ii}(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                            
+                            if(flag_tfr)
+                                ttmp=abs(inverse_waveletcoef(tfr_f,ttmp,etc_trace_obj.fs,tfr_w));
+                            end;
+                            
                             aux_tmp{ii}=ttmp;
                         end;
                         if(etc_trace_obj.avg.flag_trials)
@@ -267,9 +302,19 @@ if(isempty(etc_trace_obj.trigger_now)) return; end;
                         if(etc_trace_obj.avg.flag_baseline_correct)
                             ttmp=etc_trace_obj.aux_data{ii}(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
                             ttmp=ttmp-repmat(mean(ttmp(:,1:time_pre_idx),2),[1 size(ttmp,2)]);
+                            
+                            if(flag_tfr)
+                                ttmp=abs(inverse_waveletcoef(tfr_f,ttmp,etc_trace_obj.fs,tfr_w));
+                            end;
+                            
                             aux_tmp{ii}=aux_tmp{ii}+ttmp;
                         else
                             ttmp=etc_trace_obj.aux_data{ii}(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                            
+                            if(flag_tfr)
+                                ttmp=abs(inverse_waveletcoef(tfr_f,ttmp,etc_trace_obj.fs,tfr_w));
+                            end;
+                            
                             aux_tmp{ii}=aux_tmp{ii}+ttmp;
                         end;
                         if(etc_trace_obj.avg.flag_trials)
@@ -293,6 +338,10 @@ if(isempty(etc_trace_obj.trigger_now)) return; end;
                         tmp=etc_trace_obj.buffer.data(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
                     end;
                     
+                    if(flag_tfr)
+                        tmp=abs(inverse_waveletcoef(tfr_f,tmp,etc_trace_obj.fs,tfr_w));
+                    end;
+                    
                     if(etc_trace_obj.avg.flag_trials)
                         trials(:,:,n_avg+1)=tmp;
                     end;
@@ -300,9 +349,19 @@ if(isempty(etc_trace_obj.trigger_now)) return; end;
                     if(etc_trace_obj.avg.flag_baseline_correct)
                         ttmp=etc_trace_obj.buffer.data(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
                         ttmp=ttmp-repmat(mean(ttmp(:,1:time_pre_idx),2),[1 size(ttmp,2)]);
+                        
+                        if(flag_tfr)
+                            ttmp=abs(inverse_waveletcoef(tfr_f,ttmp,etc_trace_obj.fs,tfr_w));
+                        end;
+                        
                         tmp=tmp+ttmp;
                     else
                         ttmp=etc_trace_obj.buffer.data(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                        
+                        if(flag_tfr)
+                            ttmp=abs(inverse_waveletcoef(tfr_f,ttmp,etc_trace_obj.fs,tfr_w));
+                        end;
+                        
                         tmp=tmp+ttmp;
                     end;
                     if(etc_trace_obj.avg.flag_trials)
@@ -315,9 +374,19 @@ if(isempty(etc_trace_obj.trigger_now)) return; end;
                         if(etc_trace_obj.avg.flag_baseline_correct)
                             ttmp=etc_trace_obj.buffer.aux_data{ii}(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
                             ttmp=ttmp-repmat(mean(ttmp(:,1:time_pre_idx),2),[1 size(ttmp,2)]);
+                            
+                            if(flag_tfr)
+                                ttmp=abs(inverse_waveletcoef(tfr_f,ttmp,etc_trace_obj.fs,tfr_w));
+                            end;
+                            
                             aux_tmp{ii}=ttmp;
                         else
                             ttmp=etc_trace_obj.buffer.aux_data{ii}(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                            
+                            if(flag_tfr)
+                                ttmp=abs(inverse_waveletcoef(tfr_f,ttmp,etc_trace_obj.fs,tfr_w));
+                            end;
+                            
                             aux_tmp{ii}=ttmp;
                         end;
                         if(etc_trace_obj.avg.flag_trials)
@@ -327,9 +396,19 @@ if(isempty(etc_trace_obj.trigger_now)) return; end;
                         if(etc_trace_obj.avg.flag_baseline_correct)
                             ttmp=etc_trace_obj.buffer.aux_data{ii}(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
                             ttmp=ttmp-repmat(mean(ttmp(:,1:time_pre_idx),2),[1 size(ttmp,2)]);
+                            
+                            if(flag_tfr)
+                                ttmp=abs(inverse_waveletcoef(tfr_f,ttmp,etc_trace_obj.fs,tfr_w));
+                            end;
+                            
                             aux_tmp{ii}=aux_tmp{ii}+ttmp;
                         else
                             ttmp=etc_trace_obj.buffer.aux_data{ii}(:,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx);
+                            
+                            if(flag_tfr)
+                                ttmp=abs(inverse_waveletcoef(tfr_f,ttmp,etc_trace_obj.fs,tfr_w));
+                            end;
+                            
                             aux_tmp{ii}=aux_tmp{ii}+ttmp;
                         end;
                         if(etc_trace_obj.avg.flag_trials)
@@ -359,6 +438,8 @@ if(isempty(etc_trace_obj.trigger_now)) return; end;
         %update data
         etc_trace_obj.buffer.data=etc_trace_obj.data;
         etc_trace_obj.buffer.aux_data=etc_trace_obj.aux_data;
+        etc_trace_obj.buffer.aux_data_name=etc_trace_obj.aux_data_name;
+        etc_trace_obj.buffer.aux_data_idx=etc_trace_obj.aux_data_idx;
         etc_trace_obj.buffer.trigger_now=etc_trace_obj.trigger_now;
         etc_trace_obj.buffer.trigger=etc_trace_obj.trigger;
         etc_trace_obj.buffer.time_begin=etc_trace_obj.time_begin;
@@ -377,9 +458,8 @@ if(isempty(etc_trace_obj.trigger_now)) return; end;
     
     hObject=findobj('tag','listbox_time_duration');
     contents = cellstr(get(hObject,'String'));   
-    ii=round(cellfun(@str2num,contents).*etc_trace_obj.fs)
-    [dummy,vv]=min(abs(ii-size(etc_trace_obj.data,2)))
-    round(str2num(contents{vv})*etc_trace_obj.fs)
+    ii=round(cellfun(@str2num,contents).*etc_trace_obj.fs);
+    [dummy,vv]=min(abs(ii-size(etc_trace_obj.data,2)));
     etc_trace_obj.time_duration_idx=round(str2num(contents{vv})*etc_trace_obj.fs);
     
     etc_trcae_gui_update_time;
@@ -471,6 +551,7 @@ if(isempty(etc_trace_obj))
 end;
 
 contents = cellstr(get(hObject,'String'));
+if(isempty(contents)) return; end;
 etc_trace_obj.trigger_now=contents{get(hObject,'Value')};
 fprintf('selected trigger = {%s}.\n',etc_trace_obj.trigger_now);
 
@@ -576,3 +657,58 @@ function checkbox_avg_keep_trials_Callback(hObject, eventdata, handles)
 global etc_trace_obj;
 
 etc_trace_obj.avg.flag_trials=get(hObject,'Value'); %no baseline correction
+
+
+
+function edit_avg_tfr_f_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_avg_tfr_f (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_avg_tfr_f as text
+%        str2double(get(hObject,'String')) returns contents of edit_avg_tfr_f as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_avg_tfr_f_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_avg_tfr_f (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in checkbox_avg_tfr.
+function checkbox_avg_tfr_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_avg_tfr (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_avg_tfr
+
+
+
+function edit_avg_tfr_cycle_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_avg_tfr_cycle (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_avg_tfr_cycle as text
+%        str2double(get(hObject,'String')) returns contents of edit_avg_tfr_cycle as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_avg_tfr_cycle_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_avg_tfr_cycle (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

@@ -22,7 +22,7 @@ function varargout = etc_trace_control_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_control_gui
 
-% Last Modified by GUIDE v2.5 22-Apr-2020 15:03:25
+% Last Modified by GUIDE v2.5 23-Apr-2020 15:35:49
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -92,8 +92,10 @@ end;
 %channel listbox
 set(handles.listbox_channel,'String',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
                  
-
-% %view style colormap
+%view style colormap
+set(handles.axes_c,'Visible','off','ydir','reverse');
+        
+        
 % if(~isfield(etc_trace_obj,'axis_colorbar')) 
 %     etc_trace_obj.axis_colorbar=[]; 
 % else
@@ -138,6 +140,9 @@ else
 end;
 
 %trigger loading
+
+etc_trace_obj.flag_trigger_avg=0; %average over trigger
+
 str={};
 if(~isempty(etc_trace_obj.trigger))
     fprintf('trigger loaded...\n');
@@ -1057,17 +1062,11 @@ contents = cellstr(get(hObject,'String'));
 etc_trace_obj.view_style=contents{get(hObject,'Value')};
 
 if(strcmp(etc_trace_obj.view_style,'image'))
+
+    if(~isfield(etc_trace_obj,'colormap')) etc_trace_obj.colormap=parula; end;
     etc_trace_obj.colormap=colormap(parula);
-    if(~isfield(etc_trace_obj,'axis_colorbar')) etc_trace_obj.axis_colorbar=[]; end;
-    if(isempty(etc_trace_obj.axis_colorbar))
-        etc_trace_obj.axis_colorbar=axes;
-        p=get(findobj('Tag','listbox_view_style'),'pos');
-        set(etc_trace_obj.axis_colorbar,'pos',[0.6 0.3 0.01 0.2],'xtick',[],'ytick',[],'xcolor','none','ycolor','none');
-        %set(etc_trace_obj.axis_colorbar,'pos',[p(1)+0.2 p(2) p(3) 1],'xtick',[],'ytick',[],'xcolor','none','ycolor','none','unit','characters');
-    end;
-    axes(etc_trace_obj.axis_colorbar); hold on;
-    
-    etc_trace_obj.h_colorbar=image(etc_trace_obj.axis_colorbar,([1,1:size(etc_trace_obj.colormap,1)])'); colormap(etc_trace_obj.colormap);
+    etc_trace_obj.h_colorbar=image(handles.axes_c,fliplr([1,1:size(etc_trace_obj.colormap,1)])'); colormap(etc_trace_obj.colormap); 
+    set(handles.axes_c,'Visible','on','xtick',[],'ytick',[]);
     
     obj=findobj('Tag','listbox_colormap');
     set(obj,'visible','on');
@@ -1077,8 +1076,10 @@ if(strcmp(etc_trace_obj.view_style,'image'))
     axes(etc_trace_obj.axis_trace);
 else
     try
-        delete(etc_trace_obj.axis_colorbar);
-        etc_trace_obj.axis_colorbar=[];
+
+        delete(get(handles.axes_c,'child'));
+        set(handles.axes_c,'Visible','off');
+        
         obj=findobj('Tag','listbox_colormap');
         set(obj,'visible','off');
     catch ME
@@ -1129,6 +1130,8 @@ else %restore the original un-averaged trace.
     %update data
     etc_trace_obj.data=etc_trace_obj.buffer.data;
     etc_trace_obj.aux_data=etc_trace_obj.buffer.aux_data;
+    etc_trace_obj.aux_data_name=etc_trace_obj.buffer.aux_data_name;
+    etc_trace_obj.aux_data_idx=etc_trace_obj.buffer.aux_data_idx;
     etc_trace_obj.trigger_now=etc_trace_obj.buffer.trigger_now;
     etc_trace_obj.trigger=etc_trace_obj.buffer.trigger;
     etc_trace_obj.time_begin=etc_trace_obj.buffer.time_begin;
@@ -1230,21 +1233,13 @@ switch lower(contents{get(hObject,'Value')})
         gg=[ag,a1,fliplr(ag)];
         bb=[ag,a1,a1];
         
-        cmap=[rr(:),gg(:),bb(:)];
+        cmap=[bb(:),gg(:),rr(:)];
         etc_trace_obj.colormap=cmap;
 end;
 
 
-if(~isfield(etc_trace_obj,'axis_colorbar')) etc_trace_obj.axis_colorbar=[]; end;
-if(isempty(etc_trace_obj.axis_colorbar))
-    etc_trace_obj.axis_colorbar=axes;
-    p=get(findobj('Tag','listbox_view_style'),'pos')
-    set(etc_trace_obj.axis_colorbar,'pos',[0.6 0.3 0.01 0.2],'xtick',[],'ytick',[],'xcolor','none','ycolor','none');
-    %set(etc_trace_obj.axis_colorbar,'pos',[p(1)+0.2 p(2) p(3) 1],'xtick',[],'ytick',[],'xcolor','none','ycolor','none','unit','characters');
-end;
-axes(etc_trace_obj.axis_colorbar); hold on;
-
-etc_trace_obj.h_colorbar=image(etc_trace_obj.axis_colorbar,([1,1:size(etc_trace_obj.colormap,1)])'); colormap(etc_trace_obj.colormap);
+etc_trace_obj.h_colorbar=image(handles.axes_c,fliplr([1,1:size(etc_trace_obj.colormap,1)])'); colormap(etc_trace_obj.colormap); 
+set(handles.axes_c,'Visible','on','xtick',[],'ytick',[]);
 
 etc_trace_handle('redraw');
 
@@ -1523,3 +1518,77 @@ function listbox_channel_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in pushbutton_export.
+function pushbutton_export_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_export (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+%data
+trace.data=etc_trace_obj.data;
+trace.aux_data=etc_trace_obj.aux_data;
+trace.aux_data_name=etc_trace_obj.aux_data_name;
+trace.aux_data_idx=etc_trace_obj.aux_data_idx;
+trace.fs=etc_trace_obj.fs;
+trace.timeVec=[0:size(etc_trace_obj.data,2)-1]./etc_trace_obj.fs+etc_trace_obj.time_begin;
+trace.ch_names=etc_trace_obj.ch_names;
+
+%trigger
+trace.trigger=etc_trace_obj.trigger;
+
+%montage
+trace.montage_ch_name=etc_trace_obj.montage_ch_name;
+trace.montage_idx=etc_trace_obj.montage_idx;
+trace.montage=etc_trace_obj.montage;
+
+%display about time 
+trace.time_begin=etc_trace_obj.time_begin;
+trace.time_select_idx=etc_trace_obj.time_select_idx;
+trace.time_select_idx=etc_trace_obj.time_select_idx;
+trace.time_duration_idx=etc_trace_obj.time_duration_idx;
+
+
+
+assignin('base','trace',trace);
+fprintf('variables "trace" exported\n');
+
+
+% --- Executes on button press in pushbutton_save.
+function pushbutton_save_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_save (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+%data
+trace.data=etc_trace_obj.data;
+trace.aux_data=etc_trace_obj.aux_data;
+trace.aux_data_name=etc_trace_obj.aux_data_name;
+trace.aux_data_idx=etc_trace_obj.aux_data_idx;
+trace.fs=etc_trace_obj.fs;
+trace.timeVec=[0:size(etc_trace_obj.data,2)-1]./etc_trace_obj.fs+etc_trace_obj.time_begin;
+trace.ch_names=etc_trace_obj.ch_names;
+
+%trigger
+trace.trigger=etc_trace_obj.trigger;
+
+%montage
+trace.montage_ch_name=etc_trace_obj.montage_ch_name;
+trace.montage_idx=etc_trace_obj.montage_idx;
+trace.montage=etc_trace_obj.montage;
+
+%display about time 
+trace.time_begin=etc_trace_obj.time_begin;
+trace.time_select_idx=etc_trace_obj.time_select_idx;
+trace.time_select_idx=etc_trace_obj.time_select_idx;
+trace.time_duration_idx=etc_trace_obj.time_duration_idx;
+
+
+tstr=datestr(datetime('now'),'mmddyy_HHMMss');
+fn=sprintf('trace_%s.mat',tstr);
+fprintf('saving [%s]...',fn);
+save(fn,'trace');
+fprintf('done!\n');
