@@ -115,6 +115,22 @@ try
     end;
         
     if(flag_redraw)
+        
+        answer=max(etc_trace_obj.data(:));
+        etc_trace_obj.ylim=[-abs(answer) abs(answer)];
+        fprintf('automatic updated time course limits = %s\n',mat2str(etc_trace_obj.ylim));
+        
+        hObject=findobj('tag','edit_threshold');
+        if(~isempty(hObject))
+            set(hObject,'String',sprintf('%1.0e',answer));
+        end;
+    
+        global etc_render_fsbrain;
+        if(~isempty(etc_render_fsbrain))
+            etc_render_fsbrain.overlay_threshold=[abs(diff(etc_trace_obj.ylim))/4 abs(diff(etc_trace_obj.ylim))/2 ];
+            etc_trace_handle('bd');
+        end;
+                
         etc_trace_handle('redraw');
         etc_trace_handle('bd','time_idx',etc_trace_obj.time_select_idx);
     end;
