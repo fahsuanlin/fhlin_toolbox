@@ -225,6 +225,11 @@ switch lower(param)
                                                     end;
                                                 end;
                                             end;
+                                            if(isempty(Index))
+                                                fprintf('cannot find corresponding channels!\nerror in loading the topology!\n'); 
+                                                etc_trace_obj.topo=[];
+                                                return;
+                                            end;
                                             etc_trace_obj.topo.ch_names=electrode_name(Index);
                                             etc_trace_obj.topo.electrode_idx=electrode_idx(Index);
                                             etc_trace_obj.topo.electrode_data_idx=electrode_data_idx;
@@ -259,6 +264,7 @@ switch lower(param)
                                         etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',10,'topo_threshold',[abs(diff(etc_trace_obj.ylim))/4 abs(diff(etc_trace_obj.ylim))/2 ],'flag_camlight',flag_camlight,'topo_aux_point_name',etc_trace_obj.topo.ch_names, 'topo_aux_point_coords',etc_trace_obj.topo.vertex(etc_trace_obj.topo.electrode_idx,:));
 
                                     catch ME
+                                        fprintf('error in loading the topology!\n'); 
                                         etc_trace_obj.topo=[];
                                     end;
                                 end;

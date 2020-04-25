@@ -1,5 +1,9 @@
 function h=etc_trace(data,varargin)
 
+global etc_trace_obj;
+
+etc_trace_obj=[];
+
 fs=1; %sampling rate; Hz
 
 ylim=[-50 50];

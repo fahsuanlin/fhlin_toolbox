@@ -226,16 +226,16 @@ for ch_idx=1:length(non_ecg_channel)
                 if(((qrs_i_raw(trial_idx)-BCG_tPre_sample)>0)&((qrs_i_raw(trial_idx)+BCG_tPost_sample)<=size(eeg,2)))
                     y=eeg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)';
                     
-%                     bnd0=[y(1) y(end)];
-%                     y=bcg_residual(trial_idx,:).';
-%                     bnd1=[y(1) y(end)];
-%                     
-%                     if(flag_anchor_ends)
-%                         y=y-bcg_bnd_bases*inv(bcg_bnd_bases([1,end],:)'*bcg_bnd_bases([1,end],:))*(bcg_bnd_bases([1,end],:)'*(bnd1-bnd0)');
-%                     end;
-%                     eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)=y';
-%                     
-%                     residual(non_ecg_channel(ch_idx),trial_idx,:)=y(:);
+                    %                     bnd0=[y(1) y(end)];
+                    %                     y=bcg_residual(trial_idx,:).';
+                    %                     bnd1=[y(1) y(end)];
+                    %
+                    %                     if(flag_anchor_ends)
+                    %                         y=y-bcg_bnd_bases*inv(bcg_bnd_bases([1,end],:)'*bcg_bnd_bases([1,end],:))*(bcg_bnd_bases([1,end],:)'*(bnd1-bnd0)');
+                    %                     end;
+                    %                     eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)=y';
+                    %
+                    %                     residual(non_ecg_channel(ch_idx),trial_idx,:)=y(:);
                     bcg_approx=uu(:,1:bcg_nsvd)*ss(1:bcg_nsvd,1:bcg_nsvd)*vv(:,1:bcg_nsvd)';
                     bcg_residual=bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:)-bcg_approx;
                     bcg_bases=vv(:,1:bcg_nsvd);
@@ -255,7 +255,7 @@ for ch_idx=1:length(non_ecg_channel)
                         y=y-bcg_bnd_bases*inv(bcg_bnd_bases([1,end],:)'*bcg_bnd_bases([1,end],:))*(bcg_bnd_bases([1,end],:)'*(bnd1-bnd0)');
                     end;
                     eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)=y';
-                                       
+                    
                     residual(non_ecg_channel(ch_idx),trial_idx,:)=y(:);
                     bcg_artifact(non_ecg_channel(ch_idx),trial_idx,:)=y0(:)-y(:);
                     
@@ -305,8 +305,8 @@ for ch_idx=1:length(non_ecg_channel)
                     if(flag_bcgmc|flag_ppca) %restore matrix
                         x=bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:);
                         exclude_idx=find(sum(abs(x),2)<eps);
-                        if(~isempty(exclude_idx)) 
-                            trial_sel(exclude_idx)=[]; 
+                        if(~isempty(exclude_idx))
+                            trial_sel(exclude_idx)=[];
                             x=bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:);
                         end;
                         sz=size(x);
@@ -353,7 +353,7 @@ for ch_idx=1:length(non_ecg_channel)
                         y=y-bcg_bnd_bases*inv(bcg_bnd_bases([1,end],:)'*bcg_bnd_bases([1,end],:))*(bcg_bnd_bases([1,end],:)'*(bnd1-bnd0)');
                     end;
                     eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)=y';
-                                       
+                    
                     residual(non_ecg_channel(ch_idx),trial_idx,:)=y(:);
                     bcg_artifact(non_ecg_channel(ch_idx),trial_idx,:)=y0(:)-y(:);
                     
@@ -391,7 +391,7 @@ end;
 % for ch_idx=1:31
 %     dd0(:,:,ch_idx)=corrcoef(squeeze(eeg_output0(ch_idx,:,:))');
 % end;
-
+eeg_bcg0=eeg_bcg;
 if(flag_post_ssp)
     fprintf('@@@');
     tmp=[];
@@ -403,71 +403,51 @@ if(flag_post_ssp)
     end;
     tmp0=tmp;
     D=tmp*tmp'./size(tmp,2); %data covariance matrix;
-
+    
     %[uu,ss,vv]=svd(D);
     %[uu,ss,vv]=svd(tmp,'econ');
-    [uu,ss,vv]=svd(squeeze(mean(residual,2)),'econ');
-
+    for idx=1:size(residual,2)
+        tmp=squeeze(residual(:,idx,:));
+        p(idx)=sum(tmp(:).^2);
+    end;
+    [stmp,s_idx]=sort(p); %sorting power of all trials;
+    idx=s_idx(round(length(p).*0.25):round(length(p).*0.75));
+    %[uu,ss,vv]=svd(squeeze(mean(residual,2)),'econ');
+    [uu,ss,vv]=svd(squeeze(mean(residual(:,idx,:),2)),'econ');
+    
     css=cumsum(diag(ss).^2)./sum(diag(ss).^2);
     n_proj_auto=find(css>0.8);
     n_proj_auto=n_proj_auto(1); %automatically determining how many components to be truncated
-
-    %if(flag_bcg_nsvd_auto)
-        n_proj=n_proj_auto;
-    %else
-    %    n_proj=bcg_post_nsvd;
-    %end;
-
-%     for n_proj=1:20
-%         if(n_proj>1)
-%             %P=eye(size(tmp,1))-uu(:,end-n_proj+2:end)*uu(:,end-n_proj+2:end)';
-%             P=eye(size(tmp,1))-uu(:,1:n_proj-1)*uu(:,1:n_proj-1)';
-%         else
-%             P=eye(size(tmp,1));
-%         end;
-%         E_whitened=P*E;
-%         
-%         for ch_idx=1:length(non_ecg_channel)
-%             for trial_idx=1:length(qrs_i_raw)
-%                 eeg_output(non_ecg_channel(ch_idx),trial_idx,:)=E_whitened(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)';
-%                 eeg_output9(non_ecg_channel(ch_idx),trial_idx,:)=E(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)';
-%             
-%             end;
-%         end;
-%         for ch_idx=1:31
-%             dd9(:,:,ch_idx)=corrcoef(squeeze(eeg_output9(ch_idx,:,:))');
-%             dd(:,:,ch_idx,n_proj)=corrcoef(squeeze(eeg_output(ch_idx,:,:))');
-%             ee(:,:,ch_idx,n_proj)=(squeeze(eeg_output(ch_idx,:,:)));
-%         end;
-%     end;
     
-    if(n_proj>0)
-        P=eye(size(tmp,1))-uu(:,1:n_proj)*uu(:,1:n_proj)';
-        
-%         tmp=diag(ss);
-%         %tmp(end-n_proj+1:end)=inf;
-%         tmp(1:n_proj)=inf;
-%         ss_C=tmp;
-%         tmp1=diag(ss);
-%         %tmp1(end-n_proj+1:end)=0;
-%         tmp1(1:n_proj)=0;
-%         ss_C1=tmp1;
-    else
-        P=eye(size(tmp,1));
-%        ss_C=diag(ss_C);
-    end;
-%    W=sqrt(diag(1./(ss_C)))*uu';
-    %W=diag(1./sqrt(diag(ss)))*inv(uu);
-    %E_whitened=uu*diag(sqrt(ss_C1))*W*E;
-    E_whitened=P*E;
-
+    n_proj=n_proj_auto;
     
-    tmp1=P*tmp0;
-    D1=tmp1*tmp1'./size(tmp1,2); %data covariance matrix;
-
+    ssp_bases=vv(:,1:n_proj_auto);
+    ssp_bases_p=ssp_bases*inv(ssp_bases'*ssp_bases)*ssp_bases';
     for ch_idx=1:length(non_ecg_channel)
-        eeg_bcg(non_ecg_channel(ch_idx),:)=E_whitened(ch_idx,:);
+        fprintf('post SSP [%d|%d]...\r',ch_idx,length(non_ecg_channel));
+        for trial_idx=1:length(qrs_i_raw)
+            if(((qrs_i_raw(trial_idx)-BCG_tPre_sample)>0)&((qrs_i_raw(trial_idx)+BCG_tPost_sample)<=size(eeg,2)))
+                
+                tmp=eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample);
+                
+                tmp=tmp(:)-ssp_bases_p*tmp(:);
+                eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)=tmp';
+            end;
+        end;
     end;
+    fprintf('\n');
+    
+    
+%     if(n_proj>0)
+%         P=eye(size(tmp,1))-uu(:,1:n_proj)*uu(:,1:n_proj)';
+%     else
+%         P=eye(size(tmp,1));
+%     end;
+%     E_whitened=P*E;
+%            
+%     for ch_idx=1:length(non_ecg_channel)
+%         eeg_bcg(non_ecg_channel(ch_idx),:)=E_whitened(ch_idx,:);
+%     end;
 end;
 
 
@@ -476,7 +456,7 @@ end;
 %         eeg_output(non_ecg_channel(ch_idx),trial_idx,:)=eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)';
 %      end;
 % end;
-                    
+
 fprintf('\n');
 
 if(flag_display) fprintf('BCG correction done!\n'); end;

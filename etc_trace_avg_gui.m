@@ -22,7 +22,7 @@ function varargout = etc_trace_avg_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_avg_gui
 
-% Last Modified by GUIDE v2.5 24-Apr-2020 01:02:39
+% Last Modified by GUIDE v2.5 25-Apr-2020 15:02:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -70,12 +70,14 @@ if(isfield(etc_trace_obj,'avg'))
         etc_trace_obj.avg.time_post=1.0; %0.2 s baseline
         etc_trace_obj.avg.flag_baseline_correct=0; %no baseline correction
         etc_trace_obj.avg.flag_trials=0;
+        etc_trace_obj.avg.flag_z=0;
     end
 else
     etc_trace_obj.avg.time_pre=0.2; %0.2 s baseline
     etc_trace_obj.avg.time_post=1.0; %0.2 s baseline
     etc_trace_obj.avg.flag_baseline_correct=0; %no baseline correction
     etc_trace_obj.avg.flag_trials=0;
+    etc_trace_obj.avg.flag_z=0;
 end;
 
 hObject=findobj('tag','edit_avg_time_pre');
@@ -84,6 +86,8 @@ hObject=findobj('tag','edit_avg_time_post');
 set(hObject,'String',sprintf('%1.1f',etc_trace_obj.avg.time_post));
 hObject=findobj('tag','checkbox_avg_baseline_correct');
 set(hObject,'Value',etc_trace_obj.avg.flag_baseline_correct);
+hObject=findobj('tag','checkbox_avg_z');
+set(hObject,'Value',etc_trace_obj.avg.flag_z);
 
 
 %trigger loading
@@ -233,6 +237,11 @@ if(isempty(etc_trace_obj.trigger_now)) return; end;
     end;
         
     %%% calculate AVG....
+    if(flag_tfr)
+        fprintf('averaging TFR....');
+    else
+        fprintf('averaging....');    
+    end;
     for idx=1:length(trigger_match_time_idx)
         if(~etc_trace_obj.flag_trigger_avg)
             if((trigger_match_time_idx(idx)-time_pre_idx>=1)&&(trigger_match_time_idx(idx)+time_post_idx<=size(etc_trace_obj.data,2)))
@@ -417,9 +426,6 @@ if(isempty(etc_trace_obj.trigger_now)) return; end;
                     end;
                 end;
                 
-                %figure(10);
-                %subplot(211); plot(etc_trace_obj.data(1:31,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx)'); subplot(212); plot(etc_trace_obj.aux_data{idx}(1:31,trigger_match_time_idx(idx)-time_pre_idx:trigger_match_time_idx(idx)+time_post_idx)');
-                
                 n_avg=n_avg+1;
             end;
         end;
@@ -430,6 +436,24 @@ if(isempty(etc_trace_obj.trigger_now)) return; end;
     end;
     fprintf('[%d] trials averaged...\n',n_avg);
     etc_trace_obj.avg.n_avg=n_avg;
+    
+    
+    if(etc_trace_obj.avg.flag_z)
+        if(~isempty(time_pre_idx))
+            try
+                tmp=etc_z(tmp,1:time_pre_idx,'flag_baseline_correct',1);
+                
+                for idx=1:length(etc_trace_obj.aux_data)
+                    aux_tmp{idx}=etc_z(aux_tmp{idx},1:time_pre_idx,'flag_baseline_correct',1);
+                end;
+            catch ME
+                fprintf('error in calculating the Z scores...\n');
+                return;
+            end;
+        else
+            fprintf('no baseline. error in calculating the z-scores!\n'); return;
+        end;
+    end;
     
     etc_trace_obj.avg.trials=trials;
     etc_trace_obj.avg.aux_trials=aux_trials;
@@ -712,3 +736,15 @@ function edit_avg_tfr_cycle_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in checkbox_avg_z.
+function checkbox_avg_z_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_avg_z (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_avg_z
+global etc_trace_obj;
+
+etc_trace_obj.avg.flag_z=get(hObject,'Value');
