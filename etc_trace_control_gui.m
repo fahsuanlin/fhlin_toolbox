@@ -22,7 +22,7 @@ function varargout = etc_trace_control_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_control_gui
 
-% Last Modified by GUIDE v2.5 23-Apr-2020 15:35:49
+% Last Modified by GUIDE v2.5 26-Apr-2020 20:55:25
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1592,3 +1592,71 @@ fn=sprintf('trace_%s.mat',tstr);
 fprintf('saving [%s]...',fn);
 save(fn,'trace');
 fprintf('done!\n');
+
+
+% --- Executes on button press in pushbutton_clear.
+function pushbutton_clear_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_clear (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global etc_trace_obj;
+
+
+answer = questdlg('Clear main data','Clear','Yes','No','No');
+switch answer
+    case 'Yes'
+        fprintf('resetting all data..,!\n');
+        
+        etc_trace_obj.fs=1;
+        etc_trace_obj.data=[];
+        etc_trace_obj.aux_data={};
+        etc_trace_obj.aux_data_name={};
+        etc_trace_obj.aux_data_idx=[];
+        
+        etc_trace_obj.time_begin=0;
+        
+        etc_trace_obj.topo=[];
+        
+        etc_trace_obj.flag_mark=0;
+        
+        etc_trace_obj.time_select_idx=1;
+        duration=5; %5s
+        etc_trace_obj.time_duration_idx=round(duration.*etc_trace_obj.fs);
+        etc_trace_obj.time_window_begin_idx=1;
+        etc_trace_obj.flag_time_window_auto_adjust=1;
+        
+        config_trace_center_frac=0.5;
+        config_trace_width=1;
+        config_trace_color=[0    0.4470    0.7410];
+        config_trace_flag=1;
+        config_aux_trace_width=1;
+        config_aux_trace_color=[0.8500    0.3250    0.0980];
+        config_aux_trace_flag=1;
+        config_current_time_color=[1 0 1]; %magenta
+        config_current_trigger_color=[1 1 1].*0.6; %gray
+        config_current_trigger_flag=1;
+        config_current_time_flag=1;
+        
+        etc_trace_obj.config_trace_center_frac=config_trace_center_frac;
+        etc_trace_obj.config_trace_width=config_trace_width;
+        etc_trace_obj.config_trace_color=config_trace_color;
+        etc_trace_obj.config_trace_flag=config_trace_flag;
+        etc_trace_obj.config_aux_trace_width=config_trace_width;
+        etc_trace_obj.config_aux_trace_color=config_aux_trace_color;
+        etc_trace_obj.config_aux_trace_flag=config_aux_trace_flag;
+        etc_trace_obj.config_current_time_color=config_current_time_color;
+        etc_trace_obj.config_current_trigger_color=config_current_trigger_color;
+        etc_trace_obj.config_current_trigger_flag=config_current_trigger_flag;
+        etc_trace_obj.config_current_time_flag=config_current_time_flag;
+        
+        
+        etc_trace_obj.montage_ch_name={};
+        
+        ok=etc_trace_update_loaded_data([],[],[]);
+
+        etc_trcae_gui_update_time;
+        
+        etc_trace_handle('redraw');
+        
+end;

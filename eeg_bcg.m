@@ -416,7 +416,7 @@ if(flag_post_ssp)
     [uu,ss,vv]=svd(squeeze(mean(residual(:,idx,:),2)),'econ');
     
     css=cumsum(diag(ss).^2)./sum(diag(ss).^2);
-    n_proj_auto=find(css>0.8);
+    n_proj_auto=find(css>0.9);
     n_proj_auto=n_proj_auto(1); %automatically determining how many components to be truncated
     
     n_proj=n_proj_auto;
