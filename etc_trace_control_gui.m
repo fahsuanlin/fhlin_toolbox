@@ -22,7 +22,7 @@ function varargout = etc_trace_control_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_control_gui
 
-% Last Modified by GUIDE v2.5 26-Apr-2020 20:55:25
+% Last Modified by GUIDE v2.5 26-Apr-2020 22:24:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -80,6 +80,7 @@ for i=1:length(etc_trace_obj.aux_data)
     end;
     str{i}=aux_data_name;
 end;
+if(isempty(str)) str={'[none]'}; end;
 set(handles.listbox_aux_data,'String',str);
 if(length(str)>0)
     set(handles.listbox_aux_data,'min',0);
@@ -90,7 +91,9 @@ if(length(etc_trace_obj.aux_data_idx)>0)
 end;
 
 %channel listbox
-set(handles.listbox_channel,'String',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
+str=etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names;
+if(isempty(str)) str={'[none]'}; end;
+set(handles.listbox_channel,'String',str);
                  
 %view style colormap
 set(handles.axes_c,'Visible','off','ydir','reverse');
@@ -149,7 +152,8 @@ if(~isempty(etc_trace_obj.trigger))
     str=unique(etc_trace_obj.trigger.event);
     set(handles.listbox_trigger,'string',str);
 else
-    set(handles.listbox_trigger,'string',{});
+    if(isempty(str)) str={'[none]'}; end;
+    set(handles.listbox_trigger,'string',str);
 end;%
 if(isfield(etc_trace_obj,'trigger_now'))
     if(isempty(etc_trace_obj.trigger_now))
@@ -1377,15 +1381,32 @@ function pushbutton_info_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global etc_trace_obj;
 
-etc_trace_obj.fig_info=etc_trace_info_gui;
+if(~isfield(etc_trace_obj,'fig_info'))
+    etc_trace_obj.fig_info=figure;;
+    delete(etc_trace_obj.fig_info); %make it invalid
+end;
+
+if(~isvalid(etc_trace_obj.fig_info))
+    etc_trace_obj.fig_info=etc_trace_info_gui;
 
 
-set(etc_trace_obj.fig_info,'Name','info','resize','off');
+    set(etc_trace_obj.fig_info,'Name','info','resize','off');
+    
+    pp0=get(etc_trace_obj.fig_info,'outerpos');
+    pp1=get(etc_trace_obj.fig_trace,'outerpos');
+    set(etc_trace_obj.fig_info,'outerpos',[pp1(1)+pp1(3), pp1(2)+pp1(4)-pp0(4),pp0(3), pp0(4)]);
+    set(etc_trace_obj.fig_info,'Resize','off');
+    
+    set(hObject,'Value',1);
+else
+    try
+        delete(etc_trace_obj.fig_info);
+    catch ME
+    end;
+    
+    set(hObject,'Value',0);
+end;
 
-pp0=get(etc_trace_obj.fig_info,'outerpos');
-pp1=get(etc_trace_obj.fig_trace,'outerpos');
-set(etc_trace_obj.fig_info,'outerpos',[pp1(1)+pp1(3), pp1(2)+pp1(4)-pp0(4),pp0(3), pp0(4)]);
-set(etc_trace_obj.fig_info,'Resize','off');
 
 
 % --- Executes on selection change in listbox_aux_data.
@@ -1399,19 +1420,25 @@ function listbox_aux_data_Callback(hObject, eventdata, handles)
 
 global etc_trace_obj;
 
-etc_trace_obj.aux_data_idx=zeros(size(etc_trace_obj.aux_data_idx));
-etc_trace_obj.aux_data_idx(get(hObject,'Value'))=1;
-
-obj=findobj('Tag','listbox_info_auxdata');
-if(~isempty(obj))
-    if(length(etc_trace_obj.aux_data_idx)>0)
-        set(obj,'Value',find(etc_trace_obj.aux_data_idx));
+contents = cellstr(get(hObject,'String'));
+if(~strcmp(contents{1},'[none]'))
+    
+    etc_trace_obj.aux_data_idx=zeros(size(etc_trace_obj.aux_data_idx));
+    etc_trace_obj.aux_data_idx(get(hObject,'Value'))=1;
+    
+    obj=findobj('Tag','listbox_info_auxdata');
+    if(~isempty(obj))
+        if(length(etc_trace_obj.aux_data_idx)>0)
+            set(obj,'Value',find(etc_trace_obj.aux_data_idx));
+        end;
     end;
+    
+    etc_trace_handle('redraw');
+    
+    figure(etc_trace_obj.fig_control);
 end;
 
-etc_trace_handle('redraw');
 
-figure(etc_trace_obj.fig_control);
 
 % --- Executes during object creation, after setting all properties.
 function listbox_aux_data_CreateFcn(hObject, eventdata, handles)
@@ -1500,12 +1527,14 @@ function listbox_channel_Callback(hObject, eventdata, handles)
 
 global etc_trace_obj;
 
-Index=get(hObject,'Value');
-fprintf('[%s] selected in the list box\n',etc_trace_obj.ch_names{Index});
-etc_trace_obj.trace_selected_idx=Index;
-
-etc_trace_handle('redraw');
-
+contents = cellstr(get(hObject,'String'));
+if(~strcmp(contents{1},'[none]'))
+    Index=get(hObject,'Value');
+    fprintf('[%s] selected in the list box\n',etc_trace_obj.ch_names{Index});
+    etc_trace_obj.trace_selected_idx=Index;
+    
+    etc_trace_handle('redraw');
+end;
 
 % --- Executes during object creation, after setting all properties.
 function listbox_channel_CreateFcn(hObject, eventdata, handles)
@@ -1654,9 +1683,46 @@ switch answer
         etc_trace_obj.montage_ch_name={};
         
         ok=etc_trace_update_loaded_data([],[],[]);
-
-        etc_trcae_gui_update_time;
         
+        %aux data listbox
+        str={'[none]'};
+        set(handles.listbox_aux_data,'String',str);
+        
+        %channel listbox
+        str={'[none]'};
+        set(handles.listbox_channel,'String',str);
+        
+        %trigger listbox
+        str={'[none]'};
+        set(handles.listbox_trigger,'string',str);
+        
+        etc_trcae_gui_update_time;        
+
         etc_trace_handle('redraw');
         
+end;
+
+
+% --- Executes on button press in pushbutton_topo.
+function pushbutton_topo_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_topo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of pushbutton_topo
+global etc_trace_obj;
+
+if(isempty(etc_trace_obj.topo))
+    etc_trace_handle('kb','cc','t');
+    
+    if(~isempty(etc_trace_obj.topo))
+        set(hObject,'Value',1);
+    else
+        set(hObject,'Value',0);
+    end;
+    
+else
+    delete(etc_trace_obj.fig_topology);
+    
+    etc_trace_obj.topo=[];
 end;
