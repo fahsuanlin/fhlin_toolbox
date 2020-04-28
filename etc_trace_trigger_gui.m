@@ -61,7 +61,10 @@ guidata(hObject, handles);
 % UIWAIT makes etc_trace_trigger_gui wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 global etc_trace_obj;
-if(~isempty(etc_trace_obj.trigger))
+
+if(isempty(etc_trace_obj.trigger)) return; end;
+
+if(~isempty(etc_trace_obj.trigger.time))
     fprintf('events loaded...\n');
     
     %convert trigger names from numbers/integers to strings
@@ -161,6 +164,8 @@ function listbox_time_idx_Callback(hObject, eventdata, handles)
 
 global etc_trace_obj;
 
+contents = cellstr(get(hObject,'String')); if(isempty(contents)) return; end;
+
 obj_listbox_time_idx=hObject;
 obj_listbox_time=findobj('tag','listbox_time');
 obj_listbox_class=findobj('tag','listbox_class');
@@ -245,6 +250,8 @@ function listbox_class_Callback(hObject, eventdata, handles)
 
 
 global etc_trace_obj;
+
+contents = cellstr(get(hObject,'String')); if(isempty(contents)) return; end;
 
 obj_listbox_time_idx=findobj('tag','listbox_time_idx');
 obj_listbox_time=findobj('tag','listbox_time');
@@ -806,6 +813,8 @@ function listbox_time_Callback(hObject, eventdata, handles)
 %        contents{get(hObject,'Value')} returns selected item from listbox_time
 global etc_trace_obj;
 
+contents = cellstr(get(hObject,'String')); if(isempty(contents)) return; end;
+
 obj_listbox_time_idx=findobj('tag','listbox_time_idx');
 obj_listbox_time=hObject;
 obj_listbox_class=findobj('tag','listbox_class');
@@ -1352,8 +1361,7 @@ if(strcmp(answer,'clear'))
     set(obj,'Value',1);
       
     
-    
-    %update list boxes
+    %update listboxes
     set(handles.listbox_time_idx,'string',{});
     set(handles.listbox_time_idx,'Value',1);
     
@@ -1362,6 +1370,11 @@ if(strcmp(answer,'clear'))
     
     set(handles.listbox_class,'string',{});
     set(handles.listbox_class,'Value',1);
+    
+    %update listbox in the control window
+    obj=findobj('Tag','listbox_trigger');
+    set(obj,'string',{'[none]'});
+    set(obj,'Value',1);
     
     
 end;

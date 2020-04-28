@@ -307,6 +307,7 @@ switch lower(param)
                                     
                             end;
                         catch ME
+                            fprintf('error in preparing the topology....\n');
                         end;
                     else
                     end;
@@ -406,8 +407,6 @@ switch lower(param)
         
         figure(etc_trace_obj.fig_trace);
         
-        %if(gcf==etc_trace_obj.fig_trace)
-        %detect right mouse click
         clickType = get(gcf, 'SelectionType');
         if(strcmp(clickType,'alt'))
             % right mouse clicked!!
@@ -497,10 +496,13 @@ switch lower(param)
                 %update event edits
                 hObject=findobj('tag','edit_local_trigger_time_idx');
                 set(hObject,'string',sprintf('%d',time_idx_now));
+                set(hObject,'Value',1);
                 hObject=findobj('tag','edit_local_trigger_time');
                 set(hObject,'string',sprintf('%1.3f',(time_idx_now-1)/etc_trace_obj.fs+etc_trace_obj.time_begin));
+                set(hObject,'Value',1);
                 hObject=findobj('tag','edit_local_trigger_class');
                 set(hObject,'string',sprintf('%s',class_now));
+                set(hObject,'Value',1);
 
                 %update trace trigger
                 hObject=findobj('tag','listbox_trigger');

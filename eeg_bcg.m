@@ -419,35 +419,40 @@ if(flag_post_ssp)
     n_proj_auto=find(css>0.9);
     n_proj_auto=n_proj_auto(1); %automatically determining how many components to be truncated
     
+    %%%% take only 1 SSP component out!!
+    n_proj_auto=1;
+    %%%% take only 1 SSP component out!!
+
     n_proj=n_proj_auto;
     
-    ssp_bases=vv(:,1:n_proj_auto);
-    ssp_bases_p=ssp_bases*inv(ssp_bases'*ssp_bases)*ssp_bases';
-    for ch_idx=1:length(non_ecg_channel)
-        fprintf('post SSP [%d|%d]...\r',ch_idx,length(non_ecg_channel));
-        for trial_idx=1:length(qrs_i_raw)
-            if(((qrs_i_raw(trial_idx)-BCG_tPre_sample)>0)&((qrs_i_raw(trial_idx)+BCG_tPost_sample)<=size(eeg,2)))
-                
-                tmp=eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample);
-                
-                tmp=tmp(:)-ssp_bases_p*tmp(:);
-                eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)=tmp';
-            end;
-        end;
-    end;
-    fprintf('\n');
     
-    
-%     if(n_proj>0)
-%         P=eye(size(tmp,1))-uu(:,1:n_proj)*uu(:,1:n_proj)';
-%     else
-%         P=eye(size(tmp,1));
-%     end;
-%     E_whitened=P*E;
-%            
+%     ssp_bases=vv(:,1:n_proj);
+%     ssp_bases_p=ssp_bases*inv(ssp_bases'*ssp_bases)*ssp_bases';
 %     for ch_idx=1:length(non_ecg_channel)
-%         eeg_bcg(non_ecg_channel(ch_idx),:)=E_whitened(ch_idx,:);
+%         fprintf('post SSP [%d|%d]...\r',ch_idx,length(non_ecg_channel));
+%         for trial_idx=1:length(qrs_i_raw)
+%             if(((qrs_i_raw(trial_idx)-BCG_tPre_sample)>0)&((qrs_i_raw(trial_idx)+BCG_tPost_sample)<=size(eeg,2)))
+%                 
+%                 tmp=eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample);
+%                 
+%                 tmp=tmp(:)-ssp_bases_p*tmp(:);
+%                 eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)=tmp';
+%             end;
+%         end;
 %     end;
+%     fprintf('\n');
+    
+    
+    if(n_proj>0)
+        P=eye(size(tmp,1))-uu(:,1:n_proj)*uu(:,1:n_proj)';
+    else
+        P=eye(size(tmp,1));
+    end;
+    E_whitened=P*E;
+           
+    for ch_idx=1:length(non_ecg_channel)
+        eeg_bcg(non_ecg_channel(ch_idx),:)=E_whitened(ch_idx,:);
+    end;
 end;
 
 
