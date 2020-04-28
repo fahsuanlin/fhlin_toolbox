@@ -240,7 +240,7 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
             etc_trace_obj.aux_data_idx(select_idx)=[];
             if(~isempty(etc_trace_obj.aux_data_idx))
                 if(sum(etc_trace_obj.aux_data_idx)<0.5)
-                    etc_trace_obj.aux_data_idx(1)=1;
+                    etc_trace_obj.aux_data_idx(1)=1;etc_trace_update_loaded_data
                 end;
             end;
             

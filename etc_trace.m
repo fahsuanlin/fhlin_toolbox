@@ -1,10 +1,14 @@
 function h=etc_trace(data,varargin)
 
+global etc_trace_obj;
+
+etc_trace_obj=[];
+
 fs=1; %sampling rate; Hz
 
 ylim=[-50 50];
 duration=5; %second
-all_duration=[0.1 0.5 1 2 5]; %seconds
+all_duration=[0.1 0.5 1 2 5 10 30]; %seconds
 
 time_begin=0; %second;
 time_select_idx=[];
