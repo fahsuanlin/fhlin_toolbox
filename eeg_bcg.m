@@ -18,6 +18,7 @@ flag_dyn_bcg=1;
 flag_post_ssp=0;
 flag_bcgmc=0;
 flag_ppca=0;
+flag_mcfix=0;
 flag_bcg_nsvd_auto=0;
 
 trigger=[];
@@ -38,6 +39,8 @@ for i=1:length(varargin)/2
             BCG_tPost=option_value;
         case 'n_ma_bcg'
             n_ma_bcg=option_value;
+        case 'flag_mcfix'
+            flag_mcfix=option_value;
         case 'flag_dyn_bcg'
             flag_dyn_bcg=option_value;
         case 'flag_display'
@@ -103,7 +106,7 @@ for ch_idx=1:length(non_ecg_channel)
             
             bcg_all{non_ecg_channel(ch_idx)}=zeros(length(qrs_i_raw),length(tmp));
         end;
-        
+       
         if(((qrs_i_raw(trial_idx)-BCG_tPre_sample)>0)&((qrs_i_raw(trial_idx)+BCG_tPost_sample)<=size(eeg,2)))
             %bcg_all{non_ecg_channel(ch_idx)}=cat(1,bcg_all{non_ecg_channel(ch_idx)},eeg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample));
             bcg_all{non_ecg_channel(ch_idx)}(trial_idx,:)=eeg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample);
@@ -115,6 +118,44 @@ for ch_idx=1:length(non_ecg_channel)
             %end;
             ecg_all(trial_idx,:)=ecg(qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample);
         end;
+    end;
+    
+    
+    if(flag_mcfix)
+        x_orig=bcg_all{non_ecg_channel(ch_idx)};
+
+        %exclude trials with zeros only.
+        p=sum(abs(x_orig),2);       
+        trial_nz_idx=find(p>eps);
+        x_orig=x_orig(trial_nz_idx,:);
+        
+        %outlier detection
+        x_orig_outlier=isoutlier(x_orig);
+        x_orig(find(x_orig_outlier(:)))=nan;
+        
+        %restoration for every 100 trials
+        x_restore=x_orig;
+        for idx=1:ceil(size(x_orig,1)/100)
+            fprintf('-');
+            start_idx=(idx-1)*100+1;
+            if(idx.*100<=size(x_orig,1))
+                end_idx=idx.*100;
+            else
+                end_idx=size(x_orig,1);
+            end;
+            x=x_orig(start_idx:end_idx,:);
+            
+            sz=size(x);
+            IDX=find(~isnan(x(:)));
+            M = opRestriction(prod(sz), IDX);
+            yy = M(x(:),1);
+            global VERBOSE;
+            VERBOSE=0;
+            [uu,ss,vv,V,numiter] = SVT([sz(1) sz(2)],IDX,x(IDX),5*sqrt(prod(sz)),1.2/(length(IDX)/prod(sz)));
+            
+            x_restore(start_idx:end_idx,:)=uu*ss*vv';
+        end;
+        bcg_all{non_ecg_channel(ch_idx)}(trial_nz_idx,:)=x_restore;
     end;
     
     %     for trial_idx=1:size(bcg_all{non_ecg_channel(ch_idx)},1)
@@ -224,8 +265,9 @@ for ch_idx=1:length(non_ecg_channel)
                 eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)=nan; %bad trials; BCG artifact can propagate and thus mark data as NaN.
             else
                 if(((qrs_i_raw(trial_idx)-BCG_tPre_sample)>0)&((qrs_i_raw(trial_idx)+BCG_tPost_sample)<=size(eeg,2)))
-                    y=eeg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)';
-                    
+                    %y=eeg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)';
+                    y=bcg_all{non_ecg_channel(ch_idx)}(trial_idx,:)';
+
                     %                     bnd0=[y(1) y(end)];
                     %                     y=bcg_residual(trial_idx,:).';
                     %                     bnd1=[y(1) y(end)];
@@ -288,8 +330,9 @@ for ch_idx=1:length(non_ecg_channel)
                 eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)=nan; %bad trials; BCG artifact can propagate and thus mark data as NaN.
             else
                 if(((qrs_i_raw(trial_idx)-BCG_tPre_sample)>0)&((qrs_i_raw(trial_idx)+BCG_tPost_sample)<=size(eeg,2)))
-                    y=eeg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)';
-                    
+                    %y=eeg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)';
+                    y=bcg_all{non_ecg_channel(ch_idx)}(trial_idx,:)';
+
                     if(size(bcg_all{non_ecg_channel(ch_idx)},1)<=n_ma_bcg)
                         trial_sel=[1:n_ma_bcg];
                     else
@@ -321,6 +364,8 @@ for ch_idx=1:length(non_ecg_channel)
                         [uu,ss,vv,V,numiter] = SVT([sz(1) sz(2)],IDX,x(IDX),5*sqrt(prod(sz)),1.2/(length(IDX)/prod(sz)));
                     else
                         %if(non_ecg_channel(ch_idx)==9) keyboard; end;
+                        tmp_bcg=bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:);
+                        tmp_ecg=ecg_all(trial_sel,:);
                         [uu,ss,vv]=svd(bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:),'econ');
                     end;
                     
@@ -419,11 +464,37 @@ if(flag_post_ssp)
     n_proj_auto=find(css>0.9);
     n_proj_auto=n_proj_auto(1); %automatically determining how many components to be truncated
     
-    %%%% take only 1 SSP component out!!
+    %%%% take only 2 SSP component out!!
     n_proj_auto=1;
-    %%%% take only 1 SSP component out!!
+    %%%% take only 2 SSP component out!!
 
     n_proj=n_proj_auto;
+    
+    
+    %spatial filter construction
+    if(n_proj>0)
+        P=eye(size(tmp,1))-uu(:,1:n_proj)*uu(:,1:n_proj)';
+    else
+        P=eye(size(tmp,1));
+    end;
+    
+    %ssp filtering
+%     fprintf('post SSP trial [%d]...\r',length(non_ecg_channel));
+%     for trial_idx=1:length(qrs_i_raw)
+%         if(((qrs_i_raw(trial_idx)-BCG_tPre_sample)>0)&((qrs_i_raw(trial_idx)+BCG_tPost_sample)<=size(eeg,2)))
+%             
+%             tmp=P*eeg_bcg(non_ecg_channel,qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample);
+%             
+%             eeg_bcg(non_ecg_channel,qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)=tmp;
+%         end;
+%     end;
+%     fprintf('\n');
+   
+    E_whitened=P*E;
+    
+    for ch_idx=1:length(non_ecg_channel)
+        eeg_bcg(non_ecg_channel(ch_idx),:)=E_whitened(ch_idx,:);
+    end;
     
     
 %     ssp_bases=vv(:,1:n_proj);
@@ -443,24 +514,17 @@ if(flag_post_ssp)
 %     fprintf('\n');
     
     
-    if(n_proj>0)
-        P=eye(size(tmp,1))-uu(:,1:n_proj)*uu(:,1:n_proj)';
-    else
-        P=eye(size(tmp,1));
-    end;
-    E_whitened=P*E;
-           
-    for ch_idx=1:length(non_ecg_channel)
-        eeg_bcg(non_ecg_channel(ch_idx),:)=E_whitened(ch_idx,:);
-    end;
+%     if(n_proj>0)
+%         P=eye(size(tmp,1))-uu(:,1:n_proj)*uu(:,1:n_proj)';
+%     else
+%         P=eye(size(tmp,1));
+%     end;
+%     E_whitened=P*E;
+%            
+%     for ch_idx=1:length(non_ecg_channel)
+%         eeg_bcg(non_ecg_channel(ch_idx),:)=E_whitened(ch_idx,:);
+%     end;
 end;
-
-
-% for ch_idx=1:length(non_ecg_channel)
-%      for trial_idx=1:length(qrs_i_raw)
-%         eeg_output(non_ecg_channel(ch_idx),trial_idx,:)=eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)';
-%      end;
-% end;
 
 fprintf('\n');
 
