@@ -63,10 +63,12 @@ W=[];
 U=[];
 D=[];
 nn=[];
+delay=0;
 
 flag_normalize=1;
 flag_display=0;
 flag_graphics=1;
+flag_same=1;
 
 tau=1; %interval between time series; in sample
 E=1; %dimension of the shadowing manifold
@@ -82,12 +84,16 @@ for i=1:length(varargin)/2
             tau=option_value;
         case 'nn'
             nn=option_value;
+        case 'delay'
+            delay=option_value;
         case 'flag_display'
             flag_display=option_value;
         case 'flag_normalize'
             flag_normalize=option_value;
         case 'flag_graphics'
             flag_graphics=option_value;
+        case 'flag_same'
+            flag_same=option_value;
         otherwise
             fprintf('unknown option [%s].\nerror!\n',option_name);
             return;
@@ -105,11 +111,14 @@ if(flag_normalize)
     y=y./std(y);
 end;
 
+orig_length=length(y);
+
 for time_idx=1:length(x)
-    t(:,time_idx)=[time_idx:tau:time_idx+(E-1)*tau]';
+    t(:,time_idx)=[time_idx:tau:time_idx+(E-1)*tau]'+delay;
 end;
 mask=zeros(size(t));
 mask(find(t>length(x)))=1;
+mask(find(t<1))=1;
 idx_trim=find(sum(mask,1)>eps);
 t(:,idx_trim)=[];
 y_trim=y;
@@ -122,14 +131,44 @@ Y_m=y(t)'; %shadowed manifold for Y
 %find E+1 nearest neighbors other than itself 
 IDX(:,1)=[];
 D(:,1)=[];
-    
-%weightings
-U=exp(-D./repmat(D(:,1),[1,size(D,2)]));
-W=U./repmat(sum(U,2),[1,size(U,2)]);
 
-%Y=y(IDX); %<---locating the nearest points in Y manifold
-Y=reshape(y(IDX),size(IDX));%<---locating the nearest points in Y manifold
-y_est=reshape(sum(Y.*W,2),size(y_trim));
+done=0;
+y_est=zeros(size(y_trim)).*nan;
+
+%find cases where the nearest neighbors in the manifolds are the same as
+%the self;
+d=sum(D,2);
+idx=find(d<eps);
+y_est(idx)=y(idx);
+
+%typically, this should be done only once. But there are cares where
+%instants in the dynamics have replica. So we tried to remove those
+%replica, where the distance measure D is zero (and thus nan in U).
+while(~done)
+    nan_idx=find(isnan(y_est));
+    
+    %weightings
+    U=exp(-D./repmat(D(:,1),[1,size(D,2)]));
+    W=U./repmat(sum(U,2),[1,size(U,2)]);
+    
+    %Y=y(IDX); %<---locating the nearest points in Y manifold
+    Y=reshape(y(IDX),size(IDX));%<---locating the nearest points in Y manifold
+    tmp=reshape(sum(Y.*W,2),size(y_trim));
+    
+    y_est(nan_idx)=tmp(nan_idx);
+    
+    if(length(find(isnan(y_est)))<eps)
+        done=1;
+    else
+        if(size(D,2)>1)
+            D(:,1)=[];
+            IDX(:,1)=[]; 
+        else
+            done=1;
+            fprintf('CCM diverge!\n');
+        end;
+    end;
+end;
 
 y_est_append=y;
 y_est_append(1:length(y_est))=y_est;
@@ -172,5 +211,9 @@ end;
 
 rho=corrcoef(y_trim(:),y_est(:));
 rho=rho(2,1);
+
+if(flag_same)
+    y_est(end+1:orig_length)=0;
+end;
 
 return;

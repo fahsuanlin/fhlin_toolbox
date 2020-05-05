@@ -1643,6 +1643,8 @@ switch answer
         etc_trace_obj.aux_data_name={};
         etc_trace_obj.aux_data_idx=[];
         
+        etc_trace_obj.ch_names={};
+        
         etc_trace_obj.time_begin=0;
         
         etc_trace_obj.topo=[];
