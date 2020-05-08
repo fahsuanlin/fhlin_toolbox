@@ -12,6 +12,8 @@ n_ecg=10; %search the nearest -n_ecg:+n_ecg
 eeg_bcg=[];
 qrs_i_raw=[];
 
+a=1
+
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
@@ -35,7 +37,7 @@ for i=1:length(varargin)/2
     end;
 end;
 
-
+keyboard;
 %----------------------------
 % BCG start;
 %----------------------------
