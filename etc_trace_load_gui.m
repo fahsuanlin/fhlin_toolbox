@@ -61,6 +61,7 @@ function etc_trace_load_gui_OpeningFcn(hObject, eventdata, handles, varargin)
 global etc_trace_obj;
 
 etc_trace_obj.fig_load_gui=gcf;
+set(etc_trace_obj.fig_load_gui,'Name','Load data');
 
 %initialization
 if(~isempty(etc_trace_obj.data))
@@ -584,8 +585,8 @@ etc_trace_obj.tmp=0;
 if(indx)
     try
         var=fn{indx};
-        %evalin('base',sprintf('global etc_trace_obj; if(ndims(%s)==2) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var,var));
-        evalin('base',sprintf('etc_trace_obj.tmp=1;'));
+        evalin('base',sprintf('global etc_trace_obj; if(size(%s)==(size(etc_trace_obj.select)-1)) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var));
+        %evalin('base',sprintf('etc_trace_obj.tmp=1;'));
         fprintf('Trying to load variable [%s] as select...',var);
         if(etc_trace_obj.tmp)
             evalin('base',sprintf('etc_trace_obj.load.select=%s; ',var));
@@ -594,7 +595,8 @@ if(indx)
             set(obj,'String',sprintf('%s',var));
             fprintf('Done!\n');
         else
-            fprintf('error in loading select variable....\n',var);
+            fprintf('Error in loading select variable [%s]! ',var);
+            fprintf('The select variable must be of size [%s]!!....\n',mat2str(size(etc_trace_obj.select)-1));
         end;
         
     catch ME

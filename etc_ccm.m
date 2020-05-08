@@ -127,6 +127,8 @@ X=x(t)'; %shadowed manifold for X
 Y_m=y(t)'; %shadowed manifold for Y 
 
 [IDX,D] = knnsearch(X,X,'K',nn); %find the nn (default: E+2) nearest neighbors, including itself.
+IDX0=IDX;
+D0=D;
 
 %find E+1 nearest neighbors other than itself 
 IDX(:,1)=[];
@@ -135,11 +137,11 @@ D(:,1)=[];
 done=0;
 y_est=zeros(size(y_trim)).*nan;
 
-%find cases where the nearest neighbors in the manifolds are the same as
-%the self;
-d=sum(D,2);
-idx=find(d<eps);
-y_est(idx)=y(idx);
+% %find cases where the nearest neighbors in the manifolds are the same as
+% %the self;
+% d=sum(D,2);
+% idx=find(d<eps);
+% y_est(idx)=y(idx);
 
 %typically, this should be done only once. But there are cares where
 %instants in the dynamics have replica. So we tried to remove those
@@ -148,7 +150,11 @@ while(~done)
     nan_idx=find(isnan(y_est));
     
     %weightings
-    U=exp(-D./repmat(D(:,1),[1,size(D,2)]));
+    idx=find(D(:,1)>eps);
+    idxz=find(D(:,1)<=eps);
+    U=D;
+    U(idx,:)=exp(-D(idx,:)./repmat(D(idx,1),[1,size(D,2)])); %<----need to be normalized to the first one?
+    U(idxz,:)=exp(-D(idxz,:));
     W=U./repmat(sum(U,2),[1,size(U,2)]);
     
     %Y=y(IDX); %<---locating the nearest points in Y manifold
@@ -176,34 +182,69 @@ Y_e=y_est_append(t(:,IDX))'; %<---create a shadow Y manifold from estimates
 
 %Y_e=y_est(IDX); %<---create a shadow Y manifold from estimates
 
-if((flag_display)&&(E==2))
-    figure;
-    subplot(121); hold on;
-    plot(X(:,1),X(:,2),'.')
+%if((flag_display)&&(E==2))
+if(flag_display)
+     figure;
+    subplot(221); hold on;
+    plot(X(:,1),'.')
     
-    subplot(122); hold on;
-    plot(Y_m(:,1),Y_m(:,2),'.')
+    subplot(222); hold on;
+    plot(Y_m(:,1),'.')
+
+    if(E==2)
+        subplot(223); hold on;
+        plot(X(:,1),X(:,2),'.')
+    
+        subplot(224); hold on;
+        plot(Y_m(:,1),Y_m(:,2),'.')
+    end;
     
     h1=[];
     ha=[];
     h2=[];
     hb=[];
     he=[];
+    hh1=[];
+    hha=[];
+    hh2=[];
+    hhb=[];
+    hhe=[];
     for ii=1:size(X,1)
-        if(~isempty(h1)) delete(h1); end;
-        if(~isempty(ha)) delete(ha); end;
-        subplot(121);
-        h1=plot(X(IDX(ii,:),1),X(IDX(ii,:),2),'ro');
-        ha=plot(X(ii,1),X(ii,2),'go');
+        if(~isempty(hh1)) delete(hh1); end;
+        if(~isempty(hha)) delete(hha); end;
+        subplot(221);
+        hh1=plot(IDX(ii,:),X(IDX(ii,:),1),'ro');
+        hha=plot(ii,X(ii,1),'go');
         
-        if(~isempty(h2)) delete(h2); end;
-        if(~isempty(hb)) delete(hb); end;
-        if(~isempty(he)) delete(he); end;
-        subplot(122);
-        h2=plot(Y_m(IDX(ii,:),1),Y_m(IDX(ii,:),2),'ro');
-        hb=plot(Y_m(ii,1),Y_m(ii,2),'go');
-        he=plot(Y_e(ii,1),Y_e(ii,2),'c+');
+        fprintf('[%d] x: %s\n',ii,mat2str(X(IDX0(ii,:),1)));
+        
+        if(E==2)
+            if(~isempty(h1)) delete(h1); end;
+            if(~isempty(ha)) delete(ha); end;
+            subplot(223);
+            h1=plot(X(IDX(ii,:),1),X(IDX(ii,:),2),'ro');
+            ha=plot(X(ii,1),X(ii,2),'go');
+        end;
+        
+        if(~isempty(hh2)) delete(hh2); end;
+        if(~isempty(hhb)) delete(hhb); end;
+        if(~isempty(hhe)) delete(hhe); end;
+        subplot(222);
+        hh2=plot(IDX(ii,:),Y_m(IDX(ii,:),1),'ro');
+        hhb=plot(ii,Y_m(ii,1),'go');
 
+        fprintf('x: %s\t',mat2str(X(IDX0(ii,:),1)));
+
+        if(E==2)
+            if(~isempty(h2)) delete(h2); end;
+            if(~isempty(hb)) delete(hb); end;
+            if(~isempty(he)) delete(he); end;
+            subplot(224);
+            h2=plot(Y_m(IDX(ii,:),1),Y_m(IDX(ii,:),2),'ro');
+            hb=plot(Y_m(ii,1),Y_m(ii,2),'go');
+            he=plot(Y_e(ii,1),Y_e(ii,2),'c+');
+        end;
+        
         pause(0.1);
     end;
 end;

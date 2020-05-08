@@ -82,6 +82,7 @@ pos1=get(handles.figure_loadfile_gui,'outerpos');
 set(handles.figure_loadfile_gui,'outerpos',[pos0(1)+pos0(3) pos0(2)+pos0(4)-pos1(4) pos1(3) pos1(4)]);
  
 set(handles.figure_loadfile_gui,'WindowStyle','modal')
+set(handles.figure_loadfile_gui,'Name','Load file');
 
 %waitfor(handles.figure_loadfile_gui);
 

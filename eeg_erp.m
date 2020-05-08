@@ -4,12 +4,23 @@ function [erp, erp_avg,epoch_timeVec]=eeg_erp(data,sfreq,TRIGGER,erp_event,varar
 % [erp, erp_avg, erp_timeVec]=eeg_erp(data,sfreq,TRIGGER,erp_event,[option,
 % option_value....]);
 %
-% data: 2D data matrix (channel x time points)
+% data: 2D data matrix (channels x time points of raw data)
 % sfreq: sampling frequency (Hz)
 % TRIGGER: a trigger object with the following fields
 %    event: a string vector codes for the occurance of the name of each event
 %    time: a integer vector coes fo the occurence of the time index for each event
 % erp_event: a string cell denotes the triggers to be averaged. 
+%
+% erp: a cell object with the following fields:
+%    trials: raw trial data (channels x time points x trials)
+%    n_trial: number of trials for the erp
+%    trial_idx: 1D vector denotes the trials for the corresponding event
+%    erp: 2D ERP (channels x time points)
+%    timeVec: 1D time vector 
+%    trigger: a string cell for the corresponding event
+%    electrode_name: a string cell for the names of all channels
+%
+% erp_avg: the same cell object like erp; except there is no 'trials' field for a smaller data size
 %
 % fhlin@may 4, 2020
 %
