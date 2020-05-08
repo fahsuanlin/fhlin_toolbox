@@ -7,7 +7,7 @@ delay_time=0; %s
 delay=round(fs.*(delay_time));
 tau=10;
 E=5;
-n_ecg=10; %search the nearest -n_ecg:+n_ecg
+n_ecg=[]; %search the nearest -n_ecg:+n_ecg; 10 is a good number; consider how this interacts with 'nn'
 
 eeg_bcg=[];   
 qrs_i_raw=[]; 
@@ -38,6 +38,11 @@ end;
 %----------------------------
 % BCG start;
 %----------------------------
+
+if(isempty(n_ecg)) 
+    n_ecg=ceil(nn+1/2); %search the nearest -n_ecg:+n_ecg 
+end;
+
 if(flag_display) fprintf('detecting EKG peaks...\n'); end;
 %[qrs_amp_raw,qrs_i_raw,delay]=pan_tompkin(ecg,fs,flag_display,'flag_fhlin',1);
 %[pks,qrs_i_raw] = findpeaks(ecg,'MINPEAKDISTANCE',round(0.7*fs));
