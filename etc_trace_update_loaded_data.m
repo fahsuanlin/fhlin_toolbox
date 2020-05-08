@@ -105,6 +105,18 @@ try
         end;
         etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names{idx}=ss;
     end;
+    if(isempty(etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names)) etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names={'[none]'}; end;
+    
+    %montage listbox
+    str={};
+    for i=1:length(etc_trace_obj.montage)
+        str{i}=etc_trace_obj.montage{i}.name;
+    end;
+    obj=findobj('tag','listbox_montage');
+    if(~isempty(obj))
+        set(obj,'String',str);
+        set(obj,'Value',1);
+    end;
     
     %channel listbox
     obj=findobj('Tag','listbox_channel');
@@ -132,7 +144,18 @@ try
     etc_trace_obj.scaling{1}=[scaling{1}, zeros(size(scaling{1},1),1)
         zeros(1,size(scaling{1},2)), 1];
     
-    
+    %selection listbox
+    str={};
+    for i=1:length(etc_trace_obj.select)
+        str{i}=sprintf('select%02d',i);
+    end;
+    obj=findobj('tag','listbox_select');
+    if(~isempty(obj))
+        set(obj,'String',str);
+        set(obj,'Value',1);
+    end;
+
+
     
     
     %trigger loading
@@ -143,11 +166,9 @@ try
         str=unique(etc_trace_obj.trigger.event);
         set(obj,'string',str);
     else
-        set(obj,'string',{});
+        set(obj,'string',{'none'});
     end;%
     if(~isempty(str))
-        
-        
         if(isfield(etc_trace_obj,'trigger_now'))
             if(isempty(etc_trace_obj.trigger_now))
                 

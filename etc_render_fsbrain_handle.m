@@ -355,11 +355,19 @@ switch lower(param)
                             Index=find(contains(etc_render_fsbrain.aux_point_name,etc_trace_obj.ch_names));
                             if(length(Index)<=length(etc_trace_obj.ch_names)) %all electrodes were found on topology
                                 for ii=1:length(etc_trace_obj.ch_names)
-                                    for idx=1:length(etc_render_fsbrain.aux_point_name)
-                                        if(strcmp(etc_render_fsbrain.aux_point_name{idx},etc_trace_obj.ch_names{ii}))
-                                            Index(ii)=idx;
-                                            electrode_data_idx(idx)=ii;
-                                        end;
+%                                     for idx=1:length(etc_render_fsbrain.aux_point_name)
+%                                         if(strcmp(etc_render_fsbrain.aux_point_name{idx},etc_trace_obj.ch_names{ii}))
+%                                             Index(ii)=idx;
+%                                             electrode_data_idx(idx)=ii;
+%                                         end;
+%                                     end;
+                                    
+                                    
+                                    IndexC = strcmp(etc_render_fsbrain.aux_point_name,etc_trace_obj.ch_names{ii});
+                                    idx = find(IndexC);
+                                    if(~isempty(idx))
+                                        Index(ii)=idx;
+                                        electrode_data_idx(idx)=ii;
                                     end;
                                 end;
                                 
@@ -977,11 +985,13 @@ switch lower(param)
                         
                         global etc_trace_obj;
                         if(~isempty(etc_trace_obj))
-                            if(isvalid(etc_trace_obj.fig_trace))
-                                try
-                                    etc_trace_obj.trace_selected_idx=etc_render_fsbrain.click_overlay_vertex;
-                                    etc_trace_handle('redraw');
-                                catch ME
+                            if(isfield(etc_trace_obj,'fig_trace'))
+                                if(isvalid(etc_trace_obj.fig_trace))
+                                    try
+                                        etc_trace_obj.trace_selected_idx=etc_render_fsbrain.click_overlay_vertex;
+                                        etc_trace_handle('redraw');
+                                    catch ME
+                                    end;
                                 end;
                             end;
                         end;
@@ -1154,8 +1164,10 @@ switch lower(param)
         
         global etc_trace_obj;
         if(~isempty(etc_trace_obj))
-            if(isvalid(etc_trace_obj.fig_trace))
-                %etc_trace_handle('bd','time_idx',etc_render_fsbrain.overlay_stc_timeVec_idx);
+            if(isfield(etc_trace_obj,'fig_trace'))
+                if(isvalid(etc_trace_obj.fig_trace))
+                    %etc_trace_handle('bd','time_idx',etc_render_fsbrain.overlay_stc_timeVec_idx);
+                end;
             end;
         end;
 end;

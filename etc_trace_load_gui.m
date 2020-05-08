@@ -61,6 +61,7 @@ function etc_trace_load_gui_OpeningFcn(hObject, eventdata, handles, varargin)
 global etc_trace_obj;
 
 etc_trace_obj.fig_load_gui=gcf;
+set(etc_trace_obj.fig_load_gui,'Name','Load data');
 
 %initialization
 if(~isempty(etc_trace_obj.data))
@@ -234,7 +235,7 @@ if(indx)
         evalin('base',sprintf('global etc_trace_obj; if(ndims(%s)==2) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var,var));
         fprintf('Trying to load variable [%s] as the data...',var);
         if(etc_trace_obj.tmp)
-            answer = questdlg('main or auxillary data?','Menu',...
+            answer = questdlg('main or auxillary data?','Data',...
                 'main','auxillary','cancel','main');
             % Handle response
             switch answer
@@ -246,6 +247,26 @@ if(indx)
                     f_option= 0;
             end
             if(f_option==1) %main....
+                evalin('base',sprintf('etc_trace_obj.tmp=%s; ',var));
+                if(size(etc_trace_obj.tmp,1)~=length(etc_trace_obj.ch_names))
+                    answer = questdlg('# of channel mis-match between data [%d] and channel name [%d]\nupdate channel name or abort?','Data',...
+                        'update','abort','update');
+                    % Handle response
+                    switch answer
+                        case 'update'
+                            ch_names={};
+                            for idx=1:size(etc_trace_obj.tmp,1)
+                                ch_names{idx}=sprintf('%03d',idx);
+                            end;
+                            etc_trace_obj.ch_names=ch_names;
+                            
+                            set(handles.text_load_label,'String',sprintf('[%d] channel(s)',length(etc_trace_obj.ch_names)));
+
+                        case 'abort'
+                            return;
+                    end
+                end;
+                
                 if(~etc_trace_obj.flag_trigger_avg)
                     evalin('base',sprintf('etc_trace_obj.data=%s; ',var));
                 else
@@ -496,6 +517,8 @@ if(indx)
             obj=findobj('Tag','text_load_label');
             set(obj,'String',sprintf('%s',var));
             
+            set(handles.text_load_label,'String',sprintf('[%d] channel(s)',length(etc_trace_obj.ch_names)));
+            
             fprintf('Done!\n');
         else
             fprintf('the first dimension of [%s] (%d) does not match that of data (%d). Error in loading the channel variable...\n',var,length(var),size(etc_trace_obj.data,1));
@@ -562,8 +585,8 @@ etc_trace_obj.tmp=0;
 if(indx)
     try
         var=fn{indx};
-        %evalin('base',sprintf('global etc_trace_obj; if(ndims(%s)==2) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var,var));
-        evalin('base',sprintf('etc_trace_obj.tmp=1;'));
+        evalin('base',sprintf('global etc_trace_obj; if(size(%s)==(size(etc_trace_obj.select)-1)) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var));
+        %evalin('base',sprintf('etc_trace_obj.tmp=1;'));
         fprintf('Trying to load variable [%s] as select...',var);
         if(etc_trace_obj.tmp)
             evalin('base',sprintf('etc_trace_obj.load.select=%s; ',var));
@@ -572,7 +595,8 @@ if(indx)
             set(obj,'String',sprintf('%s',var));
             fprintf('Done!\n');
         else
-            fprintf('error in loading select variable....\n',var);
+            fprintf('Error in loading select variable [%s]! ',var);
+            fprintf('The select variable must be of size [%s]!!....\n',mat2str(size(etc_trace_obj.select)-1));
         end;
         
     catch ME

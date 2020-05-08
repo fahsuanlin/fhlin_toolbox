@@ -22,7 +22,7 @@ function varargout = etc_trace_control_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_control_gui
 
-% Last Modified by GUIDE v2.5 26-Apr-2020 22:24:55
+% Last Modified by GUIDE v2.5 05-May-2020 11:31:50
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -94,7 +94,25 @@ end;
 str=etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names;
 if(isempty(str)) str={'[none]'}; end;
 set(handles.listbox_channel,'String',str);
-                 
+set(handles.listbox_channel,'Value',1);
+    
+
+%selection listbox
+str={};
+for i=1:length(etc_trace_obj.select)
+    str{i}=sprintf('select%02d',i);
+end;
+set(handles.listbox_select,'String',str);
+set(handles.listbox_select,'Value',1);
+
+%montage listbox
+str={};
+for i=1:length(etc_trace_obj.montage)
+    str{i}=etc_trace_obj.montage{i}.name;
+end;
+set(handles.listbox_montage,'String',str);
+set(handles.listbox_montage,'Value',1);
+
 %view style colormap
 set(handles.axes_c,'Visible','off','ydir','reverse');
         
@@ -408,17 +426,19 @@ set(hObject,'String',sprintf('%1.3f',trigger_match_time_idx(idx)./etc_trace_obj.
 hObject=findobj('tag','edit_local_trigger_time_idx');
 set(hObject,'String',sprintf('%d',trigger_match_time_idx(idx)));
 
-for ii=1:length(etc_trace_obj.trigger.time)
-    if((etc_trace_obj.trigger.time(ii)==trigger_match_time_idx(idx))&&(strcmp(etc_trace_obj.trigger.event{ii},etc_trace_obj.trigger_now)))
-        break;
+if(~isempty(idx))
+    for ii=1:length(etc_trace_obj.trigger.time)
+        if((etc_trace_obj.trigger.time(ii)==trigger_match_time_idx(idx))&&(strcmp(etc_trace_obj.trigger.event{ii},etc_trace_obj.trigger_now)))
+            break;
+        end;
     end;
+    hObject=findobj('tag','listbox_time');
+    set(hObject,'Value',ii);
+    hObject=findobj('tag','listbox_time_idx');
+    set(hObject,'Value',ii);
+    hObject=findobj('tag','listbox_class');
+    set(hObject,'Value',ii);
 end;
-hObject=findobj('tag','listbox_time');
-set(hObject,'Value',ii);
-hObject=findobj('tag','listbox_time_idx');
-set(hObject,'Value',ii);
-hObject=findobj('tag','listbox_class');
-set(hObject,'Value',ii);
 
 %update average window
 hObject=findobj('tag','listbox_avg_trigger');
@@ -1125,6 +1145,7 @@ if(~etc_trace_obj.flag_trigger_avg)
     etc_trace_obj.flag_trigger_avg=get(hObject,'Value');
     
     etc_trace_obj.fig_avg=etc_trace_avg_gui;
+    set(etc_trace_obj.fig_avg,'Name','average');
     pos0=get(etc_trace_obj.fig_trace,'pos');
     pos1=get(etc_trace_obj.fig_avg,'pos');
     set(etc_trace_obj.fig_avg,'pos',[pos0(1)+pos0(3) pos1(2) pos1(3) pos1(4)]);
@@ -1277,7 +1298,6 @@ function pushbutton_loadfile_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global etc_trace_obj;
-
 
 etc_trace_obj.fig_loadfile=etc_trace_loadfile_gui;
 
@@ -1636,14 +1656,20 @@ answer = questdlg('Clear main data','Clear','Yes','No','No');
 switch answer
     case 'Yes'
         fprintf('resetting all data..,!\n');
-        
+        clear etc_trace_obj;
         etc_trace_obj.fs=1;
         etc_trace_obj.data=[];
         etc_trace_obj.aux_data={};
         etc_trace_obj.aux_data_name={};
         etc_trace_obj.aux_data_idx=[];
         
+        etc_trace_obj.ch_names={};
+        
+        etc_trace_obj.trigger=[];
+        etc_trace_obj.trigger_now='';;
+        
         etc_trace_obj.time_begin=0;
+        etc_trace_obj.trace_selected_idx=[];
         
         etc_trace_obj.topo=[];
         
@@ -1687,14 +1713,18 @@ switch answer
         %aux data listbox
         str={'[none]'};
         set(handles.listbox_aux_data,'String',str);
+        set(handles.listbox_channel,'Value',1);
         
         %channel listbox
         str={'[none]'};
         set(handles.listbox_channel,'String',str);
+        set(handles.listbox_channel,'Value',1);
+                 
         
         %trigger listbox
         str={'[none]'};
         set(handles.listbox_trigger,'string',str);
+        set(handles.listbox_trigger,'Value',1);
         
         etc_trcae_gui_update_time;        
 
@@ -1726,3 +1756,49 @@ else
     
     etc_trace_obj.topo=[];
 end;
+
+
+% --- Executes on selection change in listbox_select.
+function listbox_select_Callback(hObject, eventdata, handles)
+% hObject    handle to listbox_select (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns listbox_select contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from listbox_select
+
+
+% --- Executes during object creation, after setting all properties.
+function listbox_select_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to listbox_select (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in listbox_montage.
+function listbox_montage_Callback(hObject, eventdata, handles)
+% hObject    handle to listbox_montage (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns listbox_montage contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from listbox_montage
+
+
+% --- Executes during object creation, after setting all properties.
+function listbox_montage_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to listbox_montage (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
