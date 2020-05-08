@@ -10,7 +10,7 @@ E=5;
 n_ecg=10; %search the nearest -n_ecg:+n_ecg
 
 eeg_bcg=[]; 
-qrs_i_raw=[];
+qrs_i_raw=[]; 
 
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
