@@ -139,7 +139,8 @@ ccm_IDX(find(ccm_IDX(:)>size(eeg,2)))=nan;
 time_idx=[1:size(eeg,2)];
 time_idx(find(isnan(ccm_IDX(:,1))))=nan;
 
-
+time_idx(find(isnan(sum(ccm_IDX,2))))=nan;
+fprintf('[%d] (%1.1f%%) time points excluded from CCM because data are out of time series range.\n',length(find(isnan(sum(ccm_IDX,2)))),length(find(isnan(sum(ccm_IDX,2))))./size(eeg,2).*100);
 
 for t_idx=1:size(eeg,2)
     if(isnan(time_idx(t_idx)))
@@ -172,12 +173,12 @@ for t_idx=1:size(eeg,2)
                 %end;
             end;
             
-            tic;
             
             %get estimates by cross mapping
             try
-                non_nan_idx=find(~isnan(ccm_IDX(t_idx,:)));
-                eeg_bcg_pred(non_ecg_channel(ch_idx),t_idx)=eeg(non_ecg_channel(ch_idx),ccm_IDX(t_idx,non_nan_idx))*W(non_nan_idx)';
+                %non_nan_idx=find(~isnan(ccm_IDX(t_idx,:)));
+                %eeg_bcg_pred(non_ecg_channel(ch_idx),t_idx)=eeg(non_ecg_channel(ch_idx),ccm_IDX(t_idx,non_nan_idx))*W(non_nan_idx)';
+                eeg_bcg_pred(non_ecg_channel(ch_idx),t_idx)=eeg(non_ecg_channel(ch_idx),ccm_IDX(t_idx,:))*W';
             catch ME
                 fprintf('Error in BCG CCM prediction!\n');
                 fprintf('t_idx=%d\n',t_idx);
