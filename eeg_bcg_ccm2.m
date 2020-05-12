@@ -134,6 +134,7 @@ for ii=2:max(ecg_idx)-1
     %ccm_IDX(ecg_onset_idx(ii):ecg_offset_idx(ii),:)=repmat(IDX(ii,:),[ecg_offset_idx(ii)-ecg_onset_idx(ii)+1,1]);    
     ccm_D(ecg_onset_idx(ii):ecg_offset_idx(ii),:)=repmat(D(ii,:),[ecg_offset_idx(ii)-ecg_onset_idx(ii)+1,1]);    
 end;
+ccm_IDX(find(ccm_IDX(:)>size(eeg,2)))=nan;
 
 time_idx=[1:size(eeg,2)];
 time_idx(find(isnan(ccm_IDX(:,1))))=nan;
@@ -174,8 +175,13 @@ for t_idx=1:size(eeg,2)
             tic;
             
             %get estimates by cross mapping
-            eeg_bcg_pred(non_ecg_channel(ch_idx),t_idx)=eeg(non_ecg_channel(ch_idx),ccm_IDX(t_idx,:))*W';
-            
+            try
+                non_nan_idx=find(~isnan(ccm_IDX(t_idx,:)));
+                eeg_bcg_pred(non_ecg_channel(ch_idx),t_idx)=eeg(non_ecg_channel(ch_idx),ccm_IDX(t_idx,non_nan_idx))*W(non_nan_idx)';
+            catch ME
+                fprintf('Error in BCG CCM prediction!\n');
+                fprintf('t_idx=%d\n',t_idx);
+            end;
             if(flag_display&&mod(t_idx,1000)==0)
                 figure(1);
                 subplot(121);
