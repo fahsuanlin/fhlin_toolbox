@@ -328,8 +328,8 @@ if(sum(abs(eeg_trigger))>0)
         end;
     end;
 else
-    fprintf('no MR trigger detected!!\n');
-    eeg_aas=[];
+    fprintf('no MR trigger detected!! EEG is copied!\n');
+    eeg_aas=eeg;
     ga_template=[];
     shift=[];
 end;
