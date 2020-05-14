@@ -140,7 +140,9 @@ time_idx=[1:size(eeg,2)];
 time_idx(find(isnan(ccm_IDX(:,1))))=nan;
 
 time_idx(find(isnan(sum(ccm_IDX,2))))=nan;
-fprintf('[%d] (%1.1f%%) time points excluded from CCM because data are out of time series range.\n',length(find(isnan(sum(ccm_IDX,2)))),length(find(isnan(sum(ccm_IDX,2))))./size(eeg,2).*100);
+if(flag_display)
+    fprintf('[%d] (%1.1f%%) time points excluded from CCM because data are out of time series range.\n',length(find(isnan(sum(ccm_IDX,2)))),length(find(isnan(sum(ccm_IDX,2))))./size(eeg,2).*100);
+end;
 
 for t_idx=1:size(eeg,2)
     if(isnan(time_idx(t_idx)))
