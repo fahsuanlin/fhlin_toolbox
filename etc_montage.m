@@ -1,4 +1,19 @@
 function [ccimg,map]=etc_montage(layout,varargin)
+%   etc_montage     make montage from data/files
+%
+%  [ccimg,map]=etc_montage(layout, [option, option_value])
+%
+%   layout: a 2D matrix consisting of 1,...n. Positions of these numbers
+%   indicate the locations of data in the 2D montage.
+%
+% option:
+%   mont_data:  a 3D (for multiple 2D data) or 4D (for multiple 3D data)
+%   data matrix to be rendered
+%   mont_file: a cell string including the file names to figures used for
+%   making a montage
+%   crop_rect: a 1x4 veector about the crop rectangular 
+%
+%   fhlin@aug. 14 2008
 
 mont_file=[];
 mont_data=[];

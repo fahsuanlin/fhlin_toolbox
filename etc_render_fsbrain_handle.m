@@ -949,7 +949,8 @@ switch lower(param)
             etc_render_fsbrain.lim=[xlim(:)' ylim(:)' zlim(:)'];
             etc_render_fsbrain.fig_brain_pos=get(etc_render_fsbrain.fig_brain,'position');
             
-            delete(etc_render_fsbrain.fig_brain);
+            close(gcf,'force');
+            %delete(etc_render_fsbrain.fig_brain);
         catch ME
             if(isfield(etc_render_fsbrain,'fig_brain'))
                 if(isvalid(etc_render_fsbrain.fig_brain))
@@ -1679,20 +1680,22 @@ try
                 selected_electrode_idx=[];
                 selected_contact_idx=[];
                 if(isfield(etc_render_fsbrain,'electrode'))
-                    idx=0;
-                    for ii=1:etc_render_fsbrain.electrode_idx-1
-                        idx=idx+etc_render_fsbrain.electrode(ii).n_contact;
+                    if(~isempty(etc_render_fsbrain.electrode))
+                        idx=0;
+                        for ii=1:etc_render_fsbrain.electrode_idx-1
+                            idx=idx+etc_render_fsbrain.electrode(ii).n_contact;
+                        end;
+                        for contact_idx=1:etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact
+                            selected_electrode_idx(end+1)=idx+contact_idx;
+                        end;
+                        
+                        
+                        idx=0;
+                        for ii=1:etc_render_fsbrain.electrode_idx-1
+                            idx=idx+etc_render_fsbrain.electrode(ii).n_contact;
+                        end;
+                        selected_contact_idx=idx+etc_render_fsbrain.electrode_contact_idx;
                     end;
-                    for contact_idx=1:etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact
-                        selected_electrode_idx(end+1)=idx+contact_idx;
-                    end;
-                    
-                    
-                    idx=0;
-                    for ii=1:etc_render_fsbrain.electrode_idx-1
-                        idx=idx+etc_render_fsbrain.electrode(ii).n_contact;
-                    end;
-                    selected_contact_idx=idx+etc_render_fsbrain.electrode_contact_idx;
                 end;
 
 
@@ -2485,41 +2488,43 @@ try
                 
                 %highlight the selected contact
                 if(isfield(etc_render_fsbrain,'electrode'))
-                    try
-                        idx=0;
-                        for ii=1:etc_render_fsbrain.electrode_idx-1
-                            idx=idx+etc_render_fsbrain.electrode(ii).n_contact;
-                        end;
-                        for contact_idx=1:etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact
-                            xx=etc_render_fsbrain.aux2_point_coords(idx+contact_idx,1);
-                            yy=etc_render_fsbrain.aux2_point_coords(idx+contact_idx,2);
-                            zz=etc_render_fsbrain.aux2_point_coords(idx+contact_idx,3);
-                            
-                            if(etc_render_fsbrain.selected_electrode_flag)
-                                etc_render_fsbrain.selected_electrode_coords_h(contact_idx)=plot3(xx,yy,zz,'.');
-                                set(etc_render_fsbrain.selected_electrode_coords_h(contact_idx),'color',etc_render_fsbrain.selected_electrode_color,'markersize',etc_render_fsbrain.selected_electrode_size);
+                    if(~isempty(etc_render_fsbrain.electrode))
+                        try
+                            idx=0;
+                            for ii=1:etc_render_fsbrain.electrode_idx-1
+                                idx=idx+etc_render_fsbrain.electrode(ii).n_contact;
                             end;
+                            for contact_idx=1:etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact
+                                xx=etc_render_fsbrain.aux2_point_coords(idx+contact_idx,1);
+                                yy=etc_render_fsbrain.aux2_point_coords(idx+contact_idx,2);
+                                zz=etc_render_fsbrain.aux2_point_coords(idx+contact_idx,3);
+                                
+                                if(etc_render_fsbrain.selected_electrode_flag)
+                                    etc_render_fsbrain.selected_electrode_coords_h(contact_idx)=plot3(xx,yy,zz,'.');
+                                    set(etc_render_fsbrain.selected_electrode_coords_h(contact_idx),'color',etc_render_fsbrain.selected_electrode_color,'markersize',etc_render_fsbrain.selected_electrode_size);
+                                end;
+                            end;
+                        catch ME
                         end;
-                    catch ME
-                    end;
-                    
-                    
-                    try
-                        idx=0;
-                        for ii=1:etc_render_fsbrain.electrode_idx-1
-                            idx=idx+etc_render_fsbrain.electrode(ii).n_contact;
-                        end;
-                        idx=idx+etc_render_fsbrain.electrode_contact_idx;
-                        xx=etc_render_fsbrain.aux2_point_coords(idx,1);
-                        yy=etc_render_fsbrain.aux2_point_coords(idx,2);
-                        zz=etc_render_fsbrain.aux2_point_coords(idx,3);
                         
-                        if(etc_render_fsbrain.selected_contact_flag)
-                            etc_render_fsbrain.selected_contact_coords_h=plot3(xx,yy,zz,'.');
-                            set(etc_render_fsbrain.selected_contact_coords_h,'color',etc_render_fsbrain.selected_contact_color,'markersize',etc_render_fsbrain.selected_contact_size);
-                            %                    set(etc_render_fsbrain.aux2_point_coords_h(3),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
+                        
+                        try
+                            idx=0;
+                            for ii=1:etc_render_fsbrain.electrode_idx-1
+                                idx=idx+etc_render_fsbrain.electrode(ii).n_contact;
+                            end;
+                            idx=idx+etc_render_fsbrain.electrode_contact_idx;
+                            xx=etc_render_fsbrain.aux2_point_coords(idx,1);
+                            yy=etc_render_fsbrain.aux2_point_coords(idx,2);
+                            zz=etc_render_fsbrain.aux2_point_coords(idx,3);
+                            
+                            if(etc_render_fsbrain.selected_contact_flag)
+                                etc_render_fsbrain.selected_contact_coords_h=plot3(xx,yy,zz,'.');
+                                set(etc_render_fsbrain.selected_contact_coords_h,'color',etc_render_fsbrain.selected_contact_color,'markersize',etc_render_fsbrain.selected_contact_size);
+                                %                    set(etc_render_fsbrain.aux2_point_coords_h(3),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
+                            end;
+                        catch ME
                         end;
-                    catch ME
                     end;
                 end;
             end;

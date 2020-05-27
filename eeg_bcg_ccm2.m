@@ -39,7 +39,8 @@ end;
 %----------------------------
 % BCG start;
 %----------------------------
-
+hha=[];
+hh1=[];
 ha=[];
 h1=[];
 hb=[];
@@ -152,21 +153,22 @@ for t_idx=1:size(eeg,2)
         U=exp(-ccm_D(t_idx,:)./ccm_D(t_idx,1));
         W=U./sum(U);
         
+        debug_ch=20;
         for ch_idx=1:length(non_ecg_channel)
             %fprintf('*');
-            if(flag_display&&mod(t_idx,1000)==0&&t_idx==1000)
+            if(flag_display&&mod(t_idx,1000)==0&&t_idx==1000&&ch_idx==debug_ch)
                 %if(t_idx==1)
                 figure(1); clf;
                 subplot(121);
                 plot(ecg); hold on;
-                set(gca,'xlim',[1 5e3]);
+                %set(gca,'xlim',[1 5e3]);
                 subplot(122);
                 plot(eeg(non_ecg_channel(ch_idx),:)); hold on;
-                set(gca,'xlim',[1 5e3]);
+                %set(gca,'xlim',[1 5e3]);
                 
                 figure(2); clf;
                 plot(eeg(non_ecg_channel(ch_idx),:)); hold on;
-                set(gca,'xlim',[1 5e3]);
+                %set(gca,'xlim',[1 5e3]);
                 
                 ha=[];
                 h1=[];
@@ -185,30 +187,58 @@ for t_idx=1:size(eeg,2)
                 fprintf('Error in BCG CCM prediction!\n');
                 fprintf('t_idx=%d\n',t_idx);
             end;
-            if(flag_display&&mod(t_idx,1000)==0)
+            if(flag_display&&mod(t_idx,1000)==0&&ch_idx==debug_ch)
                 figure(1);
                 subplot(121);
                 xx=cat(1,t_idx,ccm_IDX(t_idx,:)');
                 if(~isempty(ha)) delete(ha); end;
                 if(~isempty(h1)) delete(h1); end;
                 
-                ha=plot(xx,ecg(xx),'ro');
-                h1=plot(xx(1),ecg(xx(1)),'go');
-                
+                ha=plot(xx,ecg(xx),'r.'); set(ha,'markersize',20);
+                h1=plot(xx(1),ecg(xx(1)),'g.'); set(h1,'markersize',20);
+                xlabel('time (sample)');
+                ylabel('EKG signal (a.u.)');
+                set(gca,'xlim',[1 length(ecg)]);
+                etc_plotstyle;
                 
                 subplot(122);
                 %plot(t_idx,y_m(t_idx),'r.');
                 %set(gca,'xlim',[1 1000]);
                 if(~isempty(hb)) delete(hb); end;
                 if(~isempty(h2)) delete(h2); end;
-                hb=plot(xx,eeg(xx),'ro');
-                h2=plot(xx(1),eeg(xx(1)),'go');
+                hb=plot(xx,eeg(non_ecg_channel(ch_idx),xx),'r.'); set(hb,'markersize',20);
+                h2=plot(xx(1),eeg(non_ecg_channel(ch_idx),xx(1)),'g.'); set(h2,'markersize',20);
+                xlabel('time (sample)');
+                ylabel('EEG signal (a.u.)');
+                set(gca,'xlim',[1 length(ecg)]);
+                etc_plotstyle;
+                set(gcf,'pos',[100        1000        2100         300]);
                 
                 figure(2);
                 plot(eeg_bcg_pred(non_ecg_channel(ch_idx),1:t_idx),'r');
                 %set(gca,'xlim',[knn_begin_idx knn_end_idx]);
-                set(gca,'xlim',[1 5e3]);
+                %set(gca,'xlim',[1 5e3]);
+                xlabel('time (sample)');
+                ylabel('EEG signal (a.u.)');
+                set(gca,'xlim',[1 length(ecg)]);
+                etc_plotstyle;
+                set(gcf,'pos',[100        700        1050         300]);
                 
+                figure(3); clf; hold on;
+                dd=ecg(ecg_ccm_idx(2:end-1,:));
+                plot(dd(:,1),dd(:,2),'.')
+                
+                if(~isempty(hha)) delete(hha); end;
+                if(~isempty(hh1)) delete(hh1); end;
+                
+                hh1=plot(ecg(ecg_ccm_idx(ecg_idx(t_idx),1)),ecg(ecg_ccm_idx(ecg_idx(t_idx),2)),'go');
+                hha=plot(ecg(ecg_ccm_idx(ecg_idx(ccm_IDX(t_idx,:)),1)),ecg(ecg_ccm_idx(ecg_idx(ccm_IDX(t_idx,:)),2)),'ro');
+                xlabel('EKG(t) ');
+                ylabel('EKG(t+\tau) (a.u.)');
+                etc_plotstyle;
+
+                if(t_idx==2000) keyboard; end;
+                   
                 pause(0.01);
             end;
         end;

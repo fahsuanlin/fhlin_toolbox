@@ -234,7 +234,7 @@ for idx=1:length(varargin)/2
         case 'overlay_truncate_pos'
             overlay_truncate_pos=option_value;
         case 'overlay_truncate_neg'
-            overlay_truncate_neg=option_value
+            overlay_truncate_neg=option_value;
         case 'overlay_vol_mask_alpha'
             overlay_vol_mask_alpha=option_value;
         case 'overlay_vol_mask'
