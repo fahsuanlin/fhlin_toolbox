@@ -163,6 +163,9 @@ if(~isempty(get(handles.edit_load_sf,'String')))
         evalin('base',sprintf('etc_trace_obj.fs=%s;',get(handles.edit_load_sf,'String')));
     end;
 end;
+
+etc_trace_obj.time_begin=str2num(get(handles.edit_load_time_begin,'String'));
+
 % evalin('base',sprintf('etc_trace_obj.time_begin=%s;',get(handles.edit_load_time_begin,'String')));
 % if(~isempty(get(handles.text_load_trigger,'String')))
 %     str=get(handles.text_load_trigger,'String');
@@ -307,7 +310,8 @@ if(indx)
                             etc_trace_obj.aux_data{end}(:,end+1:size(etc_trace_obj.data,2))=nan;
                         end;
                         
-                                            
+                        
+                        %etc_trace_obj.aux_data_idx=zeros(1,length(etc_trace_obj.aux_data));
                         etc_trace_obj.aux_data_idx(end+1)=1;
                     
                     else
@@ -315,6 +319,7 @@ if(indx)
                             etc_trace_obj.buffer.aux_data{end}(:,end+1:size(etc_trace_obj.buffer.data,2))=nan;
                         end;
                         
+                        %etc_trace_obj.buffer.aux_data_idx=zeros(1,length(etc_trace_obj.buffer.aux_data));
                         etc_trace_obj.buffer.aux_data_idx(end+1)=1;
                     end;
     
@@ -351,10 +356,10 @@ if(indx)
                         set(obj,'String',str);
                         set(obj,'Min',0);
                         set(obj,'Max',length(str));
-                        set(obj,'Value',[1:length(str)]);
-                        if(length(etc_trace_obj.aux_data_idx)>0)
-                            set(obj,'Value',find(etc_trace_obj.aux_data_idx));
-                        end;
+                        set(obj,'Value',length(str)); %choose the last one; popup menu limits only one option
+                        %if(length(etc_trace_obj.aux_data_idx)>0)
+                        %    set(obj,'Value',find(etc_trace_obj.aux_data_idx));
+                        %end;
                     end;
                     
                     fprintf('aixillary data loaded!\n');

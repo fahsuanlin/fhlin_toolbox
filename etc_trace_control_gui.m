@@ -1672,6 +1672,18 @@ switch answer
         global etc_trace_obj;
 
         
+        %all figures;
+        etc_trace_obj.fig_trace=fig_trace;
+        etc_trace_obj.fig_topology=fig_topology;
+        etc_trace_obj.fig_trigger=fig_trigger;
+        etc_trace_obj.fig_config=fig_config;
+        etc_trace_obj.fig_montage=fig_montage;
+        etc_trace_obj.fig_avg=fig_avg;
+        etc_trace_obj.fig_info=fig_info;
+        etc_trace_obj.fig_control=fig_control;
+
+        
+        %data
         etc_trace_obj.fs=1;
         etc_trace_obj.data=[];
         etc_trace_obj.aux_data={};
@@ -1691,8 +1703,14 @@ switch answer
         etc_trace_obj.flag_mark=0;
         
         etc_trace_obj.flag_trigger_avg=flag_trigger_avg;
-        etc_trace_obj.ylim=[-50 50];
-
+        
+        try
+            th=str2num(get(handles.edit_threshold,'string'));
+            etc_trace_obj.ylim=[-abs(th) abs(th)];
+        catch ME
+            etc_trace_obj.ylim=[-50 50];
+        end;
+        
         str=get(handles.listbox_view_style,'String');
         etc_trace_obj.view_style=str{get(handles.listbox_view_style,'Value')};
         
@@ -1734,7 +1752,7 @@ switch answer
         %aux data listbox
         str={'[none]'};
         set(handles.listbox_aux_data,'String',str);
-        set(handles.listbox_channel,'Value',1);
+        set(handles.listbox_aux_data,'Value',1);
         
         %channel listbox
         str={'[none]'};
@@ -1746,18 +1764,7 @@ switch answer
         str={'[none]'};
         set(handles.listbox_trigger,'string',str);
         set(handles.listbox_trigger,'Value',1);
-        
-        
-        %all figures;
-        etc_trace_obj.fig_trace=fig_trace;
-        etc_trace_obj.fig_topology=fig_topology;
-        etc_trace_obj.fig_trigger=fig_trigger;
-        etc_trace_obj.fig_config=fig_config;
-        etc_trace_obj.fig_montage=fig_montage;
-        etc_trace_obj.fig_avg=fig_avg;
-        etc_trace_obj.fig_info=fig_info;
-        etc_trace_obj.fig_control=fig_control;
- 
+         
         
         etc_trcae_gui_update_time;        %redraw included
 

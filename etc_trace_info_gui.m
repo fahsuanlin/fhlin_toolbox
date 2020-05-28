@@ -62,6 +62,7 @@ global etc_trace_obj;
 
 set(handles.text_info_datasize,'String',mat2str(size(etc_trace_obj.data)));
 set(handles.text_info_fs,'String',mat2str(etc_trace_obj.fs));
+set(handles.text_info_time_begin,'String',mat2str(etc_trace_obj.time_begin));
 set(handles.listbox_info_chnames,'String',etc_trace_obj.ch_names);
 
 str={};
