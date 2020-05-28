@@ -269,6 +269,12 @@ etc_trace_obj.fig_trigger=figure('visible','off');
 delete(etc_trace_obj.fig_trigger); %make it invalid
 etc_trace_obj.fig_montage=figure('visible','off');
 delete(etc_trace_obj.fig_montage); %make it invalid
+etc_trace_obj.fig_avg=figure('visible','off');
+delete(etc_trace_obj.fig_avg); %make it invalid
+etc_trace_obj.fig_info=figure('visible','off');
+delete(etc_trace_obj.fig_info); %make it invalid
+etc_trace_obj.fig_config=figure('visible','off');
+delete(etc_trace_obj.fig_config); %make it invalid
 
 etc_trace_obj.fig_trace=etc_trace_gui;
 
@@ -292,4 +298,7 @@ pp1=get(etc_trace_obj.fig_trace,'outerpos');
 set(etc_trace_obj.fig_control,'outerpos',[pp1(1)+(pp1(3))/2-pp0(3)/2, pp1(2)-pp0(4),pp0(3), pp0(4)]);
 set(etc_trace_obj.fig_control,'Name','events');
 set(etc_trace_obj.fig_control,'Resize','off');
+
+
+
 return;
