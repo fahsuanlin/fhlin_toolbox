@@ -933,13 +933,16 @@ if(isfield(etc_trace_obj,'trace_selected_idx'))
         switch(etc_trace_obj.view_style)
             case {'trace','butterfly'}
                 set(hh(etc_trace_obj.trace_selected_idx),'linewidth',4,'color','b');
-                for ii=1:length(etc_trace_obj.aux_data)
-                    set(hh_aux{ii}(etc_trace_obj.trace_selected_idx),'linewidth',4);
-                    
-                    if(etc_trace_obj.aux_data_idx(ii))
-                        set(hh_aux{ii},'Visible','on');
-                    else
-                        set(hh_aux{ii},'Visible','off');
+                
+                if(etc_trace_obj.config_aux_trace_flag)
+                    for ii=1:length(etc_trace_obj.aux_data)
+                        set(hh_aux{ii}(etc_trace_obj.trace_selected_idx),'linewidth',4);
+                        
+                        if(etc_trace_obj.aux_data_idx(ii))
+                            set(hh_aux{ii},'Visible','on');
+                        else
+                            set(hh_aux{ii},'Visible','off');
+                        end;
                     end;
                 end;
                 

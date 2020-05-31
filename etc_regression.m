@@ -15,6 +15,8 @@ flag_display_data=1;
 flag_display_regline=1;
 flag_display_regline_text=1;
 
+label_sep=1;
+
 p=[];
 r2=[];
 beta=[];
@@ -38,6 +40,8 @@ for i=1:length(varargin)/2
             color=option_value;
         case 'w'
             w=option_value;
+        case 'label_sep'
+            label_sep=option_value;
         otherwise
             fprintf('unknown option [%s]!\nerror!\n',option);
             return;
@@ -81,7 +85,7 @@ if(flag_display)
     end;
     if(flag_display_regline_text)
         h=text((max(x)+min(x))/2,min(y)+(max(y)+min(y))/4,sprintf('Y=%2.2f+%2.2f X',beta(1),beta(2))); set(h,'fontname','helvetica','fontsize',14);
-        h=text((max(x)+min(x))/2,min(y)+(max(y)+min(y))/4*0.9,sprintf('(R^2=%1.2f; p=%4.3f)',r2,p)); set(h,'fontname','helvetica','fontsize',14);
+        h=text((max(x)+min(x))/2,min(y)+(max(y)+min(y))/4*0.9.*label_sep,sprintf('(R^2=%1.2f; p=%4.3f)',r2,p)); set(h,'fontname','helvetica','fontsize',14);
         set(gca,'fontname','helvetica','fontsize',14);
     end;
 %    set(gca,'xlim',[0.050 0.500],'ylim',[4 6])

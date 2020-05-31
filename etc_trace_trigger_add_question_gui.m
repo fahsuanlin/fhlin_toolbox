@@ -52,7 +52,7 @@ function etc_trace_trigger_add_question_gui_OpeningFcn(hObject, eventdata, handl
 % varargin   command line arguments to etc_trace_trigger_add_question_gui (see VARARGIN)
 
 % Choose default command line output for etc_trace_trigger_add_question_gui
-handles.output = 'Yes';
+handles.output = 'No';
 
 % Update handles structure
 guidata(hObject, handles);

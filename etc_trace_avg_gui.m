@@ -22,7 +22,7 @@ function varargout = etc_trace_avg_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_avg_gui
 
-% Last Modified by GUIDE v2.5 25-Apr-2020 15:02:55
+% Last Modified by GUIDE v2.5 29-May-2020 20:29:36
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -528,7 +528,7 @@ if(etc_trace_obj.flag_trigger_avg)
     assignin('base','erp',erp);
     fprintf('variables "erp" exported\n');
 else
-    fprintf('erp not calculated yet.\nskip!\n');
+    fprintf('Evoked response has not been calculated yet.\nskip!\n');
 end;
 
 % --- Executes on button press in pushbutton_avg_save.
@@ -748,3 +748,53 @@ function checkbox_avg_z_Callback(hObject, eventdata, handles)
 global etc_trace_obj;
 
 etc_trace_obj.avg.flag_z=get(hObject,'Value');
+
+
+% --- Executes during object deletion, before destroying properties.
+function pushbutton_avg_export_DeleteFcn(hObject, eventdata, handles)
+% hObject    handle to pushbutton_avg_export (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global etc_trace_obj;
+
+%update data
+if(isfield(etc_trace_obj,'buffer'))
+    if(~isempty(etc_trace_obj.buffer))
+        etc_trace_obj.data=etc_trace_obj.buffer.data;
+        etc_trace_obj.aux_data=etc_trace_obj.buffer.aux_data;
+        etc_trace_obj.aux_data_name=etc_trace_obj.buffer.aux_data_name;
+        etc_trace_obj.aux_data_idx=etc_trace_obj.buffer.aux_data_idx;
+        etc_trace_obj.trigger_now=etc_trace_obj.buffer.trigger_now;
+        etc_trace_obj.trigger=etc_trace_obj.buffer.trigger;
+        etc_trace_obj.time_begin=etc_trace_obj.buffer.time_begin;
+        etc_trace_obj.time_select_idx=etc_trace_obj.buffer.time_select_idx;
+        etc_trace_obj.time_window_begin_idx=etc_trace_obj.buffer.time_window_begin_idx;
+        etc_trace_obj.time_duration_idx=etc_trace_obj.buffer.time_duration_idx;
+        etc_trace_obj.ylim=etc_trace_obj.buffer.ylim;
+    end;
+end;
+
+etc_trcae_gui_update_time;
+
+etc_trace_obj.buffer=[];
+
+hObject=findobj('tag','listbox_trigger');
+set(hObject,'Enable','on');
+hObject=findobj('tag','pushbutton_trigger_rr');
+set(hObject,'Enable','on');
+hObject=findobj('tag','pushbutton_trigger_ff');
+set(hObject,'Enable','on');
+hObject=findobj('tag','edit_trigger_time_idx');
+set(hObject,'Enable','on');
+hObject=findobj('tag','edit_trigger_time');
+set(hObject,'Enable','on');
+
+hObject=findobj('tag','checkbox_trigger_avg');
+set(hObject,'Value',0);
+
+hObject=findobj('tag','edit_threshold');
+set(hObject,'String',num2str(mean(abs(etc_trace_obj.ylim))));
+
+etc_trace_obj.flag_trigger_avg=0;
+    

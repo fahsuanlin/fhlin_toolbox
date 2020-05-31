@@ -165,9 +165,12 @@ try
         fprintf('trigger loaded...\n');
         str=unique(etc_trace_obj.trigger.event);
         set(obj,'string',str);
+        etc_trace_obj.trigger_now=str{1};
     else
         set(obj,'string',{'none'});
-    end;%
+        etc_trace_obj.trigger_now='';
+    end;
+    
     if(~isempty(str))
         if(isfield(etc_trace_obj,'trigger_now'))
             if(isempty(etc_trace_obj.trigger_now))

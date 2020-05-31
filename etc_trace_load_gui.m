@@ -308,6 +308,7 @@ if(indx)
                     if(~etc_trace_obj.flag_trigger_avg)
                         if(size(etc_trace_obj.aux_data{end},2)<=size(etc_trace_obj.data,2)) %append 'nan' if aux data is too short....
                             etc_trace_obj.aux_data{end}(:,end+1:size(etc_trace_obj.data,2))=nan;
+                            fprintf('Wrning!! [nan] is added to the aux. data [%s].\n',name);
                         end;
                         
                         
@@ -317,6 +318,7 @@ if(indx)
                     else
                         if(size(etc_trace_obj.buffer.aux_data{end},2)<=size(etc_trace_obj.buffer.data,2)) %append 'nan' if aux data is too short....
                             etc_trace_obj.buffer.aux_data{end}(:,end+1:size(etc_trace_obj.buffer.data,2))=nan;
+                            fprintf('Wrning!! [nan] is added to the aux. data [%s].\n',name);
                         end;
                         
                         %etc_trace_obj.buffer.aux_data_idx=zeros(1,length(etc_trace_obj.buffer.aux_data));

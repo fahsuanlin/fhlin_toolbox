@@ -1153,18 +1153,21 @@ if(~etc_trace_obj.flag_trigger_avg)
 else %restore the original un-averaged trace.
     
     %update data
-    etc_trace_obj.data=etc_trace_obj.buffer.data;
-    etc_trace_obj.aux_data=etc_trace_obj.buffer.aux_data;
-    etc_trace_obj.aux_data_name=etc_trace_obj.buffer.aux_data_name;
-    etc_trace_obj.aux_data_idx=etc_trace_obj.buffer.aux_data_idx;
-    etc_trace_obj.trigger_now=etc_trace_obj.buffer.trigger_now;
-    etc_trace_obj.trigger=etc_trace_obj.buffer.trigger;
-    etc_trace_obj.time_begin=etc_trace_obj.buffer.time_begin;
-    etc_trace_obj.time_select_idx=etc_trace_obj.buffer.time_select_idx;
-    etc_trace_obj.time_window_begin_idx=etc_trace_obj.buffer.time_window_begin_idx;
-    etc_trace_obj.time_duration_idx=etc_trace_obj.buffer.time_duration_idx;
-    etc_trace_obj.ylim=etc_trace_obj.buffer.ylim;
-    
+    if(isfield(etc_trace_obj,'buffer'))
+        if(~isempty(etc_trace_obj.buffer))
+            etc_trace_obj.data=etc_trace_obj.buffer.data;
+            etc_trace_obj.aux_data=etc_trace_obj.buffer.aux_data;
+            etc_trace_obj.aux_data_name=etc_trace_obj.buffer.aux_data_name;
+            etc_trace_obj.aux_data_idx=etc_trace_obj.buffer.aux_data_idx;
+            etc_trace_obj.trigger_now=etc_trace_obj.buffer.trigger_now;
+            etc_trace_obj.trigger=etc_trace_obj.buffer.trigger;
+            etc_trace_obj.time_begin=etc_trace_obj.buffer.time_begin;
+            etc_trace_obj.time_select_idx=etc_trace_obj.buffer.time_select_idx;
+            etc_trace_obj.time_window_begin_idx=etc_trace_obj.buffer.time_window_begin_idx;
+            etc_trace_obj.time_duration_idx=etc_trace_obj.buffer.time_duration_idx;
+            etc_trace_obj.ylim=etc_trace_obj.buffer.ylim;
+        end;
+    end;
     
     etc_trcae_gui_update_time;
     
