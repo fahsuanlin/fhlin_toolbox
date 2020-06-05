@@ -62,7 +62,7 @@ guidata(hObject, handles);
 % uiwait(handles.figure1);
 global etc_trace_obj;
 
-%etc_trace_obj.fig_trace=gcf;
+%etc_trace_obj.fig_trace=gcf; 
 
 etc_trace_obj.axis_trace=findobj('tag','axis_trace');
 
