@@ -65,6 +65,10 @@ overlay_vol_flag_render=1;
 overlay_fixval_flag=0;
 overlay_Ds=[];
 
+overlay_buffer=[];
+overlay_buffer_idx=[];
+overlay_buffer_main_idx=[];
+
 overlay_truncate_pos=0;
 overlay_truncate_neg=0;
 
@@ -945,6 +949,10 @@ etc_render_fsbrain.overlay_regrid_zero_flag=overlay_regrid_zero_flag;
 etc_render_fsbrain.overlay_Ds=overlay_Ds;
 etc_render_fsbrain.flag_overlay_truncate_pos=overlay_truncate_pos;
 etc_render_fsbrain.flag_overlay_truncate_neg=overlay_truncate_neg;
+
+etc_render_fsbrain.overlay_buffer=overlay_buffer;
+etc_render_fsbrain.overlay_buffer_idx=overlay_buffer_idx;
+etc_render_fsbrain.overlay_buffer_main_idx=overlay_buffer_main_idx;
 
 etc_render_fsbrain.flag_colorbar=flag_colorbar;
 etc_render_fsbrain.flag_colorbar_vol=flag_colorbar_vol;

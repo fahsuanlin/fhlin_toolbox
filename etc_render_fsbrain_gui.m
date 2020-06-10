@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_gui
 
-% Last Modified by GUIDE v2.5 01-Apr-2020 00:48:58
+% Last Modified by GUIDE v2.5 10-Jun-2020 02:15:11
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -166,6 +166,26 @@ if(isfield(etc_render_fsbrain,'h_colorbar_pos'))
         set(handles.checkbox_show_vol_colorbar,'value',1);
     end;
 end;
+
+
+%overlay listboxes
+str={};
+for str_idx=1:length(etc_render_fsbrain.overlay_buffer) str{str_idx}=etc_render_fsbrain.overlay_buffer(str_idx).name; end;
+if(isempty(str))
+    set(findobj('tag','listbox_overlay_main'),'string','[none]');
+    set(findobj('tag','listbox_overlay_main'),'value',1);
+else
+    set(handles.listbox_overlay_main,'string',str);
+    set(handles.listbox_overlay_main,'value',etc_render_fsbrain.overlay_buffer_main_idx);
+end;
+set(handles.listbox_overlay,'string',str);
+set(handles.listbox_overlay,'min',0);
+if(length(etc_render_fsbrain.overlay_buffer)==1)
+    set(handles.listbox_overlay,'max',2);
+else
+    set(handles.listbox_overlay,'max',length(etc_render_fsbrain.overlay_buffer));
+end;
+set(handles.listbox_overlay,'value',etc_render_fsbrain.overlay_buffer_idx);
 
 if(get(handles.checkbox_show_colorbar,'value'))
     set(handles.checkbox_show_colorbar,'enable','on');
@@ -1783,3 +1803,193 @@ function edit_alpha_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on selection change in listbox_overlay_main.
+function listbox_overlay_main_Callback(hObject, eventdata, handles)
+% hObject    handle to listbox_overlay_main (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns listbox_overlay_main contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from listbox_overlay_main
+
+
+global etc_render_fsbrain;
+
+contents = cellstr(get(hObject,'String'));
+etc_render_fsbrain.overlay_buffer_main_idx=get(hObject,'Value');
+if(~strcmp(contents{etc_render_fsbrain.overlay_buffer_main_idx},'[none]'))
+    etc_render_fsbrain.overlay_stc=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).stc;
+    etc_render_fsbrain.overlay_vertex=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).vertex;
+    etc_render_fsbrain.overlay_stc_timeVec=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).timeVec;
+    etc_render_fsbrain.stc_hemi=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).hemi;
+    
+    
+    etc_render_fsbrain.overlay_stc_timeVec_unit='ms';
+    set(findobj('tag','text_timeVec_unit'),'string',etc_render_fsbrain.overlay_stc_timeVec_unit);
+    
+    [tmp,etc_render_fsbrain.overlay_stc_timeVec_idx]=max(sum(etc_render_fsbrain.overlay_stc.^2,1));
+    etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
+    etc_render_fsbrain.overlay_stc_hemi=etc_render_fsbrain.overlay_stc;
+    
+    etc_render_fsbrain.overlay_flag_render=1;
+    etc_render_fsbrain.overlay_value_flag_pos=1;
+    etc_render_fsbrain.overlay_value_flag_neg=1;
+    
+    etc_render_fsbrain_handle('redraw');
+    etc_render_fsbrain_handle('draw_stc');
+end;
+
+
+% --- Executes during object creation, after setting all properties.
+function listbox_overlay_main_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to listbox_overlay_main (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+% --- Executes on selection change in listbox_overlay.
+function listbox_overlay_Callback(hObject, eventdata, handles)
+% hObject    handle to listbox_overlay (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns listbox_overlay contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from listbox_overlay
+
+global etc_render_fsbrain;
+v=get(handles.listbox_overlay,'value');
+
+etc_render_fsbrain.overlay_aux_stc=[];
+for v_idx=1:length(v)
+    etc_render_fsbrain.overlay_aux_stc(:,:,v_idx)=etc_render_fsbrain.overlay_buffer(v(v_idx)).stc;
+end;
+
+f=gcf;
+etc_render_fsbrain_handle('draw_stc');
+figure(f);
+
+% --- Executes during object creation, after setting all properties.
+function listbox_overlay_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to listbox_overlay (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on key press with focus on listbox_overlay and none of its controls.
+function listbox_overlay_KeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to listbox_overlay (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+
+global etc_render_fsbrain;
+
+
+if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
+    contents = cellstr(get(hObject,'String'));
+    select_idx=get(hObject,'Value');
+    
+    if(~isempty(select_idx))
+        try
+            etc_render_fsbrain.overlay_buffer(select_idx)=[];
+            
+            str0=get(findobj('tag','listbox_overlay_main'),'string'); 
+            str0=str0{etc_render_fsbrain.overlay_buffer_main_idx};
+            str={};
+            for str_idx=1:length(etc_render_fsbrain.overlay_buffer) str{str_idx}=etc_render_fsbrain.overlay_buffer(str_idx).name; end;
+            if(isempty(str))
+                set(findobj('tag','listbox_overlay_main'),'string','[none]');
+                set(findobj('tag','listbox_overlay_main'),'value',1);
+                etc_render_fsbrain.overlay_buffer_main_idx=[];
+            else
+                set(findobj('tag','listbox_overlay_main'),'string',str);
+                s_idx=strfind(str,str0);
+                IndexC = strcmp(str,str0);
+                s_idx = find(IndexC);
+                if(isempty(s_idx))
+                    set(findobj('tag','listbox_overlay_main'),'value',1);
+                    etc_render_fsbrain.overlay_buffer_main_idx=1;
+                else
+                    set(findobj('tag','listbox_overlay_main'),'value',s_idx);
+                    etc_render_fsbrain.overlay_buffer_main_idx=s_idx;
+                end;
+            end;
+            
+            etc_render_fsbrain.overlay_stc=[];
+            etc_render_fsbrain.overlay_value=[];
+            etc_render_fsbrain.overlay_vertex=[];
+            etc_render_fsbrain.overlay_stc_timeVec=[];
+            etc_render_fsbrain.stc_hemi=[];
+            etc_render_fsbrain.overlay_stc_timeVec_unit='';
+            etc_render_fsbrain.overlay_stc_hemi=[];
+            etc_render_fsbrain.overlay_flag_render=0;
+            etc_render_fsbrain.overlay_value_flag_pos=0;
+            etc_render_fsbrain.overlay_value_flag_neg=0;
+            if(~isempty(etc_render_fsbrain.overlay_buffer_main_idx))
+                etc_render_fsbrain.overlay_stc=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).stc;
+                etc_render_fsbrain.overlay_vertex=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).vertex;
+                etc_render_fsbrain.overlay_stc_timeVec=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).timeVec;
+                etc_render_fsbrain.stc_hemi=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).hemi;
+                etc_render_fsbrain.overlay_stc_timeVec_unit='ms';
+                set(findobj('tag','text_timeVec_unit'),'string',etc_render_fsbrain.overlay_stc_timeVec_unit);
+                [tmp,etc_render_fsbrain.overlay_stc_timeVec_idx]=max(sum(etc_render_fsbrain.overlay_stc.^2,1));
+                etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
+                etc_render_fsbrain.overlay_stc_hemi=etc_render_fsbrain.overlay_stc;
+                etc_render_fsbrain.overlay_flag_render=1;
+                etc_render_fsbrain.overlay_value_flag_pos=1;
+                etc_render_fsbrain.overlay_value_flag_neg=1;
+            end;
+            etc_render_fsbrain_gui_update(handles);
+            
+            %etc_render_fsbrain_gui_OpeningFcn(hObject, eventdata, handle);
+            
+            if(isempty(etc_render_fsbrain.overlay_stc))
+                if(~isempty(etc_render_fsbrain.fig_stc))
+                    if(isvalid(etc_render_fsbrain.fig_stc))
+                        delete(etc_render_fsbrain.fig_stc);
+                        etc_render_fsbrain.fig_stc=[];
+                    end;
+                end;
+            end;
+            
+            v0=get(findobj('tag','listbox_overlay'),'value');
+            set(findobj('tag','listbox_overlay'),'string',str);
+            set(findobj('tag','listbox_overlay'),'min',0);
+            if(length(etc_render_fsbrain.overlay_buffer)==1)
+                set(findobj('tag','listbox_overlay'),'max',2);
+            else
+                set(findobj('tag','listbox_overlay'),'max',length(etc_render_fsbrain.overlay_buffer));
+            end;
+            v0=setdiff(v0,select_idx);
+            set(findobj('tag','listbox_overlay'),'Value',v0);
+            
+            v=etc_render_fsbrain.overlay_buffer_main_idx;
+            etc_render_fsbrain.overlay_aux_stc=[];
+            for v_idx=1:length(v)
+                etc_render_fsbrain.overlay_aux_stc(:,:,v_idx)=etc_render_fsbrain.overlay_buffer(v(v_idx)).stc;
+            end;
+            
+            
+            etc_render_fsbrain_handle('redraw');
+            etc_render_fsbrain_handle('draw_stc');
+            
+        catch ME
+        end;
+    end;
+end;
+
