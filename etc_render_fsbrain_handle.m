@@ -189,9 +189,12 @@ switch lower(param)
                             
                              set(findobj('tag','listbox_overlay'),'value',length(etc_render_fsbrain.overlay_buffer(end)));
                              
-                           %etc_render_fsbrain.overlay_aux_stc(:,:,end+1)=stc;
-                            etc_render_fsbrain.overlay_aux_stc(:,:,end+1)=etc_render_fsbrain.overlay_buffer(end).stc;
-                            
+                             if(size(etc_render_fsbrain.overlay_aux_stc(:,:,1))==size(etc_render_fsbrain.overlay_buffer(end).stc))
+                               %etc_render_fsbrain.overlay_aux_stc(:,:,end+1)=stc;
+                                etc_render_fsbrain.overlay_aux_stc(:,:,end+1)=etc_render_fsbrain.overlay_buffer(end).stc;
+                             else
+                                 fprintf('size for [%s] not compatible to the main layer [%s]. Data are not rendered until being seleted as the main layer.\n',name,str{etc_render_fsbrain.overlay_buffer_main_idx});
+                             end;                            
                         end;
                         
                     elseif(findstr(filename,'.w')) %w file

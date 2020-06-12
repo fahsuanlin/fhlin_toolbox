@@ -1826,6 +1826,22 @@ if(~strcmp(contents{etc_render_fsbrain.overlay_buffer_main_idx},'[none]'))
     etc_render_fsbrain.stc_hemi=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).hemi;
     
     
+    
+    v=get(handles.listbox_overlay,'value');
+    v=setdiff(v,etc_render_fsbrain.overlay_buffer_main_idx);
+    
+    etc_render_fsbrain.overlay_aux_stc=[];  
+    count=1;
+    for v_idx=1:length(v)
+        if(size(etc_render_fsbrain.overlay_stc)==size(etc_render_fsbrain.overlay_buffer(v(v_idx)).stc))
+            etc_render_fsbrain.overlay_aux_stc(:,:,count)=etc_render_fsbrain.overlay_buffer(v(v_idx)).stc;
+            count=count+1;
+        else
+            fprintf('size for [%s] not compatible to the main layer [%s]. Data are not rendered until being seleted as the main layer.\n',contents{v(v_idx)},contents{etc_render_fsbrain.overlay_buffer_main_idx});
+        end;
+    end;
+    
+    
     etc_render_fsbrain.overlay_stc_timeVec_unit='ms';
     set(findobj('tag','text_timeVec_unit'),'string',etc_render_fsbrain.overlay_stc_timeVec_unit);
     
@@ -1866,10 +1882,19 @@ function listbox_overlay_Callback(hObject, eventdata, handles)
 global etc_render_fsbrain;
 v=get(handles.listbox_overlay,'value');
 
+contents = cellstr(get(hObject,'String'));
+
 etc_render_fsbrain.overlay_aux_stc=[];
+count=1;
 for v_idx=1:length(v)
-    etc_render_fsbrain.overlay_aux_stc(:,:,v_idx)=etc_render_fsbrain.overlay_buffer(v(v_idx)).stc;
+    if(size(etc_render_fsbrain.overlay_stc)==size(etc_render_fsbrain.overlay_buffer(v(v_idx)).stc))
+        etc_render_fsbrain.overlay_aux_stc(:,:,count)=etc_render_fsbrain.overlay_buffer(v(v_idx)).stc;
+        count=count+1;
+    else
+        fprintf('size for [%s] not compatible to the main layer [%s]. Data are not rendered until being seleted as the main layer.\n',contents{v(v_idx)},contents{etc_render_fsbrain.overlay_buffer_main_idx});
+    end;
 end;
+
 
 f=gcf;
 etc_render_fsbrain_handle('draw_stc');
