@@ -177,11 +177,12 @@ switch lower(param)
                         end;
                         
                         handle = findobj(etc_render_fsbrain.fig_gui,'type','uicontrol');
-                        for i=1:length(handle)
-                            eval(sprintf('handles.%s=handle(%d);', handle(i).Tag, i));
+                        if(~isempty(handle))
+                            for i=1:length(handle)
+                                eval(sprintf('handles.%s=handle(%d);', handle(i).Tag, i));
+                            end;
+                            etc_render_fsbrain_gui_update(handles);
                         end;
-                        etc_render_fsbrain_gui_update(handles);
-
                         
                         
                         if(f_option==2)
