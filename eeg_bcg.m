@@ -226,12 +226,13 @@ for ch_idx=1:length(non_ecg_channel)
             IDX=find(~isnan(x(:)));
             M = opRestriction(prod(sz), IDX);
             % Sampled data
-            yy = M(x(:),1);
+            %yy = M(x(:),1);
             %x1=IST_MC(yy,M,sz);
             %bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:)=x1;
             global VERBOSE;
             VERBOSE=0;
-            [uu,ss,vv,V,numiter] = SVT([sz(1) sz(2)],IDX,x(IDX),5*sqrt(prod(sz)),1.2/(length(IDX)/prod(sz)));
+            %[uu,ss,vv,V,numiter] = SVT([sz(1) sz(2)],IDX,x(IDX),5*sqrt(prod(sz)),1.2/(length(IDX)/prod(sz)));
+            [uu,ss,vv,V,numiter] = SVT([sz(1) sz(2)],IDX,x(IDX),5*sqrt(prod(sz)),1e-2/(length(IDX)/prod(sz)));
         else
             %if(non_ecg_channel(ch_idx)==9) keyboard; end;
             
@@ -278,9 +279,17 @@ for ch_idx=1:length(non_ecg_channel)
                     %                     eeg_bcg(non_ecg_channel(ch_idx),qrs_i_raw(trial_idx)-BCG_tPre_sample:qrs_i_raw(trial_idx)+BCG_tPost_sample)=y';
                     %
                     %                     residual(non_ecg_channel(ch_idx),trial_idx,:)=y(:);
-                    bcg_approx=uu(:,1:bcg_nsvd)*ss(1:bcg_nsvd,1:bcg_nsvd)*vv(:,1:bcg_nsvd)';
+                    if(size(ss,1)<bcg_nsvd)
+                        bcg_approx=uu*ss*vv';
+                    else
+                        bcg_approx=uu(:,1:bcg_nsvd)*ss(1:bcg_nsvd,1:bcg_nsvd)*vv(:,1:bcg_nsvd)';
+                    end;
                     bcg_residual=bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:)-bcg_approx;
-                    bcg_bases=vv(:,1:bcg_nsvd);
+                    if(size(ss,1)<bcg_nsvd)
+                        bcg_bases=vv;
+                    else
+                        bcg_bases=vv(:,1:bcg_nsvd);
+                    end;
                     
                     bcg_bnd_bases=zeros(size(bcg_bases,1),2);
                     bcg_bnd_bases(:,1)=1; % confound
@@ -290,7 +299,11 @@ for ch_idx=1:length(non_ecg_channel)
                     non_nan_idx=find(~isnan(y));
                     beta=inv(bcg_bases(non_nan_idx,:)'*bcg_bases(non_nan_idx,:))*(bcg_bases(non_nan_idx,:)'*y(non_nan_idx));
                     bnd0=[y(1) y(end)];
-                    y=y-bcg_bases(:,1:bcg_nsvd)*beta(1:bcg_nsvd);
+                    if(size(ss,1)<bcg_nsvd)
+                        y=y-bcg_bases*beta;
+                    else
+                        y=y-bcg_bases(:,1:bcg_nsvd)*beta(1:bcg_nsvd);
+                    end;
                     bnd1=[y(1) y(end)];
                     
                     if(flag_anchor_ends)
@@ -356,13 +369,14 @@ for ch_idx=1:length(non_ecg_channel)
                         IDX=find(~isnan(x(:)));
                         M = opRestriction(prod(sz), IDX);
                         % Sampled data
-                        yy = M(x(:),1);
+                        %yy = M(x(:),1);
                         %x1=IST_MC(yy,M,sz);
                         %bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:)=x1;
                         global VERBOSE;
                         VERBOSE=0;
-                        [uu,ss,vv,V,numiter] = SVT([sz(1) sz(2)],IDX,x(IDX),5*sqrt(prod(sz)),1.2/(length(IDX)/prod(sz)));
-                    else
+                        %uu,ss,vv,V,numiter] = SVT([sz(1) sz(2)],IDX,x(IDX),5*sqrt(prod(sz)),1.2/(length(IDX)/prod(sz)));
+                        [uu,ss,vv,V,numiter] = SVT([sz(1) sz(2)],IDX,x(IDX),5*sqrt(prod(sz)),1e-2/(length(IDX)/prod(sz)));
+                     else
                         %if(non_ecg_channel(ch_idx)==9) keyboard; end;
                         tmp_bcg=bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:);
                         tmp_ecg=ecg_all(trial_sel,:);
@@ -379,9 +393,17 @@ for ch_idx=1:length(non_ecg_channel)
                     %                 end;
                     %             end;
                     
-                    bcg_approx=uu(:,1:bcg_nsvd)*ss(1:bcg_nsvd,1:bcg_nsvd)*vv(:,1:bcg_nsvd)';
+                    if(size(ss,1)<bcg_nsvd)
+                        bcg_approx=uu*sss*vv';
+                    else
+                        bcg_approx=uu(:,1:bcg_nsvd)*ss(1:bcg_nsvd,1:bcg_nsvd)*vv(:,1:bcg_nsvd)';
+                    end;
                     bcg_residual=bcg_all{non_ecg_channel(ch_idx)}(trial_sel,:)-bcg_approx;
-                    bcg_bases=vv(:,1:bcg_nsvd);
+                    if(size(ss,1)<bcg_nsvd)
+                        bcg_bases=vv;
+                    else
+                        bcg_bases=vv(:,1:bcg_nsvd);
+                    end;
                     
                     bcg_bnd_bases=zeros(size(bcg_bases,1),2);
                     bcg_bnd_bases(:,1)=1; % confound
@@ -391,7 +413,11 @@ for ch_idx=1:length(non_ecg_channel)
                     non_nan_idx=find(~isnan(y));
                     beta=inv(bcg_bases(non_nan_idx,:)'*bcg_bases(non_nan_idx,:))*(bcg_bases(non_nan_idx,:)'*y(non_nan_idx));
                     bnd0=[y(1) y(end)];
-                    y=y-bcg_bases(:,1:bcg_nsvd)*beta(1:bcg_nsvd);
+                    if(size(ss,1)<bcg_nsvd)
+                        y=y-bcg_bases*beta;
+                    else
+                        y=y-bcg_bases(:,1:bcg_nsvd)*beta(1:bcg_nsvd);
+                    end;
                     bnd1=[y(1) y(end)];
                     
                     if(flag_anchor_ends)

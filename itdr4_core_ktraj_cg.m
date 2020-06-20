@@ -156,7 +156,7 @@ end;
 if(isempty(X0)) X0=zeros(n_phase,n_freq); end;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%loca k-space setup
+%local k-space setup
 if(flag_local_k)
     dist_freq=floor(n_freq/local_k_size);
     dist_phase=floor(n_phase/local_k_size);
