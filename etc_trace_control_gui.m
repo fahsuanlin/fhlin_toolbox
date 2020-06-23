@@ -1853,7 +1853,11 @@ function listbox_select_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns listbox_select contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from listbox_select
+global etc_trace_obj;
 
+etc_trace_obj.select_idx=get(hObject,'Value');
+
+etc_trace_handle('redraw');
 
 % --- Executes during object creation, after setting all properties.
 function listbox_select_CreateFcn(hObject, eventdata, handles)

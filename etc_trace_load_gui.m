@@ -102,7 +102,7 @@ else
     set(handles.text_load_montage,'String','');
 end;
 if(~isempty(etc_trace_obj.select))
-    set(handles.text_load_select,'String',mat2str(size(etc_trace_obj.select)));
+    set(handles.text_load_select,'String',mat2str(size(etc_trace_obj.select{etc_trace_obj.select_idx})));
 else
     set(handles.text_load_select,'String','');
 end;
@@ -347,6 +347,13 @@ if(indx)
                 set(obj,'value',1);
                 
                 update_data;
+                
+                select=diag(ones(1,size(etc_trace_obj.data,1)));
+                scaling=diag(ones(1,size(etc_trace_obj.data,1)));
+                
+                %append a selection and scaling variable for the imported
+                %data
+                etc_trace_update_loaded_data([],select,scaling,'select_name',sprintf('select_%s',name));
                 
             else
                 
@@ -664,18 +671,18 @@ etc_trace_obj.tmp=0;
 if(indx)
     try
         var=fn{indx};
-        evalin('base',sprintf('global etc_trace_obj; if(size(%s)==(size(etc_trace_obj.select)-1)) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var));
-        %evalin('base',sprintf('etc_trace_obj.tmp=1;'));
-        fprintf('Trying to load variable [%s] as select...',var);
+        evalin('base',sprintf('global etc_trace_obj; if(length(%s)==size(etc_trace_obj.data,1)) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var));
+        fprintf('Trying to load variable [%s] as a selection variable...',var);
         if(etc_trace_obj.tmp)
-            evalin('base',sprintf('etc_trace_obj.load.select=%s; ',var));
+            evalin('base',sprintf('etc_trace_obj.tmp=%s; ',var));
+            etc_trace_obj.load.select=diag(etc_trace_obj.tmp(:));
             
             obj=findobj('Tag','text_load_select');
             set(obj,'String',sprintf('%s',var));
             fprintf('Done!\n');
         else
             fprintf('Error in loading select variable [%s]! ',var);
-            fprintf('The select variable must be of size [%s]!!....\n',mat2str(size(etc_trace_obj.select)-1));
+            fprintf('The select variable must be of size [%s]!!....\n',mat2str([1 size(etc_trace_obj.data,1)]));
         end;
         
     catch ME
@@ -701,17 +708,20 @@ etc_trace_obj.tmp=0;
 if(indx)
     try
         var=fn{indx};
-        %evalin('base',sprintf('global etc_trace_obj; if(ndims(%s)==2) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var,var));
-        evalin('base',sprintf('etc_trace_obj.tmp=1;'));
-        fprintf('Trying to load variable [%s] as scale...',var);
+        evalin('base',sprintf('global etc_trace_obj; if(length(%s)==size(etc_trace_obj.data,1)) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var));
+        fprintf('Trying to load variable [%s] as a scaling variable...',var);
         if(etc_trace_obj.tmp)
             evalin('base',sprintf('etc_trace_obj.load.scale=%s; ',var));
+            evalin('base',sprintf('etc_trace_obj.tmp=%s; ',var));
+            etc_trace_obj.load.scale=diag(etc_trace_obj.tmp(:));
+            
             
             obj=findobj('Tag','text_load_scale');
             set(obj,'String',sprintf('%s',var));
             fprintf('Done!\n');
         else
-            fprintf('error in loading scale variable....\n',var);
+            fprintf('Error in loading scaling variable [%s]! ',var);
+            fprintf('The select variable must be of size [%s]!!....\n',mat2str([1 size(etc_trace_obj.data,1)]));
         end;
         
     catch ME

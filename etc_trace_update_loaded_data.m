@@ -1,4 +1,15 @@
-function ok=etc_trace_update_loaded_data(montage,select,scaling)
+function ok=etc_trace_update_loaded_data(montage,select,scaling,varargin)
+
+select_name='';
+
+for i=1:length(varargin)/2
+    option=varargin{i*2-1};
+    option_value=varargin{i*2};
+    switch(lower(option))
+        case 'select_name'
+            select_name=option_value;
+    end;
+end;
 
 ok=0;
 
@@ -127,11 +138,14 @@ try
     
     
     if(~isempty(select))
-        etc_trace_obj.select=[select, zeros(size(select,1),1)
+        select=[select, zeros(size(select,1),1)
             zeros(1,size(select,2)), 1];
-        etc_trace_obj.selec{end+1}=select;
-        etc_trace_obj.select_name{end+1}=sprintf('select%02d',length(etc_trace_obj.select_name)+1);
-        
+        etc_trace_obj.select{end+1}=select;
+        if(isempty(select_name))
+            etc_trace_obj.select_name{end+1}=sprintf('select%02d',length(etc_trace_obj.select_name)+1);
+        else
+            etc_trace_obj.select_name{end+1}=select_name;
+        end;
         %selection listbox
         obj=findobj('tag','listbox_select');
         if(~isempty(obj))
