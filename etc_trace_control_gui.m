@@ -22,7 +22,7 @@ function varargout = etc_trace_control_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_control_gui
 
-% Last Modified by GUIDE v2.5 05-May-2020 11:31:50
+% Last Modified by GUIDE v2.5 23-Jun-2020 03:46:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -71,24 +71,20 @@ handles.output=gcf;
 % Update handles structure
 guidata(hObject, handles);
 
-%aux data listbox
-str={};
-for i=1:length(etc_trace_obj.aux_data)
-    aux_data_name=sprintf('aux_data_%02d',i);
-    if(isfield(etc_trace_obj,'aux_data_name'))
-        aux_data_name=etc_trace_obj.aux_data_name{i};
-    end;
-    str{i}=aux_data_name;
+%data listbox
+if(isempty(etc_trace_obj.all_data)) 
+    str={'[none]'}; 
+else
+    str=etc_trace_obj.all_data_name;    
 end;
-if(isempty(str)) str={'[none]'}; end;
-set(handles.listbox_aux_data,'String',str);
+set(handles.listbox_data,'String',str);
 if(length(str)>0)
-    set(handles.listbox_aux_data,'min',0);
-    set(handles.listbox_aux_data,'max',length(str));
+    set(handles.listbox_data,'min',0);
+    set(handles.listbox_data,'max',length(str));
 end;    
-if(length(etc_trace_obj.aux_data_idx)>0)
-    set(handles.listbox_aux_data,'Value',find(etc_trace_obj.aux_data_idx));
-end;
+% if(length(etc_trace_obj.aux_data_idx)>0)
+%     set(handles.listbox_data,'Value',find(etc_trace_obj.aux_data_idx));
+% end;
 
 %channel listbox
 str=etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names;
@@ -98,12 +94,8 @@ set(handles.listbox_channel,'Value',1);
     
 
 %selection listbox
-str={};
-for i=1:length(etc_trace_obj.select)
-    str{i}=sprintf('select%02d',i);
-end;
-set(handles.listbox_select,'String',str);
-set(handles.listbox_select,'Value',1);
+set(handles.listbox_select,'String',etc_trace_obj.select_name);
+set(handles.listbox_select,'Value',etc_trace_obj.select_idx);
 
 %montage listbox
 str={};
@@ -1432,30 +1424,29 @@ end;
 
 
 
-% --- Executes on selection change in listbox_aux_data.
-function listbox_aux_data_Callback(hObject, eventdata, handles)
-% hObject    handle to listbox_aux_data (see GCBO)
+% --- Executes on selection change in listbox_data.
+function listbox_data_Callback(hObject, eventdata, handles)
+% hObject    handle to listbox_data (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns listbox_aux_data contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from listbox_aux_data
+% Hints: contents = cellstr(get(hObject,'String')) returns listbox_data contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from listbox_data
 
 global etc_trace_obj;
 
 contents = cellstr(get(hObject,'String'));
 if(~strcmp(contents{1},'[none]'))
     
-    etc_trace_obj.aux_data_idx=zeros(size(etc_trace_obj.aux_data_idx));
-    etc_trace_obj.aux_data_idx(get(hObject,'Value'))=1;
+    etc_trace_obj.all_data_main_idx=get(hObject,'Value');
     
-    obj=findobj('Tag','listbox_info_auxdata');
+    obj=findobj('Tag','listbox_info_data');
     if(~isempty(obj))
-        if(length(etc_trace_obj.aux_data_idx)>0)
-            set(obj,'Value',find(etc_trace_obj.aux_data_idx));
-        end;
+        set(obj,'Value',etc_trace_obj.all_data_main_idx);
     end;
     
+    update_data;
+        
     etc_trace_handle('redraw');
     
     figure(etc_trace_obj.fig_control);
@@ -1464,8 +1455,8 @@ end;
 
 
 % --- Executes during object creation, after setting all properties.
-function listbox_aux_data_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to listbox_aux_data (see GCBO)
+function listbox_data_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to listbox_data (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1476,9 +1467,9 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on key press with focus on listbox_aux_data and none of its controls.
-function listbox_aux_data_KeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to listbox_aux_data (see GCBO)
+% --- Executes on key press with focus on listbox_data and none of its controls.
+function listbox_data_KeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to listbox_data (see GCBO)
 % eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
 %	Key: name of the key that was pressed, in lower case
 %	Character: character interpretation of the key(s) that was pressed
@@ -1516,10 +1507,10 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
                 set(obj,'Value',etc_trace_obj.aux_data_idx);
             end;
             
-            %aux data listbox in the control window
+            %data listbox in the control window
             str={};
             for i=1:length(etc_trace_obj.aux_data) str{i}=etc_trace_obj.aux_data_name{i}; end;
-            obj=findobj('Tag','listbox_aux_data');
+            obj=findobj('Tag','listbox_data');
             if(~isempty(obj))
                 set(obj,'String',str);
                 set(obj,'Min',0);
@@ -1655,10 +1646,10 @@ function pushbutton_clear_Callback(hObject, eventdata, handles)
 global etc_trace_obj;
 
 
-answer = questdlg('Clear main data','Clear','Yes','No','No');
+answer = questdlg('Clear all data?','Clear','Yes','No','No');
 switch answer
     case 'Yes'
-        fprintf('resetting all data..,!\n');
+        fprintf('clearing all data..,!\n');
         
         fig_trace=etc_trace_obj.fig_trace;
         fig_topology=etc_trace_obj.fig_topology;
@@ -1689,6 +1680,26 @@ switch answer
         %data
         etc_trace_obj.fs=1;
         etc_trace_obj.data=[];
+        etc_trace_obj.all_data={};
+        etc_trace_obj.all_data_name={};
+        etc_trace_obj.all_data_main_idx=[];
+        etc_trace_obj.all_data_aux_idx=[];
+        
+        
+        
+        select=eye(size(etc_trace_obj.data,1));
+        select_name='all';
+        etc_trace_obj.select{1}=[select, zeros(size(select,1),1)
+            zeros(1,size(select,2)), 1];
+        etc_trace_obj.select_name{1}=select_name;
+        etc_trace_obj.select_idx=1;
+        
+        scaling{1}=eye(size(etc_trace_obj.data,1));
+        etc_trace_obj.scaling{1}=[scaling{1}, zeros(size(scaling{1},1),1)
+            zeros(1,size(scaling{1},2)), 1];
+        etc_trace_obj.scaling_idx=1;
+        
+        
         etc_trace_obj.aux_data={};
         etc_trace_obj.aux_data_name={};
         etc_trace_obj.aux_data_idx=[];
@@ -1752,10 +1763,10 @@ switch answer
         
         ok=etc_trace_update_loaded_data([],[],[]);
         
-        %aux data listbox
+        %data listbox
         str={'[none]'};
-        set(handles.listbox_aux_data,'String',str);
-        set(handles.listbox_aux_data,'Value',1);
+        set(handles.listbox_data,'String',str);
+        set(handles.listbox_data,'Value',1);
         
         %channel listbox
         str={'[none]'};
@@ -1768,6 +1779,39 @@ switch answer
         set(handles.listbox_trigger,'string',str);
         set(handles.listbox_trigger,'Value',1);
          
+        
+        
+        %info 
+        obj=findobj('tag','text_info_datasize');
+        if(~isempty(obj))
+            set(obj,'String','');
+        end;
+
+        obj=findobj('tag','text_info_fs');
+        if(~isempty(obj))
+            set(obj,'String','');
+        end;
+        
+        obj=findobj('tag','text_info_time_begin');
+        if(~isempty(obj))
+            set(obj,'String','');
+        end;        
+        
+        obj=findobj('tag','listbox_info_chnames');
+        if(~isempty(obj))
+            set(obj,'String','');
+        end;    
+
+        obj=findobj('tag','listbox_info_auxdata');
+        if(~isempty(obj))
+            set(obj,'String','');
+        end;  
+        
+        obj=findobj('tag','listbox_info_data');
+        if(~isempty(obj))
+            set(obj,'String','');
+        end;  
+        
         
         etc_trcae_gui_update_time;        %redraw included
 
@@ -1845,3 +1889,74 @@ function listbox_montage_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+function update_data()
+global etc_trace_obj;
+
+if(~isempty(etc_trace_obj.all_data_main_idx))
+    etc_trace_obj.data=etc_trace_obj.all_data{etc_trace_obj.all_data_main_idx};
+else
+    etc_trace_obj.data=[];
+end;
+
+etc_trace_obj.aux_data={};
+idx=find(etc_trace_obj.all_data_aux_idx);
+
+if(~etc_trace_obj.flag_trigger_avg)
+    for i=1:length(idx)
+        etc_trace_obj.aux_data{i}=etc_trace_obj.all_data{idx(i)};
+        etc_trace_obj.aux_data_name{i}=etc_trace_obj.all_data_name{idx(i)};
+    end;
+    etc_trace_obj.aux_data_idx=idx;
+else
+    for i=1:length(idx)
+        etc_trace_obj.buffer.aux_data{i}=etc_trace_obj.all_data{idx(i)};
+        etc_trace_obj.buffer.aux_data_name{i}=etc_trace_obj.all_data_name{idx(i)};
+    end;
+    etc_trace_obj.buffer.aux_data_idx=idx;    
+end;
+
+%GUI
+obj=findobj('Tag','listbox_info_data');
+if(~isempty(obj))
+    if(~isempty(etc_trace_obj.all_data_name))
+        set(obj,'String',etc_trace_obj.all_data_name);
+        set(obj,'Value',etc_trace_obj.all_data_main_idx);
+    else
+        set(obj,'String','[none]');
+        set(obj,'Value',1);
+    end;
+end;
+
+obj=findobj('Tag','listbox_info_auxdata');
+if(~isempty(obj))
+    if(~isempty(etc_trace_obj.all_data_name))
+        set(obj,'String',etc_trace_obj.all_data_name);
+        set(obj,'min',0);
+        if(length(etc_trace_obj.all_data_name)<2)
+            set(obj,'max',2);
+        else
+            set(obj,'max',length(etc_trace_obj.all_data_name));
+        end;
+        set(obj,'Value',find(etc_trace_obj.all_data_aux_idx));
+    else
+        set(obj,'String','[none]');
+        set(obj,'min',0);
+        set(obj,'max',2);
+        set(obj,'Value',[]);        
+    end
+end;
+
+obj=findobj('Tag','listbox_data');
+if(~isempty(obj))
+    if(~isempty(etc_trace_obj.all_data_name))
+        set(obj,'String',etc_trace_obj.all_data_name);
+        set(obj,'Value',etc_trace_obj.all_data_main_idx);
+    else
+        set(obj,'String','[none]');
+        set(obj,'Value',1);      
+    end;
+end;
+
+return;

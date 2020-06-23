@@ -126,34 +126,29 @@ try
     
     
     
-    if(isempty(select))
-        select=eye(size(etc_trace_obj.data,1));
-        select_name='all';
+    if(~isempty(select))
+        etc_trace_obj.select=[select, zeros(size(select,1),1)
+            zeros(1,size(select,2)), 1];
+        etc_trace_obj.selec{end+1}=select;
+        etc_trace_obj.select_name{end+1}=sprintf('select%02d',length(etc_trace_obj.select_name)+1);
+        
+        %selection listbox
+        obj=findobj('tag','listbox_select');
+        if(~isempty(obj))
+            set(obj,'String',etc_trace_obj.select_name);
+            set(obj,'Value',etc_trace_obj.select_idx);
+        end;
+        
     end;
-    etc_trace_obj.select=[select, zeros(size(select,1),1)
-        zeros(1,size(select,2)), 1];
-    etc_trace_obj.select_name=select_name;
     
-    if(isempty(scaling))
-        scaling{1}=eye(size(etc_trace_obj.data,1));
-    else
-        scaling{1}=scaling;
+    if(~isempty(scaling))
+        ecg_idx=find(strcmp(lower(etc_trace_obj.ch_names),'ecg')|strcmp(lower(etc_trace_obj.ch_names),'ekg'));
+        scaling(ecg_idx,ecg_idx)=scaling(ecg_idx,ecg_idx)./10;
+        etc_trace_obj.scaling{end+1}=[scaling, zeros(size(scaling,1),1)
+            zeros(1,size(scaling,2)), 1];
     end;
-    ecg_idx=find(strcmp(lower(etc_trace_obj.ch_names),'ecg')|strcmp(lower(etc_trace_obj.ch_names),'ekg'));
-    scaling{1}(ecg_idx,ecg_idx)=scaling{1}(ecg_idx,ecg_idx)./10;
-    etc_trace_obj.scaling{1}=[scaling{1}, zeros(size(scaling{1},1),1)
-        zeros(1,size(scaling{1},2)), 1];
+
     
-    %selection listbox
-    str={};
-    for i=1:length(etc_trace_obj.select)
-        str{i}=sprintf('select%02d',i);
-    end;
-    obj=findobj('tag','listbox_select');
-    if(~isempty(obj))
-        set(obj,'String',str);
-        set(obj,'Value',1);
-    end;
 
 
     

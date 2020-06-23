@@ -22,7 +22,7 @@ function varargout = etc_trace_info_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_info_gui
 
-% Last Modified by GUIDE v2.5 21-Apr-2020 14:50:59
+% Last Modified by GUIDE v2.5 23-Jun-2020 01:24:32
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -65,13 +65,21 @@ set(handles.text_info_fs,'String',mat2str(etc_trace_obj.fs));
 set(handles.text_info_time_begin,'String',mat2str(etc_trace_obj.time_begin));
 set(handles.listbox_info_chnames,'String',etc_trace_obj.ch_names);
 
-str={};
-for i=1:length(etc_trace_obj.aux_data) str{i}=etc_trace_obj.aux_data_name{i}; end;
-set(handles.listbox_info_auxdata,'String',str);
+%main data
+if(isempty(etc_trace_obj.all_data_name))
+    set(handles.listbox_info_data,'String','[none]');
+    set(handles.listbox_info_data,'Value',1);
+else
+    set(handles.listbox_info_data,'String',etc_trace_obj.all_data_name);
+    set(handles.listbox_info_data,'Value',etc_trace_obj.all_data_main_idx);
+end;
+
+%aux. data
+set(handles.listbox_info_auxdata,'String',etc_trace_obj.all_data_name);
 set(handles.listbox_info_auxdata,'Min',0);
-set(handles.listbox_info_auxdata,'Max',length(str));
-if(length(etc_trace_obj.aux_data_idx)>0)
-     set(handles.listbox_info_auxdata,'Value',find(etc_trace_obj.aux_data_idx));
+set(handles.listbox_info_auxdata,'Max',length(etc_trace_obj.all_data_name));
+if(length(find(etc_trace_obj.all_data_aux_idx))>0)
+     set(handles.listbox_info_auxdata,'Value',find(etc_trace_obj.all_data_aux_idx));
 end;
 
 str={};
@@ -150,19 +158,13 @@ global etc_trace_obj;
 
 str=get(handles.listbox_info_trigger,'String');
 if(~isempty(str))
-    str=str{get(handles.listbox_info_trigger,'Value')};
-    
+    str=str{get(handles.listbox_info_trigger,'Value')};    
 end;
 
-etc_trace_obj.aux_data_idx=zeros(size(etc_trace_obj.aux_data_idx));
-etc_trace_obj.aux_data_idx(get(hObject,'Value'))=1;
+etc_trace_obj.all_data_aux_idx=zeros(1, length(etc_trace_obj.all_data));
+etc_trace_obj.all_data_aux_idx(get(hObject,'Value'))=1;
 
-obj=findobj('Tag','listbox_aux_data');
-if(~isempty(obj))
-    if(length(etc_trace_obj.aux_data_idx)>0)
-        set(obj,'Value',find(etc_trace_obj.aux_data_idx));
-    end;
-end;
+update_data;
 
 etc_trace_handle('redraw');
 
@@ -236,41 +238,26 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
     
     if(~isempty(select_idx))
         try
-            etc_trace_obj.aux_data(select_idx)=[];
-            etc_trace_obj.aux_data_name(select_idx)=[];
-            etc_trace_obj.aux_data_idx(select_idx)=[];
-            if(~isempty(etc_trace_obj.aux_data_idx))
-                if(sum(etc_trace_obj.aux_data_idx)<0.5)
-                    etc_trace_obj.aux_data_idx(1)=1;etc_trace_update_loaded_data
+            main_data_str=etc_trace_obj.all_data_name{etc_trace_obj.all_data_main_idx};
+            
+            etc_trace_obj.all_data(select_idx)=[];
+            etc_trace_obj.all_data_name(select_idx)=[];
+            etc_trace_obj.all_data_aux_idx(select_idx)=[];
+            
+            
+            if(~isempty(etc_trace_obj.all_data))
+                if(select_idx~=etc_trace_obj.all_data_main_idx)
+                    IndexC=strfind(etc_trace_obj.all_data_name,main_data_str);
+                    etc_trace_obj.all_data_main_idx=find(not(cellfun('isempty',IndexC)));                   
+                else
+                    etc_trace_obj.all_data_main_idx=1;
                 end;
+            else
+                etc_trace_obj.all_data_name='';
+                etc_trace_obj.all_data_main_idx=[];
             end;
             
-            contents(select_idx)=[];
-            set(hObject,'String',contents);
-            set(hObject,'Value',1);
-            
-            %aux data listbox in the info window
-            str={};
-            for i=1:length(etc_trace_obj.aux_data) str{i}=etc_trace_obj.aux_data_name{i}; end;
-            obj=findobj('Tag','listbox_info_auxdata');
-            if(~isempty(obj))
-                set(obj,'String',str);
-                set(obj,'Min',0);
-                set(obj,'Max',length(str));
-                set(obj,'Value',etc_trace_obj.aux_data_idx);
-            end;
-            
-            %aux data listbox in the control window
-            str={};
-            for i=1:length(etc_trace_obj.aux_data) str{i}=etc_trace_obj.aux_data_name{i}; end;
-            obj=findobj('Tag','listbox_aux_data');
-            if(~isempty(obj))
-                set(obj,'String',str);
-                set(obj,'Min',0);
-                set(obj,'Max',length(str));
-                set(obj,'Value',etc_trace_obj.aux_data_idx);
-            end;
-            
+            update_data;
             
             etc_trace_handle('redraw');
             
@@ -281,3 +268,117 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
         end;
     end;
 end;
+
+
+% --- Executes on selection change in listbox_info_data.
+function listbox_info_data_Callback(hObject, eventdata, handles)
+% hObject    handle to listbox_info_data (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns listbox_info_data contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from listbox_info_data
+global etc_trace_obj;
+
+contents = cellstr(get(hObject,'String'));
+if(~strcmp(contents{1},'[none]'))
+    
+    etc_trace_obj.all_data_main_idx=get(hObject,'Value');
+    
+    obj=findobj('Tag','listbox_data');
+    if(~isempty(obj))
+        set(obj,'Value',etc_trace_obj.all_data_main_idx);
+    end;
+    
+    update_data;
+        
+    etc_trace_handle('redraw');
+    
+    figure(etc_trace_obj.fig_info);
+end;
+
+
+
+
+% --- Executes during object creation, after setting all properties.
+function listbox_info_data_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to listbox_info_data (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+function update_data()
+global etc_trace_obj;
+
+
+if(~isempty(etc_trace_obj.all_data_main_idx))
+    etc_trace_obj.data=etc_trace_obj.all_data{etc_trace_obj.all_data_main_idx};
+else
+    etc_trace_obj.data=[];
+end;
+
+etc_trace_obj.aux_data={};
+idx=find(etc_trace_obj.all_data_aux_idx);
+
+if(~etc_trace_obj.flag_trigger_avg)
+    for i=1:length(idx)
+        etc_trace_obj.aux_data{i}=etc_trace_obj.all_data{idx(i)};
+        etc_trace_obj.aux_data_name{i}=etc_trace_obj.all_data_name{idx(i)};
+    end;
+    etc_trace_obj.aux_data_idx=idx;
+else
+    for i=1:length(idx)
+        etc_trace_obj.buffer.aux_data{i}=etc_trace_obj.all_data{idx(i)};
+        etc_trace_obj.buffer.aux_data_name{i}=etc_trace_obj.all_data_name{idx(i)};
+    end;
+    etc_trace_obj.buffer.aux_data_idx=idx;    
+end;
+
+%GUI
+obj=findobj('Tag','listbox_info_data');
+if(~isempty(obj))
+    if(~isempty(etc_trace_obj.all_data_name))
+        set(obj,'String',etc_trace_obj.all_data_name);
+        set(obj,'Value',etc_trace_obj.all_data_main_idx);
+    else
+        set(obj,'String','[none]');
+        set(obj,'Value',1);
+    end;
+end;
+
+obj=findobj('Tag','listbox_info_auxdata');
+if(~isempty(obj))
+    if(~isempty(etc_trace_obj.all_data_name))
+        set(obj,'String',etc_trace_obj.all_data_name);
+        set(obj,'min',0);
+        if(length(etc_trace_obj.all_data_name)<2)
+            set(obj,'max',2);
+        else
+            set(obj,'max',length(etc_trace_obj.all_data_name));
+        end;
+        set(obj,'Value',find(etc_trace_obj.all_data_aux_idx));
+    else
+        set(obj,'String','[none]');
+        set(obj,'min',0);
+        set(obj,'max',2);
+        set(obj,'Value',[]);        
+    end
+end;
+
+obj=findobj('Tag','listbox_data');
+if(~isempty(obj))
+    if(~isempty(etc_trace_obj.all_data_name))
+        set(obj,'String',etc_trace_obj.all_data_name);
+        set(obj,'Value',etc_trace_obj.all_data_main_idx);
+    else
+        set(obj,'String','[none]');
+        set(obj,'Value',1);      
+    end;
+end;
+
+return;

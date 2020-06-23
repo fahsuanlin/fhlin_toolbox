@@ -22,6 +22,12 @@ aux_data_name={};
 aux_data_idx=[];
 ch_names={};
 
+data_name='';
+all_data={};
+all_data_name={};
+all_data_main_idx=[];
+all_data_aux_idx=[];
+
 topo=[]; %topology structure; with "vertex", "face", "ch_names", "electrode_idx" 4 fields.
 flag_mark=0;
 
@@ -61,6 +67,8 @@ for i=1:length(varargin)/2
             trace_selected_idx=option_value;
         case 'ch_names'
             ch_names=option_value;
+        case 'data_name'
+            data_name=option_value;
         case 'aux_data'
             aux_data=option_value;
         case 'flag_mark'
@@ -222,9 +230,10 @@ if(isempty(select))
     select=eye(size(data,1));
     select_name='all';
 end;
-etc_trace_obj.select=[select, zeros(size(select,1),1)
+etc_trace_obj.select{1}=[select, zeros(size(select,1),1)
     zeros(1,size(select,2)), 1];
-etc_trace_obj.select_name=select_name;
+etc_trace_obj.select_name{1}=select_name;
+etc_trace_obj.select_idx=1;
 
 if(isempty(scaling))
     scaling{1}=eye(size(data,1));
@@ -235,12 +244,21 @@ ecg_idx=find(strcmp(lower(etc_trace_obj.ch_names),'ecg')|strcmp(lower(etc_trace_
 scaling{1}(ecg_idx,ecg_idx)=scaling{1}(ecg_idx,ecg_idx)./10;
 etc_trace_obj.scaling{1}=[scaling{1}, zeros(size(scaling{1},1),1)
     zeros(1,size(scaling{1},2)), 1];
+etc_trace_obj.scaling_idx=1;
 
 
 etc_trace_obj.data=data;
+etc_trace_obj.data_name=data_name;
 etc_trace_obj.aux_data=aux_data;
 etc_trace_obj.aux_data_name=aux_data_name;
 etc_trace_obj.aux_data_idx=aux_data_idx;
+
+etc_trace_obj.all_data=all_data;
+etc_trace_obj.all_data_name=all_data_name;
+etc_trace_obj.all_data_main_idx=all_data_main_idx;
+etc_trace_obj.all_data_aux_idx=all_data_aux_idx;
+
+init_data;
 
 etc_trace_obj.topo=topo;
 
@@ -300,5 +318,39 @@ set(etc_trace_obj.fig_control,'Name','events');
 set(etc_trace_obj.fig_control,'Resize','off');
 
 
+
+return;
+
+%call this function to update the variable etc_trace_obj.all_data and its
+%related variables based on etc_trace_obj.data and etc_trace_obj.aux_data
+function init_data()
+
+global etc_trace_obj;
+
+if(isempty(etc_trace_obj.data))
+    for idx=1:length(etc_trace_obj.aux_data)
+        etc_trace_obj.all_data{idx}=etc_trace_obj.aux_data{idx};
+        etc_trace_obj.all_data_name{idx}=etc_trace_obj.aux_data_name{idx};
+    end;
+    etc_trace_obj.all_data_main_idx=[];
+    etc_trace_obj.all_data_aux_idx=ones(1,length(etc_trace_obj.aux_data));
+    
+else
+    etc_trace_obj.all_data{1}=etc_trace_obj.data;
+    if(isempty(etc_trace_obj.data_name))
+        etc_trace_obj.all_data_name{1}='main';
+    else
+        etc_trace_obj.all_data_name{1}=etc_trace_obj.data_name;
+    end;
+    etc_trace_obj.all_data_main_idx=1;
+    
+    
+    for idx=1:length(etc_trace_obj.aux_data)
+        etc_trace_obj.all_data{idx+1}=etc_trace_obj.aux_data{idx};
+        etc_trace_obj.all_data_name{idx+1}=etc_trace_obj.aux_data_name{idx};
+    end;    
+    etc_trace_obj.all_data_aux_idx=cat(2,0,ones(1,length(etc_trace_obj.aux_data)));
+    
+end;
 
 return;

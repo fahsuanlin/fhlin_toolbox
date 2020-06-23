@@ -364,7 +364,7 @@ switch lower(param)
                 if(isfield(etc_trace_obj,'trace_selected_idx'))
                     if(~isempty(etc_trace_obj.trace_selected_idx))
                         fprintf('change y limits for [%s]...\n',etc_trace_obj.ch_names{etc_trace_obj.trace_selected_idx});
-                        ss=diag(etc_trace_obj.scaling{etc_trace_obj.montage_idx});
+                        ss=diag(etc_trace_obj.scaling{etc_trace_obj.scaling_idx});
                         ss=ss(1:end-1);
                         fprintf('current limits = %s\n',mat2str(etc_trace_obj.ylim./ss(etc_trace_obj.trace_selected_idx)));
                         def={num2str(etc_trace_obj.ylim./ss(etc_trace_obj.trace_selected_idx))};
@@ -372,7 +372,7 @@ switch lower(param)
                         if(~isempty(answer))
                             nn=str2num(answer{1});
                             ss=abs(diff(etc_trace_obj.ylim))./abs(diff(nn));
-                            etc_trace_obj.scaling{etc_trace_obj.montage_idx}(etc_trace_obj.trace_selected_idx,etc_trace_obj.trace_selected_idx)=ss;
+                            etc_trace_obj.scaling{etc_trace_obj.scaling_idx}(etc_trace_obj.trace_selected_idx,etc_trace_obj.trace_selected_idx)=ss;
                             fprintf('updated time course limits = %s\n',mat2str(etc_trace_obj.ylim.*ss));
                             
                             redraw;
@@ -538,7 +538,7 @@ switch lower(param)
             if(isempty(time_idx))
                 xx=get(gca,'currentpoint');
                 xx=xx(1);
-                etc_trace_obj.time_select_idx=round(xx)+etc_trace_obj.time_window_begin_idx;
+                etc_trace_obj.time_select_idx=round(xx)+etc_trace_obj.time_window_begin_idx-1;
             else
                 etc_trace_obj.time_select_idx=time_idx;
             end;
@@ -759,13 +759,13 @@ if(isfield(etc_trace_obj,'aux_data'))
             tmp=cat(1,tmp,ones(1,size(tmp,2)));
             
             %select channels;
-            tmp=etc_trace_obj.select*tmp;
+            tmp=etc_trace_obj.select{etc_trace_obj.select_idx}*tmp;
             
             %montage channels;
             tmp=etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix*tmp;
             
             %scaling channels;
-            tmp=etc_trace_obj.scaling{etc_trace_obj.montage_idx}*tmp;
+            tmp=etc_trace_obj.scaling{etc_trace_obj.scaling_idx}*tmp;
             
             %vertical shift for display
             S=eye(size(tmp,1));
@@ -822,13 +822,13 @@ end;
 tmp=cat(1,tmp,ones(1,size(tmp,2)));
 
 %select channels;
-tmp=etc_trace_obj.select*tmp;
+tmp=etc_trace_obj.select{etc_trace_obj.select_idx}*tmp;
 
 %montage channels;
 tmp=etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix*tmp;
 
 %scaling channels;
-tmp=etc_trace_obj.scaling{etc_trace_obj.montage_idx}*tmp;
+tmp=etc_trace_obj.scaling{etc_trace_obj.scaling_idx}*tmp;
 
 %vertical shift for display
 S=eye(size(tmp,1));
