@@ -10,6 +10,12 @@ function [Y]=mri_patloc_tdr_forward_op(varargin);
 %	X: object to be encoded [n_PE, n_FE].
 %		n_PE: # of phase encoding
 %		n_FE: # of frequency encoding
+%	dF_general: off-resonance map (Hz) [n_PE, n_FE].
+%		n_PE: # of phase encoding
+%		n_FE: # of frequency encoding
+%	dFt_general: time stamps for k-space trajectory to simulate off-resonance (s) [n_encode, 1].
+%       *must be paired with K_general
+%		n_encode: # of k-space data
 %	S: coil sensitivity maps of [n_PE, n_FE, n_chan].
 %		n_PE: # of phase encoding
 %		n_FE: # of frequency encoding
@@ -69,6 +75,10 @@ G=[];
 G_general=[];
 E=[];
 
+%off-resonance
+dF_general=[];
+dFt_general=[];
+
 n_freq=[];
 n_phase=[];
 
@@ -95,6 +105,10 @@ for i=1:floor(length(varargin)/2)
             S=option_value;
         case 'x'
             X=option_value;
+        case 'df_general'
+            dF_general=option_value;
+        case 'dft_general'
+            dFt_general=option_value;
         case 'k'
             K=option_value;
         case 'k_arbitrary'
@@ -219,6 +233,9 @@ elseif(~isempty(K_general))
         
 
         k_encode=exp(k_prep*transpose(K_general(k_idx_now,:)));
+        if(~isempty(dF_general)&&~isempty(dFt_general))
+            k_encode=k_encode.*exp(sqrt(-1).*(-1).*2.*pi.*(dF_general(:)*dFt_general(k_idx_now)));
+        end;
         Y(k_idx_now,:)=transpose(k_encode)*temp;
     end;
 end;

@@ -26,6 +26,12 @@ function [recon,b,delta,g2_gfactor,Local_kspace]=itdr4_core_ktraj_cg(varargin);
 %		n_G: # of spatial encoding magnetic fields
 %		n_PE: # of phase encoding
 %		n_FE: # of frequency encoding
+%	dF_general: off-resonance map (Hz) [n_PE, n_FE].
+%		n_PE: # of phase encoding
+%		n_FE: # of frequency encoding
+%	dFt_general: time stamps for k-space trajectory to simulate off-resonance (s) [n_encode, 1].
+%       *must be paired with K_general
+%		n_encode: # of k-space data
 %   K_general: n-D k-space coordinates [n_encode, n_G]
 %       *must be paired with G_general
 %		n_G: # of spatial encoding magnetic fields
@@ -79,6 +85,10 @@ gfactor=[];
 X0=[];
 lambda=0;
 
+%off-resonance
+dF_general=[];
+dFt_general=[];
+
 
 n_freq=[];
 n_phase=[];
@@ -108,6 +118,10 @@ for i=1:floor(length(varargin)/2)
     switch lower(option)
         case 's'
             S=option_value;
+        case 'df_general'
+            dF_general=option_value;
+        case 'dft_general'
+            dFt_general=option_value;
         case 'y'
             Y=option_value;
         case 'k'
@@ -265,7 +279,11 @@ if(~flag_cg_gfactor)
                 k_idx_now=k_idx((calc_idx-1)*n_calc+1:length(k_idx));
             end;
             k_encode=exp(k_prep*transpose(K_general(k_idx_now,:)));
-%keyboard;
+            
+            if(~isempty(dF_general)&&~isempty(dFt_general))
+                k_encode=k_encode.*exp(sqrt(-1).*(1).*2.*pi.*(dF_general(:)*dFt_general(k_idx_now)));
+            end;
+            
             recon2=recon2+(k_encode)*Y(k_idx_now,:);
         end;
     end;
@@ -448,8 +466,13 @@ while(~convergence)
                 else
                     k_idx_now=k_idx((calc_idx-1)*n_calc+1:length(k_idx));
                 end;
-
+                
                 k_encode=exp(k_prep*transpose(K_general(k_idx_now,:)));
+                
+                if(~isempty(dF_general)&&~isempty(dFt_general))
+                    k_encode=k_encode.*exp(sqrt(-1).*(-1).*2.*pi.*(dF_general(:)*dFt_general(k_idx_now)));
+                end;
+                
                 if((flag_local_k)&(iteration_idx==2))
                     phi=imag(k_prep*transpose(K_general(k_idx_now,:)));
                     phi=reshape(phi,[n_phase,n_freq,length(k_idx_now)]);
@@ -567,6 +590,11 @@ while(~convergence)
                 end;
                
                 k_encode=exp(k_prep*transpose(K_general(k_idx_now,:)));
+
+                if(~isempty(dF_general)&&~isempty(dFt_general))
+                    k_encode=k_encode.*exp(sqrt(-1).*(1).*2.*pi.*(dF_general(:)*dFt_general(k_idx_now)));
+                end;
+                
                 recon2=recon2+(k_encode)*buffer(k_idx_now,:);
                 
                 if(~isempty(ss_gfactor))
