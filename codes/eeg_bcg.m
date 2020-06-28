@@ -1,5 +1,4 @@
 function [eeg_bcg, qrs_i_raw, bcg_all, ecg_all, bad_trials]=eeg_bcg(eeg,ecg,fs,varargin)
-% new
 %defaults
 %BCG_tPre=0.1; %s
 %BCG_tPost=0.6; %s
