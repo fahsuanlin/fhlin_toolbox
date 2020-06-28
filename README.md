@@ -1,8 +1,8 @@
-# Welcome to the fhlin_toolbox!
+# This is the repository of neuroiaging tools
 
-Goto the [wiki page](https://github.com/fahsuanlin/fhlin_toolbox/wiki) for further details.
+Goto the [wiki page](https://github.com/fahsuanlin/fhlin_toolbox/wiki) for examples on using these tools for varous analyses.
 
-Here are some examples to use functions/scripts in my toolbox. These examples rely on some packages:
+These examples rely on the following packages:
 
 -anatomical MRI: [FreeSurfer](http://surfer.nmr.mgh.harvard.edu) 
 
