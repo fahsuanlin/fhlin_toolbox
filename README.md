@@ -1,4 +1,4 @@
-# The repository of neuroiaging tools
+# The repository of neuroimaging analysis tools
 
 Goto the [wiki page](https://github.com/fahsuanlin/fhlin_toolbox/wiki) for examples on using these tools for varous MRI/EEG/MEG analyses.
 
