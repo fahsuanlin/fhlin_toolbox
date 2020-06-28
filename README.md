@@ -1,6 +1,6 @@
-# This is the repository of neuroiaging tools
+# The repository of neuroiaging tools
 
-Goto the [wiki page](https://github.com/fahsuanlin/fhlin_toolbox/wiki) for examples on using these tools for varous analyses.
+Goto the [wiki page](https://github.com/fahsuanlin/fhlin_toolbox/wiki) for examples on using these tools for varous MRI/EEG/MEG analyses.
 
 These examples rely on the following packages:
 
