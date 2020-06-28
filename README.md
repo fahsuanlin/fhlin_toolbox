@@ -2,6 +2,8 @@
 
 Goto the [wiki page](https://github.com/fahsuanlin/fhlin_toolbox/wiki) for examples on using these tools for varous MRI/EEG/MEG analyses.
 
+Examples includes MRI signal simulation, MRI  reconstruction, MEG/EEG processing, MEG/EEG localization, fMRI experimental paradigm optimization, and causality modeling on neuroimaging data.
+
 These examples rely on the following packages:
 
 -anatomical MRI: [FreeSurfer](http://surfer.nmr.mgh.harvard.edu) 
