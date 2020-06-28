@@ -1,11 +1,11 @@
 #ignore following folders
-release/
-ice_vd11/
-read_m/
-snr/
-mask/
-ice/data/
-tool_mb_recon/
-Toolbox_PMU_Process/
-fmri_balloonODE.m
-fmri_balloonODE_sim.m
+codes/release/
+codes/ice_vd11/
+codes/read_m/
+codes/snr/
+codes/mask/
+codes/ice/data/
+codes/tool_mb_recon/
+codes/Toolbox_PMU_Process/
+codes/fmri_balloonODE.m
+codes/fmri_balloonODE_sim.m
