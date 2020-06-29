@@ -365,7 +365,23 @@ if(indx)
                 %                 answer = inputdlg(prompt,dlgtitle,dims,definput);
                 %                 name=answer{1};
                 
-                evalin('base',sprintf('etc_trace_obj.all_data{end+1}=%s; ',var));
+                %evalin('base',sprintf('etc_trace_obj.all_data{end+1}=%s; ',var));
+                evalin('base',sprintf('etc_trace_obj.tmp=%s; ',var));
+                
+                
+                %adjust all data such that nan is appended when necessary.
+                for ii=1:length(etc_trace_obj.all_data)
+                    ll(ii)=size(etc_trace_obj.all_data{ii},2);
+                end;
+                ll(end+1)=size(etc_trace_obj.tmp,2);
+                mll=max(ll);
+                for ii=1:length(etc_trace_obj.all_data)
+                    etc_trace_obj.all_data{ii}(:,end+1:mll)=nan;
+                end;
+                etc_trace_obj.tmp(:,end+1:mll)=nan;
+                etc_trace_obj.all_data{end+1}=etc_trace_obj.tmp;
+                
+                
                 etc_trace_obj.all_data_name{end+1}=name;
                 etc_trace_obj.all_data_aux_idx=cat(1,etc_trace_obj.all_data_aux_idx,1);
                 

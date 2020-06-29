@@ -291,6 +291,10 @@ if(~strcmp(contents{1},'[none]'))
     end;
     
     update_data;
+    
+    %etc_trace_obj.time_duration_idx=size(etc_trace_obj.data,2);
+    
+    etc_trcae_gui_update_time();
         
     etc_trace_handle('redraw');
     

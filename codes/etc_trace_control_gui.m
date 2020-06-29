@@ -1809,7 +1809,8 @@ switch answer
         
         obj=findobj('tag','listbox_info_data');
         if(~isempty(obj))
-            set(obj,'String','');
+            set(obj,'String','[none]');
+            set(obj,'Value',1);
         end;  
         
         
