@@ -1,6 +1,8 @@
-# The repository of neuroiaging tools
+# The repository of neuroimaging analysis tools
 
-Goto the [wiki page](https://github.com/fahsuanlin/fhlin_toolbox/wiki) for examples on using these tools for varous MRI/EEG/MEG analyses.
+Goto the [wiki page](https://github.com/fahsuanlin/fhlin_toolbox/wiki) for examples of using these tools for various MRI/EEG/MEG analyses.
+
+Examples include MRI signal simulation, MRI  reconstruction, MEG/EEG processing, MRI rendering/exploration, invasive EEG (stereo-EEG, sEEG) modeling, MEG/EEG localization, fMRI experimental paradigm optimization, and causality modeling on neuroimaging data.
 
 These examples rely on the following packages:
 
@@ -12,5 +14,5 @@ These examples rely on the following packages:
 
 Please [let me know](mailto:fhlin@sri.utoronto.ca) if there is any bug.
 
-![](https://github.com/fahsuanlin/fhlin_toolbox/blob/master/codes/images/fs_render_dec2014.png)
-![](https://github.com/fahsuanlin/fhlin_toolbox/blob/master/codes/images/fs_render_dec2014_b.png)
+![](https://github.com/fahsuanlin/fhlin_toolbox/blob/master/images/fs_render_dec2014.png)
+![](https://github.com/fahsuanlin/fhlin_toolbox/blob/master/images/fs_render_dec2014_b.png)
