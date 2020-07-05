@@ -22,6 +22,12 @@ function [recon,b,delta,g2_gfactor,Local_kspace,l1_history]=itdr5_core_ktraj_cg(
 %		n_G: # of spatial encoding magnetic fields
 %		n_PE: # of phase encoding
 %		n_FE: # of frequency encoding
+%	dF_general: off-resonance map (Hz) [n_PE, n_FE].
+%		n_PE: # of phase encoding
+%		n_FE: # of frequency encoding
+%	dFt_general: time stamps for k-space trajectory to simulate off-resonance (s) [n_encode, 1].
+%       *must be paired with K_general
+%		n_encode: # of k-space data
 %   K_general: n-D k-space coordinates [n_encode, n_G]
 %       *must be paired with G_general
 %		n_G: # of spatial encoding magnetic fields
@@ -59,6 +65,11 @@ G_general=[];
 gfactor=[];
 X0=[];
 
+%off-resonance
+dF_general=[];
+dFt_general=[];
+
+
 lambda=0;
 lambda_TV=0;
 
@@ -93,6 +104,10 @@ for i=1:floor(length(varargin)/2)
     switch lower(option)
         case 's'
             S=option_value;
+        case 'df_general'
+            dF_general=option_value;
+        case 'dft_general'
+            dFt_general=option_value;
         case 'y'
             Y=option_value;
         case 'k'
@@ -136,11 +151,13 @@ for i=1:floor(length(varargin)/2)
     end;
 end;
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%default prior
+if(isempty(X0)) X0=zeros(n_phase,n_freq); end;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%loca k-space setup
+%local k-space setup
 if(flag_local_k)
     dist_freq=floor(n_freq/local_k_size);
     dist_phase=floor(n_phase/local_k_size);
