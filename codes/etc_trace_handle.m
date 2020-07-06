@@ -134,9 +134,14 @@ switch lower(param)
                 fprintf('\n\n fhlin@dec 25, 2014\n');
             case 'a'
                 fprintf('archiving...\n');
-                fn=sprintf('etc_trace_obj.tif');
+                
+                tstr=datestr(datetime('now'),'mmddyy_HHMMss');
+                
+                fn=sprintf('etc_trace_obj_%s.tif',tstr);
                 fprintf('saving [%s]...\n',fn);
-                print(fn,'-dtiff');
+                set(gcf,'PaperPositionMode','auto')
+                print(fn,'-dtiff','-r0')
+                %print(fn,'-dtiff');
             case 'q'
                 fprintf('\nclosing all figures!\n');
                 close(etc_trace_obj.fig_trace);
@@ -791,7 +796,8 @@ if(isfield(etc_trace_obj,'aux_data'))
                 %hh=plot(etc_trace_obj.axis_trace, tmp,'color',etc_trace_obj.config_aux_trace_color);
                 hh_aux{ii}=plot(etc_trace_obj.axis_trace, tmp,'color',cc(mod(ii-1,7)+1,:));
                 %set(hh,'linewidth',etc_trace_obj.config_aux_trace_width,'color',etc_trace_obj.config_aux_trace_color);
-                set(hh_aux{ii},'linewidth',etc_trace_obj.config_aux_trace_width,'color',cc(mod(ii-1,7)+1,:));
+                %set(hh_aux{ii},'linewidth',etc_trace_obj.config_aux_trace_width,'color',cc(mod(ii-1,7)+1,:));
+                set(hh_aux{ii},'linewidth',etc_trace_obj.config_aux_trace_width,'color',etc_trace_obj.aux_data_color(ii,:));
                 
                 if(etc_trace_obj.aux_data_idx(ii))
                     set(hh_aux{ii},'Visible','on');                    
@@ -936,8 +942,17 @@ if(isfield(etc_trace_obj,'trace_selected_idx'))
                 
                 if(etc_trace_obj.config_aux_trace_flag)
                     for ii=1:length(etc_trace_obj.aux_data)
-                        set(hh_aux{ii}(etc_trace_obj.trace_selected_idx),'linewidth',4);
                         
+                        %automatic gray out other auxillary traces except
+                        %the selected one
+                        for jj=1:length(hh_aux{ii})
+                            if(jj~=etc_trace_obj.trace_selected_idx)
+                                set(hh_aux{ii}(jj),'linewidth',1,'color',[1 1 1].*0.7);
+                            else
+                                set(hh_aux{ii}(etc_trace_obj.trace_selected_idx),'linewidth',4);
+                            end;
+                        end;
+                            
                         if(etc_trace_obj.aux_data_idx(ii))
                             set(hh_aux{ii},'Visible','on');
                         else
@@ -1006,6 +1021,9 @@ try
             if(~isempty(etc_trace_obj.montage_ch_name))
                 set(etc_trace_obj.axis_trace,'ytick',diff(sort(etc_trace_obj.ylim)).*[0:(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-1)-1]);
                 set(etc_trace_obj.axis_trace,'yticklabels',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
+                %
+                %set(etc_trace_obj.axis_trace,'ButtonDownFcn',@etc_trace_callback);
+
             end;
         case 'butterfly'
             set(etc_trace_obj.axis_trace,'ytick',(diff(sort(etc_trace_obj.ylim)).*round(size(tmp,2)/2)));

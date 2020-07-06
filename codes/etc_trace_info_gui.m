@@ -237,34 +237,41 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
     select_idx=get(hObject,'Value');
     
     if(~isempty(select_idx))
-        try
-            main_data_str=etc_trace_obj.all_data_name{etc_trace_obj.all_data_main_idx};
-            
-            etc_trace_obj.all_data(select_idx)=[];
-            etc_trace_obj.all_data_name(select_idx)=[];
-            etc_trace_obj.all_data_aux_idx(select_idx)=[];
-            
-            
-            if(~isempty(etc_trace_obj.all_data))
-                if(select_idx~=etc_trace_obj.all_data_main_idx)
-                    IndexC=strfind(etc_trace_obj.all_data_name,main_data_str);
-                    etc_trace_obj.all_data_main_idx=find(not(cellfun('isempty',IndexC)));                   
-                else
-                    etc_trace_obj.all_data_main_idx=1;
+        
+        answer = questdlg(sprintf('Clear [%s]?',etc_trace_obj.all_data_name{select_idx}),'Clear data','Yes','No','No');
+        switch answer
+            case 'Yes'
+                
+                try
+                    main_data_str=etc_trace_obj.all_data_name{etc_trace_obj.all_data_main_idx};
+                    
+                    etc_trace_obj.all_data(select_idx)=[];
+                    etc_trace_obj.all_data_name(select_idx)=[];
+                    etc_trace_obj.all_data_aux_idx(select_idx)=[];
+                    etc_trace_obj.all_data_color(select_idx,:)=[];
+                    
+                    
+                    if(~isempty(etc_trace_obj.all_data))
+                        if(select_idx~=etc_trace_obj.all_data_main_idx)
+                            IndexC=strfind(etc_trace_obj.all_data_name,main_data_str);
+                            etc_trace_obj.all_data_main_idx=find(not(cellfun('isempty',IndexC)));
+                        else
+                            etc_trace_obj.all_data_main_idx=1;
+                        end;
+                    else
+                        etc_trace_obj.all_data_name='';
+                        etc_trace_obj.all_data_main_idx=[];
+                    end;
+                    
+                    update_data;
+                    
+                    etc_trace_handle('redraw');
+                    
+                    %get focus back to trigger window
+                    figure(etc_trace_obj.fig_info);
+                    
+                catch ME
                 end;
-            else
-                etc_trace_obj.all_data_name='';
-                etc_trace_obj.all_data_main_idx=[];
-            end;
-            
-            update_data;
-            
-            etc_trace_handle('redraw');
-            
-            %get focus back to trigger window
-            figure(etc_trace_obj.fig_info);
-            
-        catch ME
         end;
     end;
 end;
@@ -321,9 +328,17 @@ global etc_trace_obj;
 
 
 if(~isempty(etc_trace_obj.all_data_main_idx))
-    etc_trace_obj.data=etc_trace_obj.all_data{etc_trace_obj.all_data_main_idx};
+    if(~etc_trace_obj.flag_trigger_avg)
+        etc_trace_obj.data=etc_trace_obj.all_data{etc_trace_obj.all_data_main_idx};
+    else
+        etc_trace_obj.buffer.data=etc_trace_obj.all_data{etc_trace_obj.all_data_main_idx};
+    end;
 else
-    etc_trace_obj.data=[];
+    if(~etc_trace_obj.flag_trigger_avg)
+        etc_trace_obj.data=[];
+    else
+        etc_trace_obj.buffer.data=[];        
+    end;
 end;
 
 etc_trace_obj.aux_data={};
@@ -333,14 +348,30 @@ if(~etc_trace_obj.flag_trigger_avg)
     for i=1:length(idx)
         etc_trace_obj.aux_data{i}=etc_trace_obj.all_data{idx(i)};
         etc_trace_obj.aux_data_name{i}=etc_trace_obj.all_data_name{idx(i)};
+        etc_trace_obj.aux_data_color(i,:)=etc_trace_obj.all_data_color(idx(i),:);
     end;
     etc_trace_obj.aux_data_idx=idx;
 else
+    
+    for i=1:length(idx)
+        etc_trace_obj.aux_data{i}=etc_trace_obj.all_data{idx(i)};
+        etc_trace_obj.aux_data_name{i}=etc_trace_obj.all_data_name{idx(i)};
+        etc_trace_obj.aux_data_color(i,:)=etc_trace_obj.all_data_color(idx(i),:);
+    end;
+    etc_trace_obj.aux_data_idx=idx;
+    
+    etc_trace_obj.buffer.aux_data={};
+    etc_trace_obj.buffer.aux_data_name={};
+    etc_trace_obj.buffer.aux_data_color=[];   
     for i=1:length(idx)
         etc_trace_obj.buffer.aux_data{i}=etc_trace_obj.all_data{idx(i)};
         etc_trace_obj.buffer.aux_data_name{i}=etc_trace_obj.all_data_name{idx(i)};
+        etc_trace_obj.buffer.aux_data_color(i,:)=etc_trace_obj.all_data_color(idx(i),:);
     end;
     etc_trace_obj.buffer.aux_data_idx=idx;    
+
+    etc_trace_avg();
+
 end;
 
 %GUI

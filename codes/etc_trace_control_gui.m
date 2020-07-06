@@ -22,7 +22,7 @@ function varargout = etc_trace_control_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_control_gui
 
-% Last Modified by GUIDE v2.5 23-Jun-2020 03:46:16
+% Last Modified by GUIDE v2.5 05-Jul-2020 11:18:01
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1684,7 +1684,8 @@ switch answer
         etc_trace_obj.all_data_name={};
         etc_trace_obj.all_data_main_idx=[];
         etc_trace_obj.all_data_aux_idx=[];
-        
+        etc_trace_obj.all_data_color=[];
+                    
         
         
         select=eye(size(etc_trace_obj.data,1));
@@ -1881,6 +1882,12 @@ function listbox_montage_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns listbox_montage contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from listbox_montage
+global etc_trace_obj;
+
+
+etc_trace_obj.montage_idx=get(hObject,'Value');
+etc_trace_handle('redraw');
+
 
 
 % --- Executes during object creation, after setting all properties.
@@ -1900,9 +1907,17 @@ function update_data()
 global etc_trace_obj;
 
 if(~isempty(etc_trace_obj.all_data_main_idx))
-    etc_trace_obj.data=etc_trace_obj.all_data{etc_trace_obj.all_data_main_idx};
+    if(~etc_trace_obj.flag_trigger_avg)
+        etc_trace_obj.data=etc_trace_obj.all_data{etc_trace_obj.all_data_main_idx};
+    else
+        etc_trace_obj.buffer.data=etc_trace_obj.all_data{etc_trace_obj.all_data_main_idx};
+    end;
 else
-    etc_trace_obj.data=[];
+    if(~etc_trace_obj.flag_trigger_avg)
+        etc_trace_obj.data=[];
+    else
+        etc_trace_obj.buffer.data=[];        
+    end;
 end;
 
 etc_trace_obj.aux_data={};
@@ -1916,10 +1931,23 @@ if(~etc_trace_obj.flag_trigger_avg)
     etc_trace_obj.aux_data_idx=idx;
 else
     for i=1:length(idx)
+        etc_trace_obj.aux_data{i}=etc_trace_obj.all_data{idx(i)};
+        etc_trace_obj.aux_data_name{i}=etc_trace_obj.all_data_name{idx(i)};
+        etc_trace_obj.aux_data_color(i,:)=etc_trace_obj.all_data_color(idx(i),:);
+    end;
+    etc_trace_obj.aux_data_idx=idx;
+    
+    etc_trace_obj.buffer.aux_data={};
+    etc_trace_obj.buffer.aux_data_name={};
+    etc_trace_obj.buffer.aux_data_color=[];   
+    for i=1:length(idx)
         etc_trace_obj.buffer.aux_data{i}=etc_trace_obj.all_data{idx(i)};
         etc_trace_obj.buffer.aux_data_name{i}=etc_trace_obj.all_data_name{idx(i)};
+        etc_trace_obj.buffer.aux_data_color(i,:)=etc_trace_obj.all_data_color(idx(i),:);
     end;
     etc_trace_obj.buffer.aux_data_idx=idx;    
+
+    etc_trace_avg();   
 end;
 
 %GUI
@@ -1965,3 +1993,39 @@ if(~isempty(obj))
 end;
 
 return;
+
+
+% --- Executes on button press in pushbutton_window_c.
+function pushbutton_window_c_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_window_c (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+global etc_trace_obj;
+
+if(isempty(etc_trace_obj))
+    return;
+end;
+
+if(isempty(etc_trace_obj.trigger)) return; end;
+
+if(~isempty(etc_trace_obj.time_select_idx))
+    etc_trace_obj.time_window_begin_idx=etc_trace_obj.time_select_idx-round(etc_trace_obj.time_duration_idx*etc_trace_obj.config_trace_center_frac);
+    if(etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1>size(etc_trace_obj.data,2))
+        etc_trace_obj.time_window_begin_idx=size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx+1;
+        if(etc_trace_obj.time_window_begin_idx<1)
+            etc_trace_obj.time_window_begin_idx=1;
+        end;
+    end;
+end;
+
+% etc_trace_obj.data
+% etc_trace_obj.fs
+% etc_trace_obj.time_begin
+% etc_trace_obj.time_select_idx;
+% etc_trace_obj.time_window_begin_idx=round((str2double(get(hObject,'String'))-etc_trace_obj.time_begin).*etc_trace_obj.fs)+1;
+% etc_trace_obj.time_duration_idx
+% etc_trace_obj.flag_time_window_auto_adjust=0;
+% if((etc_trace_obj.time_window_begin_idx>=1)&&((etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1)<=size(etc_trace_obj.data,2)))
+etc_trcae_gui_update_time;

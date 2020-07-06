@@ -52,7 +52,7 @@ try
         zeros(1,size(mm,2)), 1];
     etc_trace_obj.montage{1}.config=config;
     etc_trace_obj.montage{1}.name=montage_name;
-    etc_trace_obj.montage_idx=1;
+    %etc_trace_obj.montage_idx=1; %no update on the montage_idx
     
     
     
@@ -80,15 +80,15 @@ try
             M(end+1,end+1)=1;
             
             etc_trace_obj.montage{m_idx+length(etc_trace_obj.montage)}.config_matrix=M;
-            etc_trace_obj.montage{m_idx+length(etc_trace_obj.montage)}.config=montage{m_idx}.config;
-            etc_trace_obj.montage{m_idx+length(etc_trace_obj.montage)}.name=montage{m_idx}.name;
+            etc_trace_obj.montage{end}.config=montage{m_idx}.config;
+            etc_trace_obj.montage{end}.name=montage{m_idx}.name;
             
             S=eye(size(etc_trace_obj.montage{end}.config,1)+1);
             S(ecg_idx,ecg_idx)=S(ecg_idx,ecg_idx)./10;
             etc_trace_obj.scaling{m_idx+length(etc_trace_obj.montage)}=S;
         end;
         %choose the last montage
-        etc_trace_obj.montage_idx=m_idx+length(etc_trace_obj.montage);
+        etc_trace_obj.montage_idx=length(etc_trace_obj.montage);
     end;
     
     %update channel name info
@@ -126,7 +126,8 @@ try
     obj=findobj('tag','listbox_montage');
     if(~isempty(obj))
         set(obj,'String',str);
-        set(obj,'Value',1);
+        %set(obj,'Value',1);
+        set(obj,'Value',etc_trace_obj.montage_idx);
     end;
     
     %channel listbox
@@ -163,18 +164,19 @@ try
     end;
 
     
-
-
-    
-    
     %trigger loading
     obj=findobj('Tag','listbox_trigger');
+    if(~isempty(obj))
+        trigger_idx=get(obj,'Value');
+    else
+        trigger_idx=1;
+    end;
     str={};
     if(~isempty(etc_trace_obj.trigger))
         fprintf('trigger loaded...\n');
         str=unique(etc_trace_obj.trigger.event);
         set(obj,'string',str);
-        etc_trace_obj.trigger_now=str{1};
+        etc_trace_obj.trigger_now=str{trigger_idx};
     else
         set(obj,'string',{'none'});
         etc_trace_obj.trigger_now='';
