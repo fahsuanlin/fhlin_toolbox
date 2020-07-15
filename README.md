@@ -1,6 +1,6 @@
 # The repository of neuroimaging analysis tools
 
-Goto the [wiki page](https://github.com/fahsuanlin/fhlin_toolbox/wiki) for examples of using these tools for various MRI/EEG/MEG analyses.
+This repository includes codes for various tools to process neuroimaging data, including magnetic resonance imaging (MRI), electroencephalography (EEG), and magnetoencephalography (MEG) of [our lab](). Goto the [wiki page](https://github.com/fahsuanlin/fhlin_toolbox/wiki) for examples of using these tools for various MRI/EEG/MEG analyses.
 
 Examples include MRI signal simulation, MRI  reconstruction, MEG/EEG processing, MRI rendering/exploration, invasive EEG (stereo-EEG, sEEG) modeling, MEG/EEG localization, fMRI experimental paradigm optimization, and causality modeling on neuroimaging data.
 
