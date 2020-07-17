@@ -214,15 +214,15 @@ if(etc_trace_obj.time_duration_idx<2)
 end;
 
 %check loaded data entries...
-ok=etc_trace_update_loaded_data(etc_trace_obj.load.montage,etc_trace_obj.load.select,etc_trace_obj.load.scale);
+ok=etc_trace_update_loaded_data(etc_trace_obj.load.montage,etc_trace_obj.load.select,etc_trace_obj.load.scale,'flag_redraw',0);
 
 etc_trace_obj.load_output=ok;
 
 delete(handles.figure_load_gui);
 
 if(etc_trace_obj.load_output) %if everything is ok...
-    etc_trcae_gui_update_time();
-    etc_trace_handle('redraw');
+    etc_trcae_gui_update_time(); %redraw is called in this routine
+    %etc_trace_handle('redraw');
 end;
 
 % --- Executes on button press in pushbutton_load_cancel.
@@ -271,19 +271,7 @@ if(indx)
         var=fn{indx};
         evalin('base',sprintf('global etc_trace_obj; if(ndims(%s)==2) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var,var));
         fprintf('Trying to load variable [%s] as the data...',var);
-        if(etc_trace_obj.tmp)
-            %             answer = questdlg('main or auxillary data?','Data',...
-            %                 'main','auxillary','cancel','main');
-            %             % Handle response
-            %             switch answer
-            %                 case 'main'
-            %                     f_option = 1;
-            %                 case 'auxillary'
-            %                     f_option = 2;
-            %                 case 'cancel'
-            %                     f_option= 0;
-            %             end
-            
+        if(etc_trace_obj.tmp)            
             
             prompt = {'name for the loaded data'};
             dlgtitle = '';
@@ -361,23 +349,93 @@ if(indx)
                 
                 update_data;
                 
-                select=diag(ones(1,size(etc_trace_obj.data,1)));
-                scaling=diag(ones(1,size(etc_trace_obj.data,1)));
+                %select=diag(ones(1,size(etc_trace_obj.data,1)));
+                %scaling=diag(ones(1,size(etc_trace_obj.data,1)));
                 
                 %append a selection and scaling variable for the imported
                 %data
-                etc_trace_update_loaded_data([],select,scaling,'select_name',sprintf('select_%s',name));
+                %etc_trace_update_loaded_data([],select,scaling,'select_name',sprintf('select_%s',name));
+                
+                
+                %if(isempty(montage))
+                mm=eye(size(etc_trace_obj.data,1));
+                montage_name='original';
+                
+                config={};
+                for idx=1:length(etc_trace_obj.ch_names);
+                    config{end+1,1}=etc_trace_obj.ch_names{idx};
+                    config{end,2}='';
+                end;
+                %end;
+                etc_trace_obj.montage{1}.config_matrix=[mm, zeros(size(mm,1),1)
+                    zeros(1,size(mm,2)), 1];
+                etc_trace_obj.montage{1}.config=config;
+                etc_trace_obj.montage{1}.name=montage_name;
+                etc_trace_obj.montage_idx=1;
+                
+                
+                
+%                 if(~isempty(montage))
+%                     for m_idx=1:length(montage)
+%                         
+%                         M=[];
+%                         ecg_idx=[];
+%                         for idx=1:size(montage{m_idx}.config,1)
+%                             m=zeros(1,length(etc_trace_obj.ch_names));
+%                             if(~isempty(montage{m_idx}.config{idx,1}))
+%                                 m(find(strcmp(lower(etc_trace_obj.ch_names),lower(montage{m_idx}.config{idx,1}))))=1;
+%                                 if((strcmp(lower(montage{m_idx}.config{idx,1}),'ecg')|strcmp(lower(montage{m_idx}.config{idx,1}),'ekg')))
+%                                     ecg_idx=union(ecg_idx,idx);
+%                                 end;
+%                             end;
+%                             if(~isempty(montage{m_idx}.config{idx,2}))
+%                                 m(find(strcmp(lower(etc_trace_obj.ch_names),lower(montage{m_idx}.config{idx,2}))))=-1;;
+%                                 if((strcmp(lower(montage{m_idx}.config{idx,2}),'ecg')|strcmp(lower(montage{m_idx}.config{idx,2}),'ekg')))
+%                                     ecg_idx=union(ecg_idx,idx);
+%                                 end;
+%                             end;
+%                             M=cat(1,M,m);
+%                         end;
+%                         M(end+1,end+1)=1;
+%                         
+%                         etc_trace_obj.montage{m_idx+1}.config_matrix=M;
+%                         etc_trace_obj.montage{m_idx+1}.config=montage{m_idx}.config;
+%                         etc_trace_obj.montage{m_idx+1}.name=montage{m_idx}.name;
+%                         
+%                         S=eye(size(etc_trace_obj.montage{end}.config,1)+1);
+%                         S(ecg_idx,ecg_idx)=S(ecg_idx,ecg_idx)./10;
+%                         etc_trace_obj.scaling{m_idx+1}=S;
+%                         
+%                         
+%                     end;
+%                     etc_trace_obj.montage_idx=m_idx+1;
+%                 end;
+                
+                
+                
+                
+%                if(isempty(select))
+                    select=eye(size(etc_trace_obj.data,1));
+                    select_name='all';
+%                end;
+                etc_trace_obj.select{1}=[select, zeros(size(select,1),1)
+                    zeros(1,size(select,2)), 1];
+                etc_trace_obj.select_name{1}=select_name;
+                etc_trace_obj.select_idx=1;
+                
+%                if(isempty(scaling))
+                    scaling{1}=eye(size(etc_trace_obj.data,1));
+%                else
+%                    scaling{1}=scaling;
+%                end;
+                ecg_idx=find(strcmp(lower(etc_trace_obj.ch_names),'ecg')|strcmp(lower(etc_trace_obj.ch_names),'ekg'));
+                scaling{1}(ecg_idx,ecg_idx)=scaling{1}(ecg_idx,ecg_idx)./10;
+                etc_trace_obj.scaling{1}=[scaling{1}, zeros(size(scaling{1},1),1)
+                    zeros(1,size(scaling{1},2)), 1];
+                etc_trace_obj.scaling_idx=1;
+                
                 
             else
-                
-                %                 %name = auxdatad_name_dialog;
-                %                 prompt = {'name for the aux. data'};
-                %                 dlgtitle = '';
-                %                 dims = [1 35];
-                %                 definput = {sprintf('aux_%02d',length(etc_trace_obj.aux_data)+1)};
-                %                 answer = inputdlg(prompt,dlgtitle,dims,definput);
-                %                 name=answer{1};
-                
                 %evalin('base',sprintf('etc_trace_obj.all_data{end+1}=%s; ',var));
                 evalin('base',sprintf('etc_trace_obj.tmp=%s; ',var));
                 
@@ -398,53 +456,14 @@ if(indx)
                 etc_trace_obj.all_data_name{end+1}=name;
                 etc_trace_obj.all_data_aux_idx=cat(2,etc_trace_obj.all_data_aux_idx,1);
                 
-                %evalin('base',sprintf('if(size(%s,1)~=size(etc_trace_obj.data,1)) etc_trace_obj.tmp=0; else etc_trace_obj.tmp=1; end',var));
-                
-                %if(etc_trace_obj.tmp==1)
                 
                 update_data;
                 
-%                 if(~etc_trace_obj.flag_trigger_avg)
-%                     evalin('base',sprintf('tmp=length(etc_trace_obj.aux_data); etc_trace_obj.aux_data{tmp+1}=%s;',var));
-%                     evalin('base',sprintf('if(~isfield(etc_trace_obj,''aux_data_name'')) etc_trace_obj.aux_data_name={}; end;',name));
-%                     evalin('base',sprintf('etc_trace_obj.aux_data_name{tmp+1}=''%s'';',name));
-%                 else
-%                     evalin('base',sprintf('tmp=length(etc_trace_obj.buffer.aux_data); etc_trace_obj.buffer.aux_data{tmp+1}=%s;',var));
-%                     evalin('base',sprintf('if(~isfield(etc_trace_obj.buffer,''aux_data_name'')) etc_trace_obj.buffer.aux_data_name={}; end;',name));
-%                     evalin('base',sprintf('etc_trace_obj.buffer.aux_data_name{tmp+1}=''%s'';',name));
-%                 end;
-%                 
-%                 if(~etc_trace_obj.flag_trigger_avg)
-%                     if(size(etc_trace_obj.aux_data{end},2)<=size(etc_trace_obj.data,2)) %append 'nan' if aux data is too short....
-%                         etc_trace_obj.aux_data{end}(:,end+1:size(etc_trace_obj.data,2))=nan;
-%                         fprintf('Warning!! [nan] is added to the aux. data [%s].\n',name);
-%                     end;
-%                     
-%                     
-%                     %etc_trace_obj.aux_data_idx=zeros(1,length(etc_trace_obj.aux_data));
-%                     etc_trace_obj.aux_data_idx(end+1)=1;
-%                     
-%                 else
-%                     if(size(etc_trace_obj.buffer.aux_data{end},2)<=size(etc_trace_obj.buffer.data,2)) %append 'nan' if aux data is too short....
-%                         etc_trace_obj.buffer.aux_data{end}(:,end+1:size(etc_trace_obj.buffer.data,2))=nan;
-%                         fprintf('Wrning!! [nan] is added to the aux. data [%s].\n',name);
-%                     end;
-%                     
-%                     %etc_trace_obj.buffer.aux_data_idx=zeros(1,length(etc_trace_obj.buffer.aux_data));
-%                     etc_trace_obj.buffer.aux_data_idx(end+1)=1;
-%                 end;
                 
                 obj=findobj('Tag','text_load_var');
                 set(obj,'String',sprintf('%s',var));
                 
-                
-%                 %data listbox in the control window
-%                 obj=findobj('Tag','listbox_data');
-%                 if(~isempty(obj))
-%                     set(obj,'String',etc_trace_obj.all_data_name);
-%                 end;
-                
-                
+                                
                 %data listbox in the info window
                 obj=findobj('Tag','listbox_info_data');
                 if(~isempty(obj))

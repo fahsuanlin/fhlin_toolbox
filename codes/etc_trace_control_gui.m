@@ -733,8 +733,12 @@ else
     xx=find(tmp>0);
     if(isempty(xx))
         idx=length(trigger_match_idx);
-    else
+    else %found next trigger time instant
         idx=xx(1);
+        
+        if(trigger_match_time_idx(idx)>size(etc_trace_obj.data,2)) %make sure the next trigger is within the data range
+            idx=idx-1;
+        end;
     end;
     
     if(idx>=length(trigger_match_idx)) idx=length(trigger_match_idx); end;
@@ -1761,6 +1765,22 @@ switch answer
         
         
         etc_trace_obj.montage_ch_name={};
+        etc_trace_obj.montage_idx=[];
+        etc_trace_obj.montage=[];
+        mm=eye(size(etc_trace_obj.data,1));
+        montage_name='original';
+        
+        config={};
+        for idx=1:length(etc_trace_obj.ch_names);
+            config{end+1,1}=etc_trace_obj.ch_names{idx};
+            config{end,2}='';
+        end;
+        %end;
+        etc_trace_obj.montage{1}.config_matrix=[mm, zeros(size(mm,1),1)
+            zeros(1,size(mm,2)), 1];
+        etc_trace_obj.montage{1}.config=config;
+        etc_trace_obj.montage{1}.name=montage_name;
+        etc_trace_obj.montage_idx=1;
         
         ok=etc_trace_update_loaded_data([],[],[]);
         
@@ -1886,6 +1906,9 @@ global etc_trace_obj;
 
 
 etc_trace_obj.montage_idx=get(hObject,'Value');
+
+etc_trace_obj.scaling_idx=etc_trace_obj.montage_idx;
+
 etc_trace_handle('redraw');
 
 

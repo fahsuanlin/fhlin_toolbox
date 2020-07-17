@@ -37,14 +37,14 @@ try
     set(hObject,'String',sprintf('%d',etc_trace_obj.time_select_idx));
     
     time_now=(etc_trace_obj.time_select_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin;
-    hObject=findobj('tag',' edit_time_now');
+    hObject=findobj('tag','edit_time_now');
     set(hObject,'String',sprintf('%1.4f',time_now));
     
     %time slider
     %v=(etc_trace_obj.time_begin_idx-1)/(size(etc_trace_obj.data,2)-etc_trace_obj.time_duration_idx);
     v=etc_trace_obj.time_select_idx/size(etc_trace_obj.data,2);
     hObject_slider=findobj('tag','slider_time_idx');
-    for i=1:length(hObject)
+    for i=1:length(hObject_slider)
         if(v<=hObject_slider(i).Max&&v>=hObject_slider(i).Min)
             set(hObject_slider(i),'value',v);
         end;

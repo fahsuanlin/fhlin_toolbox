@@ -865,6 +865,7 @@ if(etc_trace_obj.config_trace_flag)
             etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names={};
             for idx=1:length(hh)
                 m=etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix(idx,:);
+                %if(sum(abs(m))<eps) break; end;
                 ii=find(m>eps);
                 if(~isempty(ii))
                     ss=etc_trace_obj.ch_names{ii(1)};

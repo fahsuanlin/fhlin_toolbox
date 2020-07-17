@@ -79,16 +79,23 @@ try
             end;
             M(end+1,end+1)=1;
             
-            etc_trace_obj.montage{m_idx+length(etc_trace_obj.montage)}.config_matrix=M;
-            etc_trace_obj.montage{end}.config=montage{m_idx}.config;
-            etc_trace_obj.montage{end}.name=montage{m_idx}.name;
-            
-            S=eye(size(etc_trace_obj.montage{end}.config,1)+1);
-            S(ecg_idx,ecg_idx)=S(ecg_idx,ecg_idx)./10;
-            etc_trace_obj.scaling{m_idx+length(etc_trace_obj.montage)}=S;
+            %make sure channel names match at least one montage configuration
+            if((sum(abs(M(:)))-1)>eps)               
+                etc_trace_obj.montage{m_idx+length(etc_trace_obj.montage)}.config_matrix=M;
+                etc_trace_obj.montage{end}.config=montage{m_idx}.config;
+                etc_trace_obj.montage{end}.name=montage{m_idx}.name;
+                
+                S=eye(size(etc_trace_obj.montage{end}.config,1)+1);
+                S(ecg_idx,ecg_idx)=S(ecg_idx,ecg_idx)./10;
+                %etc_trace_obj.scaling{length(etc_trace_obj.montage)}=S;
+                etc_trace_obj.scaling{end+1}=S;
+            else
+                fprintf('None of channels in the montage [%s] was found matched with the existing channels! Error!\nThis montange was NOT loaded!\n',montage{m_idx}.name);
+            end;
         end;
         %choose the last montage
         etc_trace_obj.montage_idx=length(etc_trace_obj.montage);
+        etc_trace_obj.scaling_idx=etc_trace_obj.montage_idx;
     end;
     
     %update channel name info
@@ -156,13 +163,26 @@ try
         
     end;
     
-    if(~isempty(scaling))
-        ecg_idx=find(strcmp(lower(etc_trace_obj.ch_names),'ecg')|strcmp(lower(etc_trace_obj.ch_names),'ekg'));
-        scaling(ecg_idx,ecg_idx)=scaling(ecg_idx,ecg_idx)./10;
-        etc_trace_obj.scaling{end+1}=[scaling, zeros(size(scaling,1),1)
-            zeros(1,size(scaling,2)), 1];
-    end;
-
+%     if(~isempty(scaling))
+%         ecg_idx=find(strcmp(lower(etc_trace_obj.ch_names),'ecg')|strcmp(lower(etc_trace_obj.ch_names),'ekg'));
+%         scaling(ecg_idx,ecg_idx)=scaling(ecg_idx,ecg_idx)./10;
+%         etc_trace_obj.scaling{end+1}=[scaling, zeros(size(scaling,1),1)
+%             zeros(1,size(scaling,2)), 1];
+%         etc_trace_obj.scaling_idx=length(etc_trace_obj.scaling);
+%     end;
+%     
+    
+%     if(isempty(scaling))
+%         scaling{1}=eye(size(etc_trace_obj.data,1));
+%     else
+%         scaling{1}=scaling;
+%     end;
+%     ecg_idx=find(strcmp(lower(etc_trace_obj.ch_names),'ecg')|strcmp(lower(etc_trace_obj.ch_names),'ekg'));
+%     scaling{1}(ecg_idx,ecg_idx)=scaling{1}(ecg_idx,ecg_idx)./10;
+%     etc_trace_obj.scaling{1}=[scaling{1}, zeros(size(scaling{1},1),1)
+%         zeros(1,size(scaling{1},2)), 1];
+%     etc_trace_obj.scaling_idx=1;
+    
     
     %trigger loading
     obj=findobj('Tag','listbox_trigger');
