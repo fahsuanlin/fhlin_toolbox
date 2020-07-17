@@ -111,92 +111,84 @@ switch lower(param)
                         prompt = {'name for the loaded data'};
                         dlgtitle = '';
                         dims = [1 35];
-                        definput = {sprintf('data%02d',length(etc_render_fsbrain.overlay_buffer)+1)};
+                        [dummy,fstem]=fileparts(filename);
+                        %definput = {sprintf('data%02d',length(etc_render_fsbrain.overlay_buffer)+1)};
+                        definput = {fstem};
                         answer = inputdlg(prompt,dlgtitle,dims,definput);
-                        name=answer{1};
-                        
-                        
-                        etc_render_fsbrain.overlay_buffer(end+1).stc=stc;
-                        etc_render_fsbrain.overlay_buffer(end).name=name;
-                        etc_render_fsbrain.overlay_buffer(end).vertex=vv;
-                        etc_render_fsbrain.overlay_buffer(end).timeVec=timeVec;
-                        etc_render_fsbrain.overlay_buffer(end).hemi=hemi;
-                        
-                        str={};
-                        for str_idx=1:length(etc_render_fsbrain.overlay_buffer) str{str_idx}=etc_render_fsbrain.overlay_buffer(str_idx).name; end;
-                        set(findobj('tag','listbox_overlay_main'),'string',str);
-                            
-                        str={};
-                        for str_idx=1:length(etc_render_fsbrain.overlay_buffer) str{str_idx}=etc_render_fsbrain.overlay_buffer(str_idx).name; end;
-                        set(findobj('tag','listbox_overlay'),'string',str);
-                        
-                        
-                        set(findobj('tag','listbox_overlay'),'min',0);
-                        if(length(etc_render_fsbrain.overlay_buffer)==1)
-                            set(findobj('tag','listbox_overlay'),'max',2);
-                        else
-                            set(findobj('tag','listbox_overlay'),'max',length(etc_render_fsbrain.overlay_buffer));
-                        end;
-                        
-                        etc_render_fsbrain.overlay_buffer_idx=union(etc_render_fsbrain.overlay_buffer_idx,length(etc_render_fsbrain.overlay_buffer));
-                        set(findobj('tag','listbox_overlay'),'value',etc_render_fsbrain.overlay_buffer_idx);
-                        
-%                         answer = questdlg('replace main data or add as an auxillary data?','Menu',...
-%                             'replace as new','add as aux. data','cancel','replace as new');
-%                         % Handle response
-%                         switch answer
-%                             case 'replace as new'
-%                                 f_option = 1;
-%                             case 'add as aux. data'
-%                                 f_option = 2;
-%                             case 'cancel'
-%                                 f_option= 0;
-%                         end
-
-                        f_option=2;
-                        if(length(etc_render_fsbrain.overlay_buffer)==1) %the first STC is taken as the main layer
-                            etc_render_fsbrain.overlay_buffer_main_idx=1;
-                            set(findobj('tag','listbox_overlay_main'),'value',etc_render_fsbrain.overlay_buffer_main_idx);
-                                                        
-                            etc_render_fsbrain.overlay_stc=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).stc;
-                            etc_render_fsbrain.overlay_vertex=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).vertex;
-                            etc_render_fsbrain.overlay_stc_timeVec=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).timeVec;
-                            etc_render_fsbrain.stc_hemi=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).hemi;
+                        if(~isempty(answer))
+                            name=answer{1};
                             
                             
-                            etc_render_fsbrain.overlay_stc_timeVec_unit='ms';
-                            set(findobj('tag','text_timeVec_unit'),'string',etc_render_fsbrain.overlay_stc_timeVec_unit);
+                            etc_render_fsbrain.overlay_buffer(end+1).stc=stc;
+                            etc_render_fsbrain.overlay_buffer(end).name=name;
+                            etc_render_fsbrain.overlay_buffer(end).vertex=vv;
+                            etc_render_fsbrain.overlay_buffer(end).timeVec=timeVec;
+                            etc_render_fsbrain.overlay_buffer(end).hemi=hemi;
                             
-                            [tmp,etc_render_fsbrain.overlay_stc_timeVec_idx]=max(sum(etc_render_fsbrain.overlay_stc.^2,1));
-                            etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
-                            etc_render_fsbrain.overlay_stc_hemi=etc_render_fsbrain.overlay_stc;
+                            str={};
+                            for str_idx=1:length(etc_render_fsbrain.overlay_buffer) str{str_idx}=etc_render_fsbrain.overlay_buffer(str_idx).name; end;
+                            set(findobj('tag','listbox_overlay_main'),'string',str);
                             
-                            etc_render_fsbrain.overlay_flag_render=1;
-                            etc_render_fsbrain.overlay_value_flag_pos=1;
-                            etc_render_fsbrain.overlay_value_flag_neg=1;
-                        end;
-                        
-                        handle = findobj(etc_render_fsbrain.fig_gui,'type','uicontrol');
-                        if(~isempty(handle))
-                            for i=1:length(handle)
-                                eval(sprintf('handles.%s=handle(%d);', handle(i).Tag, i));
+                            str={};
+                            for str_idx=1:length(etc_render_fsbrain.overlay_buffer) str{str_idx}=etc_render_fsbrain.overlay_buffer(str_idx).name; end;
+                            set(findobj('tag','listbox_overlay'),'string',str);
+                            
+                            
+                            set(findobj('tag','listbox_overlay'),'min',0);
+                            if(length(etc_render_fsbrain.overlay_buffer)==1)
+                                set(findobj('tag','listbox_overlay'),'max',2);
+                            else
+                                set(findobj('tag','listbox_overlay'),'max',length(etc_render_fsbrain.overlay_buffer));
                             end;
-                            etc_render_fsbrain_gui_update(handles);
-                        end;
-                        
-                        
-                        if(f_option==2)
                             
-                             set(findobj('tag','listbox_overlay'),'value',length(etc_render_fsbrain.overlay_buffer(end)));
-                             
-                             if(size(etc_render_fsbrain.overlay_aux_stc(:,:,1))==size(etc_render_fsbrain.overlay_buffer(end).stc))
-                               %etc_render_fsbrain.overlay_aux_stc(:,:,end+1)=stc;
-                                etc_render_fsbrain.overlay_aux_stc(:,:,end+1)=etc_render_fsbrain.overlay_buffer(end).stc;
-                             else
-                                 fprintf('size for [%s] not compatible to the main layer [%s]. Data are not rendered until being seleted as the main layer.\n',name,str{etc_render_fsbrain.overlay_buffer_main_idx});
-                             end;                            
+                            etc_render_fsbrain.overlay_buffer_idx=union(etc_render_fsbrain.overlay_buffer_idx,length(etc_render_fsbrain.overlay_buffer));
+                            set(findobj('tag','listbox_overlay'),'value',etc_render_fsbrain.overlay_buffer_idx);
+                            
+                            
+                            f_option=2;
+                            if(length(etc_render_fsbrain.overlay_buffer)==1) %the first STC is taken as the main layer
+                                etc_render_fsbrain.overlay_buffer_main_idx=1;
+                                set(findobj('tag','listbox_overlay_main'),'value',etc_render_fsbrain.overlay_buffer_main_idx);
+                                
+                                etc_render_fsbrain.overlay_stc=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).stc;
+                                etc_render_fsbrain.overlay_vertex=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).vertex;
+                                etc_render_fsbrain.overlay_stc_timeVec=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).timeVec;
+                                etc_render_fsbrain.stc_hemi=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).hemi;
+                                
+                                
+                                etc_render_fsbrain.overlay_stc_timeVec_unit='ms';
+                                set(findobj('tag','text_timeVec_unit'),'string',etc_render_fsbrain.overlay_stc_timeVec_unit);
+                                
+                                [tmp,etc_render_fsbrain.overlay_stc_timeVec_idx]=max(sum(etc_render_fsbrain.overlay_stc.^2,1));
+                                etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
+                                etc_render_fsbrain.overlay_stc_hemi=etc_render_fsbrain.overlay_stc;
+                                
+                                etc_render_fsbrain.overlay_flag_render=1;
+                                etc_render_fsbrain.overlay_value_flag_pos=1;
+                                etc_render_fsbrain.overlay_value_flag_neg=1;
+                            end;
+                            
+                            handle = findobj(etc_render_fsbrain.fig_gui,'type','uicontrol');
+                            if(~isempty(handle))
+                                for i=1:length(handle)
+                                    eval(sprintf('handles.%s=handle(%d);', handle(i).Tag, i));
+                                end;
+                                etc_render_fsbrain_gui_update(handles);
+                            end;
+                            
+                            
+                            if(f_option==2)
+                                
+                                set(findobj('tag','listbox_overlay'),'value',length(etc_render_fsbrain.overlay_buffer(end)));
+                                
+                                if(size(etc_render_fsbrain.overlay_aux_stc(:,:,1))==size(etc_render_fsbrain.overlay_buffer(end).stc))
+                                    %etc_render_fsbrain.overlay_aux_stc(:,:,end+1)=stc;
+                                    etc_render_fsbrain.overlay_aux_stc(:,:,end+1)=etc_render_fsbrain.overlay_buffer(end).stc;
+                                else
+                                    fprintf('size for [%s] not compatible to the main layer [%s]. Data are not rendered until being seleted as the main layer.\n',name,str{etc_render_fsbrain.overlay_buffer_main_idx});
+                                end;
+                            end;
                         end;
-                        
                     elseif(findstr(filename,'.w')) %w file
                         [ww,vv]=inverse_read_wfile(sprintf('%s/%s',pathname,filename));
                         if(findstr(filename,'-lh'))
