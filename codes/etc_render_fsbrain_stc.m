@@ -159,7 +159,7 @@ end;
         view(-90,0);
         cp=campos;
         cp=cp./norm(cp);
-        campos(1900.*cp);
+        campos(2100.*cp);
         camlight;
         
         hh=axes('ActivePositionProperty','pos','pos',[1/4,0,1/4,1]);
@@ -169,7 +169,7 @@ end;
         view(90,0);
         cp=campos;
         cp=cp./norm(cp);
-        campos(1900.*cp);
+        campos(2100.*cp);
         camlight;
         
         hh=axes('pos',[2/4,0,1/4,1]);
@@ -179,7 +179,7 @@ end;
         view(-90,0);
         cp=campos;
         cp=cp./norm(cp);
-        campos(1900.*cp);
+        campos(2100.*cp);
         camlight;
         
         hh=axes('pos',[3/4,0,1/4,1]);
@@ -189,7 +189,7 @@ end;
         view(90,0);        
         cp=campos;
         cp=cp./norm(cp);
-        campos(1900.*cp);
+        campos(2100.*cp);
         camlight;
 
     elseif(flag_view_default6)

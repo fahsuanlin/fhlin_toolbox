@@ -324,7 +324,7 @@ else
             end;
         end;
         if(strcmp(c{i}.Tag,'pushbutton_goto'))
-            if(isempty(etc_render_fsbrain.vol|~strcmp(etc_render_fsbrain.surf,'orig')))
+            if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
                 c{i}.Enable='off';
             end;
         end;
@@ -2682,6 +2682,8 @@ function edit_mri_view_depth_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of edit_mri_view_depth as a double
         
 global etc_render_fsbrain;
+
+etc_render_fsbrain.show_all_contacts_mri_depth=str2double(get(hObject,'String'));
 
 etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord','min_dist_idx',[],'click_vertex_vox',[]);
 %etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord);
