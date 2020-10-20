@@ -2,12 +2,16 @@ function []=etc_animgif(data,varargin)
 
 filename=[];
 
+flag_frame_num=0;
+
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
     switch lower(option)
         case 'filename'
             filename=option_value;
+        case 'flag_frame_num'
+            flag_frame_num=option_value;
         otherwise
             fprintf('no option [%s]. error!\n',option);
             return;
@@ -24,6 +28,11 @@ for n = 1:size(data,3)
     imagesc(data(:,:,n));
     axis off image;
     etc_plotstyle;
+    
+    if(flag_frame_num)
+        hh=text(ceil(size(data,2)./10), ceil(size(data,1)./10),num2str(n));
+        set(hh,'color','w');
+    end;
     drawnow
     % Capture the plot as an image
     frame = getframe(h);

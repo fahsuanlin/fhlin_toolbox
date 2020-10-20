@@ -187,7 +187,20 @@ elseif(~isempty(K_general))
     n_encode=size(K_general,1);
 end;
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% intensity correction
 
+I=zeros(size(S,1),size(S,2));
+for i=1:size(S,3)
+    I=I+abs(S(:,:,i)).^2;
+end;
+
+I=1./(I);
+%I=ones(size(I));
+I=1./sqrt(I);
+
+X=X.*I;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % FT2
 %implemeting FT part by time-domin reconstruction (TDR)

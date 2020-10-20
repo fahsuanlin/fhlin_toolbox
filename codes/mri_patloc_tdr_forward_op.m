@@ -158,10 +158,26 @@ n_chan=size(S,3);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% intensity correction
+
+I=zeros(size(S,1),size(S,2));
+for i=1:size(S,3)
+    I=I+abs(S(:,:,i)).^2;
+end;
+
+I=1./(I);
+I=ones(size(I));
+%I=1./sqrt(I);
+
+X=X.*I;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % FT2
 %implemeting FT part by time-domin reconstruction (TDR)
 %get the sampling time k-space coordinate.
+
 if((~isempty(K)|~isempty(K_arbitrary)))
     for i=1:size(S,3)
         % S (sensitivity)

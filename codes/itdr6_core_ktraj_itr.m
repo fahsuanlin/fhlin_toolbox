@@ -1,18 +1,24 @@
-function [recon,b,delta,g2_gfactor,Local_kspace]=itdr4_core_ktraj_cg(varargin);
+function [ll_est, ll]=itdr6_core_ktraj_itr(varargin);
 %
-%	itdr4_core_ktraj_cg		perform generalized PatLoc reconstruction using
-%	time-domain signals and the conjugated gradient method in Cartesian
-%	sampling trajectory
+%	itdr6_core_ktraj_itr		perform iterative encoding-decoding using
+%	time-domain signals and with an arbitrary sampling trajectory and
+%	spatial encoding magnetic fields
 %
 %
-%	[recon,b,delta]=itdr4_core_ktraj_cg('Y',Y,'S',S,'G',G,'K',K,'flag_display',1);
+%	[ll]=itdr6_core_ktraj_itr('Y',Y,'S',S,'G',G,'K',K,'flag_display',1);
 %
 %	INPUT:
+%	X: object to be encoded [n_PE, n_FE].
+%		n_PE: # of phase encoding
+%		n_FE: # of frequency encoding
 %	Y: input data of {n_G}[n_PE, n_FE, n_chan].
 %		n_G: # of spatial encoding magnetic fields
 %		n_PE: # of phase encoding
 %		n_FE: # of frequency encoding
 %		n_chan: # of channel
+%	R: source auto-covariance [n_PE, n_FE].
+%		n_PE: # of phase encoding
+%		n_FE: # of frequency encoding
 %	S: coil sensitivity maps of [n_PE, n_FE, n_chan].
 %		n_PE: # of phase encoding
 %		n_FE: # of frequency encoding
@@ -53,14 +59,8 @@ function [recon,b,delta,g2_gfactor,Local_kspace]=itdr4_core_ktraj_cg(varargin);
 %		It indicates of debugging information is on or off.
 %
 %	OUTPUT:
-%	recon: 2D un-regularized SENSE reconstruction [n_PE, n_PE].
-%		n_PE: # of phase encoding steps
-%		n_FE: # of frequency encoding steps
-%	b: history of all 2D un-regularized SENSE reconstruction [n_PE, n_PE, n_CG].
-%		n_PE: # of phase encoding steps
-%		n_FE: # of frequency encoding steps
-%		n_CG: # of CG iteration
-%	delta: history of all errors in CG iteration [n_CG, 1]
+%	ll_est: estimated the largest singular value [1]
+%	ll: history of estimated the largest singular value [n_CG, 1]
 %		n_CG: # of CG iteration
 %
 %---------------------------------------------------------------------------------------
@@ -76,14 +76,14 @@ function [recon,b,delta,g2_gfactor,Local_kspace]=itdr4_core_ktraj_cg(varargin);
 
 S=[];
 Y=[];
+R=[];
+X=[];
 K=[];
 K_general=[];
 K_arbitrary=[];
 G=[];
 G_general=[];
 gfactor=[];
-X0=[];
-lambda=0;
 
 %off-resonance
 dF_general=[];
@@ -94,6 +94,11 @@ n_freq=[];
 n_phase=[];
 
 flag_cg_gfactor=0;
+
+%regularization
+lambda=0;
+X0=[];
+sparse_tx='id';
 
 flag_display=0;
 flag_debug=0;
@@ -118,12 +123,16 @@ for i=1:floor(length(varargin)/2)
     switch lower(option)
         case 's'
             S=option_value;
+        case 'x'
+            X=option_value;
         case 'df_general'
             dF_general=option_value;
         case 'dft_general'
             dFt_general=option_value;
         case 'y'
             Y=option_value;
+        case 'r'
+            R=option_value;
         case 'k'
             K=option_value;
         case 'k_arbitrary'
@@ -138,6 +147,8 @@ for i=1:floor(length(varargin)/2)
             lambda=option_value;
         case 'x0'
             X0=option_value;
+        case 'sparse_tx'
+            sparse_tx=option_value;
         case 'n_freq';
             n_freq=option_value;
         case 'n_phase'
@@ -215,108 +226,35 @@ for i=1:size(S,3)
     I=I+abs(S(:,:,i)).^2;
 end;
 
-I=I+lambda.*lambda.*ones(size(I));
-
-I=1./sqrt(I);
+I=1./(I);
+I=ones(size(I));
+%I=1./sqrt(I);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if(~flag_cg_gfactor)
-    % FT1
-    %implemeting IFT part by time-domin reconstruction (TDR)
-    %get the sampling time k-space coordinate.
-    recon2=zeros(n_phase*n_freq,n_chan);
-    if((~isempty(K)|~isempty(K_arbitrary)))
-
-        for g_idx=1:length(G)
-            if(~isempty(K))
-                Y{g_idx}=reshape(Y{g_idx},[n_phase*n_freq, n_chan]);
-            end;
-
-            grid_freq=G(g_idx).freq;
-            grid_phase=G(g_idx).phase;
-
-            k_freq_prep=sqrt(-1).*(1).*2.*pi./n_freq.*grid_freq;
-            k_phase_prep=sqrt(-1).*(1).*2.*pi./n_phase.*grid_phase;
-
-            if(~isempty(K))
-                k_idx=find(K{g_idx}(:)>eps);
-                [k_idx_phase,k_idx_freq]=ind2sub([n_phase,n_freq],k_idx);
-            elseif(~isempty(K_arbitrary))
-                k_idx=[1:size(K_arbitrary{g_idx},1)];
-                k_idx_phase=K_arbitrary{g_idx}(:,2).*(n_phase/2)+n_phase/2+1;
-                k_idx_freq=K_arbitrary{g_idx}(:,1).*(n_freq/2)+n_freq/2+1;
-            end;
-
-            for calc_idx=1:ceil(length(k_idx)/n_calc)
-                if(calc_idx~=ceil(length(k_idx)/n_calc))
-                    k_idx_phase_now=k_idx_phase((calc_idx-1)*n_calc+1:calc_idx*n_calc);
-                    k_idx_freq_now=k_idx_freq((calc_idx-1)*n_calc+1:calc_idx*n_calc);
-                    k_idx_now=k_idx((calc_idx-1)*n_calc+1:calc_idx*n_calc);
-                else
-                    k_idx_phase_now=k_idx_phase((calc_idx-1)*n_calc+1:length(k_idx));
-                    k_idx_freq_now=k_idx_freq((calc_idx-1)*n_calc+1:length(k_idx));
-                    k_idx_now=k_idx((calc_idx-1)*n_calc+1:length(k_idx));
-                end;
-                k_phase=(exp(k_phase_prep(:)*[k_idx_phase_now-floor(n_phase./2)-1]'));
-                k_freq=(exp(k_freq_prep(:)*[k_idx_freq_now-floor(n_freq./2)-1]'));
-
-                k_encode=repmat(k_freq.*k_phase,[1 1 n_chan]);
-                x=permute(repmat(Y{g_idx}(k_idx_now,:),[1 1 size(k_encode,1)]),[3 1 2]);
-
-                recon2=recon2+squeeze(sum(x.*k_encode,2));
-            end;
-        end;
-
-    elseif(~isempty(K_general))
-        k_prep=sqrt(-1).*(1).*2.*pi.*G_tmp./2;
-        k_idx=[1:size(K_general,1)];
-        for calc_idx=1:ceil(size(K_general,1)/n_calc)
-            if(calc_idx~=ceil(length(k_idx)/n_calc))
-                k_idx_now=k_idx((calc_idx-1)*n_calc+1:calc_idx*n_calc);
-            else
-                k_idx_now=k_idx((calc_idx-1)*n_calc+1:length(k_idx));
-            end;
-            k_encode=exp(k_prep*transpose(K_general(k_idx_now,:)));
-            
-            if(~isempty(dF_general)&&~isempty(dFt_general))
-                k_encode=k_encode.*exp(sqrt(-1).*(1).*2.*pi.*(dF_general(:)*dFt_general(k_idx_now)));
-            end;
-            
-            recon2=recon2+(k_encode)*Y(k_idx_now,:);
-        end;
-    end;
-
-    recon2=reshape(recon2,[n_phase, n_freq, n_chan]);
-    if(flag_display) fprintf('\n'); end;
-
-    for i=1:n_chan
-        % S' (complex-conjugated sensitivity)
-        temp(:,:,i)=recon2(:,:,i).*conj(S(:,:,i));
-    end;
-    %intensity correction here
-    a=sum(temp,3).*I;
-
-    %add regularization term.
-    % In the case with a regularization term, the formulation is equivalent to augmenting the forward operator A with an identity matrix weighted by a regularization parameter.
-    % The identity matrix may be replaced by other linear operators to implement, for example, total variation or wavelet transform.
-    
-    a=a+lambda.*lambda.*X0.*I;
-    %a=a+lambda.*lambda.*del2(X0).*I;
+if(isempty(R))
+    R=ones(size(I));
 else
-    a=Y{1}(:,:,1).*I;
+    R=R./max(R(:));
 end;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if(isempty(X))
+    X=randn(n_phase,n_freq);
+end;
+X=X./norm(X(:));
 
 convergence=0;
 iteration_idx=2;
 
 b(:,:,1)=zeros(n_phase,n_freq);
-p(:,:,1)=a;
-r(:,:,1)=a;
+p(:,:,1)=X;
+r(:,:,1)=X;
 
 if(isempty(epsilon))
     epsilon=0;
@@ -348,24 +286,42 @@ while(~convergence)
         convergence=1;
         delta(end)=[];
     else
-        if(iteration_idx==2)
-            p(:,:,iteration_idx)=r(:,:,1);
-        else
-            ww=sum(sum(abs(r(:,:,iteration_idx-1)).^2))/sum(sum(abs(r(:,:,iteration_idx-2)).^2));
-            p(:,:,iteration_idx)=r(:,:,iteration_idx-1)+ww.*p(:,:,iteration_idx-1);
-        end;
-
+        %if(iteration_idx==2)
+        %    p(:,:,iteration_idx)=r(:,:,1);
+        %else
+        %    ww=sum(sum(abs(r(:,:,iteration_idx-1)).^2))/sum(sum(abs(r(:,:,iteration_idx-2)).^2));
+        %    p(:,:,iteration_idx)=r(:,:,iteration_idx-1)+ww.*p(:,:,iteration_idx-1);
+        %end;
+        p(:,:,iteration_idx)=r(:,:,iteration_idx-1);
+        
         %intensity correction here
-        ss=p(:,:,iteration_idx).*I;
+        ss=sqrt(R).*p(:,:,iteration_idx).*I;
 
-        ss0=p(:,:,iteration_idx).*I;
+        ss0=sqrt(R).*p(:,:,iteration_idx).*I;
 
 
         if(flag_cg_gfactor&iteration_idx==2)
-            ss_gfactor=Y{1}(:,:,1);
+            ss_gfactor=sqrt(R).*Y{1}(:,:,1);
         else
             ss_gfactor=[];
         end
+        
+        
+        if(lambda>eps)
+            switch(sparse_tx)
+                    case 'id' %identity
+                        ss_reg=lambda.*sqrt(R).*p(:,:,iteration_idx);
+                        ss0_reg=lambda.*sqrt(R).*p(:,:,iteration_idx);
+                    case 'cs' %wavelet transform
+                        [ss_reg_c,ss_reg_s] = wavedec2(sqrt(R).*p(:,:,iteration_idx),4,'db4');
+                        [ss0_reg_c,ss0_reg_s] = wavedec2(sqrt(R).*p(:,:,iteration_idx),4,'db4');
+                        ss_reg_c=ss_reg_c.*lambda;
+                        ss0_reg_c=ss0_reg_c.*lambda;
+                    case 'del2' %discrete laplacian
+                        ss_reg=lambda.*sqrt(R).*del2(p(:,:,iteration_idx));
+                        ss0_reg=lambda.*sqrt(R).*del2(p(:,:,iteration_idx));
+                end;
+        end;
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%         E          %%%%
@@ -626,44 +582,65 @@ while(~convergence)
 
         %intensity correction here
         xx=sum(temp,3).*I;
-
+        
+        xx=xx.*sqrt(R);
+        
         %add regularization term
         % In the case with a regularization term, the formulation is equivalent to augmenting the forward operator A with an identity matrix weighted by a regularization parameter.
         % The identity matrix may be replaced by other linear operators to implement, for example, total variation or wavelet transform.
         
-        xx=xx+lambda.*lambda.*ss0.*I;
-        %xx=xx+lambda.*lambda.*del2(ss0).*I;
+        if(lambda>eps)
+            switch(sparse_tx)
+                case 'id' %identity
+                    xx=xx+lambda.*sqrt(R).*ss0_reg;
+                case 'cs' %wavelet transform
+                    xx=xx+lambda.*sqrt(R).*waverec2(ss0_reg_c,ss0_reg_s,'db4');
+                case 'del2' %discrete laplacian
+                    xx=xx+lambda.*sqrt(R).*del2(ss0_reg);
+            end;
+        end;
         
         if(~isempty(ss_gfactor))
-            g2_gfactor=sum(temp_gfactor,3);
+            g2_gfactor=sum(temp_gfactor,3).*I;
+            
+            g2_gfactor=g2_gfactor.*sqrt(R);
         end;
-
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-        %%% CG starts
-        q=xx;
-        w=sum(sum(abs(r(:,:,iteration_idx-1)).^2))/sum(sum(conj(p(:,:,iteration_idx)).*q));
-        b(:,:,iteration_idx)=b(:,:,iteration_idx-1)+p(:,:,iteration_idx).*w;
-        r(:,:,iteration_idx)=r(:,:,iteration_idx-1)-q.*w;
-        %%% CG ends
-
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-        if(flag_debug)
-            subplot(131);
-            imagesc(abs(b(:,:,iteration_idx).*I)); colormap(gray); axis off image; colorbar;
-
-            subplot(132);
-            imagesc(abs(r(:,:,iteration_idx))); colormap(gray); axis off image; colorbar;
-
-            subplot(133);
-            imagesc(abs(p(:,:,iteration_idx))); colormap(gray); axis off image; colorbar;
-        end;
-        iteration_idx=iteration_idx+1;
+        w(:,:,iteration_idx)=xx;
+        r(:,:,iteration_idx)=xx./norm(xx(:));
+        tmp=real(w(:,:,end)./r(:,:,end));
+        ll(:,iteration_idx)=sqrt(mean(tmp(:)));
+%         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%         %%% CG starts
+%         q=xx;
+%         w=sum(sum(abs(r(:,:,iteration_idx-1)).^2))/sum(sum(conj(p(:,:,iteration_idx)).*q));
+%         b(:,:,iteration_idx)=b(:,:,iteration_idx-1)+p(:,:,iteration_idx).*w;
+%         r(:,:,iteration_idx)=r(:,:,iteration_idx-1)-q.*w;
+%         %%% CG ends
+% 
+%         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%         if(flag_debug)
+%             subplot(131);
+%             imagesc(abs(b(:,:,iteration_idx).*I)); colormap(gray); axis off image; colorbar;
+% 
+%             subplot(132);
+%             imagesc(abs(r(:,:,iteration_idx))); colormap(gray); axis off image; colorbar;
+% 
+%             subplot(133);
+%             imagesc(abs(p(:,:,iteration_idx))); colormap(gray); axis off image; colorbar;
+%         end;
 
         if(iteration_idx > iteration_max)
             convergence=1;
+        elseif(iteration_idx > 5)
+            if(abs((ll(:,iteration_idx)-ll(:,iteration_idx-1))./ll(:,iteration_idx))<1e-6)
+                convergence=1;
+            end;
         end;
+
+        iteration_idx=iteration_idx+1;
+
     end;
     if(flag_display) fprintf('\n'); end;
 end;
@@ -672,15 +649,17 @@ if(flag_display)
     fprintf('\n');
 end;
 
-%finalize output
-if(size(b,3)>1)
-    b(:,:,1)=[];
-    delta(1)=[];
-end;
 
-%intensity correction for all;
-for i=1:size(b,3)
-    b(:,:,i)=b(:,:,i).*I;
-end;
-
-recon=b(:,:,end);
+ll_est=ll(end);
+% %finalize output
+% if(size(b,3)>1)
+%     b(:,:,1)=[];
+%     delta(1)=[];
+% end;
+% 
+% %intensity correction for all;
+% for i=1:size(b,3)
+%     b(:,:,i)=b(:,:,i).*I;
+% end;
+% 
+% recon=b(:,:,end);
