@@ -196,8 +196,8 @@ for i=1:size(S,3)
 end;
 
 I=1./(I);
-%I=ones(size(I));
-I=1./sqrt(I);
+I=ones(size(I));
+%I=1./sqrt(I);
 
 X=X.*I;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
