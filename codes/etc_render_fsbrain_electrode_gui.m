@@ -1660,6 +1660,9 @@ if(~isempty(etc_render_fsbrain.vol))
                     fprintf('MNI_x(mm)\tMNI_y(mm)\tMNI_z(mm)\t\t');
                     fprintf('TAL_x(mm)\tTAL_y(mm)\tTAL_z(mm)\t\t');
                 end;
+                if(~isempty(etc_render_fsbrain.overlay_vol_mask))
+                    fprintf('anatomical label\t\t');
+                end;
                 fprintf('\n');
             end;
             fprintf('%s_%d\t%1.0f\t%1.0f\t%1.0f\t\t',etc_render_fsbrain.electrode(e_idx).name,c_idx,click_vertex_vox_now(1), click_vertex_vox_now(2), click_vertex_vox_now(3));
@@ -1688,6 +1691,13 @@ M2T.downZ = [ 0.9900         0         0         0;
                     click_vertex_point_true_tal=(M2T.rotn * M2T.upZ) * click_vertex_point_tal(:);
                 end;
                 fprintf('%1.0f\t%1.0f\t%1.0f\t\t',click_vertex_point_true_tal(1), click_vertex_point_true_tal(2), click_vertex_point_true_tal(3));
+                
+                if(~isempty(etc_render_fsbrain.overlay_vol_mask))
+                    %fprintf('%d\t\t',etc_render_fsbrain.overlay_vol_mask.vol(click_vertex_vox_now(2),click_vertex_vox_now(1),click_vertex_vox_now(3)));
+                    tmp=etc_render_fsbrain.overlay_vol_mask.vol(click_vertex_vox_now(2),click_vertex_vox_now(1),click_vertex_vox_now(3));
+                    ii=find(etc_render_fsbrain.lut.number==tmp);
+                    fprintf('%s\t\t',etc_render_fsbrain.lut.name{ii});
+                end;
  
             end;
             fprintf('\n');
@@ -1739,6 +1749,9 @@ for e_idx=1:length(etc_render_fsbrain.electrode)
                 fprintf(fp,'MNI_x(mm)\tMNI_y(mm)\tMNI_z(mm)\t\t');
                 fprintf(fp,'TAL_x(mm)\tTAL_y(mm)\tTAL_z(mm)\t\t');
             end;
+            if(~isempty(etc_render_fsbrain.overlay_vol_mask))
+                fprintf('anatomical label\t\t');
+            end;
             fprintf(fp,'\n');
         end;
         fprintf(fp,'%s_%d\t%1.0f\t%1.0f\t%1.0f\t\t',etc_render_fsbrain.electrode(e_idx).name,c_idx,click_vertex_vox_now(1), click_vertex_vox_now(2), click_vertex_vox_now(3));
@@ -1767,7 +1780,12 @@ for e_idx=1:length(etc_render_fsbrain.electrode)
             end;
             fprintf(fp,'%1.0f\t%1.0f\t%1.0f\t\t',click_vertex_point_true_tal(1), click_vertex_point_true_tal(2), click_vertex_point_true_tal(3));
             
-            
+            if(~isempty(etc_render_fsbrain.overlay_vol_mask))
+                %fprintf('%d\t\t',etc_render_fsbrain.overlay_vol_mask.vol(click_vertex_vox_now(2),click_vertex_vox_now(1),click_vertex_vox_now(3)));
+                tmp=etc_render_fsbrain.overlay_vol_mask.vol(click_vertex_vox_now(2),click_vertex_vox_now(1),click_vertex_vox_now(3));
+                ii=find(etc_render_fsbrain.lut.number==tmp);
+                fprintf(fp,'%s\t\t',etc_render_fsbrain.lut.name{ii});
+            end;            
         end;
         fprintf(fp,'\n');
     end;

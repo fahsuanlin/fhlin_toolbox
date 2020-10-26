@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_gui
 
-% Last Modified by GUIDE v2.5 10-Jun-2020 02:15:11
+% Last Modified by GUIDE v2.5 26-Oct-2020 14:24:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -275,19 +275,23 @@ set(handles.edit_click_point_size,'string',sprintf('%d',etc_render_fsbrain.click
 set(handles.checkbox_overlay_truncate_neg,'value',etc_render_fsbrain.flag_overlay_truncate_neg);
 set(handles.checkbox_overlay_truncate_pos,'value',etc_render_fsbrain.flag_overlay_truncate_pos);
 
-if(isempty(etc_render_fsbrain.lut))
-    set(handles.listbox_overlay_vol_mask,'string',{});
-    set(handles.listbox_overlay_vol_mask,'enable','off');
-    set(handles.checkbox_overlay_aux_vol,'enable','off');                                                        
-    set(handles.slider_overlay_aux_vol,'enable','off');                                                          
-    set(handles.pushbutton_overlay_aux_vol,'enable','off');
-else
-    set(handles.listbox_overlay_vol_mask,'string',etc_render_fsbrain.lut.name);
+% if(isempty(etc_render_fsbrain.lut))
+%     set(handles.listbox_overlay_vol_mask,'string',{});
+%     set(handles.listbox_overlay_vol_mask,'enable','off');
+%     set(handles.checkbox_overlay_aux_vol,'enable','off');                                                        
+%     set(handles.slider_overlay_aux_vol,'enable','off');                                                          
+%     set(handles.pushbutton_overlay_aux_vol,'enable','off');
+% else
+    if(~isempty(etc_render_fsbrain.lut))
+        set(handles.listbox_overlay_vol_mask,'string',etc_render_fsbrain.lut.name);
+    else
+        set(handles.listbox_overlay_vol_mask,'string',{});
+    end;
     set(handles.listbox_overlay_vol_mask,'enable','on');
     set(handles.checkbox_overlay_aux_vol,'enable','on');                                                        
     set(handles.slider_overlay_aux_vol,'enable','on');
     set(handles.pushbutton_overlay_aux_vol,'enable','on');
-end;                            
+%end;                            
 
 % Update handles structure
 guidata(hObject, handles);
@@ -1641,9 +1645,12 @@ global etc_render_fsbrain;
 %obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
 %                    idx=get(obj,'value');
 
-etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
-etc_render_fsbrain_handle('draw_stc');
-
+if(isempty(etc_render_fsbrain.overlay_vol_mask))
+    etc_render_fsbrain_handle('kb','cc','l');
+else
+    etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
+    etc_render_fsbrain_handle('draw_stc');
+end;
 % --- Executes during object creation, after setting all properties.
 function listbox_overlay_vol_mask_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to listbox_overlay_vol_mask (see GCBO)
@@ -2017,4 +2024,3 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
         end;
     end;
 end;
-

@@ -1445,6 +1445,13 @@ try
             etc_render_fsbrain.click_vertex_point_round_tal=etc_render_fsbrain.click_vertex_point_round_tal(1:3)';
             fprintf('MNI305 coordinate for the surface location closest to the clicked point (x, y, ,z) = (%1.0f %1.0f %1.0f)\n',etc_render_fsbrain.click_vertex_point_round_tal(1),etc_render_fsbrain.click_vertex_point_round_tal(2),etc_render_fsbrain.click_vertex_point_round_tal(3));
         end;
+        
+        if(~isempty(etc_render_fsbrain.overlay_vol_mask))
+                    %fprintf('%d\t\t',etc_render_fsbrain.overlay_vol_mask.vol(etc_render_fsbrain.click_vertex_vox_round(2),etc_render_fsbrain.click_vertex_vox_round(1),etc_render_fsbrain.click_vertex_vox_round(3)));
+                    tmp=etc_render_fsbrain.overlay_vol_mask.vol(etc_render_fsbrain.click_vertex_vox_round(2),etc_render_fsbrain.click_vertex_vox_round(1),etc_render_fsbrain.click_vertex_vox_round(3));
+                    ii=find(etc_render_fsbrain.lut.number==tmp);
+                    fprintf('anatomical label:: <<%s>>\n',etc_render_fsbrain.lut.name{ii});
+        end;
         try
             [zz,xx,yy]=size(etc_render_fsbrain.vol.vol);
             mm=max([zz yy xx]);
