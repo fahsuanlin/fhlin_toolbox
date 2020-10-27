@@ -56,6 +56,10 @@ topo_flag_render=0;
 topo_fixval_flag=0;
 topo_Ds=[];
 
+overlay_buffer=[];
+overlay_buffer_idx=[];
+overlay_buffer_main_idx=[];
+
 topo_truncate_pos=0;
 topo_truncate_neg=0;
 
@@ -66,10 +70,10 @@ topo_aux_point_coords=[];
 topo_aux_point_coords_h=[];
 topo_aux_point_name={};
 topo_aux_point_name_h=[];
-topo_aux_point_color=[0.39 0.83 0.07];
+topo_aux_point_color=[0    0.4471    0.7412];
 topo_aux_point_size=0.002;
 topo_aux_point_label_flag=1;
-topo_aux_point_text_color=[0.39 0.83 0.07];
+topo_aux_point_text_color=[0.6353    0.0784    0.1843];
 topo_aux_point_text_size=20;
 
 
@@ -79,7 +83,19 @@ topo_aux2_point_coords_h=[];
 topo_aux2_point_name={};
 topo_aux2_point_name_h=[];
 topo_aux2_point_color=[0.3984    0.5977         0];
-topo_aux2_point_size=6;
+topo_aux2_point_size=44;
+topo_aux2_point_color_e=[0.3984    0.5977         0];
+topo_aux2_point_size_e=44;
+topo_aux2_point_color_c=[0.3984    0.5977         0];
+topo_aux2_point_size_c=44;
+
+selected_electrode_size=44;
+selected_electrode_flag=1;
+selected_electrode_color=[0 0 1];
+
+selected_contact_size=44;
+selected_contact_flag=1;
+selected_contact_color=[0 1 1];
 
 topo_exclude_fstem='';
 topo_exclude=[];
@@ -552,6 +568,10 @@ etc_render_fsbrain.overlay_Ds=topo_Ds;
 etc_render_fsbrain.flag_overlay_truncate_pos=topo_truncate_pos;
 etc_render_fsbrain.flag_overlay_truncate_neg=topo_truncate_neg;
 
+etc_render_fsbrain.overlay_buffer=overlay_buffer;
+etc_render_fsbrain.overlay_buffer_idx=overlay_buffer_idx;
+etc_render_fsbrain.overlay_buffer_main_idx=overlay_buffer_main_idx;
+
 etc_render_fsbrain.flag_colorbar=flag_colorbar;
 etc_render_fsbrain.flag_colorbar_vol=flag_colorbar_vol;
 
@@ -595,6 +615,18 @@ etc_render_fsbrain.aux2_point_name=topo_aux2_point_name;
 etc_render_fsbrain.aux2_point_name_h=topo_aux2_point_name_h;
 etc_render_fsbrain.aux2_point_color=topo_aux2_point_color;
 etc_render_fsbrain.aux2_point_size=topo_aux2_point_size;
+etc_render_fsbrain.aux2_point_color_e=topo_aux2_point_color_e;
+etc_render_fsbrain.aux2_point_size_e=topo_aux2_point_size_e;
+etc_render_fsbrain.aux2_point_color_c=topo_aux2_point_color_c;
+etc_render_fsbrain.aux2_point_size_c=topo_aux2_point_size_c;
+
+etc_render_fsbrain.selected_electrode_size=selected_electrode_size;
+etc_render_fsbrain.selected_electrode_flag=selected_electrode_flag;
+etc_render_fsbrain.selected_electrode_color=selected_electrode_color;
+
+etc_render_fsbrain.selected_contact_size=selected_contact_size;
+etc_render_fsbrain.selected_contact_flag=selected_contact_flag;
+etc_render_fsbrain.selected_contact_color=selected_contact_color;
 
 etc_render_fsbrain.click_point_color=click_point_color;
 etc_render_fsbrain.click_point_size=click_point_size;
