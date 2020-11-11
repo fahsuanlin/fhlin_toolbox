@@ -523,6 +523,7 @@ if(~isempty(vol))
         else
             fprintf('no Talairach transformation!\n');
             talxfm=[];
+            talxfm=eye(4).*nan;
         end;
         
     else

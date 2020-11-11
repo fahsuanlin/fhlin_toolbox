@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_gui
 
-% Last Modified by GUIDE v2.5 26-Oct-2020 14:24:42
+% Last Modified by GUIDE v2.5 11-Nov-2020 14:07:31
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -82,6 +82,68 @@ catch
 end;
 set(handles.text_timeVec_unit,'String',etc_render_fsbrain.overlay_stc_timeVec_unit);
 
+%volume in orthogonal slices
+if(~isempty(etc_render_fsbrain.vol))
+    set(handles.slider_orthogonal_slice_x,'min',1);
+    set(handles.slider_orthogonal_slice_x,'max',etc_render_fsbrain.vol.volsize(2));
+    set(handles.slider_orthogonal_slice_x,'enable','on');
+    set(handles.slider_orthogonal_slice_x,'Value',etc_render_fsbrain.click_vertex_vox_round(1));
+    
+
+    set(handles.slider_orthogonal_slice_y,'min',1);
+    set(handles.slider_orthogonal_slice_y,'max',etc_render_fsbrain.vol.volsize(1));
+    set(handles.slider_orthogonal_slice_y,'enable','on');
+    set(handles.slider_orthogonal_slice_y,'Value',etc_render_fsbrain.click_vertex_vox_round(2));
+    
+    set(handles.slider_orthogonal_slice_z,'min',1);
+    set(handles.slider_orthogonal_slice_z,'max',etc_render_fsbrain.vol.volsize(3));
+    set(handles.slider_orthogonal_slice_z,'enable','on');
+    set(handles.slider_orthogonal_slice_z,'Value',etc_render_fsbrain.click_vertex_vox_round(3));
+
+    set(handles.edit_orthogonal_slice_x,'enable','on');
+    set(handles.edit_orthogonal_slice_x,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(1),'%1.0f'));
+    set(handles.edit_orthogonal_slice_y,'enable','on');
+    set(handles.edit_orthogonal_slice_y,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(2),'%1.0f'));
+    set(handles.edit_orthogonal_slice_z,'enable','on');    
+    set(handles.edit_orthogonal_slice_z,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(3),'%1.0f'));
+
+    
+    if(~isfield(etc_render_fsbrain,'flag_orthogonal_slice_cor'))
+        etc_render_fsbrain.flag_orthogonal_slice_cor=0;
+    end;
+    set(handles.checkbox_orthogonal_slice_cor,'enable','on');
+    set(handles.checkbox_orthogonal_slice_cor,'Value',etc_render_fsbrain.flag_orthogonal_slice_cor);
+
+    if(~isfield(etc_render_fsbrain,'flag_orthogonal_slice_sag'))
+        etc_render_fsbrain.flag_orthogonal_slice_sag=0;
+    end;
+    set(handles.checkbox_orthogonal_slice_sag,'enable','on');
+    set(handles.checkbox_orthogonal_slice_sag,'Value',etc_render_fsbrain.flag_orthogonal_slice_sag);
+    
+    if(~isfield(etc_render_fsbrain,'flag_orthogonal_slice_ax'))
+        etc_render_fsbrain.flag_orthogonal_slice_ax=0;
+    end;
+    set(handles.checkbox_orthogonal_slice_ax,'enable','on');
+    set(handles.checkbox_orthogonal_slice_ax,'Value',etc_render_fsbrain.flag_orthogonal_slice_ax);
+else
+    set(handles.slider_orthogonal_slice_x,'enable','off');
+    set(handles.slider_orthogonal_slice_y,'enable','off');
+    set(handles.slider_orthogonal_slice_z,'enable','off');
+    set(handles.edit_orthogonal_slice_x,'enable','off');
+    set(handles.edit_orthogonal_slice_y,'enable','off');
+    set(handles.edit_orthogonal_slice_z,'enable','off');
+
+    set(handles.checkbox_orthogonal_slice_cor,'enable','off');
+    etc_render_fsbrain.flag_orthogonal_slice_cor=0;
+    set(handles.checkbox_orthogonal_slice_cor,'Value',etc_render_fsbrain.flag_orthogonal_slice_cor);
+    set(handles.checkbox_orthogonal_slice_sag,'enable','off');
+    etc_render_fsbrain.flag_orthogonal_slice_sag=0;
+    set(handles.checkbox_orthogonal_slice_sag,'Value',etc_render_fsbrain.flag_orthogonal_slice_sag);
+    set(handles.checkbox_orthogonal_slice_ax,'enable','off');
+    etc_render_fsbrain.flag_orthogonal_slice_ax=0;
+    set(handles.checkbox_orthogonal_slice_ax,'Value',etc_render_fsbrain.flag_orthogonal_slice_ax);
+
+end;
 
 %overlay smooth
 set(handles.edit_smooth,'enable','off');
@@ -165,6 +227,13 @@ if(isfield(etc_render_fsbrain,'h_colorbar_pos'))
         set(handles.checkbox_show_colorbar,'value',1);
         set(handles.checkbox_show_vol_colorbar,'value',1);
     end;
+end;
+if(etc_render_fsbrain.flag_colorbar)
+    handles.button_overlay_surface.Value=1;
+    handles.button_overlay_volume.Value=1;
+else
+    handles.button_overlay_surface.Value=0;
+    handles.button_overlay_volume.Value=0; 
 end;
 
 
@@ -284,13 +353,20 @@ set(handles.checkbox_overlay_truncate_pos,'value',etc_render_fsbrain.flag_overla
 % else
     if(~isempty(etc_render_fsbrain.lut))
         set(handles.listbox_overlay_vol_mask,'string',etc_render_fsbrain.lut.name);
+        
+        set(handles.checkbox_overlay_aux_vol,'enable','on');                                                        
+        set(handles.slider_overlay_aux_vol,'enable','on');
+        set(handles.pushbutton_overlay_aux_vol,'enable','on');  
+          set(handles.listbox_overlay_vol_mask,'enable','on');
+
     else
         set(handles.listbox_overlay_vol_mask,'string',{});
+
+        set(handles.checkbox_overlay_aux_vol,'enable','off');                                                        
+        set(handles.slider_overlay_aux_vol,'enable','off');
+        set(handles.pushbutton_overlay_aux_vol,'enable','off');
+    
     end;
-    set(handles.listbox_overlay_vol_mask,'enable','on');
-    set(handles.checkbox_overlay_aux_vol,'enable','on');                                                        
-    set(handles.slider_overlay_aux_vol,'enable','on');
-    set(handles.pushbutton_overlay_aux_vol,'enable','on');
 %end;                            
 
 % Update handles structure
@@ -1148,14 +1224,17 @@ try
         if(~isempty(etc_render_fsbrain.overlay_stc_timeVec))
             if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
                 set(handles.slider_timeVec,'Enable','on');
-                set(handles.slider_timeVec,'min',1);
-                set(handles.slider_timeVec,'max',size(etc_render_fsbrain.overlay_stc,2));
+                %set(handles.slider_timeVec,'min',1);
+                %set(handles.slider_timeVec,'max',size(etc_render_fsbrain.overlay_stc,2));
+                set(handles.slider_timeVec,'min',etc_render_fsbrain.overlay_stc_timeVec(1));
+                set(handles.slider_timeVec,'max',etc_render_fsbrain.overlay_stc_timeVec(end));
                 if(etc_render_fsbrain.overlay_stc_timeVec_idx<=size(etc_render_fsbrain.overlay_stc,2))
                 else
                     fprintf('reseting timeVec index...\n');
                     etc_render_fsbrain.overlay_stc_timeVec_idx=1;
                 end;
                 set(handles.slider_timeVec,'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
+                %set(handles.slider_timeVec,'value',etc_render_fsbrain.overlay_stc_timeVec_idx);
                 
                 set(handles.edit_timeVec,'Enable','on');
                 set(handles.edit_timeVec,'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
@@ -2024,3 +2103,332 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
         end;
     end;
 end;
+
+
+% --- Executes on slider movement.
+function slider_orthogonal_slice_x_Callback(hObject, eventdata, handles)
+% hObject    handle to slider_orthogonal_slice_x (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+global etc_render_fsbrain;
+if(~isempty(etc_render_fsbrain.click_vertex))
+    if(~isempty(etc_render_fsbrain.click_vertex_vox))
+        click_vertex_vox=[etc_render_fsbrain.click_vertex_vox(1) etc_render_fsbrain.click_vertex_vox(2)  etc_render_fsbrain.click_vertex_vox(3)];
+        if(click_vertex_vox(1)>1)
+            click_vertex_vox(1)=get(hObject,'Value');
+            
+            tmp=[click_vertex_vox 1]';
+            mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*tmp;
+            %mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.tkrvox2ras*tmp;
+            mni=min(1:3)';
+            
+            surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[click_vertex_vox(:); 1];
+            surface_coord=surface_coord(1:3);
+            
+            vv=etc_render_fsbrain.orig_vertex_coords;
+            dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+            [min_dist,min_dist_idx]=min(dist);
+            %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+            
+            etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+        else
+            
+        end;
+    end;
+end;
+
+% --- Executes during object creation, after setting all properties.
+function slider_orthogonal_slice_x_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to slider_orthogonal_slice_x (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+% --- Executes on slider movement.
+function slider_orthogonal_slice_y_Callback(hObject, eventdata, handles)
+% hObject    handle to slider_orthogonal_slice_y (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+global etc_render_fsbrain;
+if(~isempty(etc_render_fsbrain.click_vertex))
+    if(~isempty(etc_render_fsbrain.click_vertex_vox))
+        click_vertex_vox=[etc_render_fsbrain.click_vertex_vox(1) etc_render_fsbrain.click_vertex_vox(2)  etc_render_fsbrain.click_vertex_vox(3)];
+        if(click_vertex_vox(1)>1)
+            click_vertex_vox(2)=get(hObject,'Value');
+            
+            tmp=[click_vertex_vox 1]';
+            mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*tmp;
+            %mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.tkrvox2ras*tmp;
+            mni=min(1:3)';
+            
+            surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[click_vertex_vox(:); 1];
+            surface_coord=surface_coord(1:3);
+            
+            vv=etc_render_fsbrain.orig_vertex_coords;
+            dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+            [min_dist,min_dist_idx]=min(dist);
+            %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+            
+            etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+        else
+            
+        end;
+    end;
+end;
+
+% --- Executes during object creation, after setting all properties.
+function slider_orthogonal_slice_y_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to slider_orthogonal_slice_y (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+% --- Executes on slider movement.
+function slider_orthogonal_slice_z_Callback(hObject, eventdata, handles)
+% hObject    handle to slider_orthogonal_slice_z (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+global etc_render_fsbrain;
+if(~isempty(etc_render_fsbrain.click_vertex))
+    if(~isempty(etc_render_fsbrain.click_vertex_vox))
+        click_vertex_vox=[etc_render_fsbrain.click_vertex_vox(1) etc_render_fsbrain.click_vertex_vox(2)  etc_render_fsbrain.click_vertex_vox(3)];
+        if(click_vertex_vox(1)>1)
+            click_vertex_vox(3)=get(hObject,'Value');
+            
+            tmp=[click_vertex_vox 1]';
+            mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*tmp;
+            %mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.tkrvox2ras*tmp;
+            mni=min(1:3)';
+            
+            surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[click_vertex_vox(:); 1];
+            surface_coord=surface_coord(1:3);
+            
+            vv=etc_render_fsbrain.orig_vertex_coords;
+            dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+            [min_dist,min_dist_idx]=min(dist);
+            %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+            
+            etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+        else
+            
+        end;
+    end;
+end;
+
+
+
+% --- Executes during object creation, after setting all properties.
+function slider_orthogonal_slice_z_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to slider_orthogonal_slice_z (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+% --- Executes on button press in checkbox_orthogonal_slice_cor.
+function checkbox_orthogonal_slice_cor_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_orthogonal_slice_cor (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_orthogonal_slice_cor
+global etc_render_fsbrain;
+
+etc_render_fsbrain.flag_orthogonal_slice_cor=get(hObject,'Value');
+
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord);
+
+
+
+function edit_orthogonal_slice_x_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_orthogonal_slice_x (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_orthogonal_slice_x as text
+%        str2double(get(hObject,'String')) returns contents of edit_orthogonal_slice_x as a double
+global etc_render_fsbrain;
+if(~isempty(etc_render_fsbrain.click_vertex))
+    if(~isempty(etc_render_fsbrain.click_vertex_vox))
+        click_vertex_vox=[etc_render_fsbrain.click_vertex_vox(1) etc_render_fsbrain.click_vertex_vox(2)  etc_render_fsbrain.click_vertex_vox(3)];
+        if(click_vertex_vox(1)>1)
+            click_vertex_vox(1)=str2double(get(hObject,'String'));
+            
+            tmp=[click_vertex_vox 1]';
+            mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*tmp;
+            %mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.tkrvox2ras*tmp;
+            mni=min(1:3)';
+            
+            surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[click_vertex_vox(:); 1];
+            surface_coord=surface_coord(1:3);
+            
+            vv=etc_render_fsbrain.orig_vertex_coords;
+            dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+            [min_dist,min_dist_idx]=min(dist);
+            %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+            
+            etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+        else
+            
+        end;
+    end;
+end;
+
+% --- Executes during object creation, after setting all properties.
+function edit_orthogonal_slice_x_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_orthogonal_slice_x (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_orthogonal_slice_y_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_orthogonal_slice_y (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_orthogonal_slice_y as text
+%        str2double(get(hObject,'String')) returns contents of edit_orthogonal_slice_y as a double
+global etc_render_fsbrain;
+if(~isempty(etc_render_fsbrain.click_vertex))
+    if(~isempty(etc_render_fsbrain.click_vertex_vox))
+        click_vertex_vox=[etc_render_fsbrain.click_vertex_vox(1) etc_render_fsbrain.click_vertex_vox(2)  etc_render_fsbrain.click_vertex_vox(3)];
+        if(click_vertex_vox(1)>1)
+            click_vertex_vox(2)=str2double(get(hObject,'String'));
+            
+            tmp=[click_vertex_vox 1]';
+            mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*tmp;
+            %mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.tkrvox2ras*tmp;
+            mni=min(1:3)';
+            
+            surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[click_vertex_vox(:); 1];
+            surface_coord=surface_coord(1:3);
+            
+            vv=etc_render_fsbrain.orig_vertex_coords;
+            dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+            [min_dist,min_dist_idx]=min(dist);
+            %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+            
+            etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+        else
+            
+        end;
+    end;
+end;
+
+% --- Executes during object creation, after setting all properties.
+function edit_orthogonal_slice_y_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_orthogonal_slice_y (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_orthogonal_slice_z_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_orthogonal_slice_z (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_orthogonal_slice_z as text
+%        str2double(get(hObject,'String')) returns contents of edit_orthogonal_slice_z as a double
+global etc_render_fsbrain;
+if(~isempty(etc_render_fsbrain.click_vertex))
+    if(~isempty(etc_render_fsbrain.click_vertex_vox))
+        click_vertex_vox=[etc_render_fsbrain.click_vertex_vox(1) etc_render_fsbrain.click_vertex_vox(2)  etc_render_fsbrain.click_vertex_vox(3)];
+        if(click_vertex_vox(1)>1)
+            click_vertex_vox(3)=str2double(get(hObject,'String'));
+            
+            tmp=[click_vertex_vox 1]';
+            mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*tmp;
+            %mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.tkrvox2ras*tmp;
+            mni=min(1:3)';
+            
+            surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[click_vertex_vox(:); 1];
+            surface_coord=surface_coord(1:3);
+            
+            vv=etc_render_fsbrain.orig_vertex_coords;
+            dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+            [min_dist,min_dist_idx]=min(dist);
+            %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+            
+            etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+        else
+            
+        end;
+    end;
+end;
+
+% --- Executes during object creation, after setting all properties.
+function edit_orthogonal_slice_z_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_orthogonal_slice_z (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in checkbox_orthogonal_slice_sag.
+function checkbox_orthogonal_slice_sag_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_orthogonal_slice_sag (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_orthogonal_slice_sag
+global etc_render_fsbrain;
+
+etc_render_fsbrain.flag_orthogonal_slice_sag=get(hObject,'Value');
+
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord);
+
+
+% --- Executes on button press in checkbox_orthogonal_slice_ax.
+function checkbox_orthogonal_slice_ax_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_orthogonal_slice_ax (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_orthogonal_slice_ax
+global etc_render_fsbrain;
+
+etc_render_fsbrain.flag_orthogonal_slice_ax=get(hObject,'Value');
+
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord);

@@ -195,6 +195,8 @@ switch lower(ext)
         
         etc_trace_obj.load_output=ok;
         
+        delete(handles.figure_loadfile_gui);
+
         if(etc_trace_obj.load_output) %if everything is ok...
             etc_trcae_gui_update_time();
             %etc_trace_handle('redraw');
@@ -202,12 +204,14 @@ switch lower(ext)
         
     otherwise
         fprintf('unknown format...\nerror!\n');
+        
+        delete(handles.figure_loadfile_gui);
+
 end;
 
 
-etc_trace_obj.load_output=0;
+%etc_trace_obj.load_output=0;
 
-delete(handles.figure_loadfile_gui);
 
 
 % --- Executes on button press in pushbutton_loadfile_cancel.

@@ -347,6 +347,8 @@ switch lower(param)
             case 'v'
                 fprintf('showing trace GUI...\n');
                 if(~isempty(etc_render_fsbrain.overlay_stc))
+                    if(size(etc_render_fsbrain.overlay_stc,1)<150)
+                        
                     %etc_trace(etc_render_fsbrian.overlay_stc,'fs',fs,'trigger',trigger_all,'ch_names',label,'aux_data',{data_nobcg});
                     aux_data={};
                     if(~isempty(etc_render_fsbrain.overlay_aux_stc))
@@ -447,7 +449,9 @@ switch lower(param)
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%                    
                     
 
-                    
+                    else
+                        fprintf('Too many [%d] time series!\nskip!\n',size(etc_render_fsbrain.overlay_stc,1));
+                    end;
                 end;
             case 't'
 %                 fprintf('\ntemporal integration...\n');
@@ -1864,7 +1868,6 @@ try
         h=findobj('tag','edit_vox_z_round');
         set(h,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(3),'%1.0f'));
         
-        
         h=findobj('tag','edit_mni_x');
         set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_tal(1),'%1.0f'));
         h=findobj('tag','edit_mni_y');
@@ -1879,6 +1882,94 @@ try
         h=findobj('tag','edit_mni_z_round');
         set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_round_tal(3),'%1.0f'));
         
+        
+        %orthogonal slice view
+        h=findobj('tag','edit_orthogonal_slice_x');
+        set(h,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(1),'%1.0f'));
+        h=findobj('tag','edit_orthogonal_slice_y');
+        set(h,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(2),'%1.0f'));
+        h=findobj('tag','edit_orthogonal_slice_z');
+        set(h,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(3),'%1.0f'));
+        h=findobj('tag','slider_orthogonal_slice_x');
+        set(h,'Value',etc_render_fsbrain.click_vertex_vox_round(1));
+        h=findobj('tag','slider_orthogonal_slice_y');
+        set(h,'Value',etc_render_fsbrain.click_vertex_vox_round(2));
+        h=findobj('tag','slider_orthogonal_slice_z');
+        set(h,'Value',etc_render_fsbrain.click_vertex_vox_round(3));
+
+        
+        if(etc_render_fsbrain.flag_orthogonal_slice_cor)
+            slicex=img_cor;
+            
+            sz=etc_render_fsbrain.vol.volsize;
+            ccc=[etc_render_fsbrain.click_vertex_vox_round(1), 1, sz(2)];
+            rrr=[etc_render_fsbrain.click_vertex_vox_round(2), 1, sz(1)];
+            sss=[etc_render_fsbrain.click_vertex_vox_round(3), 1, sz(3)];
+            
+            tmp=(etc_render_fsbrain.vol.tkrvox2ras*[ccc(:) rrr(:) sss(:) ones(3,1)]');
+            tmp=inv(etc_render_fsbrain.vol_reg)*tmp;
+            
+            [X,Y,Z] = meshgrid(linspace(tmp(1,2),tmp(1,3),sz(2)),tmp(2,1),linspace(tmp(3,2),tmp(3,3),sz(3)));
+            figure(etc_render_fsbrain.fig_brain);
+            
+            if(isfield(etc_render_fsbrain,'h_orthogonal_slice_cor'))
+                delete(etc_render_fsbrain.h_orthogonal_slice_cor);
+            end;
+            
+            etc_render_fsbrain.h_orthogonal_slice_cor=surface(squeeze(X),squeeze(Y),squeeze(Z), ind2rgb(im2uint8(permute(slicex,[2 1])./256),gray(256)),'FaceColor','texturemap', 'EdgeColor','none', 'CDataMapping','direct','FaceAlpha',1);
+        else
+            if(isfield(etc_render_fsbrain,'h_orthogonal_slice_cor'))
+                delete(etc_render_fsbrain.h_orthogonal_slice_cor);
+            end;
+        end;
+        
+        if(etc_render_fsbrain.flag_orthogonal_slice_sag)
+            slicex=img_sag;
+            
+            sz=etc_render_fsbrain.vol.volsize;
+            ccc=[etc_render_fsbrain.click_vertex_vox_round(1), 1, sz(2)];
+            rrr=[etc_render_fsbrain.click_vertex_vox_round(2), 1, sz(1)];
+            sss=[etc_render_fsbrain.click_vertex_vox_round(3), 1, sz(3)];
+            
+            tmp=(etc_render_fsbrain.vol.tkrvox2ras*[ccc(:) rrr(:) sss(:) ones(3,1)]');
+            tmp=inv(etc_render_fsbrain.vol_reg)*tmp;
+
+            [X,Y,Z] = meshgrid(tmp(1,1),linspace(tmp(2,2),tmp(2,3),sz(1)),linspace(tmp(3,2),tmp(3,3),sz(3)));
+            figure(etc_render_fsbrain.fig_brain);
+            
+            if(isfield(etc_render_fsbrain,'h_orthogonal_slice_sag'))
+                delete(etc_render_fsbrain.h_orthogonal_slice_sag);
+            end;
+            etc_render_fsbrain.h_orthogonal_slice_sag=surface(squeeze(X),squeeze(Y),squeeze(Z), ind2rgb(im2uint8(permute(slicex,[2 1])./256),gray(256)),'FaceColor','texturemap', 'EdgeColor','none', 'CDataMapping','direct','FaceAlpha',1);
+        else
+            if(isfield(etc_render_fsbrain,'h_orthogonal_slice_sag'))
+                delete(etc_render_fsbrain.h_orthogonal_slice_sag);
+            end;
+        end;
+
+        if(etc_render_fsbrain.flag_orthogonal_slice_ax)
+            slicex=img_ax;
+            
+            sz=etc_render_fsbrain.vol.volsize;
+            ccc=[etc_render_fsbrain.click_vertex_vox_round(1), 1, sz(2)];
+            rrr=[etc_render_fsbrain.click_vertex_vox_round(2), 1, sz(1)];
+            sss=[etc_render_fsbrain.click_vertex_vox_round(3), 1, sz(3)];
+            
+            tmp=(etc_render_fsbrain.vol.tkrvox2ras*[ccc(:) rrr(:) sss(:) ones(3,1)]');
+            tmp=inv(etc_render_fsbrain.vol_reg)*tmp;
+
+            [X,Y,Z] = meshgrid(linspace(tmp(1,2),tmp(1,3),sz(2)),linspace(tmp(2,3),tmp(2,2),sz(1)),tmp(3,1));
+            figure(etc_render_fsbrain.fig_brain);
+            
+            if(isfield(etc_render_fsbrain,'h_orthogonal_slice_ax'))
+                delete(etc_render_fsbrain.h_orthogonal_slice_ax);
+            end;
+            etc_render_fsbrain.h_orthogonal_slice_ax=surface(squeeze(X),squeeze(Y),squeeze(Z), ind2rgb(im2uint8(permute(slicex,[1 2])./256),gray(256)),'FaceColor','texturemap', 'EdgeColor','none', 'CDataMapping','direct','FaceAlpha',1);
+        else
+            if(isfield(etc_render_fsbrain,'h_orthogonal_slice_ax'))
+                delete(etc_render_fsbrain.h_orthogonal_slice_ax);
+            end;
+        end;
         %volume image rendering
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     else

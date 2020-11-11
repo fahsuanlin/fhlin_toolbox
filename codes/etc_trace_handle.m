@@ -726,6 +726,7 @@ if(~isvalid(etc_trace_obj.fig_trace))
 end;
 
 figure(etc_trace_obj.fig_trace);
+
 %tmp=get(etc_trace_obj.fig_trace,'child');
 %etc_trace_obj.axis_trace=tmp(end);
 etc_trace_obj.axis_trace=findobj('Tag','axis_trace');
