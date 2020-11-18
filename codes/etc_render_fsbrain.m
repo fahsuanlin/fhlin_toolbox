@@ -555,7 +555,8 @@ if(~isempty(overlay_vol))
     for hemi_idx=1:2
         
         %choose 10,242 sources arbitrarily for cortical soruces
-        vol_A(hemi_idx).v_idx=[1:10242]-1;
+        %vol_A(hemi_idx).v_idx=[1:10242]-1;
+        vol_A(hemi_idx).v_idx=[1:10:size(orig_vertex_coords,1)]-1;
         
         vol_A(hemi_idx).vertex_coords=vertex_coords;
         vol_A(hemi_idx).faces=faces;
@@ -594,22 +595,8 @@ if(~isempty(overlay_vol))
         all_coords=all_coords(1:3,:)';
         vol_A(hemi_idx).loc=all_coords(cort_idx,:);
         vol_A(hemi_idx).wb_loc=all_coords(non_cort_idx,:)./1e3;
-        
-        
-                        %%%%crs=[44 59 44];
-                        %%%surface_coord=[   -14   -21   -33]';
-                        %%%
-                        %%%loc_rh=cat(1,vol_A(hemi_idx).loc,vol_A(hemi_idx).wb_loc.*1e3);
-                        %%%loc=loc_rh;
-                        %%%dist=sqrt(sum((loc-repmat(surface_coord(:)',[size(loc,1),1])).^2,2));
-                        %%%[dummy,loc_min_idx]=min(dist)
-                        %%%
-                        %%%figure; plot(squeeze(overlay_vol.vol(59,44,44,:))); hold on;
-        
+                
         overlay_vol_value=reshape(overlay_vol.vol,[size(overlay_vol.vol,1)*size(overlay_vol.vol,2)*size(overlay_vol.vol,3), size(overlay_vol.vol,4)]);
-        
-        %overlay_vol_stc(offset+1:offset+length(vol_A(hemi_idx).v_idx),:)=overlay_vol_value(cort_idx,:);
-        %overlay_vol_stc(offset+length(vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),:)=overlay_vol_value(non_cort_idx,:);
         
         midx=[cort_idx(:)' non_cort_idx(:)'];
         overlay_vol_stc(offset+1:offset+length(vol_A(hemi_idx).v_idx),:)=overlay_vol_value(midx(1:length(cort_idx)),:);
@@ -623,8 +610,6 @@ if(~isempty(overlay_vol))
         end;
         
         offset=offset+n_source(hemi_idx);
-
-                        %%%plot(overlay_vol_stc(loc_min_idx,:));
         
         X_hemi_cort{hemi_idx}=overlay_vol_value(cort_idx,:);
         X_hemi_subcort{hemi_idx}=overlay_vol_value(non_cort_idx,:);

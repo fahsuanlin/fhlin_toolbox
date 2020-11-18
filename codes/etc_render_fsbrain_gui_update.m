@@ -130,6 +130,7 @@ if(length(etc_render_fsbrain.overlay_buffer)==1)
 else
     set(handles.listbox_overlay,'max',length(etc_render_fsbrain.overlay_buffer));
 end;
+etc_render_fsbrain.overlay_buffer_idx=etc_render_fsbrain.overlay_buffer_main_idx;
 set(handles.listbox_overlay,'value',etc_render_fsbrain.overlay_buffer_idx);
 
 %colorbar checkboxes

@@ -108,13 +108,31 @@ switch lower(param)
                         end;
                         
                         %name = auxdatad_name_dialog;
-                        prompt = {'name for the loaded data'};
-                        dlgtitle = '';
-                        dims = [1 35];
-                        [dummy,fstem]=fileparts(filename);
-                        %definput = {sprintf('data%02d',length(etc_render_fsbrain.overlay_buffer)+1)};
-                        definput = {fstem};
-                        answer = inputdlg(prompt,dlgtitle,dims,definput);
+                        done=0;
+                        while(~done)
+                            prompt = {'name for the loaded data'};
+                            dlgtitle = '';
+                            dims = [1 35];
+                            [dummy,fstem]=fileparts(filename);
+                            %definput = {sprintf('data%02d',length(etc_render_fsbrain.overlay_buffer)+1)};
+
+                            %if(~flag_found)
+                            definput = {fstem};
+                            %else
+                            %    definput = {sprintf('%s_1',fstem)};
+                            %end;
+                            
+                            answer = inputdlg(prompt,dlgtitle,dims,definput);
+                            done=1;
+                            if(isfield(etc_render_fsbrain,'overlay_buffer'))
+                                for ii=1:length(etc_render_fsbrain.overlay_buffer)
+                                    if(strcmp(etc_render_fsbrain.overlay_buffer(ii).name,answer{1}))
+                                        done=0;
+                                    end;
+                                end;
+                            end;
+                        end;
+                        
                         if(~isempty(answer))
                             name=answer{1};
                             
@@ -143,6 +161,36 @@ switch lower(param)
                             
                             etc_render_fsbrain.overlay_buffer_idx=union(etc_render_fsbrain.overlay_buffer_idx,length(etc_render_fsbrain.overlay_buffer));
                             set(findobj('tag','listbox_overlay'),'value',etc_render_fsbrain.overlay_buffer_idx);
+                            
+                            %if(isempty(etc_render_fsbrain.vol_A))
+                                switch(hemi)
+                                    case 'lh'
+                                        etc_render_fsbrain.vol_A(1).loc=etc_render_fsbrain.vertex_coords(vv+1,:);
+                                        etc_render_fsbrain.vol_A(1).wb_loc=[];
+                                        etc_render_fsbrain.vol_A(1).v_idx=vv;
+                                        etc_render_fsbrain.vol_A(1).vertex_coords=etc_render_fsbrain.vertex_coords;
+                                        etc_render_fsbrain.vol_A(1).faces=etc_render_fsbrain.faces;
+                                        
+                                        etc_render_fsbrain.vol_A(2).loc=[];
+                                        etc_render_fsbrain.vol_A(2).wb_loc=[];
+                                        etc_render_fsbrain.vol_A(2).v_idx=[];
+                                        etc_render_fsbrain.vol_A(2).vertex_coords=[];
+                                        etc_render_fsbrain.vol_A(2).faces=[];
+                                    case 'rh'
+                                        etc_render_fsbrain.vol_A(1).loc=[];
+                                        etc_render_fsbrain.vol_A(1).wb_loc=[];
+                                        etc_render_fsbrain.vol_A(1).v_idx=[];
+                                        etc_render_fsbrain.vol_A(1).vertex_coords=[];
+                                        etc_render_fsbrain.vol_A(1).faces=[];
+                                        
+                                        etc_render_fsbrain.vol_A(2).loc=etc_render_fsbrain.vertex_coords(vv+1,:);
+                                        etc_render_fsbrain.vol_A(2).wb_loc=[];
+                                        etc_render_fsbrain.vol_A(2).v_idx=vv;
+                                        etc_render_fsbrain.vol_A(2).vertex_coords=etc_render_fsbrain.vertex_coords;
+                                        etc_render_fsbrain.vol_A(2).faces=etc_render_fsbrain.faces;
+                                end;
+                            %end;
+                            etc_render_fsbrain.overlay_vol_stc=stc;
                             
                             
                             f_option=2;
@@ -188,6 +236,9 @@ switch lower(param)
                                     fprintf('size for [%s] not compatible to the main layer [%s]. Data are not rendered until being seleted as the main layer.\n',name,str{etc_render_fsbrain.overlay_buffer_main_idx});
                                 end;
                             end;
+                            
+                            update_overlay_vol;
+                            draw_pointer;
                         end;
                     elseif(findstr(filename,'.w')) %w file
                         [ww,vv]=inverse_read_wfile(sprintf('%s/%s',pathname,filename));
@@ -1901,6 +1952,33 @@ try
         if(etc_render_fsbrain.flag_orthogonal_slice_cor)
             slicex=img_cor;
             
+            slicex_overlay=img_cor_overlay;
+            
+            if(~isempty(etc_render_fsbrain.overlay_vol))
+                overlay_vol_img_c=zeros(size(slicex,1)*size(slicex,2),3);
+                
+                c_idx=[1:prod(size(slicex))];
+                mmax=max(slicex(:));
+                mmin=min(slicex(:));
+                overlay_vol_img_c(c_idx,:)=inverse_get_color(gray(128),slicex(c_idx),mmax,mmin);
+                
+                c_idx=find(slicex_overlay(:)>=min(etc_render_fsbrain.overlay_threshold));
+                
+                overlay_vol_img_c(c_idx,:)=inverse_get_color(etc_render_fsbrain.overlay_cmap,slicex_overlay(c_idx),max(etc_render_fsbrain.overlay_threshold),min(etc_render_fsbrain.overlay_threshold));
+                
+                c_idx=find(slicex_overlay(:)<=-min(etc_render_fsbrain.overlay_threshold));
+                
+                overlay_vol_img_c(c_idx,:)=inverse_get_color(etc_render_fsbrain.overlay_cmap_neg,-slicex_overlay(c_idx),max(etc_render_fsbrain.overlay_threshold),min(etc_render_fsbrain.overlay_threshold));
+            else
+                overlay_vol_img_c=zeros(size(slicex,1)*size(slicex,2),3);
+                
+                c_idx=[1:prod(size(slicex))];
+                mmax=max(slicex(:));
+                mmin=min(slicex(:));
+                overlay_vol_img_c(c_idx,:)=inverse_get_color(gray(128),slicex(c_idx),mmax,mmin);
+            end;
+            
+            
             sz=etc_render_fsbrain.vol.volsize;
             ccc=[etc_render_fsbrain.click_vertex_vox_round(1), 1, sz(2)];
             rrr=[etc_render_fsbrain.click_vertex_vox_round(2), 1, sz(1)];
@@ -1916,7 +1994,8 @@ try
                 delete(etc_render_fsbrain.h_orthogonal_slice_cor);
             end;
             
-            etc_render_fsbrain.h_orthogonal_slice_cor=surface(squeeze(X),squeeze(Y),squeeze(Z), ind2rgb(im2uint8(permute(slicex,[2 1])./256),gray(256)),'FaceColor','texturemap', 'EdgeColor','none', 'CDataMapping','direct','FaceAlpha',1);
+            %etc_render_fsbrain.h_orthogonal_slice_cor=surface(squeeze(X),squeeze(Y),squeeze(Z), ind2rgb(im2uint8(permute(slicex,[2 1])./256),gray(256)),'FaceColor','texturemap', 'EdgeColor','none', 'CDataMapping','direct','FaceAlpha',1);
+            etc_render_fsbrain.h_orthogonal_slice_cor=surface(squeeze(X),squeeze(Y),squeeze(Z), permute(reshape(overlay_vol_img_c,[size(slicex,1),size(slicex,2),3]),[2 1 3]),'FaceColor','texturemap', 'EdgeColor','none', 'CDataMapping','direct','FaceAlpha',1);
         else
             if(isfield(etc_render_fsbrain,'h_orthogonal_slice_cor'))
                 delete(etc_render_fsbrain.h_orthogonal_slice_cor);
@@ -1925,6 +2004,32 @@ try
         
         if(etc_render_fsbrain.flag_orthogonal_slice_sag)
             slicex=img_sag;
+            
+            slicex_overlay=img_sag_overlay;
+            
+            if(~isempty(etc_render_fsbrain.overlay_vol))
+                overlay_vol_img_c=zeros(size(slicex,1)*size(slicex,2),3);
+                
+                c_idx=[1:prod(size(slicex))];
+                mmax=max(slicex(:));
+                mmin=min(slicex(:));
+                overlay_vol_img_c(c_idx,:)=inverse_get_color(gray(128),slicex(c_idx),mmax,mmin);
+                
+                c_idx=find(slicex_overlay(:)>=min(etc_render_fsbrain.overlay_threshold));
+                
+                overlay_vol_img_c(c_idx,:)=inverse_get_color(etc_render_fsbrain.overlay_cmap,slicex_overlay(c_idx),max(etc_render_fsbrain.overlay_threshold),min(etc_render_fsbrain.overlay_threshold));
+                
+                c_idx=find(slicex_overlay(:)<=-min(etc_render_fsbrain.overlay_threshold));
+                
+                overlay_vol_img_c(c_idx,:)=inverse_get_color(etc_render_fsbrain.overlay_cmap_neg,-slicex_overlay(c_idx),max(etc_render_fsbrain.overlay_threshold),min(etc_render_fsbrain.overlay_threshold));
+            else
+                overlay_vol_img_c=zeros(size(slicex,1)*size(slicex,2),3);
+                
+                c_idx=[1:prod(size(slicex))];
+                mmax=max(slicex(:));
+                mmin=min(slicex(:));
+                overlay_vol_img_c(c_idx,:)=inverse_get_color(gray(128),slicex(c_idx),mmax,mmin);
+            end;
             
             sz=etc_render_fsbrain.vol.volsize;
             ccc=[etc_render_fsbrain.click_vertex_vox_round(1), 1, sz(2)];
@@ -1940,7 +2045,8 @@ try
             if(isfield(etc_render_fsbrain,'h_orthogonal_slice_sag'))
                 delete(etc_render_fsbrain.h_orthogonal_slice_sag);
             end;
-            etc_render_fsbrain.h_orthogonal_slice_sag=surface(squeeze(X),squeeze(Y),squeeze(Z), ind2rgb(im2uint8(permute(slicex,[2 1])./256),gray(256)),'FaceColor','texturemap', 'EdgeColor','none', 'CDataMapping','direct','FaceAlpha',1);
+            %etc_render_fsbrain.h_orthogonal_slice_sag=surface(squeeze(X),squeeze(Y),squeeze(Z), ind2rgb(im2uint8(permute(slicex,[2 1])./256),gray(256)),'FaceColor','texturemap', 'EdgeColor','none', 'CDataMapping','direct','FaceAlpha',1);
+            etc_render_fsbrain.h_orthogonal_slice_cor=surface(squeeze(X),squeeze(Y),squeeze(Z), permute(reshape(overlay_vol_img_c,[size(slicex,1),size(slicex,2),3]),[2 1 3]),'FaceColor','texturemap', 'EdgeColor','none', 'CDataMapping','direct','FaceAlpha',1);
         else
             if(isfield(etc_render_fsbrain,'h_orthogonal_slice_sag'))
                 delete(etc_render_fsbrain.h_orthogonal_slice_sag);
@@ -1949,6 +2055,32 @@ try
 
         if(etc_render_fsbrain.flag_orthogonal_slice_ax)
             slicex=img_ax;
+            
+            slicex_overlay=img_ax_overlay;
+            
+            if(~isempty(etc_render_fsbrain.overlay_vol))
+                overlay_vol_img_c=zeros(size(slicex,1)*size(slicex,2),3);
+                
+                c_idx=[1:prod(size(slicex))];
+                mmax=max(slicex(:));
+                mmin=min(slicex(:));
+                overlay_vol_img_c(c_idx,:)=inverse_get_color(gray(128),slicex(c_idx),mmax,mmin);
+                
+                c_idx=find(slicex_overlay(:)>=min(etc_render_fsbrain.overlay_threshold));
+                
+                overlay_vol_img_c(c_idx,:)=inverse_get_color(etc_render_fsbrain.overlay_cmap,slicex_overlay(c_idx),max(etc_render_fsbrain.overlay_threshold),min(etc_render_fsbrain.overlay_threshold));
+                
+                c_idx=find(slicex_overlay(:)<=-min(etc_render_fsbrain.overlay_threshold));
+                
+                overlay_vol_img_c(c_idx,:)=inverse_get_color(etc_render_fsbrain.overlay_cmap_neg,-slicex_overlay(c_idx),max(etc_render_fsbrain.overlay_threshold),min(etc_render_fsbrain.overlay_threshold));
+            else
+                overlay_vol_img_c=zeros(size(slicex,1)*size(slicex,2),3);
+                
+                c_idx=[1:prod(size(slicex))];
+                mmax=max(slicex(:));
+                mmin=min(slicex(:));
+                overlay_vol_img_c(c_idx,:)=inverse_get_color(gray(128),slicex(c_idx),mmax,mmin);
+            end;
             
             sz=etc_render_fsbrain.vol.volsize;
             ccc=[etc_render_fsbrain.click_vertex_vox_round(1), 1, sz(2)];
@@ -1964,7 +2096,8 @@ try
             if(isfield(etc_render_fsbrain,'h_orthogonal_slice_ax'))
                 delete(etc_render_fsbrain.h_orthogonal_slice_ax);
             end;
-            etc_render_fsbrain.h_orthogonal_slice_ax=surface(squeeze(X),squeeze(Y),squeeze(Z), ind2rgb(im2uint8(permute(slicex,[1 2])./256),gray(256)),'FaceColor','texturemap', 'EdgeColor','none', 'CDataMapping','direct','FaceAlpha',1);
+            %etc_render_fsbrain.h_orthogonal_slice_ax=surface(squeeze(X),squeeze(Y),squeeze(Z), ind2rgb(im2uint8(permute(slicex,[1 2])./256),gray(256)),'FaceColor','texturemap', 'EdgeColor','none', 'CDataMapping','direct','FaceAlpha',1);
+            etc_render_fsbrain.h_orthogonal_slice_cor=surface(squeeze(X),squeeze(Y),squeeze(Z), permute(reshape(overlay_vol_img_c,[size(slicex,1),size(slicex,2),3]),[1 2 3]),'FaceColor','texturemap', 'EdgeColor','none', 'CDataMapping','direct','FaceAlpha',1);
         else
             if(isfield(etc_render_fsbrain,'h_orthogonal_slice_ax'))
                 delete(etc_render_fsbrain.h_orthogonal_slice_ax);
@@ -2700,64 +2833,79 @@ try
         end;
         
         %get source estimates at cortical and sub-cortical locations
-        X_hemi_cort=etc_render_fsbrain.overlay_vol_stc(offset+1:offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx),time_idx);
-        X_hemi_subcort=etc_render_fsbrain.overlay_vol_stc(offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),time_idx);
-        
+        if(~isempty(etc_render_fsbrain.overlay_vol_stc))
+            X_hemi_cort=etc_render_fsbrain.overlay_vol_stc(offset+1:offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx),time_idx);
+            X_hemi_subcort=etc_render_fsbrain.overlay_vol_stc(offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),time_idx);
+        else
+            X_hemi_cort=[];
+            X_hemi_subcort=[];
+        end;
         
         %smooth source estimates at cortical locations
-        ov=zeros(size(etc_render_fsbrain.vol_A(hemi_idx).vertex_coords,1),1);
-        ov(etc_render_fsbrain.vol_A(hemi_idx).v_idx+1)=X_hemi_cort;
-        
-        flag_overlay_D_init=1;
-        if(isfield(etc_render_fsbrain,'overlay_D'))
-            if(length(etc_render_fsbrain.overlay_D)==2)
-                if(~isempty(etc_render_fsbrain.overlay_D{hemi_idx}))
-                    flag_overlay_D_init=0;
+        if(~isempty(etc_render_fsbrain.vol_A(hemi_idx).vertex_coords));
+            if(~isempty(X_hemi_cort))
+                ov=zeros(size(etc_render_fsbrain.vol_A(hemi_idx).vertex_coords,1),1);
+                ov(etc_render_fsbrain.vol_A(hemi_idx).v_idx+1)=X_hemi_cort;
+            else
+                ov=[];
+            end;
+            flag_overlay_D_init=1;
+            if(isfield(etc_render_fsbrain,'overlay_D'))
+                if(length(etc_render_fsbrain.overlay_D)==2)
+                    if(~isempty(etc_render_fsbrain.overlay_D{hemi_idx}))
+                        flag_overlay_D_init=0;
+                    end;
                 end;
             end;
-        end;
-        if(flag_overlay_D_init) etc_render_fsbrain.overlay_D{hemi_idx}=[];end;
-        
-        
-        [ovs,dd0,dd1,overlay_Ds,etc_render_fsbrain.overlay_D{hemi_idx}]=inverse_smooth('','vertex',etc_render_fsbrain.vol_A(hemi_idx).vertex_coords','face',etc_render_fsbrain.vol_A(hemi_idx).faces','value',ov,'value_idx',etc_render_fsbrain.vol_A(hemi_idx).v_idx+1,'step',etc_render_fsbrain.overlay_smooth,'n_ratio',length(ov)/size(X_hemi_cort,1),'flag_display',0,'flag_regrid',0,'flag_fixval',0,'D',etc_render_fsbrain.overlay_D{hemi_idx});
-        
-        %assemble smoothed source at cortical locations and sources at sub-cortical locations
-        X_wb{hemi_idx}=cat(1,ovs(:),X_hemi_subcort(:));
-        
-        flag_cal_loc_vol_idx=1;
-        if(isfield(etc_render_fsbrain,'loc_vol_idx'))
-            if(length(etc_render_fsbrain.loc_vol_idx)==2)
-                if(~isempty(etc_render_fsbrain.loc_vol_idx{hemi_idx}))
-                    flag_cal_loc_vol_idx=0;
+            if(flag_overlay_D_init) etc_render_fsbrain.overlay_D{hemi_idx}=[];end;
+            
+            if(~isempty(ov))
+                [ovs,dd0,dd1,overlay_Ds,etc_render_fsbrain.overlay_D{hemi_idx}]=inverse_smooth('','vertex',etc_render_fsbrain.vol_A(hemi_idx).vertex_coords','face',etc_render_fsbrain.vol_A(hemi_idx).faces','value',ov,'value_idx',etc_render_fsbrain.vol_A(hemi_idx).v_idx+1,'step',etc_render_fsbrain.overlay_smooth,'n_ratio',length(ov)/size(X_hemi_cort,1),'flag_display',0,'flag_regrid',0,'flag_fixval',0,'D',etc_render_fsbrain.overlay_D{hemi_idx});
+            else
+                ovs=[];
+            end;
+            %assemble smoothed source at cortical locations and sources at sub-cortical locations
+            X_wb{hemi_idx}=cat(1,ovs(:),X_hemi_subcort(:));
+            
+            flag_cal_loc_vol_idx=1;
+            if(isfield(etc_render_fsbrain,'loc_vol_idx'))
+                if(length(etc_render_fsbrain.loc_vol_idx)==2)
+                    if(~isempty(etc_render_fsbrain.loc_vol_idx{hemi_idx}))
+                        flag_cal_loc_vol_idx=0;
+                    end;
                 end;
             end;
+            
+            
+            if(flag_cal_loc_vol_idx==1)
+                etc_render_fsbrain.loc_vol_idx{hemi_idx}=[];
+                %get coordinates from surface to volume
+                loc=cat(1,etc_render_fsbrain.vol_A(hemi_idx).vertex_coords./1e3,etc_render_fsbrain.vol_A(hemi_idx).wb_loc);
+                %loc=cat(1,etc_render_fsbrain.vol_A(hemi_idx).orig_vertex_coords./1e3,etc_render_fsbrain.vol_A(hemi_idx).wb_loc);
+                loc_surf=[loc.*1e3 ones(size(loc,1),1)]';
+                tmp=inv(etc_render_fsbrain.vol.tkrvox2ras)*(etc_render_fsbrain.vol_reg)*loc_surf;
+                loc_vol{hemi_idx}=round(tmp(1:3,:))';
+                etc_render_fsbrain.loc_vol{hemi_idx}=round(tmp(1:3,:))';
+                etc_render_fsbrain.loc_vol_idx{hemi_idx}=sub2ind(size(etc_render_fsbrain.vol.vol),loc_vol{hemi_idx}(:,2),loc_vol{hemi_idx}(:,1),loc_vol{hemi_idx}(:,3));
+            end;
+        else
+            X_wb{hemi_idx}=[];
         end;
-        
-        
-        if(flag_cal_loc_vol_idx==1)
-            etc_render_fsbrain.loc_vol_idx{hemi_idx}=[];
-            %get coordinates from surface to volume
-            loc=cat(1,etc_render_fsbrain.vol_A(hemi_idx).vertex_coords./1e3,etc_render_fsbrain.vol_A(hemi_idx).wb_loc);
-            %loc=cat(1,etc_render_fsbrain.vol_A(hemi_idx).orig_vertex_coords./1e3,etc_render_fsbrain.vol_A(hemi_idx).wb_loc);
-            loc_surf=[loc.*1e3 ones(size(loc,1),1)]';
-            tmp=inv(etc_render_fsbrain.vol.tkrvox2ras)*(etc_render_fsbrain.vol_reg)*loc_surf;
-            loc_vol{hemi_idx}=round(tmp(1:3,:))';
-            etc_render_fsbrain.loc_vol{hemi_idx}=round(tmp(1:3,:))';
-            etc_render_fsbrain.loc_vol_idx{hemi_idx}=sub2ind(size(etc_render_fsbrain.vol.vol),loc_vol{hemi_idx}(:,2),loc_vol{hemi_idx}(:,1),loc_vol{hemi_idx}(:,3));
-        end;
-        
-        
     end;
     
     
     tmp=zeros(size(etc_render_fsbrain.vol.vol));
     
     for hemi_idx=1:2
-        tmp(etc_render_fsbrain.loc_vol_idx{hemi_idx})=X_wb{hemi_idx};
+        if(~isempty(X_wb{hemi_idx}))
+            tmp(etc_render_fsbrain.loc_vol_idx{hemi_idx})=X_wb{hemi_idx};
+        end;
     end;
     
+    if(isempty(etc_render_fsbrain.overlay_vol))
+        etc_render_fsbrain.overlay_vol=etc_render_fsbrain.vol;
+    end;
     etc_render_fsbrain.overlay_vol.vol=tmp;
-    
 catch ME
 end;
 return;

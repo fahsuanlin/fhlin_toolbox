@@ -87,25 +87,45 @@ if(~isempty(etc_render_fsbrain.vol))
     set(handles.slider_orthogonal_slice_x,'min',1);
     set(handles.slider_orthogonal_slice_x,'max',etc_render_fsbrain.vol.volsize(2));
     set(handles.slider_orthogonal_slice_x,'enable','on');
-    set(handles.slider_orthogonal_slice_x,'Value',etc_render_fsbrain.click_vertex_vox_round(1));
-    
+    if(isfield(etc_render_fsbrain,'click_vertex_vox_round'))
+        set(handles.slider_orthogonal_slice_x,'Value',etc_render_fsbrain.click_vertex_vox_round(1));
+        set(handles.edit_orthogonal_slice_x,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(1),'%1.0f'));
+    else
+        set(handles.slider_orthogonal_slice_x,'Value',1);
+        set(handles.slider_orthogonal_slice_x,'enable','off');
+        set(handles.edit_orthogonal_slice_x,'String','1');
+        set(handles.edit_orthogonal_slice_x,'enable','off');
+    end;
 
     set(handles.slider_orthogonal_slice_y,'min',1);
     set(handles.slider_orthogonal_slice_y,'max',etc_render_fsbrain.vol.volsize(1));
     set(handles.slider_orthogonal_slice_y,'enable','on');
-    set(handles.slider_orthogonal_slice_y,'Value',etc_render_fsbrain.click_vertex_vox_round(2));
+    if(isfield(etc_render_fsbrain,'click_vertex_vox_round'))
+        set(handles.slider_orthogonal_slice_y,'Value',etc_render_fsbrain.click_vertex_vox_round(2));
+        set(handles.edit_orthogonal_slice_y,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(2),'%1.0f'));
+    else
+        set(handles.slider_orthogonal_slice_y,'Value',1);
+        set(handles.slider_orthogonal_slice_y,'enable','off');
+        set(handles.edit_orthogonal_slice_y,'String','1');
+        set(handles.edit_orthogonal_slice_y,'enable','off');
+    end;
     
     set(handles.slider_orthogonal_slice_z,'min',1);
     set(handles.slider_orthogonal_slice_z,'max',etc_render_fsbrain.vol.volsize(3));
     set(handles.slider_orthogonal_slice_z,'enable','on');
-    set(handles.slider_orthogonal_slice_z,'Value',etc_render_fsbrain.click_vertex_vox_round(3));
-
+    if(isfield(etc_render_fsbrain,'click_vertex_vox_round'))
+        set(handles.slider_orthogonal_slice_z,'Value',etc_render_fsbrain.click_vertex_vox_round(3));
+        set(handles.edit_orthogonal_slice_z,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(3),'%1.0f'));
+    else
+        set(handles.slider_orthogonal_slice_z,'Value',1);
+        set(handles.slider_orthogonal_slice_z,'enable','off');
+        set(handles.edit_orthogonal_slice_z,'String','1');
+        set(handles.edit_orthogonal_slice_z,'enable','off');
+    end;
+    
     set(handles.edit_orthogonal_slice_x,'enable','on');
-    set(handles.edit_orthogonal_slice_x,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(1),'%1.0f'));
     set(handles.edit_orthogonal_slice_y,'enable','on');
-    set(handles.edit_orthogonal_slice_y,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(2),'%1.0f'));
     set(handles.edit_orthogonal_slice_z,'enable','on');    
-    set(handles.edit_orthogonal_slice_z,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(3),'%1.0f'));
 
     
     if(~isfield(etc_render_fsbrain,'flag_orthogonal_slice_cor'))
@@ -1444,7 +1464,8 @@ if(filename>0)
         for hemi_idx=1:2
             
             %choose 10,242 sources arbitrarily for cortical soruces
-            etc_render_fsbrain.vol_A(hemi_idx).v_idx=[1:10242]-1;
+            %etc_render_fsbrain.vol_A(hemi_idx).v_idx=[1:10242]-1;
+            etc_render_fsbrain.vol_A(hemi_idx).v_idx=[1:10:size(etc_render_fsbrain.orig_vertex_coords,1)]-1;
             
             etc_render_fsbrain.vol_A(hemi_idx).vertex_coords=etc_render_fsbrain.vertex_coords;
             etc_render_fsbrain.vol_A(hemi_idx).faces=etc_render_fsbrain.faces;
@@ -1912,6 +1933,8 @@ if(~strcmp(contents{etc_render_fsbrain.overlay_buffer_main_idx},'[none]'))
     etc_render_fsbrain.stc_hemi=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).hemi;
     
     
+    etc_render_fsbrain.overlay_vol_stc=etc_render_fsbrain.overlay_stc;
+    
     
     v=get(handles.listbox_overlay,'value');
     v=setdiff(v,etc_render_fsbrain.overlay_buffer_main_idx);
@@ -1939,6 +1962,8 @@ if(~strcmp(contents{etc_render_fsbrain.overlay_buffer_main_idx},'[none]'))
     etc_render_fsbrain.overlay_value_flag_pos=1;
     etc_render_fsbrain.overlay_value_flag_neg=1;
     
+    etc_render_fsbrain_handle('update_overlay_vol');
+    etc_render_fsbrain_handle('draw_pointer');
     etc_render_fsbrain_handle('redraw');
     etc_render_fsbrain_handle('draw_stc');
 end;
@@ -1970,6 +1995,13 @@ v=get(handles.listbox_overlay,'value');
 
 contents = cellstr(get(hObject,'String'));
 
+% if(isempty(etc_render_fsbrain.overlay_vol)||isempty(etc_render_fsbrain.overlay))
+%     etc_render_fsbrain_handle('kb','cc','l');
+% else
+%     etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
+%     etc_render_fsbrain_handle('draw_stc');
+% end;
+% return;
 etc_render_fsbrain.overlay_aux_stc=[];
 count=1;
 for v_idx=1:length(v)
@@ -2042,6 +2074,7 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
             end;
             
             etc_render_fsbrain.overlay_stc=[];
+            etc_render_fsbrain.overlay_vol_stc=[];
             etc_render_fsbrain.overlay_value=[];
             etc_render_fsbrain.overlay_vertex=[];
             etc_render_fsbrain.overlay_stc_timeVec=[];
@@ -2064,6 +2097,7 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
                 etc_render_fsbrain.overlay_flag_render=1;
                 etc_render_fsbrain.overlay_value_flag_pos=1;
                 etc_render_fsbrain.overlay_value_flag_neg=1;
+                etc_render_fsbrain.overlay_vol_stc=etc_render_fsbrain.overlay_stc;
             end;
             etc_render_fsbrain_gui_update(handles);
             
@@ -2094,8 +2128,9 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
             for v_idx=1:length(v)
                 etc_render_fsbrain.overlay_aux_stc(:,:,v_idx)=etc_render_fsbrain.overlay_buffer(v(v_idx)).stc;
             end;
-            
-            
+                        
+            etc_render_fsbrain_handle('update_overlay_vol');
+            etc_render_fsbrain_handle('draw_pointer');
             etc_render_fsbrain_handle('redraw');
             etc_render_fsbrain_handle('draw_stc');
             
