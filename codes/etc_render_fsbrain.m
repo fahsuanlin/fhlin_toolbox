@@ -635,6 +635,22 @@ if(~isempty(overlay_vol))
         end;
     end;
     overlay_value=overlay_stc(:,overlay_stc_timeVec_idx);
+    
+    
+    
+    overlay_buffer=[];
+    overlay_buffer_main_idx=1;
+    overlay_buffer_idx=1;
+    
+    overlay_buffer(end+1).stc=overlay_stc;
+    overlay_buffer(end).name='overlay_vol';
+    if(strcmp(hemi,'lh'))
+        overlay_buffer(end).vertex=vol_A(1).v_idx;
+    else
+        overlay_buffer(end).vertex=vol_A(2).v_idx;
+    end;
+    overlay_buffer(end).timeVec=overlay_stc_timeVec;
+    overlay_buffer(end).hemi=hemi;
 end;    
     
     

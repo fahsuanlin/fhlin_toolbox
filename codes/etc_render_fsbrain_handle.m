@@ -702,6 +702,7 @@ switch lower(param)
                 set(findobj(etc_render_fsbrain.fig_gui,'tag','checkbox_show_vol_colorbar'),'value',etc_render_fsbrain.flag_colorbar_vol);
                 
                 etc_render_fsbrain_handle('kb','cs','cs'); %update colorbar
+                etc_render_fsbrain_handle('kb','cv','cv'); %update colorbar
 
             case 'cs' %colorbar update (surface)
                 if(~etc_render_fsbrain.flag_colorbar)

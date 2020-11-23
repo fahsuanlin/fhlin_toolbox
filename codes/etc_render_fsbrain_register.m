@@ -68,7 +68,18 @@ else
     etc_render_fsbrain.aux_point_coords=[];
 end;
 
-if(isempty(etc_render_fsbrain.aux_point_coords))
+if(isfield(etc_render_fsbrain,'overlay_vol'))
+    etc_render_fsbrain.overlay_vol_orig=etc_render_fsbrain.overlay_vol;
+    if(~isfield(etc_render_fsbrain,'overlay_vol_xfm'))
+        etc_render_fsbrain.overlay_vol_xfm=eye(4);
+    end;
+    etc_render_fsbrain.overlay_vol_xfm_orig=etc_render_fsbrain.overlay_vol_xfm;
+else
+    etc_render_fsbrain.overlay_vol_orig=[];
+    etc_render_fsbrain.overlay_vol_xfm_orig=[];
+end;
+
+if(isempty(etc_render_fsbrain.aux_point_coords)&&isempty(etc_render_fsbrain.overlay_vol))
     c=struct2cell(handles);
     for i=1:length(c)
         if(strcmp(c{i}.Type,'uicontrol'))
@@ -82,6 +93,13 @@ else
             c{i}.Enable='on';
         end;
     end;
+    
+    %initialize the transformation matrix if necessary
+    if(~isempty(etc_render_fsbrain.overlay_vol))
+        if(~isfield(etc_render_fsbrain,'overlay_vol_xfm'))
+            etc_render_fsbrain.overlay_vol_xfm=eye(4);
+        end;
+    end;    
 end;
 
 
@@ -112,7 +130,30 @@ y*x*(1-cos(theta))+z*sin(theta) cos(theta)+y*y*(1-cos(theta)) y*z*(1-cos(theta))
 z*x*(1-cos(theta))-y*sin(theta) z*y*(1-cos(theta))+x*sin(theta) cos(theta)+z*z*(1-cos(theta))];
 %https://en.wikipedia.org/wiki/Rotation_matrix
 
-etc_render_fsbrain.aux_point_coords=(R*etc_render_fsbrain.aux_point_coords.').';
+if(~isempty(etc_render_fsbrain.aux_point_coords))
+    etc_render_fsbrain.aux_point_coords=(R*etc_render_fsbrain.aux_point_coords.').';
+end;
+
+if(~isempty(etc_render_fsbrain.overlay_vol))
+    if(isfield(etc_render_fsbrain,'overlay_vol_xfm'))
+        Rtmp=R;
+        Rtmp(4,:)=0;
+        Rtmp(:,4)=0;
+        Rtmp(4,4)=1;
+        etc_render_fsbrain.overlay_vol_xfm=(Rtmp)*etc_render_fsbrain.overlay_vol_xfm;
+        
+        etc_render_fsbrain.overlay_vol=MRIvol2vol(etc_render_fsbrain.overlay_vol,etc_render_fsbrain.overlay_vol,inv(Rtmp));
+        
+        etc_render_fsbrain_overlay_vol_update;
+        etc_render_fsbrain_handle('update_overlay_vol');
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',[]);
+        etc_render_fsbrain_handle('redraw');
+        if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
+            etc_render_fsbrain_handle('draw_stc');
+        end;
+    end;
+end;
+
 if(~isempty(etc_render_fsbrain.aux2_point_coords))
     etc_render_fsbrain.aux2_point_coords=(R*etc_render_fsbrain.aux2_point_coords.').';
 end;
@@ -133,7 +174,30 @@ y*x*(1-cos(theta))+z*sin(theta) cos(theta)+y*y*(1-cos(theta)) y*z*(1-cos(theta))
 z*x*(1-cos(theta))-y*sin(theta) z*y*(1-cos(theta))+x*sin(theta) cos(theta)+z*z*(1-cos(theta))];
 %https://en.wikipedia.org/wiki/Rotation_matrix
 
-etc_render_fsbrain.aux_point_coords=(R*etc_render_fsbrain.aux_point_coords.').';
+if(~isempty(etc_render_fsbrain.aux_point_coords))
+    etc_render_fsbrain.aux_point_coords=(R*etc_render_fsbrain.aux_point_coords.').';
+end;
+
+if(~isempty(etc_render_fsbrain.overlay_vol))
+    if(isfield(etc_render_fsbrain,'overlay_vol_xfm'))
+        Rtmp=R;
+        Rtmp(4,:)=0;
+        Rtmp(:,4)=0;
+        Rtmp(4,4)=1;
+        etc_render_fsbrain.overlay_vol_xfm=(Rtmp)*etc_render_fsbrain.overlay_vol_xfm;
+        
+        etc_render_fsbrain.overlay_vol=MRIvol2vol(etc_render_fsbrain.overlay_vol,etc_render_fsbrain.overlay_vol,inv(Rtmp));
+        
+        etc_render_fsbrain_overlay_vol_update;
+        etc_render_fsbrain_handle('update_overlay_vol');
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',[]);
+        etc_render_fsbrain_handle('redraw');
+        if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
+            etc_render_fsbrain_handle('draw_stc');
+        end;
+    end;
+end;
+
 if(~isempty(etc_render_fsbrain.aux2_point_coords))
     etc_render_fsbrain.aux2_point_coords=(R*etc_render_fsbrain.aux2_point_coords.').';
 end;
@@ -177,7 +241,28 @@ rr=[xr,yr,zr]'; %right screen unit vector
 uu = cross(oo,rr); %up screen unit vector
 
 dist=etc_render_fsbrain.register_translate_dist;
-etc_render_fsbrain.aux_point_coords=etc_render_fsbrain.aux_point_coords+repmat(uu.'.*dist,[size(etc_render_fsbrain.aux_point_coords,1),1]);
+if(~isempty(etc_render_fsbrain.aux_point_coords))
+    etc_render_fsbrain.aux_point_coords=etc_render_fsbrain.aux_point_coords+repmat(uu.'.*dist,[size(etc_render_fsbrain.aux_point_coords,1),1]);
+end;
+
+if(~isempty(etc_render_fsbrain.overlay_vol))
+    if(isfield(etc_render_fsbrain,'overlay_vol_xfm'))
+        Rtmp=eye(4);
+        Rtmp(1:3,4)=(uu.'.*dist.*1e3)';
+        etc_render_fsbrain.overlay_vol_xfm=(Rtmp)*etc_render_fsbrain.overlay_vol_xfm;
+        
+        etc_render_fsbrain.overlay_vol=MRIvol2vol(etc_render_fsbrain.overlay_vol,etc_render_fsbrain.overlay_vol,inv(Rtmp));
+        
+        etc_render_fsbrain_overlay_vol_update;
+        etc_render_fsbrain_handle('update_overlay_vol');
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',[]);
+        etc_render_fsbrain_handle('redraw');
+        if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
+            etc_render_fsbrain_handle('draw_stc');
+        end;
+    end;
+end;
+
 if(~isempty(etc_render_fsbrain.aux2_point_coords))
     etc_render_fsbrain.aux2_point_coords=etc_render_fsbrain.aux2_point_coords+repmat(uu.'.*dist,[size(etc_render_fsbrain.aux2_point_coords,1),1]);
 end;
@@ -198,7 +283,28 @@ rr=[xr,yr,zr]'; %right screen unit vector
 uu = cross(oo,rr); %up screen unit vector
 
 dist=-1.*etc_render_fsbrain.register_translate_dist;
-etc_render_fsbrain.aux_point_coords=etc_render_fsbrain.aux_point_coords+repmat(uu.'.*dist,[size(etc_render_fsbrain.aux_point_coords,1),1]);
+if(~isempty(etc_render_fsbrain.aux_point_coords))
+    etc_render_fsbrain.aux_point_coords=etc_render_fsbrain.aux_point_coords+repmat(uu.'.*dist,[size(etc_render_fsbrain.aux_point_coords,1),1]);
+end;
+
+if(~isempty(etc_render_fsbrain.overlay_vol))
+    if(isfield(etc_render_fsbrain,'overlay_vol_xfm'))
+        Rtmp=eye(4);
+        Rtmp(1:3,4)=(uu.'.*dist.*1e3)';
+        etc_render_fsbrain.overlay_vol_xfm=(Rtmp)*etc_render_fsbrain.overlay_vol_xfm;
+        
+        etc_render_fsbrain.overlay_vol=MRIvol2vol(etc_render_fsbrain.overlay_vol,etc_render_fsbrain.overlay_vol,inv(Rtmp));
+        
+        etc_render_fsbrain_overlay_vol_update;
+        etc_render_fsbrain_handle('update_overlay_vol');
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',[]);
+        etc_render_fsbrain_handle('redraw');
+        if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
+            etc_render_fsbrain_handle('draw_stc');
+        end;
+    end;
+end;
+
 if(~isempty(etc_render_fsbrain.aux2_point_coords))
     etc_render_fsbrain.aux2_point_coords=etc_render_fsbrain.aux2_point_coords+repmat(uu.'.*dist,[size(etc_render_fsbrain.aux2_point_coords,1),1]);
 end;
@@ -219,7 +325,28 @@ rr=[xr,yr,zr]'; %right screen unit vector
 uu = cross(oo,rr); %up screen unit vector
 
 dist=-1.*etc_render_fsbrain.register_translate_dist;
-etc_render_fsbrain.aux_point_coords=etc_render_fsbrain.aux_point_coords+repmat(rr.'.*dist,[size(etc_render_fsbrain.aux_point_coords,1),1]);
+if(~isempty(etc_render_fsbrain.aux_point_coords))
+    etc_render_fsbrain.aux_point_coords=etc_render_fsbrain.aux_point_coords+repmat(rr.'.*dist,[size(etc_render_fsbrain.aux_point_coords,1),1]);
+end;
+
+if(~isempty(etc_render_fsbrain.overlay_vol))
+    if(isfield(etc_render_fsbrain,'overlay_vol_xfm'))
+        Rtmp=eye(4);
+        Rtmp(1:3,4)=(rr.'.*dist.*1e3)';
+        etc_render_fsbrain.overlay_vol_xfm=(Rtmp)*etc_render_fsbrain.overlay_vol_xfm;
+        
+        etc_render_fsbrain.overlay_vol=MRIvol2vol(etc_render_fsbrain.overlay_vol,etc_render_fsbrain.overlay_vol,inv(Rtmp));
+        
+        etc_render_fsbrain_overlay_vol_update;
+        etc_render_fsbrain_handle('update_overlay_vol');
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',[]);
+        etc_render_fsbrain_handle('redraw');
+        if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
+            etc_render_fsbrain_handle('draw_stc');
+        end;
+    end;
+end;
+
 if(~isempty(etc_render_fsbrain.aux2_point_coords))
     etc_render_fsbrain.aux2_point_coords=etc_render_fsbrain.aux2_point_coords+repmat(rr.'.*dist,[size(etc_render_fsbrain.aux2_point_coords,1),1]);
 end;
@@ -240,7 +367,28 @@ rr=[xr,yr,zr]'; %right screen unit vector
 uu = cross(oo,rr); %up screen unit vector
 
 dist=etc_render_fsbrain.register_translate_dist;
-etc_render_fsbrain.aux_point_coords=etc_render_fsbrain.aux_point_coords+repmat(rr.'.*dist,[size(etc_render_fsbrain.aux_point_coords,1),1]);
+if(~isempty(etc_render_fsbrain.aux_point_coords))
+    etc_render_fsbrain.aux_point_coords=etc_render_fsbrain.aux_point_coords+repmat(rr.'.*dist,[size(etc_render_fsbrain.aux_point_coords,1),1]);
+end;
+
+if(~isempty(etc_render_fsbrain.overlay_vol))
+    if(isfield(etc_render_fsbrain,'overlay_vol_xfm'))
+        Rtmp=eye(4);
+        Rtmp(1:3,4)=(rr.'.*dist.*1e3)';
+        etc_render_fsbrain.overlay_vol_xfm=(Rtmp)*etc_render_fsbrain.overlay_vol_xfm;
+        
+        etc_render_fsbrain.overlay_vol=MRIvol2vol(etc_render_fsbrain.overlay_vol,etc_render_fsbrain.overlay_vol,inv(Rtmp));
+        
+        etc_render_fsbrain_overlay_vol_update;
+        etc_render_fsbrain_handle('update_overlay_vol');
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',[]);
+        etc_render_fsbrain_handle('redraw');
+        if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
+            etc_render_fsbrain_handle('draw_stc');
+        end;
+    end;
+end;
+
 if(~isempty(etc_render_fsbrain.aux2_point_coords))
     etc_render_fsbrain.aux2_point_coords=etc_render_fsbrain.aux2_point_coords+repmat(rr.'.*dist,[size(etc_render_fsbrain.aux2_point_coords,1),1]);
 end;
@@ -254,17 +402,25 @@ function pushbutton_export_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global etc_render_fsbrain
 
-points_all=etc_render_fsbrain.aux_point_coords;
-points=points_all;
+if(~isempty(etc_render_fsbrain.aux_point_coords))
+    points_all=etc_render_fsbrain.aux_point_coords;
+    points=points_all;
+    
+    %remove auxillary points
+    idx=find(strcmp(etc_render_fsbrain.aux_point_name,'.'));
+    points(idx,:)=[];
+    
+    assignin('base','points',points);
+    assignin('base','points_all',points_all);
+    fprintf('variables "points" and "points_all" exported\n');
+end;
 
-%remove auxillary points
-idx=find(strcmp(etc_render_fsbrain.aux_point_name,'.'));
-points(idx,:)=[];
+if(~isempty(etc_render_fsbrain.overlay_vol))
+    overlay_xfm=inv(etc_render_fsbrain.overlay_vol_xfm);
 
-assignin('base','points',points);
-assignin('base','points_all',points_all);
-fprintf('variables "points" and "points_all" exported\n');
-
+    assignin('base','overlay_xfm',overlay_xfm);
+    fprintf('variables "overlay_xfm" exported\n');
+end;
 
 
 function edit_translate_dist_Callback(hObject, eventdata, handles)
@@ -331,8 +487,27 @@ function pushbutton_reset_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global etc_render_fsbrain;
-etc_render_fsbrain.aux_point_coords=etc_render_fsbrain.aux_point_coords_orig;
-etc_render_fsbrain_handle('redraw');
+
+if(~isempty(etc_render_fsbrain.aux_point_coords))
+    etc_render_fsbrain.aux_point_coords=etc_render_fsbrain.aux_point_coords_orig;
+    etc_render_fsbrain_handle('redraw');
+end;
+
+if(~isempty(etc_render_fsbrain.overlay_vol))
+    if(isfield(etc_render_fsbrain,'overlay_vol_xfm'))
+        etc_render_fsbrain.overlay_vol_xfm=etc_render_fsbrain.overlay_vol_xfm_orig;
+        
+        etc_render_fsbrain.overlay_vol=etc_render_fsbrain.overlay_vol_orig;
+        
+        etc_render_fsbrain_overlay_vol_update;
+        etc_render_fsbrain_handle('update_overlay_vol');
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',[]);
+        etc_render_fsbrain_handle('redraw');
+        if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
+            etc_render_fsbrain_handle('draw_stc');
+        end;
+    end;
+end;
 
 
 % --- Executes on button press in pushbutton_exportsave.
@@ -341,24 +516,36 @@ function pushbutton_exportsave_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global etc_render_fsbrain
-assignin('base','points',etc_render_fsbrain.aux_point_coords);
-filename = uigetfile;
-if(filename)
-    points=etc_render_fsbrain.aux_point_coords;
-    points_label=etc_render_fsbrain.aux_point_name;
-    hsp=etc_render_fsbrain.aux2_point_coords;
-    
-%     
-%     points_all=etc_render_fsbrain.aux_point_coords;
-%     points=points_all;
-%     points_all_name=etc_render_fsbrain.aux_point_name;
-%     points_name=points_all_name;
-%     %remove auxillary points
-%     idx=find(strcmp(etc_render_fsbrain.aux_point_name,'.'));
-%     points(idx,:)=[];
-%     points_name(idx)=[];
-    
-%    save(filename,'-append','points','points_all','points_name','points_all_name');
-     save(filename,'-append','points','points_label','hsp');
-    fprintf('variable "points", "points_label", and "hsp" exported and saved in [%s]\n',filename);
+
+if(~isempty(etc_render_fsbrain.aux_point_coords)||~isempty(etc_render_fsbrain.overlay_vol))
+    assignin('base','points',etc_render_fsbrain.aux_point_coords);
+    filename = uigetfile;
+    if(filename)
+        
+        if(~isempty(etc_render_fsbrain.aux_point_coords))
+            points=etc_render_fsbrain.aux_point_coords;
+            points_label=etc_render_fsbrain.aux_point_name;
+            hsp=etc_render_fsbrain.aux2_point_coords;
+            
+            save(filename,'-append','points','points_label','hsp');
+            fprintf('variable "points" and "points_label" exported and saved in [%s]\n',filename);
+        end;
+        
+        if(~isempty(etc_render_fsbrain.aux2_point_coords))
+            hsp=etc_render_fsbrain.aux2_point_coords;
+            
+            save(filename,'-append','hsp');
+            fprintf('variable "hsp" exported and saved in [%s]\n',filename);
+        end;
+        
+        if(~isempty(etc_render_fsbrain.overlay_vol))
+            overlay_xfm=inv(etc_render_fsbrain.overlay_vol_xfm);
+            
+            assignin('base','overlay_xfm',overlay_xfm);
+            save(filename,'-append','overlay_xfm');
+            fprintf('variable "overlay_xfm" exported and saved in [%s]\n',filename);
+        end;
+    end;
 end;
+
+

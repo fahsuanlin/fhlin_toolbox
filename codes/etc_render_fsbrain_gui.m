@@ -241,11 +241,16 @@ end;
 
 %colorbar check box
 set(handles.checkbox_show_colorbar,'value',0);
+set(handles.checkbox_show_colorbar,'enable','off');
 set(handles.checkbox_show_vol_colorbar,'value',0);
+set(handles.checkbox_show_vol_colorbar,'enable','off');
 if(isfield(etc_render_fsbrain,'h_colorbar_pos'))
     if(~isempty(etc_render_fsbrain.h_colorbar_pos))
         set(handles.checkbox_show_colorbar,'value',1);
-        set(handles.checkbox_show_vol_colorbar,'value',1);
+        if(~isempty(etc_render_fsbrain.fig_vol))
+            set(handles.checkbox_show_vol_colorbar,'value',1);
+            set(handles.checkbox_show_vol_colorbar,'enable','on');
+        end;
     end;
 end;
 if(etc_render_fsbrain.flag_colorbar)
@@ -1404,7 +1409,7 @@ if(isempty(etc_render_fsbrain.vol))
     return;
 end;
 
-[filename, pathname, filterindex] = uigetfile({'*.mgh; *.mgz','mgh/mgz volume'});
+[filename, pathname, filterindex] = uigetfile({'*.mgh; *.mgz; *.nii; *.gz','mgh/mgz volume'});
 if(filename>0)
     etc_render_fsbrain.overlay_value=[];
     etc_render_fsbrain.overlay_stc=[];
@@ -1504,22 +1509,8 @@ if(filename>0)
             all_coords=all_coords(1:3,:)';
             etc_render_fsbrain.vol_A(hemi_idx).loc=all_coords(cort_idx,:);
             etc_render_fsbrain.vol_A(hemi_idx).wb_loc=all_coords(non_cort_idx,:)./1e3;
-            
-            
-            %%%%crs=[44 59 44];
-            %%%surface_coord=[   -14   -21   -33]';
-            %%%
-            %%%loc_rh=cat(1,vol_A(hemi_idx).loc,vol_A(hemi_idx).wb_loc.*1e3);
-            %%%loc=loc_rh;
-            %%%dist=sqrt(sum((loc-repmat(surface_coord(:)',[size(loc,1),1])).^2,2));
-            %%%[dummy,loc_min_idx]=min(dist)
-            %%%
-            %%%figure; plot(squeeze(overlay_vol.vol(59,44,44,:))); hold on;
-            
+                        
             etc_render_fsbrain.overlay_vol_value=reshape(etc_render_fsbrain.overlay_vol.vol,[size(etc_render_fsbrain.overlay_vol.vol,1)*size(etc_render_fsbrain.overlay_vol.vol,2)*size(etc_render_fsbrain.overlay_vol.vol,3), size(etc_render_fsbrain.overlay_vol.vol,4)]);
-            
-            %overlay_vol_stc(offset+1:offset+length(vol_A(hemi_idx).v_idx),:)=overlay_vol_value(cort_idx,:);
-            %overlay_vol_stc(offset+length(vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),:)=overlay_vol_value(non_cort_idx,:);
             
             midx=[cort_idx(:)' non_cort_idx(:)'];
             etc_render_fsbrain.overlay_vol_stc(offset+1:offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx),:)=etc_render_fsbrain.overlay_vol_value(midx(1:length(cort_idx)),:);
@@ -1533,9 +1524,7 @@ if(filename>0)
             end;
             
             offset=offset+n_source(hemi_idx);
-            
-            %%%plot(overlay_vol_stc(loc_min_idx,:));
-            
+                        
             X_hemi_cort{hemi_idx}=etc_render_fsbrain.overlay_vol_value(cort_idx,:);
             X_hemi_subcort{hemi_idx}=etc_render_fsbrain.overlay_vol_value(non_cort_idx,:);
             
@@ -1566,12 +1555,6 @@ if(filename>0)
         etc_render_fsbrain.overlay_flag_render=1;
         
         fprintf('Done!\n');
-
-        
-        
-        %h=findobj('tag','slider_alpha');
-        %set(h,'value',get(hObject,'Value'));
-        
     end;
 
     
