@@ -392,7 +392,13 @@ set(handles.checkbox_overlay_truncate_pos,'value',etc_render_fsbrain.flag_overla
         set(handles.pushbutton_overlay_aux_vol,'enable','off');
     
     end;
-%end;                            
+%end;              
+
+
+if(isempty(etc_render_fsbrain.fig_vol))
+        set(handles.checkbox_show_vol_colorbar,'enable','off');
+        set(handles.checkbox_show_vol_overlay,'enable','off');                                                        
+end;
 
 % Update handles structure
 guidata(hObject, handles);

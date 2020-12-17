@@ -82,6 +82,10 @@ overlay_vol_mask_alpha=0.5;
 overlay_vol_mask=[];
 overlay_flag_vol_mask=1;
 
+flag_orthogonal_slice_ax=0;
+flag_orthogonal_slice_sag=0;
+flag_orthogonal_slice_cor=0;
+
 topo_label={};
 
 topo_aux_point_coords=[];
@@ -951,6 +955,10 @@ etc_render_fsbrain.overlay_regrid_zero_flag=overlay_regrid_zero_flag;
 etc_render_fsbrain.overlay_Ds=overlay_Ds;
 etc_render_fsbrain.flag_overlay_truncate_pos=overlay_truncate_pos;
 etc_render_fsbrain.flag_overlay_truncate_neg=overlay_truncate_neg;
+
+etc_render_fsbrain.flag_orthogonal_slice_ax=flag_orthogonal_slice_ax;
+etc_render_fsbrain.flag_orthogonal_slice_sag=flag_orthogonal_slice_sag;
+etc_render_fsbrain.flag_orthogonal_slice_cor=flag_orthogonal_slice_cor;
 
 etc_render_fsbrain.overlay_buffer=overlay_buffer;
 etc_render_fsbrain.overlay_buffer_idx=overlay_buffer_idx;

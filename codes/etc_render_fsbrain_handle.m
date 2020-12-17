@@ -546,7 +546,7 @@ switch lower(param)
                 
                 %[filename, pathname, filterindex] = uigetfile({'*.annot','FreeSufer annotation';'*.label','FreeSufer label'}, 'Pick a file', 'lh.aparc.a2009s.annot');
                 %[filename, pathname, filterindex] = uigetfile({'*.annot','FreeSufer annotation'; '*.mgz','FreeSufer annotation';'*.label','FreeSufer label';  }, 'Pick a file', 'lh.aparc.a2009s.annot');
-                [filename, pathname, filterindex] = uigetfile(fullfile(pwd,'*.mgz;*.mgh;*.annot;*.label'),'select an annotation/label file');
+                [filename, pathname, filterindex] = uigetfile(fullfile(pwd,'*.mgz;*.mgh;*.annot;*.label;*.nii'),'select an annotation/label file');
                 try
                     [dummy,fstem,ext]=fileparts(filename);
                     switch lower(ext)
@@ -686,6 +686,48 @@ switch lower(param)
                                     set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
                                 end;
                             end;
+                        case '.nii' %AAL trying.....
+                            file_annot=sprintf('%s/%s',pathname,filename);
+                            
+                            tmp=MRIread(file_annot);
+                            if(size(tmp.vol)~=size(etc_render_fsbrain.vol.vol))
+                                fprintf('Imcompatible size of the attempted file (%s) to the volume (%s)!\n',mat2str(size(tmp.vol)),mat2str(size(etc_render_fsbrain.vol.vol)));
+                                return;
+                            end;
+                            etc_render_fsbrain.overlay_vol_mask=tmp;
+                            
+                            [dummy,fstem]=fileparts(filename);
+                            
+                            %file_lut='/Applications/freesurfer/FreeSurferColorLUT.txt';
+                            %fprintf('select a LUT file...\n');
+                            %[filename, pathname, filterindex] = uigetfile(fullfile(pwd,'*.txt'),'select a LUT file');
+                            file_lut=sprintf('%s/%s.nii.txt',pathname,fstem);
+                            if(file_lut)
+                                
+                                [etc_render_fsbrain.lut.number,etc_render_fsbrain.lut.name,etc_render_fsbrain.lut.number]=textread(file_lut,'%d%s%d','commentstyle','shell');
+                                cc=hsv(length(etc_render_fsbrain.lut.number));
+                                etc_render_fsbrain.lut.r=floor(cc(:,1).*255);
+                                etc_render_fsbrain.lut.g=floor(cc(:,2).*255);
+                                etc_render_fsbrain.lut.b=floor(cc(:,3).*255);
+                                obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
+                                set(obj,'enable','on');
+                                set(obj,'string',etc_render_fsbrain.lut.name);
+                                set(obj,'value',1);
+                                set(obj,'min',0);
+                                set(obj,'max',length(etc_render_fsbrain.lut.name));
+                                
+                                obj=findobj(etc_render_fsbrain.fig_gui,'tag','checkbox_overlay_aux_vol');
+                                set(obj,'enable','on');
+                                obj=findobj(etc_render_fsbrain.fig_gui,'tag','slider_overlay_aux_vol');
+                                set(obj,'enable','on');
+                                obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
+                                set(obj,'enable','on');
+                                
+                                draw_pointer();
+                            else
+                                fprintf('LUT error!\n');
+                                return;
+                            end;
                         otherwise
                     end;
                 catch ME
@@ -756,6 +798,9 @@ switch lower(param)
                 end;
                 
             case 'cv' %colorbar update (volume)
+                
+                if(isempty(etc_render_fsbrain.fig_vol)) return; end;
+                
                 if(~etc_render_fsbrain.flag_colorbar_vol)
                     delete(etc_render_fsbrain.h_colorbar_vol_pos);
                     etc_render_fsbrain.h_colorbar_vol_pos=[];
