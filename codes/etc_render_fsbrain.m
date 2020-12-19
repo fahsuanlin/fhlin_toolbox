@@ -138,7 +138,7 @@ cluster_file={};
 alpha=1;
 view_angle=[]; 
 lim=[];
-camposition=[];
+camposition_l=[];
 
 flag_redraw=0;
 flag_camlight=1;
@@ -283,8 +283,8 @@ for idx=1:length(varargin)/2
             view_angle=option_value;
         case 'lim'
             lim=option_value;
-        case 'camposition'
-            camposition=option_value;
+        case 'camposition_l'
+            camposition_l=option_value;
         case 'bg_color'
             bg_color=option_value;
         case 'topo_label'
@@ -830,14 +830,20 @@ if(~flag_redraw)
     
     view(view_angle(1), view_angle(2));
     
-    if(isempty(camposition))
+    if(isempty(camposition_l))
         cp=campos;
         cp=cp./norm(cp);
         
         campos(1300.*cp);
         camposition=1300.*cp;
     else
+        
+        cp=campos;
+        cp=cp./norm(cp);
+        
+        camposition=camposition_l.*cp;
         campos(camposition);
+%        campos(camposition);
     end;
     
     if(flag_camlight)

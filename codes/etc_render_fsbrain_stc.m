@@ -12,6 +12,7 @@ flag_overlay_pos_only=0;
 flag_overlay_neg_only=0;
 flag_threshold_normalized=0;
 flag_1minus=0;
+flag_minuslog=0;
 overlay_exclude_fstem='';
 overlay_smooth=5;
 overlay_value=[];
@@ -70,6 +71,8 @@ for idx=1:length(varargin)/2
             flag_curv=option_value;
         case 'flag_1minus'
             flag_1minus=option_value;
+        case 'flag_minuslog'
+            flag_minuslog=option_value;
         case 'time_idx'
             time_idx=option_value;
         case 'surf'
@@ -128,7 +131,21 @@ end;
         stc_lh=1-stc_lh;
         stc_rh=1-stc_rh;
     end;
-    
+
+    if(flag_minuslog)
+        tmp=-log10(stc_lh);
+        idx=find(isinf(tmp));
+        nidx=find(~isinf(tmp));
+        tmp(idx)=max(tmp(nidx));
+        stc_lh=tmp;
+        
+        tmp=-log10(stc_rh);
+        idx=find(isinf(tmp));
+        nidx=find(~isinf(tmp));
+        tmp(idx)=max(tmp(nidx));
+        stc_rh=tmp;
+    end;
+
     if(flag_overlay_neg_only)
         stc_lh(find(stc_lh(:)>0))=0;
         stc_rh(find(stc_rh(:)>0))=0;

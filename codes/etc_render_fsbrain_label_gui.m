@@ -102,7 +102,7 @@ try
     if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
         contents = cellstr(get(hObject,'String'));
         select_idx=get(hObject,'Value');
-        
+                
         try
             for ss=1:length(select_idx)
                 
@@ -110,6 +110,8 @@ try
                 vidx=find((etc_render_fsbrain.label_value)==label_number);
                 %figure(etc_render_fsbrain.fig_brain);
                 
+%fprintf('%s: [%d] =%d\n',mat2str(etc_render_fsbrain.label_register),ss,etc_render_fsbrain.label_register(select_idx(ss)));
+
                 if(etc_render_fsbrain.label_register(select_idx(ss))==0)
                     cc=etc_render_fsbrain.label_ctab.table(select_idx(ss),1:3)./255;
                     etc_render_fsbrain.h.FaceVertexCData(vidx,:)=repmat(cc(:)',[length(vidx),1]);

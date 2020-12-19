@@ -124,10 +124,12 @@ switch lower(param)
                             
                             answer = inputdlg(prompt,dlgtitle,dims,definput);
                             done=1;
-                            if(isfield(etc_render_fsbrain,'overlay_buffer'))
-                                for ii=1:length(etc_render_fsbrain.overlay_buffer)
-                                    if(strcmp(etc_render_fsbrain.overlay_buffer(ii).name,answer{1}))
-                                        done=0;
+                            if(~isempty(answer))
+                                if(isfield(etc_render_fsbrain,'overlay_buffer'))
+                                    for ii=1:length(etc_render_fsbrain.overlay_buffer)
+                                        if(strcmp(etc_render_fsbrain.overlay_buffer(ii).name,answer{1}))
+                                            done=0;
+                                        end;
                                     end;
                                 end;
                             end;
@@ -229,11 +231,16 @@ switch lower(param)
                                 
                                 set(findobj('tag','listbox_overlay'),'value',length(etc_render_fsbrain.overlay_buffer(end)));
                                 
-                                if(size(etc_render_fsbrain.overlay_aux_stc(:,:,1))==size(etc_render_fsbrain.overlay_buffer(end).stc))
-                                    %etc_render_fsbrain.overlay_aux_stc(:,:,end+1)=stc;
-                                    etc_render_fsbrain.overlay_aux_stc(:,:,end+1)=etc_render_fsbrain.overlay_buffer(end).stc;
+                                if(~isempty(etc_render_fsbrain.overlay_aux_stc))
+                                    %if(size(etc_render_fsbrain.overlay_aux_stc(:,:,1))==size(etc_render_fsbrain.overlay_buffer(end).stc))
+                                    if(isequal(size(etc_render_fsbrain.overlay_aux_stc(:,:,1)), size(etc_render_fsbrain.overlay_buffer(end).stc)))
+                                        %etc_render_fsbrain.overlay_aux_stc(:,:,end+1)=stc;
+                                        etc_render_fsbrain.overlay_aux_stc(:,:,end+1)=etc_render_fsbrain.overlay_buffer(end).stc;
+                                    else
+                                        fprintf('The size for [%s] not compatible to the main layer [%s]. Data are not rendered until being seleted as the main layer.\n',name,str{etc_render_fsbrain.overlay_buffer_main_idx});
+                                    end;
                                 else
-                                    fprintf('size for [%s] not compatible to the main layer [%s]. Data are not rendered until being seleted as the main layer.\n',name,str{etc_render_fsbrain.overlay_buffer_main_idx});
+                                    etc_render_fsbrain.overlay_aux_stc(:,:,end+1)=etc_render_fsbrain.overlay_buffer(end).stc;
                                 end;
                             end;
                             
@@ -556,6 +563,9 @@ switch lower(param)
                             
                             if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
                                 etc_render_fsbrain.label_vertex(ii+1)=etc_render_fsbrain.label_ctab.numEntries+1;
+                                if(sum(etc_render_fsbrain.label_value(ii+1))>eps)
+                                    fprintf('Warning! The loaded label overlaps with already-existed label(s), which are not replaced by the new index!\n');
+                                end;
                                 etc_render_fsbrain.label_value(ii+1)=etc_render_fsbrain.label_ctab.numEntries+1;
                                 etc_render_fsbrain.label_ctab.numEntries=etc_render_fsbrain.label_ctab.numEntries+1;
                                 etc_render_fsbrain.label_ctab.struct_names{end+1}=filename;
