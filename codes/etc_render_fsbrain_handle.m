@@ -700,17 +700,19 @@ switch lower(param)
                             file_annot=sprintf('%s/%s',pathname,filename);
                             
                             tmp=MRIread(file_annot);
-                            if(size(tmp.vol)~=size(etc_render_fsbrain.vol.vol))
-                                fprintf('Imcompatible size of the attempted file (%s) to the volume (%s)!\n',mat2str(size(tmp.vol)),mat2str(size(etc_render_fsbrain.vol.vol)));
-                                return;
-                            end;
-                            etc_render_fsbrain.overlay_vol_mask=tmp;
+ 
+                            %morphing AAL template to the target individual
+                            fprintf('select the Talairach transformation matrix for the subject...\n');
+                            [filename_tal, pathname_tal, filterindex] = uigetfile(fullfile(pwd,'*.xfm'),'select the Talairach transformation file');
+                            talxfm=etc_read_xfm('file_xfm',sprintf('%s/%s',pathname_tal,filename_tal)); %for MAC/Linux
+                            %template=MRIread('/Applications/freesurfer/average/mni305.cor.subfov2.mgz');
+                            %template_reg=etc_read_xfm('file_xfm','/Applications/freesurfer/average/mni305.cor.subfov2.reg'); %for MAC/Linux
+                            etc_render_fsbrain.overlay_vol_mask=MRIvol2vol(tmp,etc_render_fsbrain.vol,inv(etc_render_fsbrain.vol.tkrvox2ras*inv(etc_render_fsbrain.vol.vox2ras)*inv(talxfm)*tmp.vox2ras*inv(tmp.tkrvox2ras))); %tkRAS-to-tkRAS
+
                             
                             [dummy,fstem]=fileparts(filename);
                             
-                            %file_lut='/Applications/freesurfer/FreeSurferColorLUT.txt';
-                            %fprintf('select a LUT file...\n');
-                            %[filename, pathname, filterindex] = uigetfile(fullfile(pwd,'*.txt'),'select a LUT file');
+                            %load AAL lable file
                             file_lut=sprintf('%s/%s.nii.txt',pathname,fstem);
                             if(file_lut)
                                 
