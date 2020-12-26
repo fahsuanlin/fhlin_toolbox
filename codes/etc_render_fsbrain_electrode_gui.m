@@ -77,6 +77,21 @@ set(handles.checkbox_mri_view,'value',etc_render_fsbrain.show_all_contacts_mri_f
 set(handles.edit_mri_view_depth,'string',sprintf('%1.1f',etc_render_fsbrain.show_all_contacts_mri_depth));
 set(handles.checkbox_brain_surface,'value',etc_render_fsbrain.show_all_contacts_brain_surface_flag);
 
+%uncheck electrod contact locking
+set(handles.checkbox_electrode_contact_lock,'value',0);
+etc_render_fsbrain.electrode_contact_lock_flag=0;
+guidata(hObject, handles);
+
+%uncheck contact view update option
+%set(handles.checkbox_update_contact_view,'value',0);
+%etc_render_fsbrain.electrode_update_contact_view_flag=0;
+if(etc_render_fsbrain.electrode_update_contact_view_flag)
+    set(handles.checkbox_update_contact_view,'value',1);
+else
+    set(handles.checkbox_update_contact_view,'value',0);
+end;
+guidata(hObject, handles);
+    
 if(~isempty(etc_render_fsbrain.electrode))
     fprintf('electrodes specified...\n');
     str={};
@@ -165,23 +180,7 @@ if(~isempty(etc_render_fsbrain.electrode))
 %             count=count+1;
 %         end;
 %     end;
-    
-    
-    %uncheck electrod contact locking
-    set(handles.checkbox_electrode_contact_lock,'value',0);
-    etc_render_fsbrain.electrode_contact_lock_flag=0;
-    guidata(hObject, handles);
-    
-    %uncheck contact view update option
-    %set(handles.checkbox_update_contact_view,'value',0);
-    %etc_render_fsbrain.electrode_update_contact_view_flag=0;
-    if(etc_render_fsbrain.electrode_update_contact_view_flag)
-        set(handles.checkbox_update_contact_view,'value',1);
-    else
-        set(handles.checkbox_update_contact_view,'value',0);
-    end;
-    guidata(hObject, handles);
-
+ 
     count=0;
     for e_idx=1:etc_render_fsbrain.electrode_idx-1
         count=count+etc_render_fsbrain.electrode(e_idx).n_contact;
@@ -821,11 +820,12 @@ if(~isempty(etc_render_fsbrain.aux2_point_coords))
     mask=repmat(etc_render_fsbrain.electrode_mask(etc_render_fsbrain.electrode_idx,:),[3 1])';
     tmp=etc_render_fsbrain.aux2_point_coords.';
     if(etc_render_fsbrain.electrode_contact_lock_flag)
-        tmp=tmp-repmat(etc_render_fsbrain.electrode_contact_coord_now.',[1 size(tmp,2)]);
+        %tmp=tmp-repmat(etc_render_fsbrain.electrode_contact_coord_now.',[1 size(tmp,2)]);
+        tmp=tmp-repmat(etc_render_fsbrain.electrode_contact_coord_now(:),[1 size(tmp,2)]);
     end;
     tmp=(R*(mask.'.*tmp)).';
     if(etc_render_fsbrain.electrode_contact_lock_flag)
-        tmp=tmp+repmat(etc_render_fsbrain.electrode_contact_coord_now,[size(tmp,1),1]);
+        tmp=tmp+repmat(etc_render_fsbrain.electrode_contact_coord_now(:)',[size(tmp,1),1]);
     end;
     
     etc_render_fsbrain.aux2_point_coords(find(mask(:)>eps))=tmp(find(mask(:)>eps));

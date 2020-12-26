@@ -28,6 +28,8 @@ talxfm=[];
 
 lut=[];
 
+pt=[];
+
 %color 
 default_solid_color=[1.0000    0.7031    0.3906];
 curv_pos_color=[1 1 1].*0.4;
@@ -150,7 +152,7 @@ show_contact_names_flag=1;
 show_all_contacts_mri_flag=1;
 show_all_contacts_mri_depth=2;
 show_all_contacts_brain_surface_flag=1;
-electrode_update_contact_view_flag=1;
+electrode_update_contact_view_flag=0;
 
 click_point_size=28;
 click_point_color=[1 0 1];
@@ -325,6 +327,8 @@ for idx=1:length(varargin)/2
             click_vertex_point_size=option_value;
         case 'click_vertex_point_color'
             click_vertex_point_color=option_value;
+        case 'pt'
+            pt=option_value;
         otherwise
             fprintf('unknown option [%s]...\n',option);
             return;
@@ -1074,6 +1078,11 @@ hold on;
 
 if(flag_colorbar)
     etc_render_fsbrain_handle('kb','c0','c0');
+end;
+
+
+if(~isempty(pt))
+    etc_render_fsbrain_handle('bd','pt',pt);
 end;
 return;
     

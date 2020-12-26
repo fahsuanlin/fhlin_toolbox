@@ -6,6 +6,7 @@ cc=[];
 surface_coord=[];
 min_dist_idx=[];
 click_vertex_vox=[];
+pt=[];
 
 for i=1:length(varargin)/2
     option_name=varargin{i*2-1};
@@ -25,6 +26,8 @@ for i=1:length(varargin)/2
             min_dist_idx=option;
         case 'click_vertex_vox'
             click_vertex_vox=option;
+        case 'pt'
+            pt=option;
     end;
 end;
 
@@ -696,7 +699,7 @@ switch lower(param)
                                     set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
                                 end;
                             end;
-                        case '.nii' %AAL trying.....
+                        case '.nii' %AAL 
                             file_annot=sprintf('%s/%s',pathname,filename);
                             
                             tmp=MRIread(file_annot);
@@ -1117,204 +1120,291 @@ switch lower(param)
             end;
         end;
     case 'bd'
-        if(gcf==etc_render_fsbrain.fig_brain)
-            
-            %add exploration toolbar
-            [vv date] = version;
-            DateNumber = datenum(date);
-            if(DateNumber>737426) %after January 1, 2019; Matlab verion 2019 and later
-                addToolbarExplorationButtons(etc_render_fsbrain.fig_vol);
-            end;
-            
-            etc_render_fsbrain.flag_overlay_stc_surf=1;
-            etc_render_fsbrain.flag_overlay_stc_vol=0;
-            
-           
-            update_overlay_vol;
-            draw_pointer;
-            
-            if(isfield(etc_render_fsbrain,'overlay_stc_timeVec_idx'))
-                if(~isempty(etc_render_fsbrain.overlay_stc_timeVec))
-                    if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
-                        draw_stc;
-                        
-                        global etc_trace_obj;
-                        if(~isempty(etc_trace_obj))
-                            if(isfield(etc_trace_obj,'fig_trace'))
-                                if(isvalid(etc_trace_obj.fig_trace))
-                                    try
-                                        etc_trace_obj.trace_selected_idx=etc_render_fsbrain.click_overlay_vertex;
-                                        etc_trace_handle('redraw');
-                                    catch ME
+        if(isempty(pt)) %interactive pt by clicking
+            if(gcf==etc_render_fsbrain.fig_brain)
+                
+                %add exploration toolbar
+                [vv date] = version;
+                DateNumber = datenum(date);
+                if(DateNumber>737426) %after January 1, 2019; Matlab verion 2019 and later
+                    addToolbarExplorationButtons(etc_render_fsbrain.fig_vol);
+                end;
+                
+                etc_render_fsbrain.flag_overlay_stc_surf=1;
+                etc_render_fsbrain.flag_overlay_stc_vol=0;
+                
+                
+                update_overlay_vol;
+                draw_pointer;
+                
+                if(isfield(etc_render_fsbrain,'overlay_stc_timeVec_idx'))
+                    if(~isempty(etc_render_fsbrain.overlay_stc_timeVec))
+                        if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
+                            draw_stc;
+                            
+                            global etc_trace_obj;
+                            if(~isempty(etc_trace_obj))
+                                if(isfield(etc_trace_obj,'fig_trace'))
+                                    if(isvalid(etc_trace_obj.fig_trace))
+                                        try
+                                            etc_trace_obj.trace_selected_idx=etc_render_fsbrain.click_overlay_vertex;
+                                            etc_trace_handle('redraw');
+                                        catch ME
+                                        end;
                                     end;
                                 end;
                             end;
                         end;
                     end;
                 end;
-            end;
-            %redraw;
-            figure(etc_render_fsbrain.fig_brain);
-        elseif(gcf==etc_render_fsbrain.fig_vol)
-            
-            %add exploration toolbar
-            [vv date] = version;
-            DateNumber = datenum(date);
-            if(DateNumber>737426) %after January 1, 2019; Matlab verion 2019 and later
-                addToolbarExplorationButtons(etc_render_fsbrain.fig_vol);
-            end;
-            
-            etc_render_fsbrain.flag_overlay_stc_surf=0;
-            etc_render_fsbrain.flag_overlay_stc_vol=1;
-            
-            update_overlay_vol;
-            xx=get(gca,'currentpoint');
-            xx=xx(1,1:2);
-            
-            [z1,x1,y1]=size(etc_render_fsbrain.vol.vol);
-            mm=max([z1 y1 x1]);
-            
-            tmp=ceil([xx(1)./mm, xx(2)./mm]);
-            
-            if(min(tmp(:))>=1&max(tmp(:))<=2)
-                ind=sub2ind([2 2],tmp(1),tmp(2));
-                                
-                vox=etc_render_fsbrain.click_vertex_vox;
-                switch ind
-                    case 1 %cor slice
-                        v=[xx(1)-etc_render_fsbrain.img_cor_padx xx(2)-etc_render_fsbrain.img_cor_pady vox(3)];
-                    case 2 %ax slice
-                        %v=[xx(2)-etc_render_fsbrain.img_ax_pady vox(2) xx(1)-etc_render_fsbrain.img_ax_padx-mm];
-                        v=[xx(1)-etc_render_fsbrain.img_ax_padx-mm vox(2) mm-xx(2)+etc_render_fsbrain.img_ax_pady];
-                    case 3 %sag slice
-                        v=[vox(1) xx(2)-etc_render_fsbrain.img_sag_pady-mm xx(1)-etc_render_fsbrain.img_sag_padx];
-                    otherwise
-                        v=[];
+                %redraw;
+                figure(etc_render_fsbrain.fig_brain);
+            elseif(gcf==etc_render_fsbrain.fig_vol)
+                
+                %add exploration toolbar
+                [vv date] = version;
+                DateNumber = datenum(date);
+                if(DateNumber>737426) %after January 1, 2019; Matlab verion 2019 and later
+                    addToolbarExplorationButtons(etc_render_fsbrain.fig_vol);
                 end;
-                if(~isempty(v))
-                    %surface_coord=etc_render_fsbrain.vol.vox2ras*[v(:); 1];
+                
+                etc_render_fsbrain.flag_overlay_stc_surf=0;
+                etc_render_fsbrain.flag_overlay_stc_vol=1;
+                
+                update_overlay_vol;
+                xx=get(gca,'currentpoint');
+                xx=xx(1,1:2);
+                
+                [z1,x1,y1]=size(etc_render_fsbrain.vol.vol);
+                mm=max([z1 y1 x1]);
+                
+                tmp=ceil([xx(1)./mm, xx(2)./mm]);
+                
+                if(min(tmp(:))>=1&max(tmp(:))<=2)
+                    ind=sub2ind([2 2],tmp(1),tmp(2));
                     
-                    %convert the volume CRS coordinates to surface (x,y,z)
-                    surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[v(:); 1];
-                    
-                    %convert the surface coordinate corresponding to
-                    %current volume to to the surface coordinate
-                    %corresponding to "ORIG' volume
-                    surface_coord=inv(etc_render_fsbrain.vol_reg)*surface_coord;
-                    
-                    surface_coord=surface_coord(1:3);
-                    click_vertex_vox=v;
-                    
-                    vv=etc_render_fsbrain.orig_vertex_coords;
-                    dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
-                    [min_dist,min_dist_idx]=min(dist);
-                    %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
-                    
-                    %surface_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:)';
-                    
-                    %draw_pointer('pt',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
-                    surface_coord_now=etc_render_fsbrain.vertex_coords(min_dist_idx,:);
-                    draw_pointer('pt',surface_coord_now,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);    
-                    
-                    if((~isempty(etc_render_fsbrain.vol_A))&&(~isempty(etc_render_fsbrain.overlay_vol_stc)))
-                        loc_lh=cat(1,etc_render_fsbrain.vol_A(1).loc,etc_render_fsbrain.vol_A(1).wb_loc.*1e3);
-                        loc_rh=cat(1,etc_render_fsbrain.vol_A(2).loc,etc_render_fsbrain.vol_A(2).wb_loc.*1e3);
-                        loc=cat(1,loc_lh,loc_rh);
-                        dist=sqrt(sum((loc-repmat(surface_coord(:)',[size(loc,1),1])).^2,2));
-                        [dummy,loc_min_idx]=min(dist);
+                    vox=etc_render_fsbrain.click_vertex_vox;
+                    switch ind
+                        case 1 %cor slice
+                            v=[xx(1)-etc_render_fsbrain.img_cor_padx xx(2)-etc_render_fsbrain.img_cor_pady vox(3)];
+                        case 2 %ax slice
+                            %v=[xx(2)-etc_render_fsbrain.img_ax_pady vox(2) xx(1)-etc_render_fsbrain.img_ax_padx-mm];
+                            v=[xx(1)-etc_render_fsbrain.img_ax_padx-mm vox(2) mm-xx(2)+etc_render_fsbrain.img_ax_pady];
+                        case 3 %sag slice
+                            v=[vox(1) xx(2)-etc_render_fsbrain.img_sag_pady-mm xx(1)-etc_render_fsbrain.img_sag_padx];
+                        otherwise
+                            v=[];
+                    end;
+                    v
+                    if(~isempty(v))
+                        %surface_coord=etc_render_fsbrain.vol.vox2ras*[v(:); 1];
                         
+                        %convert the volume CRS coordinates to surface (x,y,z)
+                        surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[v(:); 1];
                         
-                        etc_render_fsbrain.click_overlay_vertex=loc_min_idx;
+                        %convert the surface coordinate corresponding to
+                        %current volume to to the surface coordinate
+                        %corresponding to "ORIG' volume
+                        surface_coord=inv(etc_render_fsbrain.vol_reg)*surface_coord;
                         
-                        %figure(10);
-                        %plot(etc_render_fsbrain.overlay_vol_stc(loc_min_idx,:));
-                        etc_render_fsbrain.overlay_vol_stc_1d=etc_render_fsbrain.overlay_vol_stc(loc_min_idx,:);
+                        surface_coord=surface_coord(1:3);
+                        click_vertex_vox=v;
                         
-                        if(~isempty(etc_render_fsbrain.overlay_aux_vol_stc))
-                            for vv_idx=1:size(etc_render_fsbrain.overlay_aux_vol_stc,3);
-                                etc_render_fsbrain.overlay_aux_vol_stc_1d=etc_render_fsbrain.overlay_aux_vol_stc(loc_min_idx,:,vv_idx);
+                        vv=etc_render_fsbrain.orig_vertex_coords;
+                        dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+                        [min_dist,min_dist_idx]=min(dist);
+                        %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+                        
+                        %surface_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:)';
+                        
+                        %draw_pointer('pt',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+                        surface_coord_now=etc_render_fsbrain.vertex_coords(min_dist_idx,:);
+                        draw_pointer('pt',surface_coord_now,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+                        
+                        if((~isempty(etc_render_fsbrain.vol_A))&&(~isempty(etc_render_fsbrain.overlay_vol_stc)))
+                            loc_lh=cat(1,etc_render_fsbrain.vol_A(1).loc,etc_render_fsbrain.vol_A(1).wb_loc.*1e3);
+                            loc_rh=cat(1,etc_render_fsbrain.vol_A(2).loc,etc_render_fsbrain.vol_A(2).wb_loc.*1e3);
+                            loc=cat(1,loc_lh,loc_rh);
+                            dist=sqrt(sum((loc-repmat(surface_coord(:)',[size(loc,1),1])).^2,2));
+                            [dummy,loc_min_idx]=min(dist);
+                            
+                            
+                            etc_render_fsbrain.click_overlay_vertex=loc_min_idx;
+                            
+                            %figure(10);
+                            %plot(etc_render_fsbrain.overlay_vol_stc(loc_min_idx,:));
+                            etc_render_fsbrain.overlay_vol_stc_1d=etc_render_fsbrain.overlay_vol_stc(loc_min_idx,:);
+                            
+                            if(~isempty(etc_render_fsbrain.overlay_aux_vol_stc))
+                                for vv_idx=1:size(etc_render_fsbrain.overlay_aux_vol_stc,3);
+                                    etc_render_fsbrain.overlay_aux_vol_stc_1d=etc_render_fsbrain.overlay_aux_vol_stc(loc_min_idx,:,vv_idx);
+                                end;
+                            end;
+                            
+                            %etc_render_fsbrain.overlay_stc=etc_render_fsbrain.overlay_vol_stc;
+                            %etc_render_fsbrain.click_overlay_vertex=loc_min_idx;
+                            
+                            if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
+                                draw_stc;
+                            end;
+                        elseif(~isempty(etc_render_fsbrain.overlay_vol))
+                            rv=round(v);
+                            tmp=etc_render_fsbrain.overlay_vol.vol(rv(1),rv(2),rv(3),:);
+                            etc_render_fsbrain.overlay_vol_stc_1d=tmp(:);
+                            
+                            for vv_idx=1:length(etc_render_fsbrain.overlay_aux_vol);
+                                tmp=etc_render_fsbrain.overlay_aux_vol(vv_idx).vol(rv(1),rv(2),rv(3),:);
+                                etc_render_fsbrain.overlay_vol_stc_1d(:,vv_idx)=tmp(:);
+                            end;
+                            
+                            if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
+                                draw_stc;
                             end;
                         end;
                         
-                        %etc_render_fsbrain.overlay_stc=etc_render_fsbrain.overlay_vol_stc;
-                        %etc_render_fsbrain.click_overlay_vertex=loc_min_idx;
-                        
-                        if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
-                            draw_stc;
-                        end;
-                    elseif(~isempty(etc_render_fsbrain.overlay_vol))
-                        rv=round(v);
-                        tmp=etc_render_fsbrain.overlay_vol.vol(rv(1),rv(2),rv(3),:);
-                        etc_render_fsbrain.overlay_vol_stc_1d=tmp(:);
-                        
-                        for vv_idx=1:length(etc_render_fsbrain.overlay_aux_vol);
-                            tmp=etc_render_fsbrain.overlay_aux_vol(vv_idx).vol(rv(1),rv(2),rv(3),:);
-                            etc_render_fsbrain.overlay_vol_stc_1d(:,vv_idx)=tmp(:);
-                        end;
-                        
-                        if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
-                            draw_stc;
+                    end;
+                end;
+                figure(etc_render_fsbrain.fig_vol);
+                
+            elseif(gcf==etc_render_fsbrain.fig_stc)
+                xx=get(gca,'currentpoint');
+                xx=xx(1);
+                if(isempty(etc_render_fsbrain.overlay_stc_timeVec))
+                    etc_render_fsbrain.overlay_stc_timeVec_idx=round(xx);
+                    fprintf('showing STC at time index [%d] (sample)\n',etc_render_fsbrain.overlay_stc_timeVec_idx);
+                else
+                    [dummy,etc_render_fsbrain.overlay_stc_timeVec_idx]=min(abs(etc_render_fsbrain.overlay_stc_timeVec-xx));
+                    if(isempty(etc_render_fsbrain.overlay_stc_timeVec_unit))
+                        unt='sample';
+                    else
+                        unt=etc_render_fsbrain.overlay_stc_timeVec_unit;
+                    end;
+                    fprintf('showing STC at time [%2.2f] %s\n',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx),unt);
+                end;
+                
+                %update the overlay values at current time point
+                update_overlay_vol;
+                
+                if(~iscell(etc_render_fsbrain.overlay_value))
+                    etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
+                else
+                    for h_idx=1:length(etc_render_fsbrain.overlay_value)
+                        etc_render_fsbrain.overlay_value{h_idx}=etc_render_fsbrain.overlay_stc_hemi{h_idx}(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
+                    end;
+                end;
+                
+                if(~isempty(etc_render_fsbrain.overlay_stc))
+                    draw_stc;
+                end
+                
+                if(ishandle(etc_render_fsbrain.fig_gui))
+                    set(findobj(etc_render_fsbrain.fig_gui,'tag','slider_timeVec'),'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
+                    set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_timeVec'),'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
+                    set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_timeVec'),'string',sprintf('%1.0f',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx)));
+                end;
+                
+                if(isvalid(etc_render_fsbrain.fig_brain))
+                    figure(etc_render_fsbrain.fig_brain);
+                    etc_render_fsbrain.camposition=campos;
+                    redraw;
+                    draw_pointer('pt',etc_render_fsbrain.click_coord,'min_dist_idx',etc_render_fsbrain.click_vertex,'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
+                end;
+                figure(etc_render_fsbrain.fig_stc);
+                
+                
+                global etc_trace_obj;
+                
+                if(~isempty(etc_trace_obj))
+                    etc_trace_obj.time_select_idx=etc_render_fsbrain.overlay_stc_timeVec_idx;
+                    etc_trace_obj.flag_time_window_auto_adjust=0;
+                    etc_trcae_gui_update_time('flag_redraw',0);
+                end;
+                
+            end;
+            
+        else %clicked pt specified
+            %add exploration toolbar
+            
+                [vv date] = version;
+                DateNumber = datenum(date);
+                if(DateNumber>737426) %after January 1, 2019; Matlab verion 2019 and later
+                    addToolbarExplorationButtons(etc_render_fsbrain.fig_vol);
+                end;
+                
+                etc_render_fsbrain.flag_overlay_stc_surf=0;
+                etc_render_fsbrain.flag_overlay_stc_vol=1;
+                
+                update_overlay_vol;
+                
+                
+                v=pt;
+                
+                %surface_coord=etc_render_fsbrain.vol.vox2ras*[v(:); 1];
+                
+                %convert the volume CRS coordinates to surface (x,y,z)
+                surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[v(:); 1];
+                
+                %convert the surface coordinate corresponding to
+                %current volume to to the surface coordinate
+                %corresponding to "ORIG' volume
+                surface_coord=inv(etc_render_fsbrain.vol_reg)*surface_coord;
+                
+                surface_coord=surface_coord(1:3);
+                click_vertex_vox=v;
+                
+                vv=etc_render_fsbrain.orig_vertex_coords;
+                dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+                [min_dist,min_dist_idx]=min(dist);
+                %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+                
+                %surface_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:)';
+                
+                %draw_pointer('pt',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+                surface_coord_now=etc_render_fsbrain.vertex_coords(min_dist_idx,:);
+                draw_pointer('pt',surface_coord_now,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+                
+                if((~isempty(etc_render_fsbrain.vol_A))&&(~isempty(etc_render_fsbrain.overlay_vol_stc)))
+                    loc_lh=cat(1,etc_render_fsbrain.vol_A(1).loc,etc_render_fsbrain.vol_A(1).wb_loc.*1e3);
+                    loc_rh=cat(1,etc_render_fsbrain.vol_A(2).loc,etc_render_fsbrain.vol_A(2).wb_loc.*1e3);
+                    loc=cat(1,loc_lh,loc_rh);
+                    dist=sqrt(sum((loc-repmat(surface_coord(:)',[size(loc,1),1])).^2,2));
+                    [dummy,loc_min_idx]=min(dist);
+                    
+                    
+                    etc_render_fsbrain.click_overlay_vertex=loc_min_idx;
+                    
+                    %figure(10);
+                    %plot(etc_render_fsbrain.overlay_vol_stc(loc_min_idx,:));
+                    etc_render_fsbrain.overlay_vol_stc_1d=etc_render_fsbrain.overlay_vol_stc(loc_min_idx,:);
+                    
+                    if(~isempty(etc_render_fsbrain.overlay_aux_vol_stc))
+                        for vv_idx=1:size(etc_render_fsbrain.overlay_aux_vol_stc,3);
+                            etc_render_fsbrain.overlay_aux_vol_stc_1d=etc_render_fsbrain.overlay_aux_vol_stc(loc_min_idx,:,vv_idx);
                         end;
                     end;
-
+                    
+                    %etc_render_fsbrain.overlay_stc=etc_render_fsbrain.overlay_vol_stc;
+                    %etc_render_fsbrain.click_overlay_vertex=loc_min_idx;
+                    
+                    if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
+                        draw_stc;
+                    end;
+                elseif(~isempty(etc_render_fsbrain.overlay_vol))
+                    rv=round(v);
+                    tmp=etc_render_fsbrain.overlay_vol.vol(rv(1),rv(2),rv(3),:);
+                    etc_render_fsbrain.overlay_vol_stc_1d=tmp(:);
+                    
+                    for vv_idx=1:length(etc_render_fsbrain.overlay_aux_vol);
+                        tmp=etc_render_fsbrain.overlay_aux_vol(vv_idx).vol(rv(1),rv(2),rv(3),:);
+                        etc_render_fsbrain.overlay_vol_stc_1d(:,vv_idx)=tmp(:);
+                    end;
+                    
+                    if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
+                        draw_stc;
+                    end;
                 end;
-            end;
-            figure(etc_render_fsbrain.fig_vol);
-            
-        elseif(gcf==etc_render_fsbrain.fig_stc)
-           xx=get(gca,'currentpoint');
-            xx=xx(1);
-            if(isempty(etc_render_fsbrain.overlay_stc_timeVec))
-                etc_render_fsbrain.overlay_stc_timeVec_idx=round(xx);
-                fprintf('showing STC at time index [%d] (sample)\n',etc_render_fsbrain.overlay_stc_timeVec_idx);
-            else
-                [dummy,etc_render_fsbrain.overlay_stc_timeVec_idx]=min(abs(etc_render_fsbrain.overlay_stc_timeVec-xx));
-                if(isempty(etc_render_fsbrain.overlay_stc_timeVec_unit))
-                    unt='sample';
-                else
-                    unt=etc_render_fsbrain.overlay_stc_timeVec_unit;
-                end;
-                fprintf('showing STC at time [%2.2f] %s\n',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx),unt);
-            end;
-            
-            %update the overlay values at current time point
-            update_overlay_vol;
-
-            if(~iscell(etc_render_fsbrain.overlay_value))
-                etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
-            else
-                for h_idx=1:length(etc_render_fsbrain.overlay_value)
-                    etc_render_fsbrain.overlay_value{h_idx}=etc_render_fsbrain.overlay_stc_hemi{h_idx}(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
-                end;
-            end;
-            
-            if(~isempty(etc_render_fsbrain.overlay_stc))
-                draw_stc;
-            end
-           
-            if(ishandle(etc_render_fsbrain.fig_gui))
-                set(findobj(etc_render_fsbrain.fig_gui,'tag','slider_timeVec'),'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
-                set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_timeVec'),'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
-                set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_timeVec'),'string',sprintf('%1.0f',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx)));
-            end;
-            
-            if(isvalid(etc_render_fsbrain.fig_brain))
-                figure(etc_render_fsbrain.fig_brain);
-                etc_render_fsbrain.camposition=campos;
-                redraw;
-                draw_pointer('pt',etc_render_fsbrain.click_coord,'min_dist_idx',etc_render_fsbrain.click_vertex,'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
-            end;
-            figure(etc_render_fsbrain.fig_stc);
-            
-            
-            global etc_trace_obj;
-            
-            if(~isempty(etc_trace_obj))
-                etc_trace_obj.time_select_idx=etc_render_fsbrain.overlay_stc_timeVec_idx;
-                etc_trace_obj.flag_time_window_auto_adjust=0;
-                etc_trcae_gui_update_time('flag_redraw',0);
-            end;
-            
+                
+                figure(etc_render_fsbrain.fig_vol);
         end;
         
         global etc_trace_obj;
@@ -2894,6 +2984,23 @@ try
         if(~isempty(etc_render_fsbrain.overlay_vol_stc))
             X_hemi_cort=etc_render_fsbrain.overlay_vol_stc(offset+1:offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx),time_idx);
             X_hemi_subcort=etc_render_fsbrain.overlay_vol_stc(offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),time_idx);
+            
+            %smoothingj over the volume
+            v=zeros(size(etc_render_fsbrain.vol.vol)); 
+            v(etc_render_fsbrain.vol_A(hemi_idx).src_wb_idx)=etc_render_fsbrain.overlay_vol_stc(offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),time_idx);
+            pos_idx=find(v(:)>0);
+            neg_idx=find(v(:)<0);
+            mx=max(v(pos_idx));
+            mn=max(-v(neg_idx));
+            fwhm=5; %<size of smoothing kernel; fwhm in mm.
+            [vs,kernel]=fmri_smooth(v,fwhm,'vox',[etc_render_fsbrain.vol.xsize,etc_render_fsbrain.vol.ysize,etc_render_fsbrain.vol.zsize]);
+            pos_idx=find(vs(:)>10.*eps);
+            neg_idx=find(vs(:)<-10.*eps);
+            vs(pos_idx)=fmri_scale(vs(pos_idx),mx,0);
+            vs(neg_idx)=fmri_scale(vs(neg_idx),0,mn);
+            Vs{hemi_idx}=vs;
+            X_hemi_subcort=vs(etc_render_fsbrain.vol_A(hemi_idx).src_wb_idx);
+            
         else
             X_hemi_cort=[];
             X_hemi_subcort=[];
@@ -2955,6 +3062,7 @@ try
     tmp=zeros(size(etc_render_fsbrain.vol.vol));
     
     for hemi_idx=1:2
+        tmp=tmp+Vs{hemi_idx};
         if(~isempty(X_wb{hemi_idx}))
             tmp(etc_render_fsbrain.loc_vol_idx{hemi_idx})=X_wb{hemi_idx};
         end;
