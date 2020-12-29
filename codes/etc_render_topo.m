@@ -14,6 +14,8 @@ vol_vertex=[];
 vol_face=[];
 vol_vertex_hemi={};
 vol_face_hemi={};
+vol=[];
+vol_reg=eye(4);
 
 lut=[];
 
@@ -175,6 +177,10 @@ for idx=1:length(varargin)/2
             vol_vertex=option_value;
         case 'vol_vertex_hemi'
             vol_vertex_hemi=option_value;
+        case 'vol'
+            vol=option_value;
+        case 'vol_reg'
+            vol_reg=option_value;
         case 'topo'
             topo=option_value;
         case 'topo_vertex'
@@ -536,6 +542,8 @@ etc_render_fsbrain.show_all_contacts_mri_depth=show_all_contacts_mri_depth;
 etc_render_fsbrain.show_all_contacts_brain_surface_flag=show_all_contacts_brain_surface_flag;
 
 etc_render_fsbrain.vol_vox=[];
+etc_render_fsbrain.vol=vol;
+etc_render_fsbrain.vol_reg=vol_reg;
 
 etc_render_fsbrain.overlay_vol=[];
 etc_render_fsbrain.overlay_vol_stc=[];

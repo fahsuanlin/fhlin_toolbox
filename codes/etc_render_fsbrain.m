@@ -152,7 +152,7 @@ show_contact_names_flag=1;
 show_all_contacts_mri_flag=1;
 show_all_contacts_mri_depth=2;
 show_all_contacts_brain_surface_flag=1;
-electrode_update_contact_view_flag=0;
+electrode_update_contact_view_flag=1;
 
 click_point_size=28;
 click_point_color=[1 0 1];
