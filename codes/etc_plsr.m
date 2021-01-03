@@ -85,11 +85,15 @@ end;
 if(flag_norm_x)
     xx=x-repmat(mean(x,1),[size(x,1),1]);
     xx=xx./repmat(std(xx,0,1),[size(xx,1),1]);
+else
+    xx=x;
 end;
 
 if(flag_norm_y)
     yy=y-repmat(mean(y,1),[size(y,1),1]);
     yy=yy./repmat(std(yy,0,1),[size(yy,1),1]);
+else
+    yy=y;
 end;
 
 
