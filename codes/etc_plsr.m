@@ -32,12 +32,20 @@ U=[];
 X_pred=[];
 Y_pred=[];
 
+flag_norm_x=1; %normalize x to be z-scores
+flag_norm_y=1; %normalize y to be z-scores
+
+
 n_comp=[];
 
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
     switch(lower(option))
+        case 'flag_norm_x'
+            flag_norm_x=option_value;
+        case 'flag_norm_y'
+            flag_norm_y=option_value;
         case 'n_comp'
             n_comp=option_value;
         case 'x_pred'
@@ -74,11 +82,15 @@ end;
 %     30 303];
 
 %centralize data by getting z-scores
-xx=x-repmat(mean(x,1),[size(x,1),1]);
-xx=xx./repmat(std(xx,0,1),[size(xx,1),1]);
-yy=y-repmat(mean(y,1),[size(y,1),1]);
-yy=yy./repmat(std(yy,0,1),[size(yy,1),1]);
+if(flag_norm_x)
+    xx=x-repmat(mean(x,1),[size(x,1),1]);
+    xx=xx./repmat(std(xx,0,1),[size(xx,1),1]);
+end;
 
+if(flag_norm_y)
+    yy=y-repmat(mean(y,1),[size(y,1),1]);
+    yy=yy./repmat(std(yy,0,1),[size(yy,1),1]);
+end;
 
 
 rankx=rank(xx);
