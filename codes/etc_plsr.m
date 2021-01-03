@@ -112,13 +112,13 @@ for idx=1:n_comp
     p1=xx'*t1;
     P(:,idx)=p1(:);
     xx_pred=t1*p1';
-    xx=xx-xx_pred
+    xx=xx-xx_pred;
     
     u1=yy*cc(:,1);
     C(:,idx)=cc(:,1);
     U(:,idx)=u1(:);
     yy_pred=t1*(t1'*u1)*cc(:,1)';
-    yy=yy-yy_pred
+    yy=yy-yy_pred;
     B(idx,idx)=t1'*u1;  
 end;
 
