@@ -104,7 +104,7 @@ yy0=yy;
 
 for idx=1:n_comp
     r=xx'*yy;
-    [ww,ll,cc]=svd(r);
+    [ww,ll,cc]=svd(r,'econ');
     t1=xx*ww(:,1);
     W(:,idx)=ww(:,1);
     t1=t1./sqrt(sum(t1.^2));
