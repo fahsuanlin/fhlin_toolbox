@@ -27,6 +27,8 @@ X_init=[];
 R_stnorm=[];
 R_stnorm_weight=1;
 
+process_id=0;
+
 SNR_all=[];
 SNR=inf;
 

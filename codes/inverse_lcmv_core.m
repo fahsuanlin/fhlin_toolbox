@@ -38,6 +38,8 @@ SNR_all_gcv=[];
 SNR_white_estimate=[];
 SNR_all_white_estimate=[];
 
+process_id=0;
+
 eta=[];
 rho=[];
 gcv=[];
@@ -229,6 +231,9 @@ while(((focus_convergence>focus_limit_convergence)&(focus_iteration<=focus_limit
         	tmp=diag(ss_C);
            	tmp(end-n_proj:end)=inf;
             ss_C=tmp;
+        end;
+        if(size(ss_C,1)==size(ss_C,2))
+            ss_C=diag(ss_C);
         end;
         A=sqrt(diag(1./(ss_C)))*vv_C'*A;
         C=eye(size(C));
