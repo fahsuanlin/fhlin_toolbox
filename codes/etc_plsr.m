@@ -35,6 +35,7 @@ Y_pred=[];
 flag_norm_x=1; %normalize x to be z-scores
 flag_norm_y=1; %normalize y to be z-scores
 
+flag_display=0;
 
 n_comp=[];
 
@@ -50,6 +51,8 @@ for i=1:length(varargin)/2
             n_comp=option_value;
         case 'x_pred'
             X_pred=option_value;
+        case 'flag_display'
+            flag_display=option_value;
         otherwise
             fprintf('unknown option [%s]!error!\n',option);
             return;
@@ -104,15 +107,23 @@ rank_min=min([rankx ranky]);
 
 if(isempty(n_comp))
     n_comp=rank_min;
-    fprintf('automatic [%d] components in PLSR\n ',n_comp);
+    if(flag_display)
+        fprintf('automatic [%d] components in PLSR\n ',n_comp);
+    end;
 end;
 if(n_comp>rank_min)
-    fprintf('The specified number of component [%d] is more than the rank in the data ([%d] for x and [%d] for y).\n',n_comp,rankx,ranky);
+    if(flag_display)
+        fprintf('The specified number of component [%d] is more than the rank in the data ([%d] for x and [%d] for y).\n',n_comp,rankx,ranky);
+    end;
     n_comp=rank_min;
-    fprintf('automatic [%d] components in PLSR\n ',n_comp);
+    if(flag_display)
+        fprintf('automatic [%d] components in PLSR\n ',n_comp);
+    end;
 end;
 
-fprintf('PLSR into [%d] components.\n',n_comp);
+if(flag_display)
+    fprintf('PLSR into [%d] components.\n',n_comp);
+end;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %PLS regression
 xx0=xx;
