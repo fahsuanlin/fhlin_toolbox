@@ -96,30 +96,52 @@ function listbox_label_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns listbox_label contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from listbox_label
 
-
 global etc_render_fsbrain;
 try
     if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
         contents = cellstr(get(hObject,'String'));
         select_idx=get(hObject,'Value');
-                
+        
+        etc_render_fsbrain.label_register(select_idx)=1-etc_render_fsbrain.label_register(select_idx);
+        set(hObject,'Value',find(etc_render_fsbrain.label_register));
+        %etc_render_fsbrain.label_register(:)=0;
+        %etc_render_fsbrain.label_register(select_idx)=1;
+        
         try
-            for ss=1:length(select_idx)
-                
-                label_number=etc_render_fsbrain.label_ctab.table(select_idx(ss),5);
+            %for ss=1:length(select_idx)
+            for ss=1:length(etc_render_fsbrain.label_register)    
+                %label_number=etc_render_fsbrain.label_ctab.table(select_idx(ss),5);
+                label_number=etc_render_fsbrain.label_ctab.table(ss,5);
                 vidx=find((etc_render_fsbrain.label_value)==label_number);
                 %figure(etc_render_fsbrain.fig_brain);
                 
 %fprintf('%s: [%d] =%d\n',mat2str(etc_render_fsbrain.label_register),ss,etc_render_fsbrain.label_register(select_idx(ss)));
 
-                if(etc_render_fsbrain.label_register(select_idx(ss))==0)
-                    cc=etc_render_fsbrain.label_ctab.table(select_idx(ss),1:3)./255;
+                %if(etc_render_fsbrain.label_register(select_idx(ss))==1)
+                if(etc_render_fsbrain.label_register(ss)==1)
+                    %cc=etc_render_fsbrain.label_ctab.table(select_idx(ss),1:3)./255;
+                    cc=etc_render_fsbrain.label_ctab.table(ss,1:3)./255;
                     etc_render_fsbrain.h.FaceVertexCData(vidx,:)=repmat(cc(:)',[length(vidx),1]);
-                    etc_render_fsbrain.label_register(select_idx(ss))=1;
+                    %etc_render_fsbrain.label_register(select_idx(ss))=1;
                 else
                     etc_render_fsbrain.h.FaceVertexCData(vidx,:)=etc_render_fsbrain.fvdata(vidx,:);
-                    etc_render_fsbrain.label_register(select_idx(ss))=0;
+                    %etc_render_fsbrain.label_register(select_idx(ss))=0;
+                    
+                    %v=setdiff(select_idx,select_idx(ss));
+                    %set(hObject,'Value',v);
                 end;
+
+%                 if(etc_render_fsbrain.label_register(select_idx(ss))==0)
+%                     cc=etc_render_fsbrain.label_ctab.table(select_idx(ss),1:3)./255;
+%                     etc_render_fsbrain.h.FaceVertexCData(vidx,:)=repmat(cc(:)',[length(vidx),1]);
+%                     etc_render_fsbrain.label_register(select_idx(ss))=1;
+%                 else
+%                     etc_render_fsbrain.h.FaceVertexCData(vidx,:)=etc_render_fsbrain.fvdata(vidx,:);
+%                     etc_render_fsbrain.label_register(select_idx(ss))=0;
+%                     
+%                     v=setdiff(select_idx,select_idx(ss));
+%                     set(hObject,'Value',v);
+%                 end;
             end;
 
             figure(etc_render_fsbrain.fig_label_gui);

@@ -447,6 +447,25 @@ try
         %vol_vox=(inv(vol.vox2ras)*(SurfVertices.')).';
         etc_render_fsbrain.vol_vox = etc_render_fsbrain.vol_vox(1:size(etc_render_fsbrain.orig_vertex_coords,1),1:3);
         
+        
+        h=findobj('tag','slider_orthogonal_slice_x');
+        if(~isempty(h))
+            set(h,'Value',1);
+            set(h,'Min',1);
+            set(h,'Max',size(etc_render_fsbrain.vol.vol,2));
+        end;
+        h=findobj('tag','slider_orthogonal_slice_y');
+        if(~isempty(h))
+            set(h,'Value',1);
+            set(h,'Min',1);
+            set(h,'Max',size(etc_render_fsbrain.vol.vol,1));
+        end;
+        h=findobj('tag','slider_orthogonal_slice_z');
+        if(~isempty(h))
+            set(h,'Value',1);
+            set(h,'Min',1);
+            set(h,'Max',size(etc_render_fsbrain.vol.vol,3));
+        end;
     end;
     
     etc_render_fsbrain_handle('redraw');

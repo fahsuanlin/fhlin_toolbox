@@ -594,11 +594,11 @@ switch lower(param)
                         case '.mgz'
                             file_annot=sprintf('%s/%s',pathname,filename);
                             etc_render_fsbrain.overlay_vol_mask=MRIread(file_annot);
-                            
+                                                       
                             [dummy,fstem]=fileparts(filename);
                             
                             %file_lut='/Applications/freesurfer/FreeSurferColorLUT.txt';
-                            fprintf('select a LUT file...\n');
+                            fprintf('select a look-up-table (LUT) file for color and name definitions...\n');
                             [filename, pathname, filterindex] = uigetfile(fullfile(pwd,'*.txt'),'select a LUT file');
                             if(filename)
                                 file_lut=sprintf('%s%s',pathname,filename);
@@ -627,7 +627,7 @@ switch lower(param)
                             [dummy,fstem]=fileparts(filename);
                             
                             %file_lut='/Applications/freesurfer/FreeSurferColorLUT.txt';
-                            fprintf('select a LUT file...\n');
+                            fprintf('select a look-up-table (LUT) file for color and name definitions...\n');
                             [filename, pathname, filterindex] = uigetfile(fullfile(pwd,'*.txt'),'select a LUT file');
                             if(filename)
                                 file_lut=sprintf('%s%s',pathname,filename);
@@ -690,6 +690,10 @@ switch lower(param)
                                         pos=get(etc_render_fsbrain.fig_label_gui,'pos');
                                         pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
                                         set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
+                                        
+                                        if(~isfield(etc_render_fsbrain,'label_register'))
+                                            etc_render_fsbrain.label_register=zeros(1,length(etc_render_fsbrain.label_ctab.struct_names));
+                                        end;
                                     end;
                                 else
                                     etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
@@ -697,9 +701,13 @@ switch lower(param)
                                     pos=get(etc_render_fsbrain.fig_label_gui,'pos');
                                     pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
                                     set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
+                                    
+                                    if(~isfield(etc_render_fsbrain,'label_register'))
+                                        etc_render_fsbrain.label_register=zeros(1,length(etc_render_fsbrain.label_ctab.struct_names));
+                                    end;
                                 end;
                             end;
-                        case '.nii' %AAL 
+                        case '.nii' %AAL
                             file_annot=sprintf('%s/%s',pathname,filename);
                             
                             tmp=MRIread(file_annot);
@@ -2090,10 +2098,13 @@ try
         h=findobj('tag','edit_orthogonal_slice_z');
         set(h,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(3),'%1.0f'));
         h=findobj('tag','slider_orthogonal_slice_x');
+        set(h,'Enable','On');
         set(h,'Value',etc_render_fsbrain.click_vertex_vox_round(1));
         h=findobj('tag','slider_orthogonal_slice_y');
+        set(h,'Enable','On');
         set(h,'Value',etc_render_fsbrain.click_vertex_vox_round(2));
         h=findobj('tag','slider_orthogonal_slice_z');
+        set(h,'Enable','On');
         set(h,'Value',etc_render_fsbrain.click_vertex_vox_round(3));
 
         
