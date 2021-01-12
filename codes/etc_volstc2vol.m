@@ -42,7 +42,7 @@ end;
 
 %try
     smooth_kernel=[];
-    for time_idx=201:size(overlay_vol_stc,2)
+    for time_idx=1:size(overlay_vol_stc,2)
         if(flag_display)
             fprintf('vol2stc to vol...[%04d|%04d]...',time_idx,size(overlay_vol_stc,2));
         end;
@@ -70,16 +70,20 @@ end;
                 if(isfield(vol_A(hemi_idx),'src_wb_idx'))
                     v=zeros(size(vol.vol));
                     v(vol_A(hemi_idx).src_wb_idx)=overlay_vol_stc(offset+length(vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),time_idx);
-                    pos_idx=find(v(:)>0);
-                    neg_idx=find(v(:)<0);
+                    pos_idx=find(v(:)>10.*eps);
+                    neg_idx=find(v(:)<-10.*eps);
                     mx=max(v(pos_idx));
                     mn=max(-v(neg_idx));
                     fwhm=5; %<size of smoothing kernel; fwhm in mm.
                     [vs,smooth_kernel]=fmri_smooth(v,fwhm,'vox',[vol.xsize,vol.ysize,vol.zsize],'kernel',smooth_kernel);
                     pos_idx=find(vs(:)>10.*eps);
                     neg_idx=find(vs(:)<-10.*eps);
-                    vs(pos_idx)=fmri_scale(vs(pos_idx),mx,0);
-                    vs(neg_idx)=-fmri_scale(-vs(neg_idx),mn,0);
+                    if(length(pos_idx)>1&&~isempty(mx))
+                        vs(pos_idx)=fmri_scale(vs(pos_idx),mx,0);
+                    end;
+                    if(length(neg_idx)>1&&~isempty(mn))
+                        vs(neg_idx)=-fmri_scale(-vs(neg_idx),mn,0);
+                    end;
                     Vs{hemi_idx}=vs;
                     X_hemi_subcort=vs(vol_A(hemi_idx).src_wb_idx);
                 else
