@@ -15,8 +15,8 @@ for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
     switch lower(option)
-        case 'overlay_vol'
-            overlay_vol=option_value;
+        %case 'overlay_vol'
+        %    overlay_vol=option_value;
         case 'loc_vol_idx'
             loc_vol_idx=option_value;
         case 'overlay_d'
@@ -40,9 +40,9 @@ for i=1:length(varargin)/2
 end;
 
 
-try
+%try
     smooth_kernel=[];
-    for time_idx=1:size(overlay_vol_stc,2)
+    for time_idx=201:size(overlay_vol_stc,2)
         if(flag_display)
             fprintf('vol2stc to vol...[%04d|%04d]...',time_idx,size(overlay_vol_stc,2));
         end;
@@ -79,7 +79,7 @@ try
                     pos_idx=find(vs(:)>10.*eps);
                     neg_idx=find(vs(:)<-10.*eps);
                     vs(pos_idx)=fmri_scale(vs(pos_idx),mx,0);
-                    vs(neg_idx)=fmri_scale(vs(neg_idx),0,mn);
+                    vs(neg_idx)=-fmri_scale(-vs(neg_idx),mn,0);
                     Vs{hemi_idx}=vs;
                     X_hemi_subcort=vs(vol_A(hemi_idx).src_wb_idx);
                 else
@@ -162,7 +162,9 @@ try
             %allocating memory; can be problematic....
             if(~flag_morph)
                 overlay_vol.vol=zeros([size(vol.vol,1),size(vol.vol,2),size(vol.vol,3),size(overlay_vol_stc,2)]);
-            end;
+            else
+		overlay_vol=[];
+	    end;
         end;
         if(~flag_morph)
             overlay_vol.vol(:,:,:,time_idx)=tmp;
@@ -194,9 +196,9 @@ try
                 mri_overlay_tal.vol=zeros(mri_overlay_tal.volsize(1),mri_overlay_tal.volsize(2),mri_overlay_tal.volsize(3),size(overlay_vol_stc,2));
             end;
             %mov=MRIread(fn_output);
-            R=overlay_vol.tkrvox2ras*inv(overlay_vol.vox2ras)*inv(targ_xfm)*(targ_subj.vox2ras)*inv(targ_subj.tkrvox2ras);
-            %R=inv(overlay_vol.vox2ras)*inv(targ_xfm)*(targ_subj.vox2ras);
-            tmp=etc_MRIvol2vol(overlay_vol,targ_subj,R);
+            R=vol.tkrvox2ras*inv(vol.vox2ras)*inv(targ_xfm)*(targ_subj.vox2ras)*inv(targ_subj.tkrvox2ras);
+            %R=inv(vol.vox2ras)*inv(targ_xfm)*(targ_subj.vox2ras);
+            tmp=etc_MRIvol2vol(vol,targ_subj,R);
             mri_overlay_tal.vol(:,:,:,time_idx)=tmp.vol;
         else
             mri_overlay_tal=[];
@@ -212,6 +214,6 @@ try
     end;
     overlay_vol.nframes=time_idx;
 
-catch ME
-end;
+%catch ME
+%end;
 return;
