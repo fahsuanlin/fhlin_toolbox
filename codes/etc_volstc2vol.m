@@ -167,13 +167,15 @@ end;
             if(~flag_morph)
                 overlay_vol.vol=zeros([size(vol.vol,1),size(vol.vol,2),size(vol.vol,3),size(overlay_vol_stc,2)]);
             else
-		overlay_vol=[];
+		overlay_vol=vol;
 	    end;
         end;
         if(~flag_morph)
             overlay_vol.vol(:,:,:,time_idx)=tmp;
+	else
+	    overaly_vol.vol=tmp;
         end;
-        
+        squeeze(overlay_vol.vol(30,30,40)) 
         
         if(flag_morph&&~isempty(targ_subj)&&~isempty(targ_xfm))
             if(flag_display)
@@ -202,8 +204,9 @@ end;
             %mov=MRIread(fn_output);
             R=vol.tkrvox2ras*inv(vol.vox2ras)*inv(targ_xfm)*(targ_subj.vox2ras)*inv(targ_subj.tkrvox2ras);
             %R=inv(vol.vox2ras)*inv(targ_xfm)*(targ_subj.vox2ras);
-            tmp=etc_MRIvol2vol(vol,targ_subj,R);
+            tmp=etc_MRIvol2vol(overlay_vol,targ_subj,R);
             mri_overlay_tal.vol(:,:,:,time_idx)=tmp.vol;
+	    squeeze(tmp.vol(30,30,40))
         else
             mri_overlay_tal=[];
         end;
