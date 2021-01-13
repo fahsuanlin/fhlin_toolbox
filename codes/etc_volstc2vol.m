@@ -210,8 +210,6 @@ for time_idx=1:size(overlay_vol_stc,2)
         mri_overlay_tal=[];
     end;
     
-    tmp.vol(30,30,30)
-    
     
     if(flag_display)
         fprintf('\r');
