@@ -214,6 +214,7 @@ for time_idx=1:size(overlay_vol_stc,2)
     if(flag_display)
         fprintf('\r');
     end;
+    
 end;
 fprintf('\n');
 
