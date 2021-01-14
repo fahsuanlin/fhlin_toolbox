@@ -14,31 +14,31 @@ function [buffer]=fmri_scale(data,varargin)
 
 data_real=1;
 if(~isreal(data))
-   data=abs(data);
-   data_real=0;
+    data=abs(data);
+    data_real=0;
 end;
 
 if nargin==1
-	mmax=65535;
-	mmin=0;
+    mmax=65535;
+    mmin=0;
     mask=[];
 end;
 
 if nargin==2
-	mmax=varargin{1};
-	mmin=0;
+    mmax=varargin{1};
+    mmin=0;
     mask=[];
 end;
 
 if nargin==3
-	mmax=varargin{1};
-	mmin=varargin{2};
+    mmax=varargin{1};
+    mmin=varargin{2};
     mask=[];
 end;
 
 if nargin==4
-	mmax=varargin{1};
-	mmin=varargin{2};
+    mmax=varargin{1};
+    mmin=varargin{2};
     mask=varargin{3};
 end;
 
@@ -54,16 +54,23 @@ else
 end;
 
 for i=1:ndims(data)
-	maxx=max(maxx);
-	minn=min(minn);
+    maxx=max(maxx);
+    minn=min(minn);
 end;
 
 if(data_real)
-   buffer=(data-minn).*(mmax-mmin)./(maxx-minn)+mmin;
+    if((maxx-minn)>eps.*10)
+        buffer=(data-minn).*(mmax-mmin)./(maxx-minn)+mmin;
+    else
+        buffer=maxx;
+    end;
 else
-   buffer=(data-minn).*(mmax-mmin)./(maxx-minn)+mmin;
-   %imagesc(buffer);
-   %pause;
+    if((maxx-minn)>eps.*10)
+        buffer=(data-minn).*(mmax-mmin)./(maxx-minn)+mmin;
+    else
+        buffer=maxx;
+    end;
+    %imagesc(buffer);
+    %pause;
 end;
 
-   

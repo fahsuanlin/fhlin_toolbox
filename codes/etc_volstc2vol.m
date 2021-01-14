@@ -42,8 +42,9 @@ end;
 
 %try
 smooth_kernel=[];
-for time_idx=1:size(overlay_vol_stc,2)
-    if(flag_display)
+%for time_idx=1:size(overlay_vol_stc,2)
+for time_idx=206:206
+     if(flag_display)
         fprintf('vol2stc to vol...[%04d|%04d]...',time_idx,size(overlay_vol_stc,2));
     end;
     
