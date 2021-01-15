@@ -7,6 +7,8 @@ overlay_smooth=5;
 vol_reg=eye(4);
 flag_display=1;
 
+vol_ribbon=[];
+
 flag_morph=0;
 targ_subj=[];
 targ_xfm=[];
@@ -33,6 +35,8 @@ for i=1:length(varargin)/2
             targ_subj=option_value;
         case 'targ_xfm'
             targ_xfm=option_value;
+        case 'vol_ribbon'
+            vol_ribbon=option_value;
         otherwise
             fprintf('unknown option [%s]!\nerror!\n',option);
             return;
@@ -40,10 +44,14 @@ for i=1:length(varargin)/2
 end;
 
 
+ribbon_idx{1}=[];
+ribbon_idx{2}=[];
+cort_ribbon_idx{1}=[];
+cort_ribbon_idx{2}=[];
+
 %try
 smooth_kernel=[];
 for time_idx=1:size(overlay_vol_stc,2)
-%for time_idx=206:206
      if(flag_display)
         fprintf('vol2stc to vol...[%04d|%04d]...',time_idx,size(overlay_vol_stc,2));
     end;
@@ -141,7 +149,6 @@ for time_idx=1:size(overlay_vol_stc,2)
                 loc_surf=[loc.*1e3 ones(size(loc,1),1)]';
                 tmp=inv(vol.tkrvox2ras)*(vol_reg)*loc_surf;
                 loc_vol{hemi_idx}=round(tmp(1:3,:))';
-                loc_vol{hemi_idx}=round(tmp(1:3,:))';
                 loc_vol_idx{hemi_idx}=sub2ind(size(vol.vol),loc_vol{hemi_idx}(:,2),loc_vol{hemi_idx}(:,1),loc_vol{hemi_idx}(:,3));
             end;
         else
@@ -151,13 +158,43 @@ for time_idx=1:size(overlay_vol_stc,2)
     
     
     tmp=zeros(size(vol.vol));
+    tmp1=zeros(size(vol.vol));
+    
     
     for hemi_idx=1:2
         if(~isempty(Vs{hemi_idx}))
-            tmp=tmp+Vs{hemi_idx};
+            tmp=tmp+Vs{hemi_idx}; %sub-cortical activity
+            tmp1=tmp1+Vs{hemi_idx}; %sub-cortical activity
         end;
+        
+        switch hemi_idx
+            case 1
+                ribbon_value=3; %left hemisphere cortical ribbon value
+            case 2
+                ribbon_value=42; %right hemisphere cortical ribbon value
+        end;
+        
         if(~isempty(X_wb{hemi_idx}))
-            tmp(loc_vol_idx{hemi_idx})=X_wb{hemi_idx};
+            if(isempty(vol_ribbon))
+                tmp(loc_vol_idx{hemi_idx})=X_wb{hemi_idx}; %cortical activity; no projection over the cortical ribbon
+                tmp1(loc_vol_idx{hemi_idx})=X_wb{hemi_idx}; %cortical activity; no projection over the cortical ribbon
+            else
+                if(isempty(ribbon_idx{hemi_idx})|isempty(cort_ribbon_idx{hemi_idx}))
+                    [rr,cc,ss]=meshgrid([1:size(vol_ribbon.vol,1)],[1:size(vol_ribbon.vol,2)],[1:size(vol_ribbon.vol,3)]);
+                    
+                    X=cat(2,rr(:),cc(:),ss(:));
+                    
+                    Xcort=X(loc_vol_idx{hemi_idx},:);
+                    
+                    ribbon_idx{hemi_idx}=find(vol_ribbon.vol(:)==ribbon_value);
+                    
+                    Xribbon=X(ribbon_idx{hemi_idx},:);
+                    
+                    cort_ribbon_idx{hemi_idx}=knnsearch(Xcort,Xribbon);
+                end;
+                
+                tmp(ribbon_idx{hemi_idx})=X_wb{hemi_idx}(cort_ribbon_idx{hemi_idx});
+            end;
         end;
     end;
     
