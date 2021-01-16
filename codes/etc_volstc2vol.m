@@ -106,8 +106,12 @@ for time_idx=1:size(overlay_vol_stc,2)
         %smooth source estimates at cortical locations
         if(~isempty(vol_A(hemi_idx).vertex_coords));
             if(~isempty(X_hemi_cort))
-                ov=zeros(size(vol_A(hemi_idx).vertex_coords,1),1);
-                ov(vol_A(hemi_idx).v_idx+1)=X_hemi_cort;
+                if(isempty(vol_ribbon))
+                    ov=zeros(size(vol_A(hemi_idx).vertex_coords,1),1);
+                    ov(vol_A(hemi_idx).v_idx+1)=X_hemi_cort;
+                else
+                    ov=X_hemi_cort;
+                end;
             else
                 ov=[];
             end;
@@ -123,7 +127,11 @@ for time_idx=1:size(overlay_vol_stc,2)
             if(flag_overlay_D_init) overlay_D{hemi_idx}=[];end;
             
             if(~isempty(ov))
-                [ovs,dd0,dd1,overlay_Ds,overlay_D{hemi_idx}]=inverse_smooth('','vertex',vol_A(hemi_idx).vertex_coords','face',vol_A(hemi_idx).faces','value',ov,'value_idx',vol_A(hemi_idx).v_idx+1,'step',overlay_smooth,'n_ratio',length(ov)/size(X_hemi_cort,1),'flag_display',0,'flag_regrid',0,'flag_fixval',0,'D',overlay_D{hemi_idx});
+                if(isempty(vol_ribbon))
+                    [ovs,dd0,dd1,overlay_Ds,overlay_D{hemi_idx}]=inverse_smooth('','vertex',vol_A(hemi_idx).vertex_coords','face',vol_A(hemi_idx).faces','value',ov,'value_idx',vol_A(hemi_idx).v_idx+1,'step',overlay_smooth,'n_ratio',length(ov)/size(X_hemi_cort,1),'flag_display',0,'flag_regrid',0,'flag_fixval',0,'D',overlay_D{hemi_idx});
+                else
+                    ovs=ov;
+                end;
             else
                 ovs=[];
             end;
@@ -144,7 +152,11 @@ for time_idx=1:size(overlay_vol_stc,2)
             if(flag_cal_loc_vol_idx==1)
                 loc_vol_idx{hemi_idx}=[];
                 %get coordinates from surface to volume
-                loc=cat(1,vol_A(hemi_idx).vertex_coords./1e3,vol_A(hemi_idx).wb_loc);
+                if(isempty(vol_ribbon))
+                    loc=cat(1,vol_A(hemi_idx).vertex_coords./1e3,vol_A(hemi_idx).wb_loc);
+                else
+                    loc=cat(1,vol_A(hemi_idx).vertex_coords(vol_A(hemi_idx).v_idx+1,:)./1e3,vol_A(hemi_idx).wb_loc);
+                end;
                 %loc=cat(1,etc_render_fsbrain.vol_A(hemi_idx).orig_vertex_coords./1e3,etc_render_fsbrain.vol_A(hemi_idx).wb_loc);
                 loc_surf=[loc.*1e3 ones(size(loc,1),1)]';
                 tmp=inv(vol.tkrvox2ras)*(vol_reg)*loc_surf;
