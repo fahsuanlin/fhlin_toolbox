@@ -151,7 +151,10 @@ end;
 
 %making prediction
 if(~isempty(X_pred))
-    Y_pred=X_pred*(P*inv(P'*P))*B*C';
+    Y_pred=0;
+    for x_pred_idx=1:size(X_pred,2)
+        Y_pred=Y_pred+X_pred(:,x_pred_idx)*(P*inv(P'*P))*B*C';
+    end;
 end;
 %PLS regression
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
