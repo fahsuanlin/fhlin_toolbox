@@ -1,7 +1,7 @@
-function [W, P, T, C, U, Y_pred]=etc_plsr(x,y,varargin)
+function [W, P, T, C, U, Y_pred, B]=etc_plsr(x,y,varargin)
 % etc_plsr    Partial least squares regression
 %
-% [W, P, T, C, U]=etc_plsr(X,Y,[option1, option_value1,...])
+% [W, P, T, C, U, Y_pred, B]=etc_plsr(X,Y,[option1, option_value1,...])
 %
 % X=T*P' Y=T*B*C'=X*Bpls  X and Y being Z-scores
 %                          B=diag(b)
