@@ -1,7 +1,7 @@
-function [W, P, T, C, U, Y_pred, B]=etc_plsr1(x,y,varargin)
+function [W, P, T, C, U, Y_pred, B, Bpls]=etc_plsr1(x,y,varargin)
 % etc_plsr1    Partial least squares regression
 %
-% [W, P, T, C, U, Y_pred, B]=etc_plsr1(X,Y,[option1, option_value1,...])
+% [W, P, T, C, U, Y_pred, B, Bpls]=etc_plsr1(X,Y,[option1, option_value1,...])
 %
 % X=T*P' Y=T*B*C'=X*Bpls  X and Y being Z-scores
 %                          B=diag(b)
@@ -29,6 +29,7 @@ T=[];
 C=[];
 U=[];
 B=[];
+Bpls=[];
 
 X_pred=[];
 Y_pred=[];
@@ -99,6 +100,11 @@ if(flag_norm_y)
 else
     yy=y;
 end;
+
+meanX = mean(xx,1);
+meanY = mean(yy,1);
+xx = bsxfun(@minus, x, meanX);
+yy = bsxfun(@minus, y, meanY);
 
 
 rankx=rank(xx);
@@ -193,29 +199,15 @@ for idx=1:n_comp
 end;
 P=Xloadings;
 
+
+Bpls = Weights*Yloadings';
+Bpls = [meanY - meanX*Bpls; Bpls];
+
 %making prediction
 if(~isempty(X_pred))
     
-    % Fit the full model, models with 1:(ncomp-1) components are nested within
-    %[Xloadings,Yloadings,~,~,Weights] = simpls(X0train,Y0train,ncomp);
-    XscoresTest = X_pred * Weights;
     
-    % Return error for as many components as the asked for.
-    %outClass = superiorfloat(Xtrain,Ytrain);
-    %sumsqerr = zeros(2,ncomp+1,outClass); % this will get reshaped to a row by CROSSVAL
-    
-    % Sum of squared errors for the null model
-    sumsqerr(1,1) = sum(sum(abs(X_pred).^2, 2));
-    %sumsqerr(2,1) = sum(sum(abs(Y0test).^2, 2));
-    
-    % Compute sum of squared errors for models with 1:ncomp components
-    for i = 1:n_comp
-        X0reconstructed = XscoresTest(:,1:i) * Xloadings(:,1:i)';
-        sumsqerr(1,i+1) = sum(sum(abs(X_pred - X0reconstructed).^2, 2));
-        
-        Y_pred = XscoresTest(:,1:i) * Yloadings(:,1:i)';
-        %sumsqerr(2,i+1) = sum(sum(abs(Y0test - Y0reconstructed).^2, 2));
-    end
+     Y_pred = [ones(size(X_pred,1),1) X_pred]*Bpls;
     
     
     
