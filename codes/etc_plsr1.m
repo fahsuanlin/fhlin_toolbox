@@ -28,6 +28,7 @@ P=[];
 T=[];
 C=[];
 U=[];
+B=[];
 
 X_pred=[];
 Y_pred=[];
@@ -190,6 +191,7 @@ for idx=1:n_comp
 %     yy=yy-yy_pred;
 %     B(idx,idx)=t1'*u1;  
 end;
+P=Xloadings;
 
 %making prediction
 if(~isempty(X_pred))
