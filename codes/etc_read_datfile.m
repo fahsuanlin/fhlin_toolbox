@@ -1,4 +1,4 @@
-function [chname,chid,x,y,z]=etc_read_datfile(file_name,varargin)
+function [chname,chid,x,y,z]=etc_read_posfile(file_name,varargin)
 
 points=[];
 
