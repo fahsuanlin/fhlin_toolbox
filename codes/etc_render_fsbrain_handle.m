@@ -3002,14 +3002,33 @@ try
                 v(etc_render_fsbrain.vol_A(hemi_idx).src_wb_idx)=etc_render_fsbrain.overlay_vol_stc(offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),time_idx);
                 pos_idx=find(v(:)>0);
                 neg_idx=find(v(:)<0);
-                mx=max(v(pos_idx));
-                mn=max(-v(neg_idx));
-                fwhm=5; %<size of smoothing kernel; fwhm in mm.
+                if(~isempty(pos_idx))
+                    tmp=v(pos_idx);
+                    tmp=sort(tmp);
+                    mx=tmp(round(length(tmp).*0.999));
+                    %mx=max(v(pos_idx));
+                else
+                    mx=[];
+                end;
+                
+                if(~isempty(neg_idx))
+                    tmp=-v(neg_idx);
+                    tmp=sort(tmp);
+                    mn=tmp(round(length(tmp).*0.999));
+                    %mn=max(-v(neg_idx));
+                else
+                    mn=[];
+                end;
+                fwhm=4; %<size of smoothing kernel; fwhm in mm.
                 [vs,kernel]=fmri_smooth(v,fwhm,'vox',[etc_render_fsbrain.vol.xsize,etc_render_fsbrain.vol.ysize,etc_render_fsbrain.vol.zsize]);
-                pos_idx=find(vs(:)>10.*eps);
-                neg_idx=find(vs(:)<-10.*eps);
-                vs(pos_idx)=fmri_scale(vs(pos_idx),mx,0);
-                vs(neg_idx)=fmri_scale(vs(neg_idx),0,mn);
+                if(~isempty(pos_idx))
+                    pos_idx=find(vs(:)>10.*eps);
+                    vs(pos_idx)=fmri_scale(vs(pos_idx),mx,0);
+                end;
+                if(~isempty(neg_idx))
+                    neg_idx=find(vs(:)<-10.*eps);
+                    vs(neg_idx)=fmri_scale(vs(neg_idx),0,mn);
+                end;
                 Vs{hemi_idx}=vs;
                 X_hemi_subcort=vs(etc_render_fsbrain.vol_A(hemi_idx).src_wb_idx);
             else

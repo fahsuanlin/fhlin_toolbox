@@ -450,6 +450,11 @@ if(indx)
                     etc_trace_obj.all_data{ii}(:,end+1:mll)=nan;
                 end;
                 etc_trace_obj.tmp(:,end+1:mll)=nan;
+                if(~isfield(etc_trace_obj,'all_data_color'))
+                    for ii=1:length(etc_trace_obj.all_data)
+                        etc_trace_obj.all_data_color(ii,:)=cc(mod(ii-1,7)+1,:)
+                    end;
+                end;
                 etc_trace_obj.all_data{end+1}=etc_trace_obj.tmp;
                 etc_trace_obj.all_data_color(end+1,:)=cc(mod(length(etc_trace_obj.all_data)-1,7)+1,:)
                 
