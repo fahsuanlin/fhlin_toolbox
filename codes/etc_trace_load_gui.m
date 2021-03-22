@@ -688,10 +688,12 @@ if(indx)
     try
         var=fn{indx};
         %evalin('base',sprintf('global etc_trace_obj; if(ndims(%s)==2) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var,var));
-        evalin('base',sprintf('etc_trace_obj.tmp=1;'));
+        %evalin('base',sprintf('etc_trace_obj.tmp=1;'));
+        etc_trace_obj.tmp=1;
+
         fprintf('Trying to load variable [%s] as montage...',var);
         if(etc_trace_obj.tmp)
-            evalin('base',sprintf('etc_trace_obj.load.montage=%s; ',var));
+            evalin('base',sprintf('global etc_trace_obj; etc_trace_obj.load.montage=%s; clear etc_trace_obj;',var));
             
             obj=findobj('Tag','text_load_montage');
             set(obj,'String',sprintf('%s',var));
@@ -727,7 +729,7 @@ if(indx)
         evalin('base',sprintf('global etc_trace_obj; if(length(%s)==size(etc_trace_obj.data,1)) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var));
         fprintf('Trying to load variable [%s] as a selection variable...',var);
         if(etc_trace_obj.tmp)
-            evalin('base',sprintf('etc_trace_obj.tmp=%s; ',var));
+            evalin('base',sprintf('global etc_trace_obj; etc_trace_obj.tmp=%s; clear etc_trace_obj;',var));
             etc_trace_obj.load.select=diag(etc_trace_obj.tmp(:));
             
             obj=findobj('Tag','text_load_select');
@@ -764,8 +766,8 @@ if(indx)
         evalin('base',sprintf('global etc_trace_obj; if(length(%s)==size(etc_trace_obj.data,1)) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var));
         fprintf('Trying to load variable [%s] as a scaling variable...',var);
         if(etc_trace_obj.tmp)
-            evalin('base',sprintf('etc_trace_obj.load.scale=%s; ',var));
-            evalin('base',sprintf('etc_trace_obj.tmp=%s; ',var));
+            evalin('base',sprintf('global etc_trace_obj; etc_trace_obj.load.scale=%s; clear etc_trace_obj;',var));
+            evalin('base',sprintf('global etc_trace_obj; etc_trace_obj.tmp=%s; clear etc_trace_obj;',var));
             etc_trace_obj.load.scale=diag(etc_trace_obj.tmp(:));
             
             

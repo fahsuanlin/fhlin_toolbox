@@ -1832,11 +1832,46 @@ switch answer
         if(~isempty(obj))
             set(obj,'String','[none]');
             set(obj,'Value',1);
-        end;  
+        end;
+        
+        
+        
+        %trigger listbox dialog
+        try
+            etc_trace_obj.trigger=[];
+            
+            
+%             %trigger loading
+%             obj=findobj('Tag','listbox_trigger');
+%             set(obj,'string',{});
+%             set(obj,'Value',1);
+            
+            
+            %update listboxes
+            set(findobj('Tag','listbox_time_idx'),'string',{});
+            set(findobj('Tag','listbox_time_idx'),'Value',1);
+            
+            set(findobj('Tag','listbox_time'),'string',{});
+            set(findobj('Tag','listbox_time'),'Value',1);
+            
+            set(findobj('Tag','listbox_class'),'string',{});
+            set(findobj('Tag','listbox_class'),'Value',1);
+            
+            %update listboxes
+            set(findobj('Tag','edit_local_trigger_time_idx'),'string','');
+            
+            set(findobj('Tag','edit_local_trigger_time'),'string','');
+            
+            set(findobj('Tag','edit_local_trigger_class'),'string','');
+        
+        catch ME
+            
+        end;
+        
         
         
         etc_trcae_gui_update_time;        %redraw included
-
+        
         %etc_trace_handle('redraw');
         
 end;
