@@ -1943,7 +1943,15 @@ global etc_trace_obj;
 etc_trace_obj.montage_idx=get(hObject,'Value');
 
 etc_trace_obj.scaling_idx=etc_trace_obj.montage_idx;
+etc_trace_obj.trace_selected_idx=[];
 
+%channel listbox
+obj=findobj('Tag','listbox_channel');
+if(~isempty(obj))
+    set(obj,'String',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
+    set(obj,'Value',1);
+end;
+    
 etc_trace_handle('redraw');
 
 
