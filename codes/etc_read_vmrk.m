@@ -4,11 +4,14 @@ function trigger=etc_read_vmrk(markerFile,varargin)
 flag_auto_event=1;
 event_code_empty=999; %default code for "empty" event
 
-
+%default trigger tokens
 token_R128=1000;
 token_SYNC=100;
 token_ECG=33;
 token_EKG=33;
+token_Sync_On=500;
+token_Scan_Start=2000;
+token_Volume_Start=3000;
 
 for i=1:length(varargin)./2
     option=varargin{i*2-1};
@@ -80,11 +83,17 @@ for e_idx=1:length(all_events)
             fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_R128);
         elseif(strcmp(lower(all_events{e_idx}),'sync'))
             fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_SYNC);
-        elseif(strcmp(lower(all_events{e_idx}),'ECG'))
+        elseif(strcmp(lower(all_events{e_idx}),'ecg'))
             fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_ECG);
-        elseif(strcmp(lower(all_events{e_idx}),'EKG'))
+        elseif(strcmp(lower(all_events{e_idx}),'ekg'))
             fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_EKG);
-        else
+        elseif(strcmp(lower(all_events{e_idx}),'sync on'))
+            fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_Sync_On);
+        elseif(strcmp(lower(all_events{e_idx}),'scan start'))
+            fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_Scan_Start);
+        elseif(strcmp(lower(all_events{e_idx}),'volume start'))
+            fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_Volume_Start);
+	else
             fprintf('event {%s} --> [%d]\n',all_events{e_idx},e_idx);
         end;
     else
