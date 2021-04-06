@@ -279,6 +279,7 @@ if(indx)
             %definput = {sprintf('data_%02d',length(etc_trace_obj.all_data)+1)};
             definput = {sprintf('%s',var)};
             answer = inputdlg(prompt,dlgtitle,dims,definput);
+            if(isempty(answer)) return; end;
             name=answer{1};
             
             
@@ -328,7 +329,7 @@ if(indx)
                 end;
                 set(obj,'String',str);
                 set(obj,'value',1);
- 
+                
                 %data listbox in the info window
                 obj=findobj('Tag','listbox_info_data');
                 if(~isempty(obj))
@@ -375,59 +376,59 @@ if(indx)
                 
                 
                 
-%                 if(~isempty(montage))
-%                     for m_idx=1:length(montage)
-%                         
-%                         M=[];
-%                         ecg_idx=[];
-%                         for idx=1:size(montage{m_idx}.config,1)
-%                             m=zeros(1,length(etc_trace_obj.ch_names));
-%                             if(~isempty(montage{m_idx}.config{idx,1}))
-%                                 m(find(strcmp(lower(etc_trace_obj.ch_names),lower(montage{m_idx}.config{idx,1}))))=1;
-%                                 if((strcmp(lower(montage{m_idx}.config{idx,1}),'ecg')|strcmp(lower(montage{m_idx}.config{idx,1}),'ekg')))
-%                                     ecg_idx=union(ecg_idx,idx);
-%                                 end;
-%                             end;
-%                             if(~isempty(montage{m_idx}.config{idx,2}))
-%                                 m(find(strcmp(lower(etc_trace_obj.ch_names),lower(montage{m_idx}.config{idx,2}))))=-1;;
-%                                 if((strcmp(lower(montage{m_idx}.config{idx,2}),'ecg')|strcmp(lower(montage{m_idx}.config{idx,2}),'ekg')))
-%                                     ecg_idx=union(ecg_idx,idx);
-%                                 end;
-%                             end;
-%                             M=cat(1,M,m);
-%                         end;
-%                         M(end+1,end+1)=1;
-%                         
-%                         etc_trace_obj.montage{m_idx+1}.config_matrix=M;
-%                         etc_trace_obj.montage{m_idx+1}.config=montage{m_idx}.config;
-%                         etc_trace_obj.montage{m_idx+1}.name=montage{m_idx}.name;
-%                         
-%                         S=eye(size(etc_trace_obj.montage{end}.config,1)+1);
-%                         S(ecg_idx,ecg_idx)=S(ecg_idx,ecg_idx)./10;
-%                         etc_trace_obj.scaling{m_idx+1}=S;
-%                         
-%                         
-%                     end;
-%                     etc_trace_obj.montage_idx=m_idx+1;
-%                 end;
+                %                 if(~isempty(montage))
+                %                     for m_idx=1:length(montage)
+                %
+                %                         M=[];
+                %                         ecg_idx=[];
+                %                         for idx=1:size(montage{m_idx}.config,1)
+                %                             m=zeros(1,length(etc_trace_obj.ch_names));
+                %                             if(~isempty(montage{m_idx}.config{idx,1}))
+                %                                 m(find(strcmp(lower(etc_trace_obj.ch_names),lower(montage{m_idx}.config{idx,1}))))=1;
+                %                                 if((strcmp(lower(montage{m_idx}.config{idx,1}),'ecg')|strcmp(lower(montage{m_idx}.config{idx,1}),'ekg')))
+                %                                     ecg_idx=union(ecg_idx,idx);
+                %                                 end;
+                %                             end;
+                %                             if(~isempty(montage{m_idx}.config{idx,2}))
+                %                                 m(find(strcmp(lower(etc_trace_obj.ch_names),lower(montage{m_idx}.config{idx,2}))))=-1;;
+                %                                 if((strcmp(lower(montage{m_idx}.config{idx,2}),'ecg')|strcmp(lower(montage{m_idx}.config{idx,2}),'ekg')))
+                %                                     ecg_idx=union(ecg_idx,idx);
+                %                                 end;
+                %                             end;
+                %                             M=cat(1,M,m);
+                %                         end;
+                %                         M(end+1,end+1)=1;
+                %
+                %                         etc_trace_obj.montage{m_idx+1}.config_matrix=M;
+                %                         etc_trace_obj.montage{m_idx+1}.config=montage{m_idx}.config;
+                %                         etc_trace_obj.montage{m_idx+1}.name=montage{m_idx}.name;
+                %
+                %                         S=eye(size(etc_trace_obj.montage{end}.config,1)+1);
+                %                         S(ecg_idx,ecg_idx)=S(ecg_idx,ecg_idx)./10;
+                %                         etc_trace_obj.scaling{m_idx+1}=S;
+                %
+                %
+                %                     end;
+                %                     etc_trace_obj.montage_idx=m_idx+1;
+                %                 end;
                 
                 
                 
                 
-%                if(isempty(select))
-                    select=eye(size(etc_trace_obj.data,1));
-                    select_name='all';
-%                end;
+                %                if(isempty(select))
+                select=eye(size(etc_trace_obj.data,1));
+                select_name='all';
+                %                end;
                 etc_trace_obj.select{1}=[select, zeros(size(select,1),1)
                     zeros(1,size(select,2)), 1];
                 etc_trace_obj.select_name{1}=select_name;
                 etc_trace_obj.select_idx=1;
                 
-%                if(isempty(scaling))
-                    scaling{1}=eye(size(etc_trace_obj.data,1));
-%                else
-%                    scaling{1}=scaling;
-%                end;
+                %                if(isempty(scaling))
+                scaling{1}=eye(size(etc_trace_obj.data,1));
+                %                else
+                %                    scaling{1}=scaling;
+                %                end;
                 ecg_idx=find(strcmp(lower(etc_trace_obj.ch_names),'ecg')|strcmp(lower(etc_trace_obj.ch_names),'ekg'));
                 scaling{1}(ecg_idx,ecg_idx)=scaling{1}(ecg_idx,ecg_idx)./10;
                 etc_trace_obj.scaling{1}=[scaling{1}, zeros(size(scaling{1},1),1)
@@ -450,6 +451,11 @@ if(indx)
                     etc_trace_obj.all_data{ii}(:,end+1:mll)=nan;
                 end;
                 etc_trace_obj.tmp(:,end+1:mll)=nan;
+                if(~isfield(etc_trace_obj,'all_data_color'))
+                    for ii=1:length(etc_trace_obj.all_data)
+                        etc_trace_obj.all_data_color(ii,:)=cc(mod(ii-1,7)+1,:)
+                    end;
+                end;
                 etc_trace_obj.all_data{end+1}=etc_trace_obj.tmp;
                 etc_trace_obj.all_data_color(end+1,:)=cc(mod(length(etc_trace_obj.all_data)-1,7)+1,:)
                 
@@ -683,10 +689,12 @@ if(indx)
     try
         var=fn{indx};
         %evalin('base',sprintf('global etc_trace_obj; if(ndims(%s)==2) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var,var));
-        evalin('base',sprintf('etc_trace_obj.tmp=1;'));
+        %evalin('base',sprintf('etc_trace_obj.tmp=1;'));
+        etc_trace_obj.tmp=1;
+
         fprintf('Trying to load variable [%s] as montage...',var);
         if(etc_trace_obj.tmp)
-            evalin('base',sprintf('etc_trace_obj.load.montage=%s; ',var));
+            evalin('base',sprintf('global etc_trace_obj; etc_trace_obj.load.montage=%s; clear etc_trace_obj;',var));
             
             obj=findobj('Tag','text_load_montage');
             set(obj,'String',sprintf('%s',var));
@@ -722,7 +730,7 @@ if(indx)
         evalin('base',sprintf('global etc_trace_obj; if(length(%s)==size(etc_trace_obj.data,1)) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var));
         fprintf('Trying to load variable [%s] as a selection variable...',var);
         if(etc_trace_obj.tmp)
-            evalin('base',sprintf('etc_trace_obj.tmp=%s; ',var));
+            evalin('base',sprintf('global etc_trace_obj; etc_trace_obj.tmp=%s; clear etc_trace_obj;',var));
             etc_trace_obj.load.select=diag(etc_trace_obj.tmp(:));
             
             obj=findobj('Tag','text_load_select');
@@ -759,8 +767,8 @@ if(indx)
         evalin('base',sprintf('global etc_trace_obj; if(length(%s)==size(etc_trace_obj.data,1)) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var));
         fprintf('Trying to load variable [%s] as a scaling variable...',var);
         if(etc_trace_obj.tmp)
-            evalin('base',sprintf('etc_trace_obj.load.scale=%s; ',var));
-            evalin('base',sprintf('etc_trace_obj.tmp=%s; ',var));
+            evalin('base',sprintf('global etc_trace_obj; etc_trace_obj.load.scale=%s; clear etc_trace_obj;',var));
+            evalin('base',sprintf('global etc_trace_obj; etc_trace_obj.tmp=%s; clear etc_trace_obj;',var));
             etc_trace_obj.load.scale=diag(etc_trace_obj.tmp(:));
             
             

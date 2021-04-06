@@ -125,28 +125,63 @@ fstem=etc_trace_obj.loadfile.fstem;
 ext=etc_trace_obj.loadfile.ext;
 path=etc_trace_obj.loadfile.path;
 
+
+cc=[
+    0.8500    0.3250    0.0980
+    0.9290    0.6940    0.1250
+    0.4940    0.1840    0.5560
+    0.4660    0.6740    0.1880
+    0.3010    0.7450    0.9330
+    0.6350    0.0780    0.1840
+    0    0.4470    0.7410
+    ]; %color order
+
+
+prompt = {'name for the loaded data'};
+            dlgtitle = '';
+            dims = [1 35];
+            definput = {fstem};
+            answer = inputdlg(prompt,dlgtitle,dims,definput);
+            if(isempty(answer)) return; end;
+            name=answer{1};
+
+            
 switch lower(ext)
     case {'.eeg','.vmrk','.vhdr'}
         fprintf('reading EEG file [%s]....\n',fstem);
         
-        headerFile=sprintf('%s/%s%s',path,fstem,'.vhdr');
-        % first get the continuous data as a matlab array
-        etc_trace_obj.data = double(bva_loadeeg(headerFile));
-        
-        % meta information such as samplingRate (fs), labels, etc
-        [etc_trace_obj.fs etc_trace_obj.ch_names etc_trace_obj.meta] = bva_readheader(headerFile);
-        
-        %read maker file
-        markerFile=sprintf('%s/%s%s',path,fstem,'.vmrk');
-        etc_trace_obj.trigger=etc_read_vmrk(markerFile);
+        if(length(etc_trace_obj.all_data)<1)
+            headerFile=sprintf('%s/%s%s',path,fstem,'.vhdr');
+            % first get the continuous data as a matlab array
+            etc_trace_obj.data = double(bva_loadeeg(headerFile));
+            
+            % meta information such as samplingRate (fs), labels, etc
+            [etc_trace_obj.fs etc_trace_obj.ch_names etc_trace_obj.meta] = bva_readheader(headerFile);
+            
+            %read maker file
+            markerFile=sprintf('%s/%s%s',path,fstem,'.vmrk');
+            etc_trace_obj.trigger=etc_read_vmrk(markerFile);
+            
+        else
+            headerFile=sprintf('%s/%s%s',path,fstem,'.vhdr');
+            % first get the continuous data as a matlab array
+            etc_trace_obj.tmp = double(bva_loadeeg(headerFile));
+        end;    
         
         flag_reref=etc_trace_obj.loadfile.flag_reref;
         %re-referencing
         if(flag_reref)
             fprintf('\tRe-referencing...\n');
-            eeg_ref=mean(etc_trace_obj.data ,1);
-            for ch_idx=1:size(etc_trace_obj.data,1)
-                etc_trace_obj.data(ch_idx,:)=etc_trace_obj.data(ch_idx,:)-eeg_ref;
+            if(length(etc_trace_obj.all_data)<1)
+                eeg_ref=mean(etc_trace_obj.data ,1);
+                for ch_idx=1:size(etc_trace_obj.data,1)
+                    etc_trace_obj.data(ch_idx,:)=etc_trace_obj.data(ch_idx,:)-eeg_ref;
+                end;
+            else
+                eeg_ref=mean(etc_trace_obj.tmp ,1);
+                for ch_idx=1:size(etc_trace_obj.tmp,1)
+                    etc_trace_obj.tmp(ch_idx,:)=etc_trace_obj.tmp(ch_idx,:)-eeg_ref;
+                end;
             end;
         else
             fprintf('\tNo re-referencing...\n');
@@ -161,8 +196,14 @@ switch lower(ext)
             Wn = 0.1*2/etc_trace_obj.fs;
             N = 3; % order of 3 less processing
             [a,b] = butter(N,Wn,'high'); %bandpass filtering
-            for ch_idx=1:size(etc_trace_obj.data,1)
-                etc_trace_obj.data(ch_idx,:) = filtfilt(a,b,etc_trace_obj.data(ch_idx,:));
+            if(length(etc_trace_obj.all_data)<1)
+                for ch_idx=1:size(etc_trace_obj.data,1)
+                    etc_trace_obj.data(ch_idx,:) = filtfilt(a,b,etc_trace_obj.data(ch_idx,:));
+                end;
+            else
+                for ch_idx=1:size(etc_trace_obj.tmp,1)
+                    etc_trace_obj.tmp(ch_idx,:) = filtfilt(a,b,etc_trace_obj.tmp(ch_idx,:));
+                end;
             end;
         else
             fprintf('\tNo high-pass filtering...\n');
@@ -175,31 +216,243 @@ switch lower(ext)
             time_trim_idx=round(time_trim*etc_trace_obj.fs);
             
             fprintf('\tData trimming [%1.1f] s data {(%d) samples}...\n',time_trim, time_trim_idx);
-            etc_trace_obj.data=etc_trace_obj.data(:,time_trim_idx+1:end);
+            if(length(etc_trace_obj.all_data)<1)
+                etc_trace_obj.data=etc_trace_obj.data(:,time_trim_idx+1:end);
+            else
+                etc_trace_obj.tmp=etc_trace_obj.tmp(:,time_trim_idx+1:end);
+            end;
         else
             fprintf('\tNo data trimming...\n');
         end;
         
-        hObject=findobj('tag','listbox_time_duration');
-        contents = cellstr(get(hObject,'String'));
-        ii=round(cellfun(@str2num,contents).*etc_trace_obj.fs);
-        [dummy,vv]=min(abs(ii-size(etc_trace_obj.data,2)));
-        round(str2num(contents{vv})*etc_trace_obj.fs);
-        etc_trace_obj.time_duration_idx=round(str2num(contents{vv})*etc_trace_obj.fs);
         
-        etc_trace_obj.load.montage=[];
-        etc_trace_obj.load.select=[];
-        etc_trace_obj.load.scale=[];
+        if(length(etc_trace_obj.all_data)<1)
+            hObject=findobj('tag','listbox_time_duration');
+            contents = cellstr(get(hObject,'String'));
+            ii=round(cellfun(@str2num,contents).*etc_trace_obj.fs);
+            [dummy,vv]=min(abs(ii-size(etc_trace_obj.data,2)));
+            round(str2num(contents{vv})*etc_trace_obj.fs);
+            etc_trace_obj.time_duration_idx=round(str2num(contents{vv})*etc_trace_obj.fs);
+            
+            etc_trace_obj.load.montage=[];
+            etc_trace_obj.load.select=[];
+            etc_trace_obj.load.scale=[];
+            
+            ok=etc_trace_update_loaded_data(etc_trace_obj.load.montage,etc_trace_obj.load.select,etc_trace_obj.load.scale);
+            
+            etc_trace_obj.load_output=ok;
+            
+            delete(handles.figure_loadfile_gui);
+            
+            if(etc_trace_obj.load_output) %if everything is ok...
+                etc_trcae_gui_update_time();
+                %etc_trace_handle('redraw');
+            end;
+            
+            
         
-        ok=etc_trace_update_loaded_data(etc_trace_obj.load.montage,etc_trace_obj.load.select,etc_trace_obj.load.scale);
-        
-        etc_trace_obj.load_output=ok;
-        
-        delete(handles.figure_loadfile_gui);
+            
+            %if(~etc_trace_obj.flag_trigger_avg)
+            %    evalin('base',sprintf('etc_trace_obj.data=%s; ',var));
+            %else
+            %    evalin('base',sprintf('etc_trace_obj.buffer.data=%s; ',var));
+            %end;
+            %evalin('base',sprintf('etc_trace_obj.all_data{1}=%s; ',var));
+            
+            etc_trace_obj.all_data{1}=etc_trace_obj.data;
+            
+            %evalin('base',sprintf('etc_trace_obj.all_data_name{1}=%s; ',name));
+            etc_trace_obj.all_data_color(1,:)=cc(mod(length(etc_trace_obj.all_data)-1,7)+1,:)
+            etc_trace_obj.all_data_name{1}=name;
+            etc_trace_obj.all_data_main_idx=1;
+            etc_trace_obj.all_data_aux_idx=[0];
+            
+            %obj=findobj('Tag','text_load_var');
+            %set(obj,'String',sprintf('%s',var));
+            
+            fprintf('main data loaded!\n');
+            
+            %data listbox in the control window
+            obj=findobj('Tag','listbox_data');
+            if(~isempty(obj))
+                %str=get(obj,'String');
+                str{1}=name;
+            end;
+            set(obj,'String',str);
+            set(obj,'value',1);
+            
+            %data listbox in the info window
+            obj=findobj('Tag','listbox_info_data');
+            if(~isempty(obj))
+                %str=get(obj,'String');
+                str{1}=name;
+            end;
+            set(obj,'String',str);
+            set(obj,'value',1);
+            
+            %aux. data listbox in the info window
+            obj=findobj('Tag','listbox_info_auxdata');
+            if(~isempty(obj))
+                %str=get(obj,'String');
+                str{1}=name;
+            end;
+            set(obj,'String',str);
+            set(obj,'value',1);
+            
+            update_data;
+            
+            %select=diag(ones(1,size(etc_trace_obj.data,1)));
+            %scaling=diag(ones(1,size(etc_trace_obj.data,1)));
+            
+            %append a selection and scaling variable for the imported
+            %data
+            %etc_trace_update_loaded_data([],select,scaling,'select_name',sprintf('select_%s',name));
+            
+            
+            %if(isempty(montage))
+            mm=eye(size(etc_trace_obj.data,1));
+            montage_name='original';
+            
+            config={};
+            for idx=1:length(etc_trace_obj.ch_names);
+                config{end+1,1}=etc_trace_obj.ch_names{idx};
+                config{end,2}='';
+            end;
+            %end;
+            etc_trace_obj.montage{1}.config_matrix=[mm, zeros(size(mm,1),1)
+                zeros(1,size(mm,2)), 1];
+            etc_trace_obj.montage{1}.config=config;
+            etc_trace_obj.montage{1}.name=montage_name;
+            etc_trace_obj.montage_idx=1;
+            
+            
+            
+            %                 if(~isempty(montage))
+            %                     for m_idx=1:length(montage)
+            %
+            %                         M=[];
+            %                         ecg_idx=[];
+            %                         for idx=1:size(montage{m_idx}.config,1)
+            %                             m=zeros(1,length(etc_trace_obj.ch_names));
+            %                             if(~isempty(montage{m_idx}.config{idx,1}))
+            %                                 m(find(strcmp(lower(etc_trace_obj.ch_names),lower(montage{m_idx}.config{idx,1}))))=1;
+            %                                 if((strcmp(lower(montage{m_idx}.config{idx,1}),'ecg')|strcmp(lower(montage{m_idx}.config{idx,1}),'ekg')))
+            %                                     ecg_idx=union(ecg_idx,idx);
+            %                                 end;
+            %                             end;
+            %                             if(~isempty(montage{m_idx}.config{idx,2}))
+            %                                 m(find(strcmp(lower(etc_trace_obj.ch_names),lower(montage{m_idx}.config{idx,2}))))=-1;;
+            %                                 if((strcmp(lower(montage{m_idx}.config{idx,2}),'ecg')|strcmp(lower(montage{m_idx}.config{idx,2}),'ekg')))
+            %                                     ecg_idx=union(ecg_idx,idx);
+            %                                 end;
+            %                             end;
+            %                             M=cat(1,M,m);
+            %                         end;
+            %                         M(end+1,end+1)=1;
+            %
+            %                         etc_trace_obj.montage{m_idx+1}.config_matrix=M;
+            %                         etc_trace_obj.montage{m_idx+1}.config=montage{m_idx}.config;
+            %                         etc_trace_obj.montage{m_idx+1}.name=montage{m_idx}.name;
+            %
+            %                         S=eye(size(etc_trace_obj.montage{end}.config,1)+1);
+            %                         S(ecg_idx,ecg_idx)=S(ecg_idx,ecg_idx)./10;
+            %                         etc_trace_obj.scaling{m_idx+1}=S;
+            %
+            %
+            %                     end;
+            %                     etc_trace_obj.montage_idx=m_idx+1;
+            %                 end;
+            
+            
+            
+            
+            %                if(isempty(select))
+            select=eye(size(etc_trace_obj.data,1));
+            select_name='all';
+            %                end;
+            etc_trace_obj.select{1}=[select, zeros(size(select,1),1)
+                zeros(1,size(select,2)), 1];
+            etc_trace_obj.select_name{1}=select_name;
+            etc_trace_obj.select_idx=1;
+            
+            %                if(isempty(scaling))
+            scaling{1}=eye(size(etc_trace_obj.data,1));
+            %                else
+            %                    scaling{1}=scaling;
+            %                end;
+            ecg_idx=find(strcmp(lower(etc_trace_obj.ch_names),'ecg')|strcmp(lower(etc_trace_obj.ch_names),'ekg'));
+            scaling{1}(ecg_idx,ecg_idx)=scaling{1}(ecg_idx,ecg_idx)./10;
+            etc_trace_obj.scaling{1}=[scaling{1}, zeros(size(scaling{1},1),1)
+                zeros(1,size(scaling{1},2)), 1];
+            etc_trace_obj.scaling_idx=1;
+            
+            
+            
+            
+            
+        else
+            
+            delete(handles.figure_loadfile_gui);
 
-        if(etc_trace_obj.load_output) %if everything is ok...
-            etc_trcae_gui_update_time();
-            %etc_trace_handle('redraw');
+            %adjust all data such that nan is appended when necessary.
+            for ii=1:length(etc_trace_obj.all_data)
+                ll(ii)=size(etc_trace_obj.all_data{ii},2);
+            end;
+            ll(end+1)=size(etc_trace_obj.tmp,2);
+            mll=max(ll);
+            for ii=1:length(etc_trace_obj.all_data)
+                etc_trace_obj.all_data{ii}(:,end+1:mll)=nan;
+            end;
+            etc_trace_obj.tmp(:,end+1:mll)=nan;
+            if(~isfield(etc_trace_obj,'all_data_color'))
+                for ii=1:length(etc_trace_obj.all_data)
+                    etc_trace_obj.all_data_color(ii,:)=cc(mod(ii-1,7)+1,:)
+                end;
+            end;
+            etc_trace_obj.all_data{end+1}=etc_trace_obj.tmp;
+            etc_trace_obj.all_data_color(end+1,:)=cc(mod(length(etc_trace_obj.all_data)-1,7)+1,:);
+            
+            etc_trace_obj.all_data_name{end+1}=name;
+            etc_trace_obj.all_data_aux_idx=cat(2,etc_trace_obj.all_data_aux_idx,1);
+            
+            
+            update_data;
+            
+            
+            %obj=findobj('Tag','text_load_var');
+            %set(obj,'String',sprintf('%s',var));
+            
+            
+            %data listbox in the info window
+            obj=findobj('Tag','listbox_info_data');
+            if(~isempty(obj))
+                set(obj,'String',etc_trace_obj.all_data_name);
+                set(obj,'Min',0);
+                set(obj,'Max',length(etc_trace_obj.all_data_name));
+                set(obj,'Value',etc_trace_obj.all_data_main_idx);
+            end;
+            
+            %aux. data listbox in the info window
+            obj=findobj('Tag','listbox_info_auxdata');
+            if(~isempty(obj))
+                set(obj,'String',etc_trace_obj.all_data_name);
+                set(obj,'Min',0);
+                set(obj,'Max',length(etc_trace_obj.all_data_name));
+                set(obj,'Value',find(etc_trace_obj.all_data_aux_idx));
+            end;
+            
+            %data listbox in the control window
+            obj=findobj('Tag','listbox_data');
+            if(~isempty(obj))
+                set(obj,'String',etc_trace_obj.all_data_name);
+                set(obj,'Min',0);
+                set(obj,'Max',length(etc_trace_obj.all_data_name));
+                set(obj,'Value',etc_trace_obj.all_data_main_idx); %choose the last one; popup menu limits only one option
+            end;
+            
+            fprintf('auxillary data [%s] loaded!\n',name);
+            %end;
+            
         end;
         
     otherwise
@@ -310,3 +563,101 @@ global etc_trace_obj;
 
 
 etc_trace_obj.loadfile.flag_reref=get(hObject,'Value');
+
+
+
+function update_data()
+global etc_trace_obj;
+
+if(~isempty(etc_trace_obj.all_data_main_idx))
+    if(~etc_trace_obj.flag_trigger_avg)
+        etc_trace_obj.data=etc_trace_obj.all_data{etc_trace_obj.all_data_main_idx};
+    else
+        etc_trace_obj.buffer.data=etc_trace_obj.all_data{etc_trace_obj.all_data_main_idx};
+    end;
+else
+    if(~etc_trace_obj.flag_trigger_avg)
+        etc_trace_obj.data=[];
+    else
+        etc_trace_obj.buffer.data=[];        
+    end;
+end;
+
+etc_trace_obj.aux_data={};
+idx=find(etc_trace_obj.all_data_aux_idx);
+
+if(~etc_trace_obj.flag_trigger_avg)
+    for i=1:length(idx)
+        etc_trace_obj.aux_data{i}=etc_trace_obj.all_data{idx(i)};
+        etc_trace_obj.aux_data_name{i}=etc_trace_obj.all_data_name{idx(i)};
+        etc_trace_obj.aux_data_color(i,:)=etc_trace_obj.all_data_color(idx(i),:);
+    end;
+    etc_trace_obj.aux_data_idx=idx;
+else
+    for i=1:length(idx)
+        etc_trace_obj.aux_data{i}=etc_trace_obj.all_data{idx(i)};
+        etc_trace_obj.aux_data_name{i}=etc_trace_obj.all_data_name{idx(i)};
+        etc_trace_obj.aux_data_color(i,:)=etc_trace_obj.all_data_color(idx(i),:);
+    end;
+    etc_trace_obj.aux_data_idx=idx;
+    
+    etc_trace_obj.buffer.aux_data={};
+    etc_trace_obj.buffer.aux_data_name={};
+    etc_trace_obj.buffer.aux_data_color=[];   
+    for i=1:length(idx)
+        etc_trace_obj.buffer.aux_data{i}=etc_trace_obj.all_data{idx(i)};
+        etc_trace_obj.buffer.aux_data_name{i}=etc_trace_obj.all_data_name{idx(i)};
+        etc_trace_obj.buffer.aux_data_color(i,:)=etc_trace_obj.all_data_color(idx(i),:);
+    end;
+    etc_trace_obj.buffer.aux_data_idx=idx;    
+
+    etc_trace_avg();
+end;
+
+%GUI
+obj=findobj('Tag','listbox_info_data');
+if(~isempty(obj))
+    if(~isempty(etc_trace_obj.all_data_name))
+        set(obj,'String',etc_trace_obj.all_data_name);
+        set(obj,'Value',etc_trace_obj.all_data_main_idx);
+    else
+        set(obj,'String','[none]');
+        set(obj,'Value',1);
+    end;
+end;
+
+obj=findobj('Tag','listbox_info_auxdata');
+if(~isempty(obj))
+    if(~isempty(etc_trace_obj.all_data_name))
+        set(obj,'String',etc_trace_obj.all_data_name);
+        set(obj,'min',0);
+        if(length(etc_trace_obj.all_data_name)<2)
+            set(obj,'max',2);
+        else
+            set(obj,'max',length(etc_trace_obj.all_data_name));
+        end;
+        set(obj,'Value',find(etc_trace_obj.all_data_aux_idx));
+    else
+        set(obj,'String','[none]');
+        set(obj,'min',0);
+        set(obj,'max',2);
+        set(obj,'Value',[]);        
+    end
+end;
+
+obj=findobj('Tag','listbox_data');
+if(~isempty(obj))
+    if(~isempty(etc_trace_obj.all_data_name))
+        set(obj,'String',etc_trace_obj.all_data_name);
+        set(obj,'Value',etc_trace_obj.all_data_main_idx);
+    else
+        set(obj,'String','[none]');
+        set(obj,'Value',1);      
+    end;
+end;
+
+
+
+return;
+
+
