@@ -335,7 +335,8 @@ if(~isempty(etc_render_fsbrain.aux2_point_coords))
     set(handles.edit_aux2_point_size,'string',sprintf('%d',etc_render_fsbrain.aux2_point_size));
     v1=etc_render_fsbrain.show_all_contacts_mri_flag;
     v2=etc_render_fsbrain.show_all_contacts_brain_surface_flag;
-    set(handles.checkbox_electrode_contacts,'value',v1|v2);
+    %set(handles.checkbox_electrode_contacts,'value',v1|v2);
+    set(handles.checkbox_electrode_contacts,'value',etc_render_fsbrain.all_electrode_flag);
     
     set(handles.checkbox_selected_contact,'value',etc_render_fsbrain.selected_contact_flag);
     set(handles.pushbutton_selected_contact_color,'BackgroundColor',etc_render_fsbrain.selected_contact_color);
@@ -1762,11 +1763,12 @@ function checkbox_electrode_contacts_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of checkbox_electrode_contacts
 global etc_render_fsbrain;
 
-set(findobj('Tag','checkbox_mri_view'),'Value',get(hObject,'Value'));
-set(findobj('Tag','checkbox_brain_surface'),'Value',get(hObject,'Value'));
+%set(findobj('Tag','checkbox_mri_view'),'Value',get(hObject,'Value'));
+%set(findobj('Tag','checkbox_brain_surface'),'Value',get(hObject,'Value'));
 
-etc_render_fsbrain.show_all_contacts_brain_surface_flag=get(hObject,'Value');
-etc_render_fsbrain.show_all_contacts_mri_flag=get(hObject,'Value');
+%etc_render_fsbrain.show_all_contacts_brain_surface_flag=get(hObject,'Value');
+%etc_render_fsbrain.show_all_contacts_mri_flag=get(hObject,'Value');
+etc_render_fsbrain.all_electrode_flag=get(hObject,'Value');
 
 etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
 %etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord);

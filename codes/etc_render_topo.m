@@ -102,6 +102,8 @@ selected_contact_size=44;
 selected_contact_flag=1;
 selected_contact_color=[0 1 1];
 
+all_electrode_flag=1;
+
 topo_exclude_fstem='';
 topo_exclude=[];
 
@@ -642,6 +644,8 @@ etc_render_fsbrain.selected_electrode_color=selected_electrode_color;
 etc_render_fsbrain.selected_contact_size=selected_contact_size;
 etc_render_fsbrain.selected_contact_flag=selected_contact_flag;
 etc_render_fsbrain.selected_contact_color=selected_contact_color;
+
+etc_render_fsbrain.all_electrode_flag=1;
 
 etc_render_fsbrain.click_point_color=click_point_color;
 etc_render_fsbrain.click_point_size=click_point_size;

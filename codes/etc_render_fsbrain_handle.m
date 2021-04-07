@@ -1957,7 +1957,6 @@ try
                     end;
                 end;
 
-
                 for v_idx=1:size(etc_render_fsbrain.aux2_point_coords,1)
                     surface_coord=etc_render_fsbrain.aux2_point_coords(v_idx,:);
                     
@@ -1985,64 +1984,104 @@ try
                     D=etc_render_fsbrain.show_all_contacts_mri_depth; %a constant controlling the visibility of contacts
                     alpha=exp(-(abs(click_vertex_vox(3)-round(etc_render_fsbrain.click_vertex_vox(3))))/D);
                     if(alpha>0.2)
-                        etc_render_fsbrain.aux2_point_mri_cor_h(count)=scatter(etc_render_fsbrain.img_cor_padx+click_vertex_vox(1), etc_render_fsbrain.img_cor_pady+click_vertex_vox(2),point_size,[0.8500 0.3250 0.0980],'.');
+                        %etc_render_fsbrain.aux2_point_mri_cor_h(count)=scatter(etc_render_fsbrain.img_cor_padx+click_vertex_vox(1), etc_render_fsbrain.img_cor_pady+click_vertex_vox(2),point_size,[0.8500 0.3250 0.0980],'.');
                         %set(etc_render_fsbrain.aux2_point_mri_cor_h(count),'MarkerEdgeColor',[0.8500 0.3250 0.0980]);
                         if(~isempty(intersect(selected_contact_idx,v_idx))&&etc_render_fsbrain.selected_contact_flag)
+                            etc_render_fsbrain.aux2_point_mri_cor_h(count)=scatter(etc_render_fsbrain.img_cor_padx+click_vertex_vox(1), etc_render_fsbrain.img_cor_pady+click_vertex_vox(2),point_size,[0.8500 0.3250 0.0980],'.');
                             set(etc_render_fsbrain.aux2_point_mri_cor_h(count),'MarkerEdgeColor',etc_render_fsbrain.selected_contact_color);
-
+                            set(etc_render_fsbrain.aux2_point_mri_cor_h(count),'MarkerEdgeAlpha',alpha); %transparency does not work for such a large marker.....
+                            set(etc_render_fsbrain.aux2_point_mri_cor_h(count),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
+                            count=count+1;
                         else
                             if(~isempty(intersect(selected_electrode_idx,v_idx))&&etc_render_fsbrain.selected_electrode_flag)
+                                etc_render_fsbrain.aux2_point_mri_cor_h(count)=scatter(etc_render_fsbrain.img_cor_padx+click_vertex_vox(1), etc_render_fsbrain.img_cor_pady+click_vertex_vox(2),point_size,[0.8500 0.3250 0.0980],'.');
                                 set(etc_render_fsbrain.aux2_point_mri_cor_h(count),'MarkerEdgeColor',etc_render_fsbrain.selected_electrode_color);
+                                set(etc_render_fsbrain.aux2_point_mri_cor_h(count),'MarkerEdgeAlpha',alpha); %transparency does not work for such a large marker.....
+                                set(etc_render_fsbrain.aux2_point_mri_cor_h(count),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
+                                count=count+1;
                             else
-                                set(etc_render_fsbrain.aux2_point_mri_cor_h(count),'MarkerEdgeColor',etc_render_fsbrain.aux2_point_color);
+                                if(etc_render_fsbrain.all_electrode_flag)
+                                    etc_render_fsbrain.aux2_point_mri_cor_h(count)=scatter(etc_render_fsbrain.img_cor_padx+click_vertex_vox(1), etc_render_fsbrain.img_cor_pady+click_vertex_vox(2),point_size,[0.8500 0.3250 0.0980],'.');
+                                    set(etc_render_fsbrain.aux2_point_mri_cor_h(count),'MarkerEdgeColor',etc_render_fsbrain.aux2_point_color);
+                                    set(etc_render_fsbrain.aux2_point_mri_cor_h(count),'MarkerEdgeAlpha',alpha); %transparency does not work for such a large marker.....
+                                    set(etc_render_fsbrain.aux2_point_mri_cor_h(count),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
+                                    count=count+1;
+                                end;
                             end;
                         end;
 
-                        set(etc_render_fsbrain.aux2_point_mri_cor_h(count),'MarkerEdgeAlpha',alpha); %transparency does not work for such a large marker.....
-                        set(etc_render_fsbrain.aux2_point_mri_cor_h(count),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
-                        count=count+1;
+                        %set(etc_render_fsbrain.aux2_point_mri_cor_h(count),'MarkerEdgeAlpha',alpha); %transparency does not work for such a large marker.....
+                        %set(etc_render_fsbrain.aux2_point_mri_cor_h(count),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
+                        %count=count+1;
                     end;
                     
                     alpha=exp(-(abs(click_vertex_vox(2)-round(etc_render_fsbrain.click_vertex_vox(2))))/D);
                     if(alpha>0.2)
-                        etc_render_fsbrain.aux2_point_mri_ax_h(count)=scatter(mm+etc_render_fsbrain.img_ax_padx+click_vertex_vox(1), mm-(etc_render_fsbrain.img_ax_pady+click_vertex_vox(3)),point_size,[0.8500 0.3250 0.0980],'.');
+                        %etc_render_fsbrain.aux2_point_mri_ax_h(count)=scatter(mm+etc_render_fsbrain.img_ax_padx+click_vertex_vox(1), mm-(etc_render_fsbrain.img_ax_pady+click_vertex_vox(3)),point_size,[0.8500 0.3250 0.0980],'.');
                         %set(etc_render_fsbrain.aux2_point_mri_ax_h(count),'MarkerEdgeColor',[0.8500 0.3250 0.0980]);
                         if(~isempty(intersect(selected_contact_idx,v_idx))&&etc_render_fsbrain.selected_contact_flag)
+                            etc_render_fsbrain.aux2_point_mri_ax_h(count)=scatter(mm+etc_render_fsbrain.img_ax_padx+click_vertex_vox(1), mm-(etc_render_fsbrain.img_ax_pady+click_vertex_vox(3)),point_size,[0.8500 0.3250 0.0980],'.');
                             set(etc_render_fsbrain.aux2_point_mri_ax_h(count),'MarkerEdgeColor',etc_render_fsbrain.selected_contact_color);
-
+                            set(etc_render_fsbrain.aux2_point_mri_ax_h(count),'MarkerEdgeAlpha',alpha); %transparency does not work for such a large marker.....
+                            set(etc_render_fsbrain.aux2_point_mri_ax_h(count),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
+                            count=count+1;
                         else
                             if(~isempty(intersect(selected_electrode_idx,v_idx))&&etc_render_fsbrain.selected_electrode_flag)
+                                etc_render_fsbrain.aux2_point_mri_ax_h(count)=scatter(mm+etc_render_fsbrain.img_ax_padx+click_vertex_vox(1), mm-(etc_render_fsbrain.img_ax_pady+click_vertex_vox(3)),point_size,[0.8500 0.3250 0.0980],'.');
                                 set(etc_render_fsbrain.aux2_point_mri_ax_h(count),'MarkerEdgeColor',etc_render_fsbrain.selected_electrode_color);
+                                set(etc_render_fsbrain.aux2_point_mri_ax_h(count),'MarkerEdgeAlpha',alpha); %transparency does not work for such a large marker.....
+                                set(etc_render_fsbrain.aux2_point_mri_ax_h(count),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
+                                count=count+1;
                             else
-                                set(etc_render_fsbrain.aux2_point_mri_ax_h(count),'MarkerEdgeColor',etc_render_fsbrain.aux2_point_color);
+                                if(etc_render_fsbrain.all_electrode_flag)
+                                    etc_render_fsbrain.aux2_point_mri_ax_h(count)=scatter(mm+etc_render_fsbrain.img_ax_padx+click_vertex_vox(1), mm-(etc_render_fsbrain.img_ax_pady+click_vertex_vox(3)),point_size,[0.8500 0.3250 0.0980],'.');
+                                    set(etc_render_fsbrain.aux2_point_mri_ax_h(count),'MarkerEdgeColor',etc_render_fsbrain.aux2_point_color);
+                                    set(etc_render_fsbrain.aux2_point_mri_ax_h(count),'MarkerEdgeAlpha',alpha); %transparency does not work for such a large marker.....
+                                    set(etc_render_fsbrain.aux2_point_mri_ax_h(count),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
+                                    count=count+1;
+                                end;
                             end;
                         end;
-                        set(etc_render_fsbrain.aux2_point_mri_ax_h(count),'MarkerEdgeAlpha',alpha); %transparency does not work for such a large marker.....
-                        set(etc_render_fsbrain.aux2_point_mri_ax_h(count),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
-                        count=count+1;
+                        %set(etc_render_fsbrain.aux2_point_mri_ax_h(count),'MarkerEdgeAlpha',alpha); %transparency does not work for such a large marker.....
+                        %set(etc_render_fsbrain.aux2_point_mri_ax_h(count),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
+                        %count=count+1;
                     end;
                     
                     alpha=exp(-(abs(click_vertex_vox(1)-round(etc_render_fsbrain.click_vertex_vox(1))))/D);
                     if(alpha>0.2)
-                        etc_render_fsbrain.aux2_point_mri_sag_h(count)=scatter(etc_render_fsbrain.img_sag_padx+click_vertex_vox(3), mm+etc_render_fsbrain.img_sag_pady+click_vertex_vox(2),point_size,[0.8500 0.3250 0.0980],'.');
+                        %etc_render_fsbrain.aux2_point_mri_sag_h(count)=scatter(etc_render_fsbrain.img_sag_padx+click_vertex_vox(3), mm+etc_render_fsbrain.img_sag_pady+click_vertex_vox(2),point_size,[0.8500 0.3250 0.0980],'.');
                         %set(etc_render_fsbrain.aux2_point_mri_sag_h(count),'MarkerEdgeColor',[0.8500 0.3250 0.0980]);
                         if(~isempty(intersect(selected_contact_idx,v_idx))&&etc_render_fsbrain.selected_contact_flag)
+                            etc_render_fsbrain.aux2_point_mri_sag_h(count)=scatter(etc_render_fsbrain.img_sag_padx+click_vertex_vox(3), mm+etc_render_fsbrain.img_sag_pady+click_vertex_vox(2),point_size,[0.8500 0.3250 0.0980],'.');
                             set(etc_render_fsbrain.aux2_point_mri_sag_h(count),'MarkerEdgeColor',etc_render_fsbrain.selected_contact_color);
-
+                            set(etc_render_fsbrain.aux2_point_mri_sag_h(count),'MarkerEdgeAlpha',alpha); %transparency does not work for such a large marker.....
+                            set(etc_render_fsbrain.aux2_point_mri_sag_h(count),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
+                            count=count+1;
                         else
                             if(~isempty(intersect(selected_electrode_idx,v_idx))&&etc_render_fsbrain.selected_electrode_flag)
+                                etc_render_fsbrain.aux2_point_mri_sag_h(count)=scatter(etc_render_fsbrain.img_sag_padx+click_vertex_vox(3), mm+etc_render_fsbrain.img_sag_pady+click_vertex_vox(2),point_size,[0.8500 0.3250 0.0980],'.');
                                 set(etc_render_fsbrain.aux2_point_mri_sag_h(count),'MarkerEdgeColor',etc_render_fsbrain.selected_electrode_color);
+                                set(etc_render_fsbrain.aux2_point_mri_sag_h(count),'MarkerEdgeAlpha',alpha); %transparency does not work for such a large marker.....
+                                set(etc_render_fsbrain.aux2_point_mri_sag_h(count),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
+                                count=count+1;
                             else
-                                set(etc_render_fsbrain.aux2_point_mri_sag_h(count),'MarkerEdgeColor',etc_render_fsbrain.aux2_point_color);
+                                if(etc_render_fsbrain.all_electrode_flag)                                    
+                                    etc_render_fsbrain.aux2_point_mri_sag_h(count)=scatter(etc_render_fsbrain.img_sag_padx+click_vertex_vox(3), mm+etc_render_fsbrain.img_sag_pady+click_vertex_vox(2),point_size,[0.8500 0.3250 0.0980],'.');
+                                    set(etc_render_fsbrain.aux2_point_mri_sag_h(count),'MarkerEdgeColor',etc_render_fsbrain.aux2_point_color);
+                                    set(etc_render_fsbrain.aux2_point_mri_sag_h(count),'MarkerEdgeAlpha',alpha); %transparency does not work for such a large marker.....
+                                    set(etc_render_fsbrain.aux2_point_mri_sag_h(count),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
+                                    count=count+1;
+                                end;
                             end;
                         end;
-                        set(etc_render_fsbrain.aux2_point_mri_sag_h(count),'MarkerEdgeAlpha',alpha); %transparency does not work for such a large marker.....
-                        set(etc_render_fsbrain.aux2_point_mri_sag_h(count),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
-                        count=count+1;
+                        %set(etc_render_fsbrain.aux2_point_mri_sag_h(count),'MarkerEdgeAlpha',alpha); %transparency does not work for such a large marker.....
+                        %set(etc_render_fsbrain.aux2_point_mri_sag_h(count),'ButtonDownFcn',@(~,~)disp('patch'),'PickableParts','all');
+                        %count=count+1;
                     end;
                 end;
             end;            
         catch ME
+            v_idx
         end;
         
         
@@ -2901,6 +2940,8 @@ try
 
         if(~isempty(etc_render_fsbrain.aux2_point_coords))
             if(etc_render_fsbrain.show_all_contacts_brain_surface_flag)
+                
+                if(etc_render_fsbrain.all_electrode_flag)
                 xx=[]; yy=[]; zz=[];
                 for idx=1:size(etc_render_fsbrain.aux2_point_coords,1)
                     xx=cat(1,xx,etc_render_fsbrain.aux2_point_coords(idx,1));
@@ -2915,11 +2956,12 @@ try
                 etc_render_fsbrain.aux2_point_coords_h=plot3(xx,yy,zz,'.');
                 %set(etc_render_fsbrain.aux2_point_coords_h,'color',[1 0 0].*0.5,'markersize',16);
                 set(etc_render_fsbrain.aux2_point_coords_h,'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
-                
+                end;
                 
                 %highlight the selected contact
                 if(isfield(etc_render_fsbrain,'electrode'))
                     if(~isempty(etc_render_fsbrain.electrode))
+                        if(etc_render_fsbrain.selected_electrode_flag)
                         try
                             idx=0;
                             for ii=1:etc_render_fsbrain.electrode_idx-1
@@ -2937,8 +2979,9 @@ try
                             end;
                         catch ME
                         end;
+                        end;
                         
-                        
+                        if(etc_render_fsbrain.selected_contact_flag)
                         try
                             idx=0;
                             for ii=1:etc_render_fsbrain.electrode_idx-1
@@ -2955,6 +2998,7 @@ try
                                 %                    set(etc_render_fsbrain.aux2_point_coords_h(3),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
                             end;
                         catch ME
+                        end;
                         end;
                     end;
                 end;

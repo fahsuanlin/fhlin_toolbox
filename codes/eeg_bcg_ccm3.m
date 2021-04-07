@@ -112,7 +112,26 @@ for ii=2:max(ecg_idx)-1
 end;
 
 %search over ECG cycles
-[IDX,D] = knnsearch(ecg(ecg_ccm_idx(2:end-1,:)),ecg(ecg_ccm_idx(2:end-1,:)),'K',nn+1);
+%[IDX,D] = knnsearch(ecg(ecg_ccm_idx(2:end-1,:)),ecg(ecg_ccm_idx(2:end-1,:)),'K',nn+1);
+
+onset_idx=ones(1,size(eeg,2));
+for ii=1:length(ecg_onset_idx) 
+    if(~isinf(ecg_offset_idx(ii)))
+        onset_idx(ecg_onset_idx(ii):ecg_offset_idx(ii))=ecg_onset_idx(ii); 
+    else
+        onset_idx(ecg_onset_idx(ii):end)=ecg_onset_idx(ii); 
+    end;
+end;
+
+
+manifold_data=ecg(ecg_ccm_idx(2:end-1,:));
+
+manifold_data_offset=repmat(manifold_data(:,1),[1,size(manifold_data,2)]);
+
+manifold_data=manifold_data-manifold_data_offset;
+
+[IDX,D] = knnsearch(manifold_data,manifold_data,'K',nn+1);
+
 IDX=IDX+1; %offset by one ECG cycle, because the first ECG cycle is ignored.
 
 %append indices for the first and last ECG cycles
@@ -143,6 +162,12 @@ time_idx(find(isnan(ccm_IDX(:,1))))=nan;
 time_idx(find(isnan(sum(ccm_IDX,2))))=nan;
 if(flag_display)
     fprintf('[%d] (%1.1f%%) time points excluded from CCM because data are out of time series range.\n',length(find(isnan(sum(ccm_IDX,2)))),length(find(isnan(sum(ccm_IDX,2))))./size(eeg,2).*100);
+end;
+
+eeg_baseline_corr=eeg;
+for ch_idx=1:length(non_ecg_channel)
+    tmp=eeg(non_ecg_channel(ch_idx),:);
+    eeg_baseline_corr(non_ecg_channel(ch_idx),:)=tmp-tmp(onset_idx);
 end;
 
 for t_idx=1:size(eeg,2)
@@ -215,7 +240,10 @@ for t_idx=1:size(eeg,2)
             try
                 %non_nan_idx=find(~isnan(ccm_IDX(t_idx,:)));
                 %eeg_bcg_pred(non_ecg_channel(ch_idx),t_idx)=eeg(non_ecg_channel(ch_idx),ccm_IDX(t_idx,non_nan_idx))*W(non_nan_idx)';
-                eeg_bcg_pred(non_ecg_channel(ch_idx),t_idx)=eeg(non_ecg_channel(ch_idx),ccm_IDX(t_idx,:))*W';
+                
+                
+                %eeg_bcg_pred(non_ecg_channel(ch_idx),t_idx)=eeg(non_ecg_channel(ch_idx),ccm_IDX(t_idx,:))*W';
+                eeg_bcg_pred(non_ecg_channel(ch_idx),t_idx)=eeg_baseline_corr(non_ecg_channel(ch_idx),ccm_IDX(t_idx,:))*W';
             catch ME
                 fprintf('Error in BCG CCM prediction!\n');
                 fprintf('t_idx=%d\n',t_idx);

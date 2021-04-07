@@ -121,6 +121,8 @@ selected_contact_size=44;
 selected_contact_flag=1;
 selected_contact_color=[0 1 1];
 
+all_electrode_flag=1;
+
 %electrode
 electrode=[];
 
@@ -1038,6 +1040,8 @@ etc_render_fsbrain.selected_electrode_color=selected_electrode_color;
 etc_render_fsbrain.selected_contact_size=selected_contact_size;
 etc_render_fsbrain.selected_contact_flag=selected_contact_flag;
 etc_render_fsbrain.selected_contact_color=selected_contact_color;
+
+etc_render_fsbrain.all_electrode_flag=all_electrode_flag;
 
 etc_render_fsbrain.register_rotate_angle=3; %default: 3 degrees
 etc_render_fsbrain.register_translate_dist=1e-3; %default: 1 mm

@@ -99,6 +99,9 @@ if(~isempty(etc_render_fsbrain.electrode))
         str{e_idx}=etc_render_fsbrain.electrode(e_idx).name;
     end;
     set(handles.listbox_electrode,'string',str);
+    %set(handles.listbox_electrode,'min',0);
+    %set(handles.listbox_electrode,'max',length(etc_render_fsbrain.electrode));
+   
     guidata(hObject, handles);
     
     %set default electrode and contact to the first one
@@ -2123,7 +2126,7 @@ if(filename~=0)
             set(findobj(etc_render_fsbrain.fig_gui,'Tag','edit_aux2_point_size'),'string',sprintf('%d',etc_render_fsbrain.aux2_point_size));
             v1=etc_render_fsbrain.show_all_contacts_mri_flag;
             v2=etc_render_fsbrain.show_all_contacts_brain_surface_flag;
-            set(findobj(etc_render_fsbrain.fig_gui,'Tag','checkbox_electrode_contacts'),'value',v1|v2);
+            %set(findobj(etc_render_fsbrain.fig_gui,'Tag','checkbox_electrode_contacts'),'value',v1|v2);
             
             set(findobj(etc_render_fsbrain.fig_gui,'Tag','checkbox_selected_contact'),'value',etc_render_fsbrain.selected_contact_flag);
             set(findobj(etc_render_fsbrain.fig_gui,'Tag','pushbutton_selected_contact_color'),'BackgroundColor',etc_render_fsbrain.selected_contact_color);
@@ -2204,7 +2207,7 @@ etc_render_fsbrain.show_all_contacts_mri_flag=get(hObject,'Value');
 
 v1=get(findobj(etc_render_fsbrain.fig_electrode_gui,'Tag','checkbox_mri_view'),'Value');
 v2=get(findobj(etc_render_fsbrain.fig_electrode_gui,'Tag','checkbox_brain_surface'),'Value');
-set(findobj('Tag','checkbox_electrode_contacts'),'Value',v1|v2);
+%set(findobj('Tag','checkbox_electrode_contacts'),'Value',v1|v2);
 
 if(isfield(etc_render_fsbrain,'click_coord'))
     if(~isempty(etc_render_fsbrain.click_coord))
@@ -2526,7 +2529,7 @@ etc_render_fsbrain.show_all_contacts_brain_surface_flag=get(hObject,'Value');
 
 v1=get(findobj(etc_render_fsbrain.fig_electrode_gui,'Tag','checkbox_mri_view'),'Value');
 v2=get(findobj(etc_render_fsbrain.fig_electrode_gui,'Tag','checkbox_brain_surface'),'Value');
-set(findobj('Tag','checkbox_electrode_contacts'),'Value',v1|v2);
+%set(findobj('Tag','checkbox_electrode_contacts'),'Value',v1|v2);
 
 if(isfield(etc_render_fsbrain,'click_coord'))
     if(~isempty(etc_render_fsbrain.click_coord))
