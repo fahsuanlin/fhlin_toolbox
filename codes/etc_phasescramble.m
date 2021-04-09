@@ -49,7 +49,7 @@ for idx=1:size(x,2)
     fx=fft(x(:,idx));
     fscrambled=fx;
     
-    if(mod(length(x),2)==1)
+    if(mod(size(x,1),2)==1)
         %a=angle(fscrambled(2:(size(x,1)+1)/2));
         a=rand(size(fscrambled(2:(size(x,1)+1)/2))).*2.*pi;
         %tmp=randperm(length(a));
