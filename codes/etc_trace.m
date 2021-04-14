@@ -7,7 +7,7 @@ etc_trace_obj=[];
 fs=1; %sampling rate; Hz
 
 ylim=[-50 50];
-duration=5; %second
+duration=10; %second
 all_duration=[0.1 0.5 1 2 5 10 30]; %seconds
 
 time_begin=0; %second;
@@ -310,7 +310,10 @@ etc_trace_handle('redraw');
 drawnow;
 
 etc_trace_obj.fig_control=etc_trace_control_gui;
-
+set(etc_trace_obj.fig_trace,'units','normalized','outerposition',[0.1 0.5 0.8 0.5]);
+drawnow;
+set(etc_trace_obj.fig_trace,'units','pixel');
+set(etc_trace_obj.fig_control,'units','pixel');
 pp0=get(etc_trace_obj.fig_control,'outerpos');
 pp1=get(etc_trace_obj.fig_trace,'outerpos');
 set(etc_trace_obj.fig_control,'outerpos',[pp1(1)+(pp1(3))/2-pp0(3)/2, pp1(2)-pp0(4),pp0(3), pp0(4)]);

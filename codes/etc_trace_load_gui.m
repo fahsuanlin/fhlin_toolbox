@@ -211,6 +211,9 @@ if(etc_trace_obj.time_duration_idx<2)
     else
         fprintf('the duration [%1.1f] (s) has less than 2 data samples!\nerror!\n',str{idx});
     end;
+else
+    set(obj,'Value',6); %10-s
+    etc_trace_obj.time_duration_idx=round(etc_trace_obj.fs*str2double(str{6}));
 end;
 
 %check loaded data entries...
@@ -311,7 +314,7 @@ if(indx)
                 end;
                 evalin('base',sprintf('etc_trace_obj.all_data{1}=%s; ',var));
                 %evalin('base',sprintf('etc_trace_obj.all_data_name{1}=%s; ',name));
-                etc_trace_obj.all_data_color(1,:)=cc(mod(length(etc_trace_obj.all_data)-1,7)+1,:)
+                etc_trace_obj.all_data_color(1,:)=cc(mod(length(etc_trace_obj.all_data)-1,7)+1,:);
                 etc_trace_obj.all_data_name{1}=name;
                 etc_trace_obj.all_data_main_idx=1;
                 etc_trace_obj.all_data_aux_idx=[0];
