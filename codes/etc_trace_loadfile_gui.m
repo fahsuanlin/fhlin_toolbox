@@ -76,6 +76,7 @@ set(handles.edit_loadfile_trim,'String','');
 set(handles.checkbox_loadfile_hp,'Value',0);
 set(handles.checkbox_loadfil_reference,'Value',0);
 
+set(handles.figure_loadfile_gui,'units','pixel');
 
 pos0=get(etc_trace_obj.fig_trace,'outerpos');
 pos1=get(handles.figure_loadfile_gui,'outerpos');
