@@ -166,6 +166,9 @@ switch lower(param)
 
                 set(etc_trace_obj.fig_trigger,'Name','trigger','resize','off');
 
+                set(etc_trace_obj.fig_trigger,'units','pixel');
+                set(etc_trace_obj.fig_trace,'units','pixel');
+
                 pp0=get(etc_trace_obj.fig_trigger,'outerpos');
                 pp1=get(etc_trace_obj.fig_trace,'outerpos');
                 set(etc_trace_obj.fig_trigger,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
@@ -177,7 +180,10 @@ switch lower(param)
                     etc_trace_obj.fig_config=[];
                 end;
                 etc_trace_obj.fig_config=etc_trace_config_gui;
-                
+
+                set(etc_trace_obj.fig_config,'units','pixel');
+                set(etc_trace_obj.fig_trace,'units','pixel');
+
                 pp0=get(etc_trace_obj.fig_config,'outerpos');
                 pp1=get(etc_trace_obj.fig_trace,'outerpos');
                 set(etc_trace_obj.fig_config,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
@@ -196,6 +202,9 @@ switch lower(param)
                     etc_trace_obj.fig_control=[];
                     etc_trace_obj.fig_control=etc_trace_control_gui;
                 end;
+                
+                set(etc_trace_obj.fig_control,'units','pixel');
+                set(etc_trace_obj.fig_trace,'units','pixel');
                 
                 pp0=get(etc_trace_obj.fig_control,'outerpos');
                 pp1=get(etc_trace_obj.fig_trace,'outerpos');
@@ -329,6 +338,10 @@ switch lower(param)
                 set(etc_trace_obj.fig_montage,'Name','montages');
                 set(etc_trace_obj.fig_montage,'Resize','off');
                 set(etc_trace_obj.fig_montage, 'Visible','on');
+                
+                set(etc_trace_obj.fig_montage,'units','pixel');
+                set(etc_trace_obj.fig_trace,'units','pixel');
+
                 pp0=get(etc_trace_obj.fig_montage,'outerpos');
                 pp1=get(etc_trace_obj.fig_trace,'outerpos');
                 set(etc_trace_obj.fig_montage,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
@@ -862,6 +875,20 @@ if(etc_trace_obj.config_trace_flag)
             hh=[];
             hh=plot(etc_trace_obj.axis_trace, tmp,'color',etc_trace_obj.config_trace_color);
             set(hh,'linewidth',etc_trace_obj.config_trace_width);
+            
+            %temporal grid line; 1-s per vertical line;
+            ylim=get(etc_trace_obj.axis_trace,'ylim');
+            
+            %obj=findobj('Tag','listbox_time_duration');
+            %str=get(obj,'String');
+            %idx=get(obj,'Value');
+            %etc_trace_obj.time_duration_idx=round(etc_trace_obj.fs*str2double(str{idx}));
+
+            for grid_idx=2:floor(etc_trace_obj.time_duration_idx/etc_trace_obj.fs)
+                grid_hh=line([(grid_idx-1)*etc_trace_obj.fs,(grid_idx-1)*etc_trace_obj.fs], ylim);
+                set(grid_hh,'color',[1 1 1].*0.8);
+            end;
+            
             %assign a tag for each trace
             etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names={};
             for idx=1:length(hh)

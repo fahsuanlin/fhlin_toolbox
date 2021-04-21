@@ -115,6 +115,8 @@ etc_trace_obj.load.montage=[];
 etc_trace_obj.load.select=[];
 etc_trace_obj.load.scale=[];
 
+set(handles.figure_load_gui,'units','pixel');
+set(etc_trace_obj.fig_trace,'units','pixel');
 pos0=get(etc_trace_obj.fig_trace,'outerpos');
 pos1=get(handles.figure_load_gui,'outerpos');
 set(handles.figure_load_gui,'outerpos',[pos0(1)+pos0(3) pos0(2)+pos0(4)-pos1(4) pos1(3) pos1(4)]);

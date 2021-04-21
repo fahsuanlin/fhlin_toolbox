@@ -1316,6 +1316,7 @@ end;
 etc_trace_obj.fig_trigger=etc_trace_trigger_gui;
 
 set(etc_trace_obj.fig_trigger,'Name','trigger','resize','off');
+set(etc_trace_obj.fig_trigger,'units','pixel');
 
 pp0=get(etc_trace_obj.fig_trigger,'outerpos');
 pp1=get(etc_trace_obj.fig_trace,'outerpos');
@@ -1411,6 +1412,8 @@ if(~isvalid(etc_trace_obj.fig_info))
 
     set(etc_trace_obj.fig_info,'Name','info','resize','off');
     
+    set(etc_trace_obj.fig_info,'units','pixel');
+    set(etc_trace_obj.fig_trace,'units','pixel');
     pp0=get(etc_trace_obj.fig_info,'outerpos');
     pp1=get(etc_trace_obj.fig_trace,'outerpos');
     set(etc_trace_obj.fig_info,'outerpos',[pp1(1)+pp1(3), pp1(2)+pp1(4)-pp0(4),pp0(3), pp0(4)]);

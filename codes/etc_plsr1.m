@@ -37,6 +37,8 @@ Y_pred=[];
 flag_norm_x=1; %normalize x to be z-scores
 flag_norm_y=1; %normalize y to be z-scores
 
+flag_sparse=0;
+
 flag_display=0;
 
 n_comp=[];
@@ -55,6 +57,8 @@ for i=1:length(varargin)/2
             X_pred=option_value;
         case 'flag_display'
             flag_display=option_value;
+        case 'flag_sparse'
+            flag_sparse=option_value;
         otherwise
             fprintf('unknown option [%s]!error!\n',option);
             return;
@@ -141,8 +145,25 @@ V = zeros(size(xx,2),n_comp);
 
 for idx=1:n_comp
     
-    
-    [ri,si,ci] = svd(Cov,'econ'); ri = ri(:,1); ci = ci(:,1); si = si(1);
+    if(~flag_sparse)
+        [ri,si,ci] = svd(Cov,'econ'); 
+    else
+        [SL SD L D PATHS] = spca(Cov, [], n_comp-idx+1, inf, -ones(n_comp-idx+1,1).*round(size(xx,2).0.9));
+        
+        for s_idx=1:size(SL,2)
+            su_tmp=inv(SL(:,s_idx)'*SL(:,s_idx))*SL(:,s_idx)'*X';
+            SU(:,s_idx)=su_tmp(:)./norm(su_tmp(:));
+            SDd(s_idx,s_idx)=norm(su_tmp(:));
+            
+            %u_tmp=inv(L(:,s_idx)'*L(:,s_idx))*L(:,s_idx)'*X';
+            %U(:,s_idx)=u_tmp(:)./norm(u_tmp(:));
+            %Dd(s_idx,s_idx)=norm(u_tmp(:));
+        end;
+        ri=SU;
+        si=SDd;
+        ci=SL;
+    end;
+    ri = ri(:,1); ci = ci(:,1); si = si(1);
     ti = xx*ri;
     normti = norm(ti); ti = ti ./ normti; % ti'*ti == 1
     Xloadings(:,idx) = xx'*ti;

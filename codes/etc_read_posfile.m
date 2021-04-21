@@ -37,7 +37,7 @@ tmp=tline{count};
 count=count+1;
 
 while ischar(tmp)
-    %disp(tmp);
+    try
     flag_ok=0;
     
     if(~flag_ok)
@@ -89,6 +89,11 @@ while ischar(tmp)
     tmp = fgetl(fid);
     tline{count} = tmp;
     count=count+1;
+    
+    catch
+        tmp
+        keyboard;
+    end;
     
 end
 fclose(fid);
