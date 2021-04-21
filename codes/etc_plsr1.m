@@ -203,7 +203,7 @@ P=Xloadings;
 Bpls = Weights*Yloadings';
 Bpls = [meanY - meanX*Bpls; Bpls];
 
-res=y-[ones(size(x,1),1) x]*Bpls
+res=y-[ones(size(x,1),1) x]*Bpls;
 
 %making prediction
 if(~isempty(X_pred))
