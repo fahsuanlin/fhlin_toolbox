@@ -151,7 +151,7 @@ for idx=1:n_comp
         [SL SD L D PATHS] = spca(Cov, [], n_comp-idx+1, inf, -ones(n_comp-idx+1,1).*round(size(xx,2).*0.9));
         
         for s_idx=1:size(SL,2)
-            su_tmp=inv(SL(:,s_idx)'*SL(:,s_idx))*SL(:,s_idx)'*X';
+            su_tmp=inv(SL(:,s_idx)'*SL(:,s_idx))*SL(:,s_idx)'*Cov';
             SU(:,s_idx)=su_tmp(:)./norm(su_tmp(:));
             SDd(s_idx,s_idx)=norm(su_tmp(:));
             
