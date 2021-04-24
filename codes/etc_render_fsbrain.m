@@ -107,11 +107,12 @@ selected_contact_coords_h=[];
 topo_aux2_point_name={};
 topo_aux2_point_name_h=[];
 topo_aux2_point_color=[0 1  0];
-topo_aux2_point_size=44;
+topo_aux2_point_color=[0    0.4471    0.7412];
+topo_aux2_point_size=24;
 topo_aux2_point_color_e=[0.3984    0.5977         0];
-topo_aux2_point_size_e=44;
+topo_aux2_point_size_e=24;
 topo_aux2_point_color_c=[0.3984    0.5977         0];
-topo_aux2_point_size_c=44;
+topo_aux2_point_size_c=24;
 
 selected_electrode_size=44;
 selected_electrode_flag=1;
