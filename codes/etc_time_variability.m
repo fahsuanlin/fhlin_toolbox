@@ -73,7 +73,7 @@ for bstp_idx=1:n_bstp
     end;
     D=cat(1,D,dd);
     
-    cc=etc_corrcoef(tmp',D);
+    cc=etc_corrcoef(tmp,D);
         
     [corr_value(bstp_idx),var_index_bstp(bstp_idx)]=max(cc);
         
