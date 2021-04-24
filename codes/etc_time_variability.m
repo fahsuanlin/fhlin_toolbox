@@ -1,6 +1,7 @@
 function [var_index, var_index_bstp]=etc_time_variability(data,varargin)
 
 var_index=[];
+var_index_bstp=[];
 
 n_bstp=100;
 
@@ -72,11 +73,10 @@ for bstp_idx=1:n_bstp
         dd(:,ss_idx)=circshift(mean(data,1),ss(ss_idx));
     end;
     D=cat(1,D,dd);
-    
-    cc=etc_corrcoef(tmp,D);
+    cc=etc_corrcoef(mean(tmp,1)',D);
         
-    [corr_value(bstp_idx),var_index_bstp(bstp_idx)]=max(cc);
-        
+    [corr_value(bstp_idx),ii]=max(cc);
+    var_index_bstp(bstp_idx)=ss(ii);    
 %     %tmp=tmp-mean(tmp(:));
 %     %tmp=bsxfun(@minus,tmp,mean(tmp,2));
 %     avg=repmat(mean(tmp,1),[size(tmp,1) 1]);
@@ -86,3 +86,4 @@ for bstp_idx=1:n_bstp
 %     var_index_bstp(bstp_idx)=sum(res(:).^2)./sum(tmp(:).^2);
 
 end;
+var_index=std(var_index_bstp);
