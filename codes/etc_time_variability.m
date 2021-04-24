@@ -1,7 +1,10 @@
 function [var_index, var_index_bstp]=etc_time_variability(data,varargin)
 
 var_index=[];
+
 n_bstp=100;
+
+corr_time_sample=[-50 50];
 
 flag_display=1;
 
@@ -14,6 +17,8 @@ for i=1:length(varargin)/2
     switch lower(option)
         case 'n_bstp'
             n_bstp=option_value;
+        case 'corr_time_sample'
+            corr_time_sample=option_value;
         case 'flag_display'
             flag_display=option_value;
         case 'flag_normalize'
@@ -62,7 +67,6 @@ for bstp_idx=1:n_bstp
     
     
     D=[];
-    corr_time=[-50 50];
     ss=[min(corr_time_sample):max(corr_time_sample)];
     for ss_idx=1:length(ss)
         dd(:,ss_idx)=circshift(mean(data,1),ss(ss_idx));
