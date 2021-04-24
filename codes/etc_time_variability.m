@@ -58,7 +58,7 @@ end;
 %bootstrap
 [d0,bstp_sample]=bootstrp(n_bstp,@mean,ones(n_trial,1));
 for bstp_idx=1:n_bstp
-    tmp=data(bstp_sample(:,bstp_idx),:);
+    tmp=data(bstp_sample(:,bstp_idx),:); 
     %    [u,s,v]=svd(tmp,'econ');
     %    s=diag(s).^2;
     %    var_index_bstp(bstp_idx)=s(1)./sum(s(:));
