@@ -1,4 +1,4 @@
-function [var_index, var_index_bstp]=etc_time_variability(data,varargin)
+function [var_index, var_index_bstp,buffer_cc]=etc_time_variability(data,varargin)
 
 var_index=[];
 var_index_bstp=[];
@@ -67,12 +67,10 @@ for bstp_idx=1:n_bstp
     %    s=diag(s).^2;
     %    var_index_bstp(bstp_idx)=s(1)./sum(s(:));
     
-<<<<<<< HEAD
     
     buffer(bstp_idx,:)=mean(tmp,1);
-=======
+
     tmp=tmp(1:round(size(tmp,1).*bstp_ratio),:);
->>>>>>> 8b1a58c1250fc23286674122c3857f50838389fb
     
     
     D=[];

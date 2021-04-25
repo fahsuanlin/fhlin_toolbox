@@ -2694,7 +2694,9 @@ global etc_render_fsbrain;
 if(~isvalid(etc_render_fsbrain.fig_brain))
     etc_render_fsbrain.fig_brain=figure;
 else
-    figure(etc_render_fsbrain.fig_brain);
+    if(get(etc_render_fsbrain.fig_brain,'visible')=='on')
+        figure(etc_render_fsbrain.fig_brain);
+    end;
 end;
 hold on;
 
@@ -2705,8 +2707,10 @@ end;
 if(~isvalid(etc_render_fsbrain.brain_axis))
     etc_render_fsbrain.brain_axis=gca;
 else
-    axes(etc_render_fsbrain.brain_axis);
-
+    if(get(etc_render_fsbrain.fig_brain,'visible')=='on')
+        axes(etc_render_fsbrain.brain_axis);
+    end;
+    
     xlim=get(gca,'xlim');
     ylim=get(gca,'ylim');   
     zlim=get(gca,'zlim');

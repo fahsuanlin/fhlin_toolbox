@@ -12,6 +12,8 @@ function h=etc_render_fsbrain(varargin)
 
 h=[];
 
+flag_display=0;
+
 %fundamental anatomy geometry
 subjects_dir=getenv('SUBJECTS_DIR');
 subject='fsaverage';
@@ -168,6 +170,8 @@ for idx=1:length(varargin)/2
     option=varargin{idx*2-1};
     option_value=varargin{idx*2};
     switch lower(option)
+        case 'flag_display'
+            flag_display=option_value;
         case 'subject'
             subject=option_value;
         case 'subjects_dir'
@@ -425,7 +429,7 @@ end;
 
 if(~iscell(hemi))
     file_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi,surf);
-    fprintf('reading [%s]...\n',file_surf);
+    if(flag_display) fprintf('reading [%s]...\n',file_surf); end;
 
     [vertex_coords, faces] = read_surf(file_surf);
     
@@ -433,7 +437,7 @@ if(~iscell(hemi))
     faces_hemi=faces;
 
     file_orig_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi,'orig');
-    fprintf('reading orig [%s]...\n',file_orig_surf);
+    if(flag_display) fprintf('reading orig [%s]...\n',file_orig_surf); end;
 
     [orig_vertex_coords, orig_faces] = read_surf(file_orig_surf);
     
@@ -463,7 +467,7 @@ else
     orig_vertex_coords=[]; orig_faces=[]; orig_ovelay_vertex_tmp=[];
     for h_idx=1:length(hemi)
         file_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi{h_idx},surf);
-        fprintf('rendering [%s]...\n',file_surf);
+        if(flag_display) fprintf('rendering [%s]...\n',file_surf); end;
         
         [vv, ff] = read_surf(file_surf);
         vertex_coords_hemi{h_idx}=vv;
@@ -481,7 +485,7 @@ else
 
         
         file_orig_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi{h_idx},'orig');
-        fprintf('reading [%s]...\n',file_orig_surf);
+        if(flag_display) fprintf('reading [%s]...\n',file_orig_surf); end;
         
         [vv, ff] = read_surf(file_orig_surf);
         orig_vertex_coords_hemi{h_idx}=vv;
@@ -508,7 +512,7 @@ end;
 if(~isempty(vol))
     if(isempty(talxfm))
         file_talxfm=sprintf('%s/%s/mri/transforms/talairach.xfm',subjects_dir,subject);
-        fprintf('reading Talairach (MNI305) transformation matrix [%s]...\n',file_talxfm);
+        if(flag_display) fprintf('reading Talairach (MNI305) transformation matrix [%s]...\n',file_talxfm); end;
         if(exist(file_talxfm, 'file') == 2)
             fid = fopen(file_talxfm,'r');
             gotit = 0;
@@ -525,20 +529,20 @@ if(~isempty(vol))
                 talxfm = fscanf(fid,'%f',[4,3])';
                 talxfm(4,:) = [0 0 0 1];
                 fclose(fid);
-                fprintf('Talairach transformation matrix loaded.\n');
+                if(flag_display) fprintf('Talairach transformation matrix loaded.\n'); end;
             else
                 talxfm=[];
                 fclose(fid);
-                fprintf('failed to find ''Linear_Transform'' string in first 20 lines of xfm file.\n');
+                if(flag_display) fprintf('failed to find ''Linear_Transform'' string in first 20 lines of xfm file.\n'); end;
             end
         else
-            fprintf('no Talairach transformation!\n');
+            if(flag_display) fprintf('no Talairach transformation!\n'); end;
             talxfm=[];
             talxfm=eye(4).*nan;
         end;
         
     else
-        fprintf('Talairach trasformation already...\n');
+        if(flag_display) fprintf('Talairach trasformation already...\n'); end;
     end;
     
     %voxel coordinates
