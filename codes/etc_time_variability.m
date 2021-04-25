@@ -65,6 +65,7 @@ for bstp_idx=1:n_bstp
     %    var_index_bstp(bstp_idx)=s(1)./sum(s(:));
     
     
+    buffer(bstp_idx,:)=mean(tmp,1);
     
     
     D=[];
@@ -75,6 +76,8 @@ for bstp_idx=1:n_bstp
     D=cat(1,D,dd);
     cc=etc_corrcoef(mean(tmp,1)',D);
         
+    buffer_cc(bstp_idx,:)=cc;
+    
     [corr_value(bstp_idx),ii]=max(cc);
     var_index_bstp(bstp_idx)=ss(ii);    
 %     %tmp=tmp-mean(tmp(:));
