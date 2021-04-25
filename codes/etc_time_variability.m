@@ -4,6 +4,7 @@ var_index=[];
 var_index_bstp=[];
 
 n_bstp=100;
+bstp_ratio=1.0;
 
 corr_time_sample=[-50 50];
 
@@ -18,7 +19,9 @@ for i=1:length(varargin)/2
     switch lower(option)
         case 'n_bstp'
             n_bstp=option_value;
-        case 'corr_time_sample'
+        case 'bstp_ratio'
+	    bstp_ratio=option_value;
+	case 'corr_time_sample'
             corr_time_sample=option_value;
         case 'flag_display'
             flag_display=option_value;
@@ -64,7 +67,7 @@ for bstp_idx=1:n_bstp
     %    s=diag(s).^2;
     %    var_index_bstp(bstp_idx)=s(1)./sum(s(:));
     
-    
+    tmp=tmp(1:round(size(tmp,1).*bstp_ratio),:);
     
     
     D=[];
