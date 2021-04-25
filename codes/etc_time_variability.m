@@ -4,7 +4,7 @@ var_index=[];
 var_index_bstp=[];
 
 n_bstp=100;
-bstp_ratio=1.0;
+bstp_ratio=0.5;
 
 corr_time_sample=[-50 50];
 
@@ -70,16 +70,18 @@ for bstp_idx=1:n_bstp
     
     buffer(bstp_idx,:)=mean(tmp,1);
 
-    tmp=tmp(1:round(size(tmp,1).*bstp_ratio),:);
+    training_tmp=tmp(1:round(size(tmp,1).*bstp_ratio),:);
     
+    template_tmp=tmp(round(size(tmp,1).*bstp_ratio)+1:end,:);
     
     D=[];
     ss=[min(corr_time_sample):max(corr_time_sample)];
     for ss_idx=1:length(ss)
-        dd(:,ss_idx)=circshift(mean(data,1),ss(ss_idx));
+        %dd(:,ss_idx)=circshift(mean(data,1),ss(ss_idx));
+        dd(:,ss_idx)=circshift(mean(template_tmp,1),ss(ss_idx));
     end;
     D=cat(1,D,dd);
-    cc=etc_corrcoef(mean(tmp,1)',D);
+    cc=etc_corrcoef(mean(training_tmp,1)',D);
         
     buffer_cc(bstp_idx,:)=cc;
     
