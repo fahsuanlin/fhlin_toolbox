@@ -26,7 +26,7 @@ for i=1:length(varargin)/2
         case 'corr_time_sample'
             corr_time_sample=option_value;
         case 'flag_single_trial'
-            flag_single_trial=option_value
+            flag_single_trial=option_value;
         case 'flag_display'
             flag_display=option_value;
         case 'flag_normalize'
