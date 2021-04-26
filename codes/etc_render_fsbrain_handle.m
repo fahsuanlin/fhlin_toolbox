@@ -3075,7 +3075,7 @@ try
                 end;
                 if(~isempty(neg_idx))
                     neg_idx=find(vs(:)<-10.*eps);
-                    vs(neg_idx)=fmri_scale(vs(neg_idx),0,mn);
+                    vs(neg_idx)=fmri_scale(vs(neg_idx),0,-mn);
                 end;
                 Vs{hemi_idx}=vs;
                 X_hemi_subcort=vs(etc_render_fsbrain.vol_A(hemi_idx).src_wb_idx);

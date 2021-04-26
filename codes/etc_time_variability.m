@@ -8,6 +8,8 @@ bstp_ratio=0.5;
 
 corr_time_sample=[-50 50];
 
+flag_single_trial=0;
+
 flag_display=1;
 
 flag_normalize=1;
@@ -20,9 +22,11 @@ for i=1:length(varargin)/2
         case 'n_bstp'
             n_bstp=option_value;
         case 'bstp_ratio'
-	    bstp_ratio=option_value;
-	case 'corr_time_sample'
+            bstp_ratio=option_value;
+        case 'corr_time_sample'
             corr_time_sample=option_value;
+        case 'flag_single_trial'
+            flag_single_trial=option_value
         case 'flag_display'
             flag_display=option_value;
         case 'flag_normalize'
@@ -70,9 +74,17 @@ for bstp_idx=1:n_bstp
     
     buffer(bstp_idx,:)=mean(tmp,1);
 
-    training_tmp=tmp(1:round(size(tmp,1).*bstp_ratio),:);
+    if(~flag_single_trial)
+        training_tmp=tmp(1:round(size(tmp,1).*bstp_ratio),:);
+    else
+        training_tmp=tmp(1,:);
+    end;
     
-    template_tmp=tmp(round(size(tmp,1).*bstp_ratio)+1:end,:);
+    if(~flag_single_trial)
+        template_tmp=tmp(round(size(tmp,1).*bstp_ratio)+1:end,:);
+    else
+        template_tmp=tmp(end,:);
+    end;
     
     D=[];
     ss=[min(corr_time_sample):max(corr_time_sample)];
