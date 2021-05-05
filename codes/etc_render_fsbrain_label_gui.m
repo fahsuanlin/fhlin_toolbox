@@ -65,9 +65,9 @@ if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_
     fprintf('annotated label loaded...\n');
     %set(handles.listbox_label,'value',4);
     set(handles.listbox_label,'string',{etc_render_fsbrain.label_ctab.struct_names{:}});
-    set(handles.listbox_label,'value',1);
     set(handles.listbox_label,'min',0);
-    set(handles.listbox_label,'max',length(etc_render_fsbrain.label_ctab.struct_names));
+    set(handles.listbox_label,'max',max([2 length(etc_render_fsbrain.label_ctab.struct_names)]));
+    set(handles.listbox_label,'value',[]);
     guidata(hObject, handles);
 end;
 

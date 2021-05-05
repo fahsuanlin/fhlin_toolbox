@@ -573,6 +573,8 @@ switch lower(param)
                                 etc_render_fsbrain.label_ctab.numEntries=etc_render_fsbrain.label_ctab.numEntries+1;
                                 etc_render_fsbrain.label_ctab.struct_names{end+1}=filename;
                                 etc_render_fsbrain.label_ctab.table(end+1,:)=[220          60         120          0        etc_render_fsbrain.label_ctab.numEntries];
+                                
+                                etc_render_fsbrain.label_register(end+1)=0;
                             else
                                 etc_render_fsbrain.label_vertex=zeros(size(etc_render_fsbrain.vertex_coords_hemi,1),1);
                                 etc_render_fsbrain.label_vertex(ii+1)=1;
@@ -583,8 +585,9 @@ switch lower(param)
                                 s.struct_names={filename};
                                 s.table=[220          60         120          0        1];
                                 etc_render_fsbrain.label_ctab=s;
+                                
+                                etc_render_fsbrain.label_register=0;
                             end;
-                            etc_render_fsbrain.label_register=zeros(1,length(etc_render_fsbrain.label_ctab.struct_names));
                             
                             etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
                             set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
