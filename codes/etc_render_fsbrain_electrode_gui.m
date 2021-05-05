@@ -742,7 +742,23 @@ switch answer
                     %etc_render_fsbrain.electrode(e_idx).coord(c_idx,2)=etc_render_fsbrain.electrode(e_idx).spacing.*(c_idx-1).*1;
                     %etc_render_fsbrain.electrode(e_idx).coord(c_idx,3)=etc_render_fsbrain.electrode(e_idx).spacing.*(e_idx-1).*1;
                     
+                    
                     etc_render_fsbrain.aux2_point_coords(count,:)=etc_render_fsbrain.electrode(e_idx).coord(c_idx,:);
+                    if(strcmp(etc_render_fsbrain.surf,'orig')|strcmp(etc_render_fsbrain.surf,'smoothwm')|strcmp(etc_render_fsbrain.surf,'pial'))
+                    else
+                        fprintf('surface <%s> not "orig"/"smoothwm"/"pial". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+                        
+                        tmp=etc_render_fsbrain.aux2_point_coords(count,:);
+                        
+                        vv=etc_render_fsbrain.orig_vertex_coords;
+                        dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+                        [min_dist,min_dist_idx]=min(dist);
+                        if(~isnan(min_dist))
+                            etc_render_fsbrain.aux2_point_coords(count,:)=etc_render_fsbrain.vertex_coords(min_dist_idx,:);
+                        end;
+                    end;
+                    
+                    
                     etc_render_fsbrain.aux2_point_name{count}=sprintf('%s_%d',etc_render_fsbrain.electrode(e_idx).name, c_idx);;
                     count=count+1;
                 end;

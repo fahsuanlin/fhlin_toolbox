@@ -110,11 +110,11 @@ topo_aux2_point_name={};
 topo_aux2_point_name_h=[];
 topo_aux2_point_color=[0 1  0];
 topo_aux2_point_color=[0    0.4471    0.7412];
-topo_aux2_point_size=24;
+topo_aux2_point_size=44;
 topo_aux2_point_color_e=[0.3984    0.5977         0];
-topo_aux2_point_size_e=24;
+topo_aux2_point_size_e=44;
 topo_aux2_point_color_c=[0.3984    0.5977         0];
-topo_aux2_point_size_c=24;
+topo_aux2_point_size_c=44;
 
 selected_electrode_size=44;
 selected_electrode_flag=1;
@@ -165,6 +165,8 @@ click_point_color=[1 0 1];
 click_vertex_point_size=24;
 click_vertex_point_color=[0 1 1];
 
+
+flag_mirror=0;
 
 for idx=1:length(varargin)/2
     option=varargin{idx*2-1};
@@ -262,6 +264,8 @@ for idx=1:length(varargin)/2
             cluster_file=option_value;
         case 'alpha'
             alpha=option_value;
+        case 'flag_mirror'
+            flag_mirror=option_value;
         case 'lut'
             lut=option_value;
         case 'flag_redraw'
@@ -433,6 +437,10 @@ if(~iscell(hemi))
 
     [vertex_coords, faces] = read_surf(file_surf);
     
+    if(flag_mirror)
+        vertex_coords(:,1)=-vertex_coords(:,1);
+    end;
+    
     vertex_coords_hemi=vertex_coords;
     faces_hemi=faces;
 
@@ -440,6 +448,9 @@ if(~iscell(hemi))
     if(flag_display) fprintf('reading orig [%s]...\n',file_orig_surf); end;
 
     [orig_vertex_coords, orig_faces] = read_surf(file_orig_surf);
+    if(flag_mirror)
+        orig_vertex_coords(:,1)=-orig_vertex_coords(:,1);
+    end;
     
     orig_vertex_coords_hemi=orig_vertex_coords;
     orig_faces_hemi=faces;
@@ -456,10 +467,16 @@ if(~iscell(hemi))
         file_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi_str,surf);
         %fprintf('reading [%s]...\n',file_surf);
         [hemi_vertex_coords{hemi_idx}, hemi_faces{hemi_idx}] = read_surf(file_surf);
+        if(flag_mirror)
+            hemi_vertex_coords{hemi_idx}(:,1)=-hemi_vertex_coords{hemi_idx}(:,1);
+        end;
     
         file_orig_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi_str,'orig');
         %fprintf('reading orig [%s]...\n',file_orig_surf);
         [hemi_orig_vertex_coords{hemi_idx}, hemi_orig_faces{hemi_idx}] = read_surf(file_orig_surf);
+        if(flag_mirror)
+            hemi_orig_vertex_coords{hemi_idx}(:,1)=-hemi_orig_vertex_coords{hemi_idx}(:,1);
+        end;
     end;
 
 else
@@ -470,6 +487,9 @@ else
         if(flag_display) fprintf('rendering [%s]...\n',file_surf); end;
         
         [vv, ff] = read_surf(file_surf);
+        if(flag_mirror)
+            vv(:,1)=-vv(:,1);
+        end;
         vertex_coords_hemi{h_idx}=vv;
         faces_hemi{h_idx}=ff;
         
@@ -488,6 +508,9 @@ else
         if(flag_display) fprintf('reading [%s]...\n',file_orig_surf); end;
         
         [vv, ff] = read_surf(file_orig_surf);
+        if(flag_mirror)
+            vv(:,1)=-vv(:,1);
+        end;
         orig_vertex_coords_hemi{h_idx}=vv;
         orig_faces_hemi{h_idx}=ff;
         
