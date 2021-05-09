@@ -183,34 +183,41 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
     if(~isempty(select_idx))
         try
             
-            %delete highlighted label
-            if(isfield(etc_render_fsbrain,'label_h'))
-                if(~isempty(etc_render_fsbrain.label_h))
-                    delete(etc_render_fsbrain.label_h);
-                    etc_render_fsbrain.label_h=[];
-                    
-                    etc_render_fsbrain.label_idx=[];
-
-                    etc_render_fsbrain.h.FaceVertexCData=etc_render_fsbrain.fvcdata_old;
-                end;
+            for l_idx=1:length(select_idx)
+                
+                label_number=etc_render_fsbrain.label_ctab.table(select_idx(l_idx),5);
+                vidx=find((etc_render_fsbrain.label_value)==label_number);
+                
+                etc_render_fsbrain.h.FaceVertexCData(vidx,:)=etc_render_fsbrain.fvdata(vidx,:);
+                
+                %             %delete highlighted label
+                %             if(isfield(etc_render_fsbrain,'label_h'))
+                %                 if(~isempty(etc_render_fsbrain.label_h))
+                %                     delete(etc_render_fsbrain.label_h);
+                %                     etc_render_fsbrain.label_h=[];
+                %
+                %                     etc_render_fsbrain.label_idx=[];
+                %
+                %                     etc_render_fsbrain.h.FaceVertexCData=etc_render_fsbrain.fvcdata_old;
+                %                 end;
+                %             end;
+                %
+                %             label_number=etc_render_fsbrain.label_ctab.table(select_idx,5);
+                %             vidx=find(etc_render_fsbrain.label_value==label_number);
+                %             etc_render_fsbrain.label_value(vidx)=0;
+                
+                
+                etc_render_fsbrain.label_ctab.numEntries=etc_render_fsbrain.label_ctab.numEntries-1;
+                etc_render_fsbrain.label_ctab.table(select_idx(l_idx),:)=[];
+                etc_render_fsbrain.label_ctab.struct_names(select_idx(l_idx))=[];
+                
+                
+                %             if(~isempty(etc_render_fsbrain.label_h))
+                %                 delete(etc_render_fsbrain.label_h(:));
+                %                 etc_render_fsbrain.label_h=[];
+                %             end;
+                
             end;
-            
-            label_number=etc_render_fsbrain.label_ctab.table(select_idx,5);
-            vidx=find(etc_render_fsbrain.label_value==label_number);
-            etc_render_fsbrain.label_value(vidx)=0;
-            
-            
-            etc_render_fsbrain.label_ctab.numEntries=etc_render_fsbrain.label_ctab.numEntries-1;
-            etc_render_fsbrain.label_ctab.table(select_idx,:)=[];
-            etc_render_fsbrain.label_ctab.struct_names(select_idx)=[];
-            
-            
-            if(~isempty(etc_render_fsbrain.label_h))
-                delete(etc_render_fsbrain.label_h(:));
-                etc_render_fsbrain.label_h=[];
-            end;
-            
-            
             set(handles.listbox_label,'string',{etc_render_fsbrain.label_ctab.struct_names{:}});
             if(etc_render_fsbrain.label_ctab.numEntries>0)
                 if(select_idx>1)

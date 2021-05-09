@@ -2697,7 +2697,7 @@ global etc_render_fsbrain;
 if(~isvalid(etc_render_fsbrain.fig_brain))
     etc_render_fsbrain.fig_brain=figure;
 else
-    if(get(etc_render_fsbrain.fig_brain,'visible')=='on')
+    if(strcmp(get(etc_render_fsbrain.fig_brain,'visible'),'on'))
         figure(etc_render_fsbrain.fig_brain);
     end;
 end;
