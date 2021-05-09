@@ -2710,7 +2710,7 @@ end;
 if(~isvalid(etc_render_fsbrain.brain_axis))
     etc_render_fsbrain.brain_axis=gca;
 else
-    if(get(etc_render_fsbrain.fig_brain,'visible')=='on')
+    if(strcmp(get(etc_render_fsbrain.fig_brain,'visible'),'on'))
         axes(etc_render_fsbrain.brain_axis);
     end;
     
