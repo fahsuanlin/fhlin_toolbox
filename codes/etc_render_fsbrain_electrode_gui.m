@@ -2191,8 +2191,12 @@ if(filename~=0)
             
             try
                 %    v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
-                v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
-                click_vertex_vox=round(v(1:3))';
+                if(~isempty(etc_render_fsbrain.vol))
+                    v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
+                    click_vertex_vox=round(v(1:3))';
+                else
+                    click_vertex_vox=[];
+                end;
             catch ME
             end;
 

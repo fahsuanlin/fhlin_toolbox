@@ -56,10 +56,11 @@ switch lower(param)
                 fprintf('b: open sensor location GUI\n');
                 fprintf('v: open trace viewer GUI\n');
                 fprintf('f: load overlay (w/stc) file\n');
-                fprintf('l: open label GUI\n');
+                fprintf('l: open label/annotation GUI\n');
                 fprintf('w: open coordinates GUI\n');
                 fprintf('s: smooth overlay \n');
-                fprintf('o: create ROI\n');
+                fprintf('o: create an ROI\n');
+                fprintf('m: create an ROI at the selected location with a radius\n');
                 fprintf('d: interactive threshold change\n');
                 fprintf('c: switch on/off the colorbar\n');
                 fprintf('u: show cluster labels from files\n');
@@ -2247,7 +2248,7 @@ try
                 delete(etc_render_fsbrain.h_orthogonal_slice_sag);
             end;
             %etc_render_fsbrain.h_orthogonal_slice_sag=surface(squeeze(X),squeeze(Y),squeeze(Z), ind2rgb(im2uint8(permute(slicex,[2 1])./256),gray(256)),'FaceColor','texturemap', 'EdgeColor','none', 'CDataMapping','direct','FaceAlpha',1);
-            etc_render_fsbrain.h_orthogonal_slice_cor=surface(squeeze(X),squeeze(Y),squeeze(Z), permute(reshape(overlay_vol_img_c,[size(slicex,1),size(slicex,2),3]),[2 1 3]),'FaceColor','texturemap', 'EdgeColor','none', 'CDataMapping','direct','FaceAlpha',1);
+            etc_render_fsbrain.h_orthogonal_slice_sag=surface(squeeze(X),squeeze(Y),squeeze(Z), permute(reshape(overlay_vol_img_c,[size(slicex,1),size(slicex,2),3]),[2 1 3]),'FaceColor','texturemap', 'EdgeColor','none', 'CDataMapping','direct','FaceAlpha',1);
         else
             if(isfield(etc_render_fsbrain,'h_orthogonal_slice_sag'))
                 delete(etc_render_fsbrain.h_orthogonal_slice_sag);
@@ -2298,7 +2299,7 @@ try
                 delete(etc_render_fsbrain.h_orthogonal_slice_ax);
             end;
             %etc_render_fsbrain.h_orthogonal_slice_ax=surface(squeeze(X),squeeze(Y),squeeze(Z), ind2rgb(im2uint8(permute(slicex,[1 2])./256),gray(256)),'FaceColor','texturemap', 'EdgeColor','none', 'CDataMapping','direct','FaceAlpha',1);
-            etc_render_fsbrain.h_orthogonal_slice_cor=surface(squeeze(X),squeeze(Y),squeeze(Z), permute(reshape(overlay_vol_img_c,[size(slicex,1),size(slicex,2),3]),[1 2 3]),'FaceColor','texturemap', 'EdgeColor','none', 'CDataMapping','direct','FaceAlpha',1);
+            etc_render_fsbrain.h_orthogonal_slice_ax=surface(squeeze(X),squeeze(Y),squeeze(Z), permute(reshape(overlay_vol_img_c,[size(slicex,1),size(slicex,2),3]),[1 2 3]),'FaceColor','texturemap', 'EdgeColor','none', 'CDataMapping','direct','FaceAlpha',1);
         else
             if(isfield(etc_render_fsbrain,'h_orthogonal_slice_ax'))
                 delete(etc_render_fsbrain.h_orthogonal_slice_ax);
@@ -2661,11 +2662,7 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
                     set(etc_render_fsbrain.handle_fig_stc_aux_roi_timecourse(ii),'linewidth',1,'color',cc(rem(ii,8),:),'linestyle','--');
                 end;
             end;
-            
-                
-            
             hold off;
-            
         end;
         if(~isempty(etc_render_fsbrain.overlay_stc_lim))
             set(gca,'ylim',etc_render_fsbrain.overlay_stc_lim);
@@ -2684,7 +2681,8 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
         
         h=xlabel(sprintf('time [%s]',etc_render_fsbrain.overlay_stc_timeVec_unit)); set(h,'fontname','helvetica','fontsize',12);
         
-        axis tight; set(gca,'fontname','helvetica','fontsize',12);
+        %axis tight; 
+        set(gca,'fontname','helvetica','fontsize',12);
         set(gcf,'color','w')
     end;
 end;
