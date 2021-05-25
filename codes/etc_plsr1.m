@@ -38,7 +38,7 @@ flag_norm_x=1; %normalize x to be z-scores
 flag_norm_y=1; %normalize y to be z-scores
 
 flag_sparse=0;
-
+flag_auto_rank=0;
 flag_display=0;
 
 n_comp=[];
@@ -55,6 +55,8 @@ for i=1:length(varargin)/2
             n_comp=option_value;
         case 'x_pred'
             X_pred=option_value;
+	case 'flag_auto_rank'
+	    flag_auto_rank=option_value;
         case 'flag_display'
             flag_display=option_value;
         case 'flag_sparse'
@@ -122,14 +124,16 @@ if(isempty(n_comp))
         fprintf('automatic [%d] components in PLSR\n ',n_comp);
     end;
 end;
-if(n_comp>rank_min)
-    if(flag_display)
-        fprintf('The specified number of component [%d] is more than the rank in the data ([%d] for x and [%d] for y).\n',n_comp,rankx,ranky);
-    end;
-    n_comp=rank_min;
-    if(flag_display)
-        fprintf('automatic [%d] components in PLSR\n ',n_comp);
-    end;
+if(flag_auto_rank)
+	if(n_comp>rank_min)
+    		if(flag_display)
+        		fprintf('The specified number of component [%d] is more than the rank in the data ([%d] for x and [%d] for y).\n',n_comp,rankx,ranky);
+    		end;
+    		n_comp=rank_min;
+   		 if(flag_display)
+        		fprintf('automatic [%d] components in PLSR\n ',n_comp);
+    		end;
+	end;
 end;
 
 if(flag_display)
@@ -219,7 +223,6 @@ for idx=1:n_comp
 %     B(idx,idx)=t1'*u1;  
 end;
 P=Xloadings;
-
 
 Bpls = Weights*Yloadings';
 Bpls = [meanY - meanX*Bpls; Bpls];
