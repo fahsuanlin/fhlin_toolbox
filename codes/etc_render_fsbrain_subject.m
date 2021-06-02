@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_subject(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_subject
 
-% Last Modified by GUIDE v2.5 21-Mar-2020 17:29:08
+% Last Modified by GUIDE v2.5 17-May-2021 12:15:25
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -69,6 +69,12 @@ elseif(~isempty(getenv('SUBJECTS_DIR')))
     etc_render_fsbrain.subjects_dir=getenv('SUBJECTS_DIR');
 end;
 
+set(handles.listbox_hemi,'string',{'LH','RH'});
+if(strcmp(etc_render_fsbrain.hemi,'lh'))
+    set(handles.listbox_hemi,'value',1);
+else
+    set(handles.listbox_hemi,'value',2);
+end;
 
 d=dir(sprintf('%s',getenv('SUBJECTS_DIR')));
 str={};
@@ -280,6 +286,12 @@ try
     contents = cellstr(get(hObject,'String'));
     [dummy,hemi,surf]=fileparts(contents{get(hObject,'Value')});
     etc_render_fsbrain.hemi=hemi;
+    switch(lower(hemi))
+        case 'lh'
+            set(handles.listbox_hemi,'value',1);
+        case 'rh'
+            set(handles.listbox_hemi,'value',2);
+    end;
     etc_render_fsbrain.surf=surf(2:end);
     
     etc_render_fsbrain.subjects_dir=getenv('SUBJECTS_DIR');
@@ -549,6 +561,171 @@ end;
 % --- Executes during object creation, after setting all properties.
 function listbox_vol_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to listbox_vol (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in listbox_hemi.
+function listbox_hemi_Callback(hObject, eventdata, handles)
+% hObject    handle to listbox_hemi (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns listbox_hemi contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from listbox_hemi
+global etc_render_fsbrain;
+
+try
+    
+    if(strcmp(etc_render_fsbrain.hemi,'lh')&(get(hObject,'Value')==1))
+        return;
+    end;
+    if(strcmp(etc_render_fsbrain.hemi,'rh')&(get(hObject,'Value')==2))
+        return;
+    end;
+    switch(get(hObject,'Value'))
+        case 1
+            etc_render_fsbrain.hemi='lh';
+        case 2
+            etc_render_fsbrain.hemi='rh';
+    end;
+    
+    etc_render_fsbrain.subjects_dir=getenv('SUBJECTS_DIR');
+    file_surf=sprintf('%s/%s/surf/%s.%s',etc_render_fsbrain.subjects_dir,etc_render_fsbrain.subject,etc_render_fsbrain.hemi,etc_render_fsbrain.surf);
+    fprintf('reading [%s]...\n',file_surf);
+    
+    [etc_render_fsbrain.vertex_coords, etc_render_fsbrain.faces] = read_surf(file_surf);
+    
+    etc_render_fsbrain.vertex_coords_hemi=etc_render_fsbrain.vertex_coords;
+    etc_render_fsbrain.faces_hemi=etc_render_fsbrain.faces;
+    
+    file_orig_surf=sprintf('%s/%s/surf/%s.%s',etc_render_fsbrain.subjects_dir,etc_render_fsbrain.subject,etc_render_fsbrain.hemi,'orig');
+    fprintf('reading orig [%s]...\n',file_orig_surf);
+    
+    [orig_vertex_coords, orig_faces] = read_surf(file_orig_surf);
+    
+    etc_render_fsbrain.orig_vertex_coords_hemi=orig_vertex_coords;
+    etc_render_fsbrain.orig_faces_hemi=orig_faces;
+    
+    %loading vertices/faces for both hemispheres.
+    for hemi_idx=1:2
+        switch hemi_idx
+            case 1
+                hemi_str='lh';
+            case 2
+                hemi_str='rh';
+        end;
+        
+        file_surf=sprintf('%s/%s/surf/%s.%s',etc_render_fsbrain.subjects_dir,etc_render_fsbrain.subject,hemi_str,etc_render_fsbrain.surf);
+        %fprintf('reading [%s]...\n',file_surf);
+        [hemi_vertex_coords{hemi_idx}, hemi_faces{hemi_idx}] = read_surf(file_surf);
+        
+        file_orig_surf=sprintf('%s/%s/surf/%s.%s',etc_render_fsbrain.subjects_dir,etc_render_fsbrain.subject,hemi_str,'orig');
+        %fprintf('reading orig [%s]...\n',file_orig_surf);
+        [hemi_orig_vertex_coords{hemi_idx}, hemi_orig_faces{hemi_idx}] = read_surf(file_orig_surf);
+    end;
+    
+    
+    file_curv=sprintf('%s/%s/surf/%s.%s',etc_render_fsbrain.subjects_dir,etc_render_fsbrain.subject,etc_render_fsbrain.hemi,'curv');
+    [etc_render_fsbrain.curv]=read_curv(file_curv);
+    etc_render_fsbrain.curv_hemi=etc_render_fsbrain.curv;
+    
+    %etc_render_fsbrain_handle('redraw');
+    
+    
+    count=1;
+    
+    %update electrode contact coordinates
+    %etc_render_fsbrain.aux2_point_coords=[];
+    %etc_render_fsbrain.aux2_point_name={};
+    count=1;
+    for e_idx=1:length(etc_render_fsbrain.electrode)
+        for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
+            
+            etc_render_fsbrain.aux2_point_coords(count,:)=etc_render_fsbrain.electrode(e_idx).coord(c_idx,:);
+            
+            if(strcmp(etc_render_fsbrain.surf,'orig')|strcmp(etc_render_fsbrain.surf,'smoothwm')|strcmp(etc_render_fsbrain.surf,'pial'))
+                
+            else
+                fprintf('surface <%s> not "orig"/"smoothwm"/"pial". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+                
+                tmp=etc_render_fsbrain.aux2_point_coords(count,:);
+                
+                vv=etc_render_fsbrain.orig_vertex_coords;
+                dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+                [min_dist,min_dist_idx]=min(dist);
+                if(~isnan(min_dist))
+                    etc_render_fsbrain.aux2_point_coords(count,:)=etc_render_fsbrain.vertex_coords(min_dist_idx,:);
+                end;
+            end;
+            
+            etc_render_fsbrain.aux2_point_name{count}=sprintf('%s_%d',etc_render_fsbrain.electrode(e_idx).name, c_idx);;
+            count=count+1;
+        end;
+    end;
+    
+     etc_render_fsbrain_handle('redraw');
+     
+    etc_render_fsbrain.electrode_contact_coord_now=etc_render_fsbrain.aux2_point_coords(1,:);
+    
+    surface_coord=etc_render_fsbrain.aux2_point_coords(1,:);
+    try
+        %                     vv=etc_render_fsbrain.orig_vertex_coords;
+        %                     dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+        %                     [min_dist,min_dist_idx]=min(dist);
+        %                     surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+        %                     etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+        if(strcmp(etc_render_fsbrain.surf,'orig'))
+            surface_orig_coord=surface_coord;
+        else
+            %fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+            
+            tmp=surface_coord;
+            
+            vv=etc_render_fsbrain.vertex_coords;
+            dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+            [min_dist,min_dist_idx]=min(dist);
+            surface_orig_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
+        end;
+        
+        try
+            %    v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+            if(~isempty(etc_render_fsbrain.vol))
+                v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
+                click_vertex_vox=round(v(1:3))';
+            else
+                click_vertex_vox=[];
+            end;
+        catch ME
+        end;
+        
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.aux2_point_coords,'click_vertex_vox',click_vertex_vox);
+    catch ME
+    end;
+    
+    %etc_render_fsbrain_handle('draw_pointer','surface_coord',[],'min_dist_idx',[],'click_vertex_vox',[]);
+
+    xmin=min(etc_render_fsbrain.vertex_coords(:,1));
+    xmax=max(etc_render_fsbrain.vertex_coords(:,1));
+    ymin=min(etc_render_fsbrain.vertex_coords(:,2));
+    ymax=max(etc_render_fsbrain.vertex_coords(:,2));
+    zmin=min(etc_render_fsbrain.vertex_coords(:,3));
+    zmax=max(etc_render_fsbrain.vertex_coords(:,3));
+    set(etc_render_fsbrain.brain_axis,'xlim',[xmin xmax],'ylim',[ymin ymax],'zlim',[zmin zmax]);
+    axis off vis3d equal tight;
+    
+catch ME
+end;
+
+% --- Executes during object creation, after setting all properties.
+function listbox_hemi_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to listbox_hemi (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

@@ -10,8 +10,8 @@ function [W, P, T, C, U, Y_pred, B, Bpls]=etc_plsr1(x,y,varargin)
 %    Yjack is the jackknifed estimation of Y
 % T'*T=I (NB normalization <> than SAS)
 % W'*W=I
-% C is unit normalized,           
-% U, P are not normalized 
+% C is unit normalized,
+% U, P are not normalized
 %  [Notations: see Abdi (2003) & Abdi (2007)
 %               available from www.utd.edu/~herve]
 %
@@ -55,8 +55,8 @@ for i=1:length(varargin)/2
             n_comp=option_value;
         case 'x_pred'
             X_pred=option_value;
-	case 'flag_auto_rank'
-	    flag_auto_rank=option_value;
+        case 'flag_auto_rank'
+            flag_auto_rank=option_value;
         case 'flag_display'
             flag_display=option_value;
         case 'flag_sparse'
@@ -71,7 +71,7 @@ end;
 %the following are data in "Partial Least Squares (PLS) methods for
 %neuroimaging: A tutorial and review", Krishnan et al, NeuroImage (2010).
 %
-% 
+%
 % x=[ 2 5 6 1 9 1 7 6 2 1 7 3
 %     4 1 5 8 8 7 2 8 6 4 8 2
 %     5 8 7 3 7 1 7 4 5 1 4 3
@@ -81,7 +81,7 @@ end;
 %     9 0 7 1 8 7 4 2 3 6 2 7
 %     8 0 6 5 9 7 4 4 2 10 3 8
 %     7 7 4 5 7 6 7 6 5 4 8 8];
-% 
+%
 % y=[ 15 600
 %     19 520
 %     18 545
@@ -125,15 +125,15 @@ if(isempty(n_comp))
     end;
 end;
 if(flag_auto_rank)
-	if(n_comp>rank_min)
-    		if(flag_display)
-        		fprintf('The specified number of component [%d] is more than the rank in the data ([%d] for x and [%d] for y).\n',n_comp,rankx,ranky);
-    		end;
-    		n_comp=rank_min;
-   		 if(flag_display)
-        		fprintf('automatic [%d] components in PLSR\n ',n_comp);
-    		end;
-	end;
+    if(n_comp>rank_min)
+        if(flag_display)
+            fprintf('The specified number of component [%d] is more than the rank in the data ([%d] for x and [%d] for y).\n',n_comp,rankx,ranky);
+        end;
+        n_comp=rank_min;
+        if(flag_display)
+            fprintf('automatic [%d] components in PLSR\n ',n_comp);
+        end;
+    end;
 end;
 
 if(flag_display)
@@ -150,12 +150,16 @@ V = zeros(size(xx,2),n_comp);
 for idx=1:n_comp
     
     if(~flag_sparse)
-        [ri,si,ci] = svd(Cov,'econ'); 
+        [ri,si,ci] = svd(Cov,'econ');
     else
-        [SL SD L D PATHS] = spca(Cov, [], n_comp-idx+1, inf, -ones(n_comp-idx+1,1).*round(size(xx,2).*0.9));
+%        [SL SD L D PATHS] = spca(Cov, [], n_comp-idx+1, inf, -ones(n_comp-idx+1,1).*round(size(xx,2).*0.9));
+         [SL SD L D PATHS] = spca(Cov.', [], 2, inf,-round(size(Cov,1)/100));
         
         for s_idx=1:size(SL,2)
-            su_tmp=inv(SL(:,s_idx)'*SL(:,s_idx))*SL(:,s_idx)'*Cov';
+            su_tmp=inv(SL(:,s_idx)'*SL(:,s_idx))*SL(:,s_idx)'*Cov;
+
+            
+            %su_tmp=inv(SL(:,s_idx)'*SL(:,s_idx))*SL(:,s_idx)'*Cov';
             SU(:,s_idx)=su_tmp(:)./norm(su_tmp(:));
             SDd(s_idx,s_idx)=norm(su_tmp(:));
             
@@ -163,9 +167,11 @@ for idx=1:n_comp
             %U(:,s_idx)=u_tmp(:)./norm(u_tmp(:));
             %Dd(s_idx,s_idx)=norm(u_tmp(:));
         end;
-        ri=SU;
+        %ri=SU;
+        ri=SL;
         si=SDd;
-        ci=SL;
+        %ci=SL;
+        ci=SU;
     end;
     ri = ri(:,1); ci = ci(:,1); si = si(1);
     ti = xx*ri;
@@ -176,10 +182,10 @@ for idx=1:n_comp
     Yloadings(:,idx) = qi;
     
     %if nargout > 2
-        T(:,idx) = ti;
-        U(:,idx) = yy*qi; % = Y0*(Y0'*ti), and proportional to Y0*ci
+    T(:,idx) = ti;
+    U(:,idx) = yy*qi; % = Y0*(Y0'*ti), and proportional to Y0*ci
     %    if nargout > 4
-            Weights(:,idx) = ri ./ normti; % rescaled to make ri'*X0'*X0*ri == ti'*ti == 1
+    Weights(:,idx) = ri ./ normti; % rescaled to make ri'*X0'*X0*ri == ti'*ti == 1
     %    end
     %end
     
@@ -195,7 +201,7 @@ for idx=1:n_comp
     end
     vi = vi ./ norm(vi);
     V(:,idx) = vi;
-
+    
     % Deflate Cov, i.e. project onto the ortho-complement of the X loadings.
     % First remove projections along the current basis vector, then remove any
     % component along previous basis vectors that's crept in as noise from
@@ -203,24 +209,24 @@ for idx=1:n_comp
     Cov = Cov - vi*(vi'*Cov);
     Vi = V(:,1:idx);
     Cov = Cov - Vi*(Vi'*Cov);
-   
-%     r=xx'*yy;
-%     [ww,ll,cc]=svd(r,'econ');
-%     t1=xx*ww(:,1);
-%     W(:,idx)=ww(:,1);
-%     t1=t1./sqrt(sum(t1.^2));
-%     T(:,idx)=t1(:);
-%     p1=xx'*t1;
-%     P(:,idx)=p1(:);
-%     xx_pred=t1*p1';
-%     xx=xx-xx_pred;
-%     
-%     u1=yy*cc(:,1);
-%     C(:,idx)=cc(:,1);
-%     U(:,idx)=u1(:);
-%     yy_pred=t1*(t1'*u1)*cc(:,1)';
-%     yy=yy-yy_pred;
-%     B(idx,idx)=t1'*u1;  
+    
+    %     r=xx'*yy;
+    %     [ww,ll,cc]=svd(r,'econ');
+    %     t1=xx*ww(:,1);
+    %     W(:,idx)=ww(:,1);
+    %     t1=t1./sqrt(sum(t1.^2));
+    %     T(:,idx)=t1(:);
+    %     p1=xx'*t1;
+    %     P(:,idx)=p1(:);
+    %     xx_pred=t1*p1';
+    %     xx=xx-xx_pred;
+    %
+    %     u1=yy*cc(:,1);
+    %     C(:,idx)=cc(:,1);
+    %     U(:,idx)=u1(:);
+    %     yy_pred=t1*(t1'*u1)*cc(:,1)';
+    %     yy=yy-yy_pred;
+    %     B(idx,idx)=t1'*u1;
 end;
 P=Xloadings;
 
@@ -233,7 +239,7 @@ res=y-[ones(size(x,1),1) x]*Bpls;
 if(~isempty(X_pred))
     
     
-     Y_pred = [ones(size(X_pred,1),1) X_pred]*Bpls;
+    Y_pred = [ones(size(X_pred,1),1) X_pred]*Bpls;
     
     
     
