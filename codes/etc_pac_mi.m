@@ -70,5 +70,6 @@ for phase_freq_idx=1:length(freqVec)
         [pac_mi(amp_freq_idx,phase_freq_idx)]=etc_kldiv([],[],'bin_edge',phase_edges,'flag_display',0,'n_P',tmp,'n_Q',ones(size(tmp))./length(tmp),'edge_P',phase_edges,'edge_Q',phase_edges);
     end;
 end;
-
-fprintf('\n');
+if(flag_display)
+    fprintf('\n');
+end;
