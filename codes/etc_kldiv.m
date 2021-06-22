@@ -1,6 +1,6 @@
-function [dist, n_P, n_Q, edges]=etc_kldiv(P,Q,varargin)
+function [dist, n_P, n_Q, edge_P, edge_Q]=etc_kldiv(P,Q,varargin)
 % 
-% etc_kldiv calculate the distance between two distributions using
+% etc_kldiv calculates the distance between two distributions using
 % Kullback-Leiber divergence 
 %
 % dist=etc_kldiv(P,Q,[option, option_value,...])
@@ -14,7 +14,8 @@ function [dist, n_P, n_Q, edges]=etc_kldiv(P,Q,varargin)
 % dist: Kullback-Leibler divergence for the relative entropy from Q to P
 % n_P: normalized probability distribution of P
 % n_Q: normalized probability distribution of Q
-% edges: edges for the calculation noramlized probabilties using histograms
+% edge_P: edges for the calculation noramlized probabilties using histograms
+% edge_Q: edges for the calculation noramlized probabilties using histograms
 %
 % fhlin@Jun 20, 2021
 %
@@ -24,6 +25,11 @@ dist=0;
 n_bin=[];
 bin_edge=[];
 
+n_P=[];
+n_Q=[];
+edge_P=[];
+edge_Q=[];
+
 flag_display=1;
 
 for i=1:length(varargin)./2
@@ -31,6 +37,14 @@ for i=1:length(varargin)./2
     option_value=varargin{i*2};
     
     switch(lower(option))
+        case 'n_p'
+            n_P=option_value;
+        case 'n_q'
+            n_Q=option_value;
+        case 'edge_p'
+            edge_P=option_value;
+        case 'edge_q'
+            edge_Q=option_value;
         case 'n_bin'
             n_bin=option_value;
         case 'bin_edge'
@@ -43,16 +57,20 @@ for i=1:length(varargin)./2
     end;
 end;
 
+
 %histogram
-if(isempty(bin_edge))
-    if(isempty(n_bin))
-        n_bin=20;
-    end;
-    [n_P,edge_P] = histcounts(P,n_bin, 'Normalization', 'probability');
-    [n_Q,edge_Q] = histcounts(Q,n_bin, 'Normalization', 'probability');
+if(~isempty(n_P)&&~isempty(n_Q)&&~isempty(edge_P)&&~isempty(edge_Q))
 else
-    [n_P,edge_P] = histcounts(P,bin_edge, 'Normalization', 'probability');
-    [n_Q,edge_Q] = histcounts(Q,bin_edge, 'Normalization', 'probability');
+    if(isempty(bin_edge))
+        if(isempty(n_bin))
+            n_bin=20;
+        end;
+        [n_P,edge_P] = histcounts(P,n_bin, 'Normalization', 'probability');
+        [n_Q,edge_Q] = histcounts(Q,n_bin, 'Normalization', 'probability');
+    else
+        [n_P,edge_P] = histcounts(P,bin_edge, 'Normalization', 'probability');
+        [n_Q,edge_Q] = histcounts(Q,bin_edge, 'Normalization', 'probability');
+    end;
 end;
 
 %find histogram zero entries
