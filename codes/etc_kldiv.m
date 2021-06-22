@@ -43,7 +43,6 @@ for i=1:length(varargin)./2
     end;
 end;
 
-
 %histogram
 if(isempty(bin_edge))
     if(isempty(n_bin))
