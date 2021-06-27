@@ -17,6 +17,9 @@ function [pac, pac_mi]=etc_pac_mi(freqVec,signal,fs,varargin)
 pac=[];
 pac_mi=[];
 
+amp_tfr=[];
+phase_tfr=[];
+
 n_bin=20; %20 bins in phase
 
 flag_display=1;
@@ -30,17 +33,23 @@ for i=1:length(varargin)./2
             n_bin=option_value;
         case 'flag_display'
             flag_display=option_value;
+        case 'amp_tfr'
+            amp_tfr=option_value;
+        case 'phase_tfr'
+            phase_tfr=option_value;
         case 'otherwise'
             fprintf('unknown option [%s]!\nerror!\n',option);
             return;
     end;
 end;
 
-%get phase and amplitude time series by applying morlet wavelet transform
-tfr=inverse_waveletcoef(freqVec,signal,fs,5);
+if(isempty(amp_tfr)&&isempty(phase_tfr))
+    %get phase and amplitude time series by applying morlet wavelet transform
+    tfr=inverse_waveletcoef(freqVec,signal,fs,5);
 
-amp_tfr=abs(tfr);
-phase_tfr=angle(tfr);
+    amp_tfr=abs(tfr);
+    phase_tfr=angle(tfr);
+end;
 
 for phase_freq_idx=1:length(freqVec)
     if(flag_display)
