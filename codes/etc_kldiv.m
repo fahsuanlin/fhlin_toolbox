@@ -77,13 +77,17 @@ end;
 idx_exclude_q=[];
 if(~isempty(find(n_Q<eps)))
     idx_exclude_q=find(n_Q<eps);
-    fprintf('probability of Q is ill-conditioned!\nentries with zero probability!\n');
+    if(flag_display)
+        fprintf('probability of Q is ill-conditioned!\nentries with zero probability!\n');
+    end;
 end;
 
 idx_exclude_p=[];
 if(~isempty(find(n_P<eps)))
     idx_exclude_p=find(n_P<eps);
-    fprintf('probability of P is ill-conditioned!\nentries with zero probability!\n');
+    if(flag_display)
+        fprintf('probability of P is ill-conditioned!\nentries with zero probability!\n');
+    end;
 end;
 
 

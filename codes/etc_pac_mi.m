@@ -51,6 +51,7 @@ if(isempty(amp_tfr)&&isempty(phase_tfr))
     phase_tfr=angle(tfr);
 end;
 
+pac=zeros(n_bin+1,length(freqVec),length(freqVec));
 for phase_freq_idx=1:length(freqVec)
     if(flag_display)
         fprintf('PAC at [%2.2f] Hz...\r',freqVec(phase_freq_idx));
@@ -64,7 +65,10 @@ for phase_freq_idx=1:length(freqVec)
     
     %phase-amplitude histogram
     for phase_idx=1:max(phase_index)
-        pac(phase_idx,:,phase_freq_idx)=mean(amp_tfr(:,find(phase_index==phase_idx)),2);
+        ii=find(phase_index==phase_idx);
+        if(~isempty(ii))
+            pac(phase_idx,:,phase_freq_idx)=mean(amp_tfr(:,ii),2);
+        end;    
     end;
     
     %noramllzed
@@ -76,7 +80,7 @@ for phase_freq_idx=1:length(freqVec)
     for amp_freq_idx=phase_freq_idx:length(freqVec)
         tmp=squeeze(pac(:,amp_freq_idx,phase_freq_idx));
         %modulation index by K-L divergence
-        [pac_mi(amp_freq_idx,phase_freq_idx)]=etc_kldiv([],[],'bin_edge',phase_edges,'flag_display',0,'n_P',tmp,'n_Q',ones(size(tmp))./length(tmp),'edge_P',phase_edges,'edge_Q',phase_edges);
+        [pac_mi(amp_freq_idx,phase_freq_idx)]=etc_kldiv([],[],'bin_edge',phase_edges,'flag_display',0,'n_P',tmp,'n_Q',ones(size(tmp))./length(tmp),'edge_P',phase_edges,'edge_Q',phase_edges,'flag_display',flag_display);
     end;
 end;
 if(flag_display)
