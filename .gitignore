@@ -1,11 +1,6 @@
-#ignore following folders
-codes/release/
-codes/ice_vd11/
-codes/read_m/
-codes/snr/
-codes/mask/
-codes/ice/data/
-codes/tool_mb_recon/
-codes/Toolbox_PMU_Process/
-codes/fmri_balloonODE.m
-codes/fmri_balloonODE_sim.m
+
+
+# ignore all dat files
+*.dat
+release
+ice
