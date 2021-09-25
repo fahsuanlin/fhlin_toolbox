@@ -116,11 +116,11 @@ for c_idx=1:n_img
     axis off image;
     
     if(~isempty(filename))
-        [dummy,fstem,fext]=fileparts(filename{c_idx});
+        [fpath,fstem,fext]=fileparts(filename{c_idx});
         if(flag_replace)
-            fn=sprintf('%s%s',fstem,fext);
+            fn=sprintf('%s/%s%s',fpath,fstem,fext);
         else
-            fn=sprintf('%s_crop%s',fstem,fext);
+            fn=sprintf('%s/%s_crop%s',fpath,fstem,fext);
         end;
         
         if(flag_save)
