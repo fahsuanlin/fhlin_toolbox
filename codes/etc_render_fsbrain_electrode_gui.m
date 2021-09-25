@@ -632,6 +632,29 @@ if(etc_render_fsbrain.electrode_add_gui_ok)
     set(handles.listbox_contact,'value',etc_render_fsbrain.electrode_contact_idx);
     guidata(hObject, handles);
     
+    %find current contact
+    count=0;
+    for e_idx=1:etc_render_fsbrain.electrode_idx-1
+        count=count+etc_render_fsbrain.electrode(e_idx).n_contact;
+    end;
+    count=count+etc_render_fsbrain.electrode_contact_idx;
+    
+    surface_coord=etc_render_fsbrain.aux2_point_coords(count,:);
+    v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+    click_vertex_vox=round(v(1:3))';
+    
+    etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
+    
+    vv=etc_render_fsbrain.orig_vertex_coords;
+    dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+    [min_dist,min_dist_idx]=min(dist);
+    %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+    
+    %update figure;
+    if(etc_render_fsbrain.electrode_update_contact_view_flag)
+        etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+    end;
+    
     etc_render_fsbrain_handle('redraw');
 
 end;
