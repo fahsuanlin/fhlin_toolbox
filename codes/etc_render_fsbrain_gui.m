@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_gui
 
-% Last Modified by GUIDE v2.5 11-Nov-2020 14:07:31
+% Last Modified by GUIDE v2.5 25-Sep-2021 13:44:34
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -369,6 +369,9 @@ set(handles.edit_click_point_size,'string',sprintf('%d',etc_render_fsbrain.click
 
 set(handles.checkbox_overlay_truncate_neg,'value',etc_render_fsbrain.flag_overlay_truncate_neg);
 set(handles.checkbox_overlay_truncate_pos,'value',etc_render_fsbrain.flag_overlay_truncate_pos);
+
+set(handles.pushbutton_neg_curv_color,'BackgroundColor',etc_render_fsbrain.curv_neg_color);
+set(handles.pushbutton_pos_curv_color,'BackgroundColor',etc_render_fsbrain.curv_pos_color);
 
 % if(isempty(etc_render_fsbrain.lut))
 %     set(handles.listbox_overlay_vol_mask,'string',{});
@@ -2458,3 +2461,82 @@ global etc_render_fsbrain;
 etc_render_fsbrain.flag_orthogonal_slice_ax=get(hObject,'Value');
 
 etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord);
+
+
+% --- Executes on button press in pushbutton_pos_curv_color.
+function pushbutton_pos_curv_color_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_pos_curv_color (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain;
+
+c = uisetcolor(etc_render_fsbrain.curv_pos_color,'Select a color');
+etc_render_fsbrain.curv_pos_color=c;
+set(handles.pushbutton_pos_curv_color,'BackgroundColor',etc_render_fsbrain.curv_pos_color);
+%etc_render_fsbrain_handle('draw_pointer');
+try
+        etc_render_fsbrain_handle('redraw');        
+catch ME
+end;
+
+
+
+function edit21_Callback(hObject, eventdata, handles)
+% hObject    handle to edit21 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit21 as text
+%        str2double(get(hObject,'String')) returns contents of edit21 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit21_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit21 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pushbutton_neg_curv_color.
+function pushbutton_neg_curv_color_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_neg_curv_color (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain;
+
+c = uisetcolor(etc_render_fsbrain.curv_neg_color,'Select a color');
+etc_render_fsbrain.curv_neg_color=c;
+set(handles.pushbutton_neg_curv_color,'BackgroundColor',etc_render_fsbrain.curv_neg_color);
+%etc_render_fsbrain_handle('draw_pointer');
+try
+        etc_render_fsbrain_handle('redraw');        
+catch ME
+end;
+
+
+function edit22_Callback(hObject, eventdata, handles)
+% hObject    handle to edit22 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit22 as text
+%        str2double(get(hObject,'String')) returns contents of edit22 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit22_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit22 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

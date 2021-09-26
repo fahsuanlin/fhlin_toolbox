@@ -21,7 +21,7 @@ function varargout = etc_render_fsbrain_electrode_gui(varargin)
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
 % Edit the above text to modify the response to help etc_render_fsbrain_electrode_gui
-% Last Modified by GUIDE v2.5 02-Apr-2020 01:34:29
+% Last Modified by GUIDE v2.5 25-Sep-2021 14:41:53
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -107,6 +107,14 @@ if(~isempty(etc_render_fsbrain.electrode))
     %set default electrode and contact to the first one
     etc_render_fsbrain.electrode_idx=1;
     etc_render_fsbrain.electrode_contact_idx=1;
+    
+    %set selected electrode color
+    if(isfield(etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx),'color'))
+        set(handles.pushbutton_electrode_color,'BackgroundColor',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).color);        
+    else
+        set(handles.pushbutton_electrode_color,'BackgroundColor',etc_render_fsbrain.aux2_point_color);
+    end;
+
     
     %update the electrode contact list box
     hObject=findobj('tag','listbox_contact');
@@ -354,67 +362,79 @@ function listbox_electrode_Callback(hObject, eventdata, handles)
 %        contents{get(hObject,'Value')} returns selected item from listbox_electrode
 global etc_render_fsbrain
 
-etc_render_fsbrain.electrode_idx=get(hObject,'Value');
-
-hObject=findobj('tag','listbox_contact');
-for c_idx=1:etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact
-    str{c_idx}=sprintf('%d',c_idx);
-end;
-set(handles.listbox_contact,'string',str);
-
-etc_render_fsbrain.electrode_contact_idx=1;
-hObject=findobj('tag','listbox_contact');
-set(hObject,'Value',1);
-
-guidata(hObject, handles);
-
-%uncheck electrod contact locking
-set(handles.checkbox_electrode_contact_lock,'value',0);
-etc_render_fsbrain.electrode_contact_lock_flag=0;
-guidata(hObject, handles);
-
-count=0;
-for e_idx=1:etc_render_fsbrain.electrode_idx-1
-    count=count+etc_render_fsbrain.electrode(e_idx).n_contact;
-end;
-count=count+etc_render_fsbrain.electrode_contact_idx;
-
-surface_coord=etc_render_fsbrain.aux2_point_coords(count,:);
-
-if(strcmp(etc_render_fsbrain.surf,'orig'))
-    surface_orig_coord=surface_coord;
-else
-    %fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+if(~isempty(etc_render_fsbrain.electrode))
+    etc_render_fsbrain.electrode_idx=get(hObject,'Value');
     
-    tmp=surface_coord;
-    
-    vv=etc_render_fsbrain.vertex_coords;
-    dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
-    [min_dist,min_dist_idx]=min(dist);
-    surface_orig_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
-end;
-
-try
-    v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
-    click_vertex_vox=round(v(1:3))';
-catch ME
-end;
-
-
-etc_render_fsbrain.electrode_contact_coord_now=surface_orig_coord;
-
-try
-    vv=etc_render_fsbrain.orig_vertex_coords;
-    dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
-    [min_dist,min_dist_idx]=min(dist);
-    %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
-    if(etc_render_fsbrain.electrode_update_contact_view_flag)
-        etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+    %set selected electrode color
+    if(isfield(etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx),'color'))
+        if(~isempty(etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).color))
+            set(handles.pushbutton_electrode_color,'BackgroundColor',etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).color);        
+        else
+            set(handles.pushbutton_electrode_color,'BackgroundColor',etc_render_fsbrain.aux2_point_color);
+        end;
+    else
+        set(handles.pushbutton_electrode_color,'BackgroundColor',etc_render_fsbrain.aux2_point_color);
     end;
-catch ME
-end;
-etc_render_fsbrain_handle('redraw');
 
+    hObject=findobj('tag','listbox_contact');
+    for c_idx=1:etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact
+        str{c_idx}=sprintf('%d',c_idx);
+    end;
+    set(handles.listbox_contact,'string',str);
+    
+    etc_render_fsbrain.electrode_contact_idx=1;
+    hObject=findobj('tag','listbox_contact');
+    set(hObject,'Value',1);
+    
+    guidata(hObject, handles);
+    
+    %uncheck electrod contact locking
+    set(handles.checkbox_electrode_contact_lock,'value',0);
+    etc_render_fsbrain.electrode_contact_lock_flag=0;
+    guidata(hObject, handles);
+    
+    count=0;
+    for e_idx=1:etc_render_fsbrain.electrode_idx-1
+        count=count+etc_render_fsbrain.electrode(e_idx).n_contact;
+    end;
+    count=count+etc_render_fsbrain.electrode_contact_idx;
+    
+    surface_coord=etc_render_fsbrain.aux2_point_coords(count,:);
+    
+    if(strcmp(etc_render_fsbrain.surf,'orig'))
+        surface_orig_coord=surface_coord;
+    else
+        %fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+        
+        tmp=surface_coord;
+        
+        vv=etc_render_fsbrain.vertex_coords;
+        dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+        [min_dist,min_dist_idx]=min(dist);
+        surface_orig_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
+    end;
+    
+    try
+        v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
+        click_vertex_vox=round(v(1:3))';
+    catch ME
+    end;
+    
+    
+    etc_render_fsbrain.electrode_contact_coord_now=surface_orig_coord;
+    
+    try
+        vv=etc_render_fsbrain.orig_vertex_coords;
+        dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+        [min_dist,min_dist_idx]=min(dist);
+        %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+        if(etc_render_fsbrain.electrode_update_contact_view_flag)
+            etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+        end;
+    catch ME
+    end;
+    etc_render_fsbrain_handle('redraw');
+end;
 
 
 % --- Executes during object creation, after setting all properties.
@@ -2764,3 +2784,25 @@ function edit_mri_view_depth_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in pushbutton_electrode_color.
+function pushbutton_electrode_color_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_electrode_color (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain;
+
+%set selected electrode color
+if(isfield(etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx),'color'))
+    c = uisetcolor(etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).color,'Select a color');
+else
+    c = uisetcolor(etc_render_fsbrain.aux2_point_color,'Select a color');
+end;
+
+etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).color=c;
+set(handles.pushbutton_electrode_color,'BackgroundColor',c);
+try
+        etc_render_fsbrain_handle('redraw');        
+catch ME
+end;
