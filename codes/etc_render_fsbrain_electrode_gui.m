@@ -21,7 +21,7 @@ function varargout = etc_render_fsbrain_electrode_gui(varargin)
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
 % Edit the above text to modify the response to help etc_render_fsbrain_electrode_gui
-% Last Modified by GUIDE v2.5 25-Sep-2021 14:41:53
+% Last Modified by GUIDE v2.5 26-Sep-2021 13:14:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2027,11 +2027,79 @@ function button_electrode_load_Callback(hObject, eventdata, handles)
 
 global etc_render_fsbrain;
 
-[filename, pathname, filterindex] = uigetfile({'*.mat'}, 'Pick the Matlab mat file with saved "electrode"');
+[filename, pathname, filterindex] = uigetfile({'*.txt; *.mat','coordinates in text or Matlab data'}, 'Pick the Matlab mat file with saved "electrode" or a txt files with coordinates (one position per row)');
+if(filename==0) return; end;
+
+if(findstr(filename,'.txt'))
+    %style = choosedialog
+    style='tkr';
+    if(~isempty(findstr(filename,'mni.txt'))) style='mni'; end;
+    if(~isempty(findstr(filename,'tal.txt'))) style='tal'; end;
+    
+    [x,y,z]=textread(filename,'%f%f%f\n');
+    coords=cat(2,x,y,z);
+    coords(:,end+1)=1;
+    coords=coords.';
+        
+    fprintf('[%d] coordinates read from <%s> for <<%s>> coordinates.\n',length(x),filename,style);
+    [dummy,fstem]=fileparts(filename);
+    switch lower(style)
+        case 'tkr'
+            if(~isempty(findstr(filename,'tkr')))
+                name=sprintf('%s_tkr',fstem);
+            else
+                name=sprintf('%s',fstem);
+            end;
+        case 'mni'
+            if(~isempty(etc_render_fsbrain.talxfm))
+                coords=etc_render_fsbrain.vol.tkrvox2ras*inv(etc_render_fsbrain.vol.vox2ras)*inv(etc_render_fsbrain.vol_pre_xfm)*inv(etc_render_fsbrain.talxfm)*coords;
+            else
+                fprintf('no ''talxfm'' for etc_render_fsbrain global variable. error!\n'); return;                
+            end;
+            name=sprintf('%s',fstem);
+
+        case 'tal'
+            if(~isempty(etc_render_fsbrain.talxfm))
+                M2T.rotn  = [      1         0         0         0;
+                    0    0.9988    0.0500         0;
+                    0   -0.0500    0.9988         0;
+                    0         0         0    1.0000 ];
+                
+                M2T.upZ   = [ 0.9900         0         0         0;
+                    0    0.9700         0         0;
+                    0         0    0.9200         0;
+                    0         0         0    1.0000 ];
+                M2T.downZ = [ 0.9900         0         0         0;
+                    0    0.9700         0         0;
+                    0         0    0.8400         0;
+                    0         0         0    1.0000 ];
+                for ii=1:size(coords,2)
+                    if(coords(3,ii)<0)
+                        coords(:,ii)=inv(M2T.rotn * M2T.downZ) * coords(:,ii);
+                    else
+                        coords(:,ii)=inv(M2T.rotn * M2T.upZ) * coords(:,ii);
+                    end;
+                    coords(:,ii)=etc_render_fsbrain.vol.tkrvox2ras*inv(etc_render_fsbrain.vol.vox2ras)*inv(etc_render_fsbrain.vol_pre_xfm)*inv(etc_render_fsbrain.talxfm)*coords(:,ii);
+                end;
+                name=sprintf('%s',fstem);
+            else
+                fprintf('no ''talxfm'' for etc_render_fsbrain global variable. error!\n'); return;
+            end;
+    end;
+    
+    tmp.electrode(1).coord=coords(1:3,:)';
+    tmp.electrode(1).name=name;
+    tmp.electrode(1).n_contact=size(coords,2);
+    tmp.electrode(1).spacing=5; %default;
+    
+else
+     tmp=load(sprintf('%s/%s',pathname,filename));
+end;
+
 
 if(filename~=0)
     
-    tmp=load(sprintf('%s/%s',pathname,filename));
+    %tmp=load(sprintf('%s/%s',pathname,filename));
     if(isfield(tmp,'electrode'))
         etc_render_fsbrain.electrode=tmp.electrode;
         
@@ -2806,3 +2874,350 @@ try
         etc_render_fsbrain_handle('redraw');        
 catch ME
 end;
+
+
+% --- Executes on button press in button_electrode_append.
+function button_electrode_append_Callback(hObject, eventdata, handles)
+% hObject    handle to button_electrode_append (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global etc_render_fsbrain;
+
+%[filename, pathname, filterindex] = uigetfile({'*.mat'}, 'Pick the Matlab mat file with saved "electrode"');
+[filename, pathname, filterindex] = uigetfile({'*.txt; *.mat','coordinates in text or Matlab data'}, 'Pick the Matlab mat file with saved "electrode" or a txt files with coordinates (one position per row)');
+if(filename==0) return; end;
+
+if(findstr(filename,'.txt'))
+    %style = choosedialog
+    style='tkr';
+    if(~isempty(findstr(filename,'mni.txt'))) style='mni'; end;
+    if(~isempty(findstr(filename,'tal.txt'))) style='tal'; end;
+    
+    [x,y,z]=textread(filename,'%f%f%f\n');
+    coords=cat(2,x,y,z);
+    coords(:,end+1)=1;
+    coords=coords.';
+        
+    fprintf('[%d] coordinates read from <%s> for <<%s>> coordinates.\n',length(x),filename,style);
+    [dummy,fstem]=fileparts(filename);
+    switch lower(style)
+        case 'tkr'
+            if(~isempty(findstr(filename,'tkr')))
+                name=sprintf('%s_tkr',fstem);
+            else
+                name=sprintf('%s',fstem);
+            end;
+        case 'mni'
+            if(~isempty(etc_render_fsbrain.talxfm))
+                coords=etc_render_fsbrain.vol.tkrvox2ras*inv(etc_render_fsbrain.vol.vox2ras)*inv(etc_render_fsbrain.vol_pre_xfm)*inv(etc_render_fsbrain.talxfm)*coords;
+            else
+                fprintf('no ''talxfm'' for etc_render_fsbrain global variable. error!\n'); return;                
+            end;
+            name=sprintf('%s',fstem);
+
+        case 'tal'
+            if(~isempty(etc_render_fsbrain.talxfm))
+                M2T.rotn  = [      1         0         0         0;
+                    0    0.9988    0.0500         0;
+                    0   -0.0500    0.9988         0;
+                    0         0         0    1.0000 ];
+                
+                M2T.upZ   = [ 0.9900         0         0         0;
+                    0    0.9700         0         0;
+                    0         0    0.9200         0;
+                    0         0         0    1.0000 ];
+                M2T.downZ = [ 0.9900         0         0         0;
+                    0    0.9700         0         0;
+                    0         0    0.8400         0;
+                    0         0         0    1.0000 ];
+                for ii=1:size(coords,2)
+                    if(coords(3,ii)<0)
+                        coords(:,ii)=inv(M2T.rotn * M2T.downZ) * coords(:,ii);
+                    else
+                        coords(:,ii)=inv(M2T.rotn * M2T.upZ) * coords(:,ii);
+                    end;
+                    coords(:,ii)=etc_render_fsbrain.vol.tkrvox2ras*inv(etc_render_fsbrain.vol.vox2ras)*inv(etc_render_fsbrain.vol_pre_xfm)*inv(etc_render_fsbrain.talxfm)*coords(:,ii);
+                end;
+                name=sprintf('%s',fstem);
+            else
+                fprintf('no ''talxfm'' for etc_render_fsbrain global variable. error!\n'); return;
+            end;
+    end;
+    
+    tmp.electrode(1).coord=coords(1:3,:)';
+    tmp.electrode(1).name=name;
+    tmp.electrode(1).n_contact=size(coords,2);
+    tmp.electrode(1).spacing=5; %default;
+    
+else
+     tmp=load(sprintf('%s/%s',pathname,filename));
+end;
+
+
+if(filename~=0)
+    
+    %tmp=load(sprintf('%s/%s',pathname,filename));
+    if(isfield(tmp,'electrode'))
+        if(isfield(etc_render_fsbrain,'electrode'))
+            if(~isempty(etc_render_fsbrain.electrode))
+               electrodw_now=etc_render_fsbrain.electrode;
+               for idx=1:length(tmp.electrode)
+                   electrodw_now(end+1)=tmp.electrode(idx);
+               end;
+               etc_render_fsbrain.electrode=electrodw_now;
+            else
+                etc_render_fsbrain.electrode=tmp.electrode;
+            end;
+        else
+            etc_render_fsbrain.electrode=tmp.electrode;        
+        end;        
+        
+        etc_render_fsbrain.electrode_idx=1;
+        etc_render_fsbrain.electrode_contact_idx=1;
+        
+        %update electrode contact coordinates
+        etc_render_fsbrain.aux2_point_coords=[];
+        etc_render_fsbrain.aux2_point_name={};
+        count=1;
+        for e_idx=1:length(etc_render_fsbrain.electrode)
+            for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
+                
+                etc_render_fsbrain.aux2_point_coords(count,:)=etc_render_fsbrain.electrode(e_idx).coord(c_idx,:);
+                
+                if(strcmp(etc_render_fsbrain.surf,'orig')|strcmp(etc_render_fsbrain.surf,'smoothwm')|strcmp(etc_render_fsbrain.surf,'pial'))
+                    
+                else
+                    fprintf('surface <%s> not "orig"/"smoothwm"/"pial". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+                    
+                    tmp=etc_render_fsbrain.aux2_point_coords(count,:);
+                    
+                    vv=etc_render_fsbrain.orig_vertex_coords;
+                    dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+                    [min_dist,min_dist_idx]=min(dist);
+                    if(~isnan(min_dist))
+                        etc_render_fsbrain.aux2_point_coords(count,:)=etc_render_fsbrain.vertex_coords(min_dist_idx,:);
+                    end;    
+                end;
+                
+                etc_render_fsbrain.aux2_point_name{count}=sprintf('%s_%d',etc_render_fsbrain.electrode(e_idx).name, c_idx);;
+                count=count+1;
+            end;
+        end;
+        
+        %update contact mask
+        etc_render_fsbrain.electrode_mask=zeros(length(etc_render_fsbrain.electrode),size(etc_render_fsbrain.aux2_point_coords,1));
+        count=1;
+        for e_idx=1:length(etc_render_fsbrain.electrode)
+            for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
+                etc_render_fsbrain.electrode_mask(e_idx,count)=1;
+                count=count+1;
+            end;
+        end;
+        
+        %update electrode list in the GUI
+        str={};
+        for e_idx=1:length(etc_render_fsbrain.electrode)
+            str{e_idx}=etc_render_fsbrain.electrode(e_idx).name;
+        end;
+        set(handles.listbox_electrode,'string',str);
+        set(handles.listbox_electrode,'value',etc_render_fsbrain.electrode_idx);
+        
+        %update contact list in the GUI
+        str={};
+        for c_idx=1:etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).n_contact
+            str{c_idx}=sprintf('%d',c_idx);
+        end;
+        set(handles.listbox_contact,'string',str);
+        set(handles.listbox_contact,'value',etc_render_fsbrain.electrode_contact_idx);
+        guidata(hObject, handles);
+        
+        %update figure;
+        %if(etc_render_fsbrain.electrode_update_contact_view_flag)
+        %    etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',[],'click_vertex_vox',click_vertex_vox);
+        %end;
+        
+        %enable all uicontrols
+        c=struct2cell(handles);
+        for i=1:length(c)
+            if(strcmp(c{i}.Type,'uicontrol'))
+                c{i}.Enable='on';
+            end;
+            
+            if(strcmp(c{i}.Tag,'pushbutton_rotate_c'))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
+                    c{i}.Enable='off';
+                end;
+            end;
+            if(strcmp(c{i}.Tag,'pushbutton_rotate_cc'))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
+                    c{i}.Enable='off';
+                end;
+            end;
+            if(strcmp(c{i}.Tag,'pushbutton_move_right'))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
+                    c{i}.Enable='off';
+                end;
+            end;
+            if(strcmp(c{i}.Tag,'pushbutton_move_left'))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
+                    c{i}.Enable='off';
+                end;
+            end;        
+            if(strcmp(c{i}.Tag,'pushbutton_move_up'))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
+                    c{i}.Enable='off';
+                end;
+            end;
+            if(strcmp(c{i}.Tag,'pushbutton_move_down'))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
+                    c{i}.Enable='off';
+                end;
+            end;    
+            if(strcmp(c{i}.Tag,'pushbutton_move_more'))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
+                    c{i}.Enable='off';
+                end;
+            end;
+            if(strcmp(c{i}.Tag,'pushbutton_move_less'))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
+                    c{i}.Enable='off';
+                end;
+            end;
+            if(strcmp(c{i}.Tag,'button_optimize'))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
+                    c{i}.Enable='off';
+                end;
+            end;
+            if(strcmp(c{i}.Tag,'button_optimize_sel'))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
+                    c{i}.Enable='off';
+                end;
+            end;
+            if(strcmp(c{i}.Tag,'button_evaluate_cost'))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
+                    c{i}.Enable='off';
+                end;
+            end;
+            if(strcmp(c{i}.Tag,'pushbutton_goto'))
+                if(isempty(etc_render_fsbrain.vol)|~strcmp(etc_render_fsbrain.surf,'orig'))
+                    c{i}.Enable='off';
+                end;
+            end;
+        end;
+        
+        %uncheck contact view update option
+        %set(handles.checkbox_update_contact_view,'value',0);
+        %etc_render_fsbrain.electrode_update_contact_view_flag=0;
+        if(etc_render_fsbrain.electrode_update_contact_view_flag)
+            set(handles.checkbox_update_contact_view,'value',1);
+        else
+            set(handles.checkbox_update_contact_view,'value',0);
+        end;
+        %guidata(hObject, handles);
+        
+        
+        
+        if(~isempty(etc_render_fsbrain.aux2_point_coords))
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','pushbutton_aux2_point_color'),'BackgroundColor',etc_render_fsbrain.aux2_point_color);
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','edit_aux2_point_size'),'string',sprintf('%d',etc_render_fsbrain.aux2_point_size));
+            v1=etc_render_fsbrain.show_all_contacts_mri_flag;
+            v2=etc_render_fsbrain.show_all_contacts_brain_surface_flag;
+            %set(findobj(etc_render_fsbrain.fig_gui,'Tag','checkbox_electrode_contacts'),'value',v1|v2);
+            
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','checkbox_selected_contact'),'value',etc_render_fsbrain.selected_contact_flag);
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','pushbutton_selected_contact_color'),'BackgroundColor',etc_render_fsbrain.selected_contact_color);
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','edit_selected_contact_size'),'string',sprintf('%d',etc_render_fsbrain.selected_contact_size));
+            
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','checkbox_selected_electrode'),'value',etc_render_fsbrain.selected_electrode_flag);
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','pushbutton_selected_electrode_color'),'BackgroundColor',etc_render_fsbrain.selected_electrode_color);
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','edit_selected_electrode_size'),'string',sprintf('%d',etc_render_fsbrain.selected_electrode_size));
+ 
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','pushbutton_aux2_point_color'),'enable','on');
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','edit_aux2_point_size'),'enable','off');
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','checkbox_electrode_contacts'),'enable','on');
+            
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','checkbox_selected_contact'),'enable','on');
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','pushbutton_selected_contact_color'),'enable','on');
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','edit_selected_contact_size'),'enable','on');
+            
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','checkbox_selected_electrode'),'enable','on');
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','pushbutton_selected_electrode_color'),'enable','on');
+            set(findobj(etc_render_fsbrain.fig_gui,'Tag','edit_selected_electrode_size'),'enable','on');
+        end;
+        
+        count=1;
+        surface_coord=etc_render_fsbrain.aux2_point_coords(count,:);
+        
+        etc_render_fsbrain.electrode_contact_coord_now=surface_coord;
+        
+        try
+%                     vv=etc_render_fsbrain.orig_vertex_coords;
+%                     dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+%                     [min_dist,min_dist_idx]=min(dist);
+%                     surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+%                     etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
+            if(strcmp(etc_render_fsbrain.surf,'orig'))
+                surface_orig_coord=surface_coord;
+            else
+                %fprintf('surface <%s> not "orig". Electrode contacts locations are updated to the nearest location of this surface.\n',etc_render_fsbrain.surf);
+                
+                tmp=surface_coord;
+                
+                vv=etc_render_fsbrain.vertex_coords;
+                dist=sqrt(sum((vv-repmat([tmp(1),tmp(2),tmp(3)],[size(vv,1),1])).^2,2));
+                [min_dist,min_dist_idx]=min(dist);
+                surface_orig_coord=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
+            end;
+            
+            try
+                %    v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+                if(~isempty(etc_render_fsbrain.vol))
+                    v=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_orig_coord(:); 1];
+                    click_vertex_vox=round(v(1:3))';
+                else
+                    click_vertex_vox=[];
+                end;
+            catch ME
+            end;
+
+            etc_render_fsbrain_handle('draw_pointer','surface_coord',surface_coord,'click_vertex_vox',click_vertex_vox);
+        catch ME
+        end;
+        
+        
+        etc_render_fsbrain_handle('redraw');
+    else
+        fprintf('no variable "electrode" defined in the Matlab file [%s]!\nerror!\n',filename);
+        return;
+    end;
+    
+end;
+return;
+
+%     function choice = choosedialog
+%         d = dialog('Position',[300 300 250 150],'Name','Select One');
+%         txt = uicontrol('Parent',d,...
+%             'Style','text',...
+%             'Position',[20 80 210 40],...
+%             'String','Coordinates category');
+%         
+%         popup = uicontrol('Parent',d,...
+%             'Style','popup',...
+%             'Position',[75 70 100 25],...
+%             'String',{'MNI';'Talairach';'CRS'},...
+%             'Callback',@popup_callback);
+%         
+%         btn = uicontrol('Parent',d,...
+%             'Position',[89 20 70 25],...
+%             'String','Close',...
+%             'Callback','delete(gcf)');
+%         
+%         choice = 'MNI';
+%         
+%         % Wait for d to close before running to completion
+%         uiwait(d);
+%         function popup_callback(popup,event)
+%             idx = popup.Value;
+%             popup_items = popup.String;
+%             choice = char(popup_items(idx,:));

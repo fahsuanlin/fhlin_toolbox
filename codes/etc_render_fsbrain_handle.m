@@ -61,10 +61,9 @@ switch lower(param)
                 fprintf('s: smooth overlay \n');
                 fprintf('o: create an ROI\n');
                 fprintf('m: create an ROI at the selected location with a radius\n');
-                fprintf('d: interactive threshold change\n');
-                fprintf('c: switch on/off the colorbar\n');
-                fprintf('u: show cluster labels from files\n');
-                fprintf('m: create a region of specified extension\n');
+                fprintf('d: interactive overlay threshold change\n');
+                fprintf('c: switch on/off a colorbar\n');
+                fprintf('u: show cluster labels from a file\n');
                 fprintf('q: exit\n');
                 fprintf('\n\n fhlin@dec 25, 2014\n');
             case 'a'
