@@ -131,17 +131,40 @@ try
                     %set(hObject,'Value',v);
                 end;
 
-%                 if(etc_render_fsbrain.label_register(select_idx(ss))==0)
-%                     cc=etc_render_fsbrain.label_ctab.table(select_idx(ss),1:3)./255;
-%                     etc_render_fsbrain.h.FaceVertexCData(vidx,:)=repmat(cc(:)',[length(vidx),1]);
-%                     etc_render_fsbrain.label_register(select_idx(ss))=1;
-%                 else
-%                     etc_render_fsbrain.h.FaceVertexCData(vidx,:)=etc_render_fsbrain.fvdata(vidx,:);
-%                     etc_render_fsbrain.label_register(select_idx(ss))=0;
-%                     
-%                     v=setdiff(select_idx,select_idx(ss));
-%                     set(hObject,'Value',v);
-%                 end;
+
+                label_coords=etc_render_fsbrain.vertex_coords(vidx,:);
+                
+                %find electrode contacts closest to the selected label
+                if(~isempty(etc_render_fsbrain.electrode))
+                    
+                    max_contact=0;
+                    for e_idx=1:length(etc_render_fsbrain.electrode)
+                            if(etc_render_fsbrain.electrode(e_idx).n_contact>max_contact)
+                                max_contact=etc_render_fsbrain.electrode(e_idx).n_contact;
+                            end;
+                    end;
+                    electrode_dist_min=ones(length(etc_render_fsbrain.electrode),max_contact).*nan;
+                    electrode_dist_avg=ones(length(etc_render_fsbrain.electrode),max_contact).*nan;
+                    
+                    for e_idx=1:length(etc_render_fsbrain.electrode)
+                        for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
+                            
+                            surface_coord=etc_render_fsbrain.electrode(e_idx).coord(c_idx,:);
+                            
+                            tmp=label_coords-repmat(surface_coord(:)',[size(label_coords,1),1]);
+                            tmp=sqrt(sum(tmp.^2,2));
+                            
+                            electrode_dist_min(e_idx,c_idx)=min(tmp);
+                            electrode_dist_avg(e_idx,c_idx)=mean(tmp);
+                        end;
+                    end;
+                    
+                    [dummy,min_idx]=sort(electrode_dist_min(:));
+                    for ii=1:3 %show the nearest three contacts
+                        [ee,cc]=ind2sub(size(electrode_dist_min),min_idx(ii));
+                        fprintf('closest electrode contact:: [%s_%02d]: %2.2f (mm) (%1.1f %1.1f %1.1f)\n',etc_render_fsbrain.electrode(ee).name,cc,dummy(ii),etc_render_fsbrain.electrode(ee).coord(cc,1),etc_render_fsbrain.electrode(ee).coord(cc,2),etc_render_fsbrain.electrode(ee).coord(cc,3));
+                    end;
+                end;
             end;
 
             figure(etc_render_fsbrain.fig_label_gui);
@@ -180,6 +203,8 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
     contents = cellstr(get(hObject,'String'));
     select_idx=get(hObject,'Value');
     
+    setlect_idx=sort(select_idx,'descend');
+    
     if(~isempty(select_idx))
         try
             
@@ -206,11 +231,9 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
                 %             vidx=find(etc_render_fsbrain.label_value==label_number);
                 %             etc_render_fsbrain.label_value(vidx)=0;
                 
+                etc_render_fsbrain.label_value(vidx)=0;
                 
                 etc_render_fsbrain.label_ctab.numEntries=etc_render_fsbrain.label_ctab.numEntries-1;
-                etc_render_fsbrain.label_ctab.table(select_idx(l_idx),:)=[];
-                etc_render_fsbrain.label_ctab.struct_names(select_idx(l_idx))=[];
-                
                 
                 %             if(~isempty(etc_render_fsbrain.label_h))
                 %                 delete(etc_render_fsbrain.label_h(:));
@@ -218,6 +241,10 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
                 %             end;
                 
             end;
+            etc_render_fsbrain.label_ctab.table(select_idx,:)=[];
+            etc_render_fsbrain.label_ctab.struct_names(select_idx)=[];
+            etc_render_fsbrain.label_register(select_idx)=[];
+            
             set(handles.listbox_label,'string',{etc_render_fsbrain.label_ctab.struct_names{:}});
             if(etc_render_fsbrain.label_ctab.numEntries>0)
                 if(select_idx>1)

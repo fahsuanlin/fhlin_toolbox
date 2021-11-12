@@ -569,10 +569,12 @@ switch lower(param)
                                 if(sum(etc_render_fsbrain.label_value(ii+1))>eps)
                                     fprintf('Warning! The loaded label overlaps with already-existed label(s), which are not replaced by the new index!\n');
                                 end;
-                                etc_render_fsbrain.label_value(ii+1)=etc_render_fsbrain.label_ctab.numEntries+1;
+                                maxx=max(etc_render_fsbrain.label_value(:));
+                                %etc_render_fsbrain.label_value(ii+1)=etc_render_fsbrain.label_ctab.numEntries+1;
+                                etc_render_fsbrain.label_value(ii+1)=maxx+1;
                                 etc_render_fsbrain.label_ctab.numEntries=etc_render_fsbrain.label_ctab.numEntries+1;
                                 etc_render_fsbrain.label_ctab.struct_names{end+1}=filename;
-                                etc_render_fsbrain.label_ctab.table(end+1,:)=[220          60         120          0        etc_render_fsbrain.label_ctab.numEntries];
+                                etc_render_fsbrain.label_ctab.table(end+1,:)=[220          60         120          0        maxx+1];
                                 
                                 etc_render_fsbrain.label_register(end+1)=0;
                             else
@@ -1862,6 +1864,48 @@ try
                         
                         obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
                         idx=get(obj,'value');
+                        for ii=1:length(idx)
+                            
+                            %find electrode contacts closest to the selected segmentation
+                            mask_idx=find(etc_render_fsbrain.overlay_vol_mask.vol(:)==etc_render_fsbrain.lut.number(idx(ii)));
+                            [rr,cc,ss]=ind2sub(size(etc_render_fsbrain.overlay_vol_mask.vol),mask_idx);
+                            seg_coords=[cc(:) rr(:) ss(:)];
+                            
+                            if(~isempty(etc_render_fsbrain.electrode))
+                                
+                                max_contact=0;
+                                for e_idx=1:length(etc_render_fsbrain.electrode)
+                                    if(etc_render_fsbrain.electrode(e_idx).n_contact>max_contact)
+                                        max_contact=etc_render_fsbrain.electrode(e_idx).n_contact;
+                                    end;
+                                end;
+                                electrode_dist_min=ones(length(etc_render_fsbrain.electrode),max_contact).*nan;
+                                electrode_dist_avg=ones(length(etc_render_fsbrain.electrode),max_contact).*nan;
+                                
+                                for e_idx=1:length(etc_render_fsbrain.electrode)
+                                    for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
+                                        
+                                        surface_coord=etc_render_fsbrain.electrode(e_idx).coord(c_idx,:);
+                                        click_vertex_vox_now=inv(etc_render_fsbrain.vol.tkrvox2ras)*[surface_coord(:); 1];
+                                        click_vertex_vox_now=round(click_vertex_vox_now(1:3))';
+                                        
+                                        tmp=seg_coords-repmat(click_vertex_vox_now(:)',[size(seg_coords,1),1]);
+                                        tmp=sqrt(sum(tmp.^2,2));
+                                        
+                                        electrode_dist_min(e_idx,c_idx)=min(tmp);
+                                        electrode_dist_avg(e_idx,c_idx)=mean(tmp);
+                                    end;
+                                end;
+                                
+                                [dummy,min_idx]=sort(electrode_dist_min(:));
+                                for ii=1:3 %show the nearest three contacts
+                                    [ee,cc]=ind2sub(size(electrode_dist_min),min_idx(ii));
+                                    fprintf('closest electrode contact:: [%s_%02d]: %2.2f (vox) (%1.1f %1.1f %1.1f)\n',etc_render_fsbrain.electrode(ee).name,cc,dummy(ii),etc_render_fsbrain.electrode(ee).coord(cc,1),etc_render_fsbrain.electrode(ee).coord(cc,2),etc_render_fsbrain.electrode(ee).coord(cc,3));
+                                end;
+                            end;
+                        end;
+                        
+                        
                         
                         etc_render_fsbrain.overlay_aux_stc=[];
                         for ii=1:length(idx)
@@ -1875,12 +1919,7 @@ try
                                 mask_c=mask_c+cat(3,mask.*etc_render_fsbrain.lut.r(idx(ii))./255,mask.*etc_render_fsbrain.lut.g(idx(ii))./255,mask.*etc_render_fsbrain.lut.b(idx(ii))./255);
                                 mask_all=mask_all+mask;                                
                             end;
-                            
-%                             if(~isempty(etc_render_fsbrain.overlay_vol))
-%                                 mask_idx=find(etc_render_fsbrain.overlay_vol_mask.vol(:)==etc_render_fsbrain.lut.number(idx(ii)));
-%                                 tmp=reshape(etc_render_fsbrain.overlay_vol.vol,[size(etc_render_fsbrain.overlay_vol.vol,1)*size(etc_render_fsbrain.overlay_vol.vol,2)*size(etc_render_fsbrain.overlay_vol.vol,3),size(etc_render_fsbrain.overlay_vol.vol,4)]);
-%                                 etc_render_fsbrain.overlay_aux_stc(1,:,ii)=mean(tmp(mask_idx,:),1);
-%                             end;
+
                         end;
                         h=image(mask_c); hold on;
                         set(h,'alphadata',etc_render_fsbrain.overlay_vol_mask_alpha.*mask_all);
