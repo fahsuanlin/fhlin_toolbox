@@ -1666,8 +1666,50 @@ try
                     %fprintf('%d\t\t',etc_render_fsbrain.overlay_vol_mask.vol(etc_render_fsbrain.click_vertex_vox_round(2),etc_render_fsbrain.click_vertex_vox_round(1),etc_render_fsbrain.click_vertex_vox_round(3)));
                     tmp=etc_render_fsbrain.overlay_vol_mask.vol(etc_render_fsbrain.click_vertex_vox_round(2),etc_render_fsbrain.click_vertex_vox_round(1),etc_render_fsbrain.click_vertex_vox_round(3));
                     ii=find(etc_render_fsbrain.lut.number==tmp);
-                    fprintf('anatomical label:: <<%s>>\n',etc_render_fsbrain.lut.name{ii});
+                    fprintf('clicked anatomical label:: <<%s>>\n',etc_render_fsbrain.lut.name{ii});
         end;
+        
+        try
+            label_coords=etc_render_fsbrain.orig_vertex_coords(etc_render_fsbrain.click_vertex,:);
+            
+            %find electrode contacts closest to the selected label
+            if(~isempty(etc_render_fsbrain.electrode))
+                
+                max_contact=0;
+                for e_idx=1:length(etc_render_fsbrain.electrode)
+                    if(etc_render_fsbrain.electrode(e_idx).n_contact>max_contact)
+                        max_contact=etc_render_fsbrain.electrode(e_idx).n_contact;
+                    end;
+                end;
+                electrode_dist_min=ones(length(etc_render_fsbrain.electrode),max_contact).*nan;
+                electrode_dist_avg=ones(length(etc_render_fsbrain.electrode),max_contact).*nan;
+                
+                for e_idx=1:length(etc_render_fsbrain.electrode)
+                    for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
+                        
+                        surface_coord=etc_render_fsbrain.electrode(e_idx).coord(c_idx,:);
+                        
+                        tmp=label_coords-repmat(surface_coord(:)',[size(label_coords,1),1]);
+                        tmp=sqrt(sum(tmp.^2,2));
+                        
+                        electrode_dist_min(e_idx,c_idx)=min(tmp);
+                        electrode_dist_avg(e_idx,c_idx)=mean(tmp);
+                    end;
+                end;
+                
+                [dummy,min_idx]=sort(electrode_dist_min(:));
+                fprintf('Top 3 closest contacts to the clicked point:\n');
+                for ii=1:3 %show the nearest three contacts
+                    [ee,cc]=ind2sub(size(electrode_dist_min),min_idx(ii));
+                    fprintf('  <%s_%02d> %2.2f (mm) (%1.1f %1.1f %1.1f)\n',etc_render_fsbrain.electrode(ee).name,cc,dummy(ii),etc_render_fsbrain.electrode(ee).coord(cc,1),etc_render_fsbrain.electrode(ee).coord(cc,2),etc_render_fsbrain.electrode(ee).coord(cc,3));
+                end;
+            end;
+            
+            
+        catch ME
+        end;
+        
+        
         try
             [zz,xx,yy]=size(etc_render_fsbrain.vol.vol);
             mm=max([zz yy xx]);
@@ -1865,9 +1907,11 @@ try
                         obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
                         idx=get(obj,'value');
                         for ii=1:length(idx)
-                            
+                            fprintf('segmentation <<<%s>> selected\n',etc_render_fsbrain.lut.name{idx(ii)});
                             %find electrode contacts closest to the selected segmentation
                             mask_idx=find(etc_render_fsbrain.overlay_vol_mask.vol(:)==etc_render_fsbrain.lut.number(idx(ii)));
+                            
+                            if(isempty(mask_idx)) fprintf('no image voxel for the selected segmentation.\n'); end;
                             [rr,cc,ss]=ind2sub(size(etc_render_fsbrain.overlay_vol_mask.vol),mask_idx);
                             seg_coords=[cc(:) rr(:) ss(:)];
                             
@@ -1898,10 +1942,12 @@ try
                                 end;
                                 
                                 [dummy,min_idx]=sort(electrode_dist_min(:));
+                                fprintf('Top 3 closest contacts\n');
                                 for ii=1:3 %show the nearest three contacts
                                     [ee,cc]=ind2sub(size(electrode_dist_min),min_idx(ii));
-                                    fprintf('closest electrode contact:: [%s_%02d]: %2.2f (vox) (%1.1f %1.1f %1.1f)\n',etc_render_fsbrain.electrode(ee).name,cc,dummy(ii),etc_render_fsbrain.electrode(ee).coord(cc,1),etc_render_fsbrain.electrode(ee).coord(cc,2),etc_render_fsbrain.electrode(ee).coord(cc,3));
+                                    fprintf('  [%s_%02d]: %2.2f (vox) (%1.1f %1.1f %1.1f)\n',etc_render_fsbrain.electrode(ee).name,cc,dummy(ii),etc_render_fsbrain.electrode(ee).coord(cc,1),etc_render_fsbrain.electrode(ee).coord(cc,2),etc_render_fsbrain.electrode(ee).coord(cc,3));
                                 end;
+                                
                             end;
                         end;
                         
