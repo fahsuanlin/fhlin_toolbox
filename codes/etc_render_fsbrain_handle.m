@@ -1669,8 +1669,21 @@ try
                     fprintf('clicked anatomical label:: <<%s>>\n',etc_render_fsbrain.lut.name{ii});
         end;
         
+        %locations of the nearest electrode contact
         try
-            label_coords=etc_render_fsbrain.orig_vertex_coords(etc_render_fsbrain.click_vertex,:);
+            label_coords=etc_render_fsbrain.vertex_coords(etc_render_fsbrain.click_vertex,:);
+            if(strcmp(etc_render_fsbrain.surf,'orig')|strcmp(etc_render_fsbrain.surf,'smoothwm')|strcmp(etc_render_fsbrain.surf,'pial'))
+                
+            else
+                fprintf('surface <%s> not "orig"/"pial"/"smoothwm". Electrode contacts locations are mapped from this surface back to the "orig" volume.\n',etc_render_fsbrain.surf);
+                vv=etc_render_fsbrain.vertex_coords;
+                dist=sqrt(sum((vv-repmat([label_coords(1),label_coords(2),label_coords(3)],[size(vv,1),1])).^2,2));
+                [min_dist,min_dist_idx]=min(dist);
+                label_coords=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
+            end;
+            
+            
+            %label_coords=etc_render_fsbrain.orig_vertex_coords(etc_render_fsbrain.click_vertex,:);
             
             %find electrode contacts closest to the selected label
             if(~isempty(etc_render_fsbrain.electrode))
