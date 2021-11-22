@@ -1,4 +1,4 @@
-function [label,x,y,z,val,idx]=inverse_read_label(fn)
+function [label,x,y,z,val,idx]=inverse_read_label(fn,varargin)
 
 % inverse_read_label	read dipole labels
 %
@@ -13,7 +13,20 @@ function [label,x,y,z,val,idx]=inverse_read_label(fn)
 % idx: unique index for each dipole
 % fhlin@jul 30, 2003
 
-fprintf('reading [%s]...\n',fn);
+flag_display=1;
+
+for i=1:length(varargin)/2
+    option=varargin{i*2-1};
+    option_value=varargin{i*2};
+    switch lower(option)
+        case 'flag_display'
+            flag_display=option_value;
+        otherwise
+            fprintf('unknown option [%s]. error!\n',option);
+    end;
+end;
+
+if(flag_display) fprintf('reading [%s]...\n',fn); end;
 fp=fopen(fn,'r');
 header=fscanf(fp,'%s\n');
 n_label=fscanf(fp,'%d\n');

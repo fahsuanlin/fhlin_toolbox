@@ -54,6 +54,8 @@ function etc_trace_trigger_add_question_gui_OpeningFcn(hObject, eventdata, handl
 % Choose default command line output for etc_trace_trigger_add_question_gui
 handles.output = 'No';
 
+set(hObject, 'Name','add current time instant as an event');
+
 % Update handles structure
 guidata(hObject, handles);
 

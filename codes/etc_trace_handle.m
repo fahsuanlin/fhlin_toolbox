@@ -125,6 +125,11 @@ switch lower(param)
             case 'h'
                 fprintf('interactive rendering commands:\n\n');
                 fprintf('a: archiving image (etc_trace_obj.tif if no specified output file name)\n');
+                fprintf('f: show display configuration\n');
+                fprintf('c: show control panel\n');
+                fprintf('l: list all time series\n');
+                fprintf('m: list montages\n');                
+                fprintf('d: change scale\n');                
                 fprintf('r: force redrawing \n');
                 fprintf('m: montage selection \n');
                 fprintf('v: triggers \n');
