@@ -128,6 +128,8 @@ all_electrode_flag=1;
 
 %electrode
 electrode=[];
+electrode_idx=1; %first electrode
+electrode_contact_idx=1; %first contact
 
 %label (annotation)
 label_vertex=[];
@@ -330,6 +332,10 @@ for idx=1:length(varargin)/2
             file_annot=option_value;
         case 'electrode'
             electrode=option_value;
+        case 'electrode_idx'
+            electrode_idx=option_value;
+        case 'electrode_contact_idx'
+            electrode_contact_idx=option_value;
         case 'click_point_size'
             click_point_size=option_value;
         case 'click_point_color'
@@ -1080,6 +1086,8 @@ etc_render_fsbrain.click_vertex_point_color=click_vertex_point_color;
 etc_render_fsbrain.click_vertex_point_size=click_vertex_point_size;
 
 etc_render_fsbrain.electrode=electrode;
+etc_render_fsbrain.electrode_idx=electrode_idx;
+etc_render_fsbrain.electrode_contact_idx=electrode_contact_idx;
 etc_render_fsbrain.fig_electrode_gui=[];
 
 etc_render_fsbrain.click_coord=[];

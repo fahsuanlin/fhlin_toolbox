@@ -42,6 +42,8 @@ switch lower(param)
         redraw;
     case 'draw_stc'
         draw_stc;
+    case 'update_label'
+        update_label;
     case 'update_overlay_vol'
         update_overlay_vol;
     case 'kb'
@@ -574,8 +576,18 @@ switch lower(param)
                                 etc_render_fsbrain.label_value(ii+1)=maxx+1;
                                 etc_render_fsbrain.label_ctab.numEntries=etc_render_fsbrain.label_ctab.numEntries+1;
                                 etc_render_fsbrain.label_ctab.struct_names{end+1}=filename;
-                                etc_render_fsbrain.label_ctab.table(end+1,:)=[220          60         120          0        maxx+1];
-                                
+                                switch mod(maxx+1,5)
+                                    case 1
+                                        etc_render_fsbrain.label_ctab.table(end+1,:)=[0*256   0.4470*256   0.741*256         0        maxx+1];
+                                    case 2
+                                        etc_render_fsbrain.label_ctab.table(end+1,:)=[0.8500*256 0.3250*256 0.0980*256          0        maxx+1];
+                                    case 3
+                                        etc_render_fsbrain.label_ctab.table(end+1,:)=[0.9290*256 0.6940*256 0.1250*256          0        maxx+1];
+                                    case 4
+                                        etc_render_fsbrain.label_ctab.table(end+1,:)=[0.4940*256 0.1840*256 0.5560*256          0        maxx+1];
+                                    case 5
+                                        etc_render_fsbrain.label_ctab.table(end+1,:)=[0.4660*256 0.6740*256 0.1880*256          0        maxx+1];
+                                end;
                                 etc_render_fsbrain.label_register(end+1)=0;
                             else
                                 etc_render_fsbrain.label_vertex=zeros(size(etc_render_fsbrain.vertex_coords_hemi,1),1);
@@ -585,7 +597,7 @@ switch lower(param)
                                 s.numEntries=1;
                                 s.orig_tab='';
                                 s.struct_names={filename};
-                                s.table=[220          60         120          0        1];
+                                s.table=[0*256   0.4470*256   0.741*256         0        1];
                                 etc_render_fsbrain.label_ctab=s;
                                 
                                 etc_render_fsbrain.label_register=0;
@@ -2057,12 +2069,15 @@ try
                         selected_contact_idx=idx+etc_render_fsbrain.electrode_contact_idx;
                     end;
                 end;
-
-                for e_idx=1:length(etc_render_fsbrain.electrode)
-                    n_e(e_idx)=etc_render_fsbrain.electrode(e_idx).n_contact;
-                end;
-                n_e_cumsum=cumsum(n_e);
                 
+                if(isfield(etc_render_fsbrain,'electrode'))
+                    if(~isempty(etc_render_fsbrain.electrode))
+                        for e_idx=1:length(etc_render_fsbrain.electrode)
+                            n_e(e_idx)=etc_render_fsbrain.electrode(e_idx).n_contact;
+                        end;
+                        n_e_cumsum=cumsum(n_e);
+                    end;
+                end;
                 for v_idx=1:size(etc_render_fsbrain.aux2_point_coords,1)
                     surface_coord=etc_render_fsbrain.aux2_point_coords(v_idx,:);
                     
@@ -2468,27 +2483,7 @@ try
             figure(etc_render_fsbrain.fig_brain);
             
             
-%             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% overlay at the clicked point
-%             vv=etc_render_fsbrain.vertex_coords;
-%             if(isempty(min_dist_idx))
-%                 dist=sqrt(sum((vv-repmat([pt(1),pt(2),pt(3)],[size(vv,1),1])).^2,2));
-%                 [min_dist,min_dist_idx]=min(dist);
-%             end;
-%             if(~iscell(etc_render_fsbrain.overlay_vertex))
-%                 fprintf('the clicked overlay surface vertex: location=[%d]::<<%2.2f>> @ {%2.2f %2.2f %2.2f} \n',min_dist_idx,etc_render_fsbrain.ovs(min_dist_idx),vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3));
-%             else
-%                 if(min_dist_idx>length(etc_render_fsbrain.overlay_vertex{1}))
-%                     offset=length(etc_render_fsbrain.overlay_vertex{1});
-%                     hemi_idx=2;
-%                 else
-%                     offset=0;
-%                     hemi_idx=1;
-%                 end;
-%                 fprintf('the clicked overlay vertex: hemi{%d} location=[%d]::<<%2.2f>> @ {%2.2f %2.2f %2.2f} \n',hemi_idx,min_dist_idx-offset,etc_render_fsbrain.ovs{hemi_idx}(min_dist_idx-offset),vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3));
-%             end;
-%             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% overlay at the clicked point
-            
-            
+          
             %%%% overlay at the valued vertex closest to the clicked point
             if(~iscell(etc_render_fsbrain.overlay_vertex))
                 vv=etc_render_fsbrain.vertex_coords;
@@ -3101,17 +3096,23 @@ try
                     
                     for idx=1:size(etc_render_fsbrain.aux2_point_coords,1)
                         etc_render_fsbrain.aux2_point_coords_h(idx)=plot3(xx(idx),yy(idx),zz(idx),'.');
-                        
-                        electrode_idx=min(find((idx>n_e_cumsum)<eps));
-                        if(isfield(etc_render_fsbrain.electrode(electrode_idx),'color'))
-                            if(~isempty(etc_render_fsbrain.electrode(electrode_idx).color))
-                                set(etc_render_fsbrain.aux2_point_coords_h(idx),'MarkerEdgeColor',etc_render_fsbrain.electrode(electrode_idx).color,'markersize',etc_render_fsbrain.aux2_point_size);
+                        if(isfield(etc_render_fsbrain,'aux2_point_individual_color'))
+                            try
+                                set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_individual_color(idx,:),'markersize',etc_render_fsbrain.aux2_point_size);
+                            catch ME
+                            end
+                        else
+                            electrode_idx=min(find((idx>n_e_cumsum)<eps));
+                            if(isfield(etc_render_fsbrain.electrode(electrode_idx),'color'))
+                                if(~isempty(etc_render_fsbrain.electrode(electrode_idx).color))
+                                    set(etc_render_fsbrain.aux2_point_coords_h(idx),'MarkerEdgeColor',etc_render_fsbrain.electrode(electrode_idx).color,'markersize',etc_render_fsbrain.aux2_point_size);
+                                else
+                                    set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
+                                end;
                             else
                                 set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
                             end;
-                        else
-                            set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
-                        end;                        
+                        end;
                     end
                 end;
                 
@@ -3165,6 +3166,77 @@ try
 catch ME
 end;
 
+return;
+
+function update_label()
+global etc_render_fsbrain;
+
+        try
+            %for ss=1:length(select_idx)
+            for ss=1:length(etc_render_fsbrain.label_register)    
+                %label_number=etc_render_fsbrain.label_ctab.table(select_idx(ss),5);
+                label_number=etc_render_fsbrain.label_ctab.table(ss,5);
+                vidx=find((etc_render_fsbrain.label_value)==label_number);
+                %figure(etc_render_fsbrain.fig_brain);
+                
+%fprintf('%s: [%d] =%d\n',mat2str(etc_render_fsbrain.label_register),ss,etc_render_fsbrain.label_register(select_idx(ss)));
+
+                %if(etc_render_fsbrain.label_register(select_idx(ss))==1)
+                if(etc_render_fsbrain.label_register(ss)==1)
+                    %cc=etc_render_fsbrain.label_ctab.table(select_idx(ss),1:3)./255;
+                    cc=etc_render_fsbrain.label_ctab.table(ss,1:3)./255;
+                    etc_render_fsbrain.h.FaceVertexCData(vidx,:)=repmat(cc(:)',[length(vidx),1]);
+                    %etc_render_fsbrain.label_register(select_idx(ss))=1;
+                else
+                    etc_render_fsbrain.h.FaceVertexCData(vidx,:)=etc_render_fsbrain.fvdata(vidx,:);
+                    %etc_render_fsbrain.label_register(select_idx(ss))=0;
+                    
+                    %v=setdiff(select_idx,select_idx(ss));
+                    %set(hObject,'Value',v);
+                end;
+
+
+                label_coords=etc_render_fsbrain.orig_vertex_coords(vidx,:);
+
+                %find electrode contacts closest to the selected label
+                if(~isempty(etc_render_fsbrain.electrode))
+                    
+                    max_contact=0;
+                    for e_idx=1:length(etc_render_fsbrain.electrode)
+                            if(etc_render_fsbrain.electrode(e_idx).n_contact>max_contact)
+                                max_contact=etc_render_fsbrain.electrode(e_idx).n_contact;
+                            end;
+                    end;
+                    electrode_dist_min=ones(length(etc_render_fsbrain.electrode),max_contact).*nan;
+                    electrode_dist_avg=ones(length(etc_render_fsbrain.electrode),max_contact).*nan;
+                    
+                    for e_idx=1:length(etc_render_fsbrain.electrode)
+                        for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
+                            
+                            surface_coord=etc_render_fsbrain.electrode(e_idx).coord(c_idx,:);
+                            
+                            tmp=label_coords-repmat(surface_coord(:)',[size(label_coords,1),1]);
+                            tmp=sqrt(sum(tmp.^2,2));
+                            
+                            electrode_dist_min(e_idx,c_idx)=min(tmp);
+                            electrode_dist_avg(e_idx,c_idx)=mean(tmp);
+                        end;
+                    end;
+                    
+                    [dummy,min_idx]=sort(electrode_dist_min(:));
+                    fprintf('Top 3 closest contacts\n');
+                    for ii=1:3 %show the nearest three contacts
+                        [ee,cc]=ind2sub(size(electrode_dist_min),min_idx(ii));
+                        fprintf('  <%s_%02d> %2.2f (mm) (%1.1f %1.1f %1.1f)\n',etc_render_fsbrain.electrode(ee).name,cc,dummy(ii),etc_render_fsbrain.electrode(ee).coord(cc,1),etc_render_fsbrain.electrode(ee).coord(cc,2),etc_render_fsbrain.electrode(ee).coord(cc,3));
+                    end;
+                end;
+            end;
+
+            figure(etc_render_fsbrain.fig_label_gui);
+            
+        catch ME
+        end;
+        
 return;
 
 function update_overlay_vol()
