@@ -3101,6 +3101,7 @@ try
                                 set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_individual_color(idx,:),'markersize',etc_render_fsbrain.aux2_point_size);
                             catch ME
                             end
+                            set(etc_render_fsbrain.aux2_point_coords_h(idx),'markersize',etc_render_fsbrain.aux2_point_size);
                         else
                             electrode_idx=min(find((idx>n_e_cumsum)<eps));
                             if(isfield(etc_render_fsbrain.electrode(electrode_idx),'color'))
