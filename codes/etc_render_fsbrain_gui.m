@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_gui
 
-% Last Modified by GUIDE v2.5 25-Sep-2021 13:44:34
+% Last Modified by GUIDE v2.5 04-Dec-2021 13:08:28
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -373,31 +373,25 @@ set(handles.checkbox_overlay_truncate_pos,'value',etc_render_fsbrain.flag_overla
 set(handles.pushbutton_neg_curv_color,'BackgroundColor',etc_render_fsbrain.curv_neg_color);
 set(handles.pushbutton_pos_curv_color,'BackgroundColor',etc_render_fsbrain.curv_pos_color);
 
-% if(isempty(etc_render_fsbrain.lut))
-%     set(handles.listbox_overlay_vol_mask,'string',{});
-%     set(handles.listbox_overlay_vol_mask,'enable','off');
-%     set(handles.checkbox_overlay_aux_vol,'enable','off');                                                        
-%     set(handles.slider_overlay_aux_vol,'enable','off');                                                          
-%     set(handles.pushbutton_overlay_aux_vol,'enable','off');
-% else
-    if(~isempty(etc_render_fsbrain.lut))
-        set(handles.listbox_overlay_vol_mask,'string',etc_render_fsbrain.lut.name);
-        
-        set(handles.checkbox_overlay_aux_vol,'enable','on');                                                        
-        set(handles.slider_overlay_aux_vol,'enable','on');
-        set(handles.pushbutton_overlay_aux_vol,'enable','on');  
-          set(handles.listbox_overlay_vol_mask,'enable','on');
-
-    else
-        set(handles.listbox_overlay_vol_mask,'string',{});
-
-        set(handles.checkbox_overlay_aux_vol,'enable','off');                                                        
-        set(handles.slider_overlay_aux_vol,'enable','off');
-        set(handles.pushbutton_overlay_aux_vol,'enable','off');
+if(~isempty(etc_render_fsbrain.lut))
+    set(handles.listbox_overlay_vol_mask,'string',etc_render_fsbrain.lut.name);
     
-    end;
-%end;              
+    set(handles.checkbox_overlay_aux_vol,'enable','on');
+    set(handles.slider_overlay_aux_vol,'enable','on');
+    set(handles.pushbutton_overlay_aux_vol,'enable','on');
+    set(handles.listbox_overlay_vol_mask,'enable','on');
+else
+    set(handles.listbox_overlay_vol_mask,'string',{});
+    
+    set(handles.checkbox_overlay_aux_vol,'enable','off');
+    set(handles.slider_overlay_aux_vol,'enable','off');
+    set(handles.pushbutton_overlay_aux_vol,'enable','off');
+end;
 
+%cortical labels
+set(handles.checkbox_show_cort_label,'value',etc_render_fsbrain.flag_show_cort_label);
+set(handles.checkbox_show_cort_label_boundary,'value',etc_render_fsbrain.flag_show_cort_label_boundary);
+set(handles.pushbotton_cort_label_boundary_color,'BackgroundColor',etc_render_fsbrain.cort_label_boundary_color);
 
 if(isempty(etc_render_fsbrain.fig_vol))
         set(handles.checkbox_show_vol_colorbar,'enable','off');
@@ -2540,3 +2534,162 @@ function edit22_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in checkbox_show_cort_label.
+function checkbox_show_cort_label_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_show_cort_label (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_show_cort_label
+global etc_render_fsbrain
+
+etc_render_fsbrain.flag_show_cort_label=get(hObject,'Value');
+
+
+if(isfield(etc_render_fsbrain,'label_register'))
+    %cortical labels
+    for ss=1:length(etc_render_fsbrain.label_register)
+        if(~isempty(etc_render_fsbrain.label_ctab))
+            label_number=etc_render_fsbrain.label_ctab.table(ss,5);
+            vidx=find((etc_render_fsbrain.label_value)==label_number);
+            if(etc_render_fsbrain.label_register(ss)==1)
+                if(etc_render_fsbrain.flag_show_cort_label)
+                    %plot label
+                    cc=etc_render_fsbrain.label_ctab.table(ss,1:3)./255;
+                    etc_render_fsbrain.h.FaceVertexCData(vidx,:)=repmat(cc(:)',[length(vidx),1]);
+                else
+                    etc_render_fsbrain.h.FaceVertexCData(vidx,:)=etc_render_fsbrain.fvdata(vidx,:);
+                end;
+                if(etc_render_fsbrain.flag_show_cort_label_boundary)
+                    %plot label boundary
+                    figure(etc_render_fsbrain.fig_brain);
+                    if(isfield(etc_render_fsbrain,'h_label_boundary'))
+                        delete(etc_render_fsbrain.h_label_boundary(:));
+                    end;
+                    boundary_face_idx=find(sum(ismember(etc_render_fsbrain.faces,vidx-1),2)==2); %face indices at the boundary of the selected label; two vertices out of three are the selected label
+                    for b_idx=1:length(boundary_face_idx)
+                        boundary_face_vertex_idx=find(ismember(etc_render_fsbrain.faces(boundary_face_idx(b_idx),:),vidx-1)); %find vertices of a boundary face within a label
+                        %hold on;
+                        etc_render_fsbrain.h_label_boundary(b_idx)=line(...
+                            etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,1)',...
+                            etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,2)',...
+                            etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,3)');
+                        
+                        set(etc_render_fsbrain.h_label_boundary(b_idx),'linewidth',2,'color',etc_render_fsbrain.cort_label_boundary_color);
+                    end;
+                else
+                    if(isfield(etc_render_fsbrain,'h_label_boundary'))
+                        delete(etc_render_fsbrain.h_label_boundary(:));
+                    end;
+                end;
+            end;
+        end;
+    end;
+end;
+
+% --- Executes on button press in checkbox_show_cort_label_boundary.
+function checkbox_show_cort_label_boundary_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_show_cort_label_boundary (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_show_cort_label_boundary
+global etc_render_fsbrain
+
+etc_render_fsbrain.flag_show_cort_label_boundary=get(hObject,'Value');
+
+
+if(isfield(etc_render_fsbrain,'label_register'))
+    %cortical labels
+    for ss=1:length(etc_render_fsbrain.label_register)
+        if(~isempty(etc_render_fsbrain.label_ctab))
+            label_number=etc_render_fsbrain.label_ctab.table(ss,5);
+            vidx=find((etc_render_fsbrain.label_value)==label_number);
+            if(etc_render_fsbrain.label_register(ss)==1)
+                if(etc_render_fsbrain.flag_show_cort_label)
+                    %plot label
+                    cc=etc_render_fsbrain.label_ctab.table(ss,1:3)./255;
+                    etc_render_fsbrain.h.FaceVertexCData(vidx,:)=repmat(cc(:)',[length(vidx),1]);
+                else
+                    etc_render_fsbrain.h.FaceVertexCData(vidx,:)=etc_render_fsbrain.fvdata(vidx,:);
+                end;
+                if(etc_render_fsbrain.flag_show_cort_label_boundary)
+                    %plot label boundary
+                    figure(etc_render_fsbrain.fig_brain);
+                    if(isfield(etc_render_fsbrain,'h_label_boundary'))
+                        delete(etc_render_fsbrain.h_label_boundary(:));
+                    end;
+                    boundary_face_idx=find(sum(ismember(etc_render_fsbrain.faces,vidx-1),2)==2); %face indices at the boundary of the selected label; two vertices out of three are the selected label
+                    for b_idx=1:length(boundary_face_idx)
+                        boundary_face_vertex_idx=find(ismember(etc_render_fsbrain.faces(boundary_face_idx(b_idx),:),vidx-1)); %find vertices of a boundary face within a label
+                        %hold on;
+                        etc_render_fsbrain.h_label_boundary(b_idx)=line(...
+                            etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,1)',...
+                            etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,2)',...
+                            etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,3)');
+                        
+                        set(etc_render_fsbrain.h_label_boundary(b_idx),'linewidth',2,'color',etc_render_fsbrain.cort_label_boundary_color);
+                    end;
+                else
+                    if(isfield(etc_render_fsbrain,'h_label_boundary'))
+                        delete(etc_render_fsbrain.h_label_boundary(:));
+                    end;
+                end;
+            end;
+        end;
+    end;
+end;
+% --- Executes on button press in pushbotton_cort_label_boundary_color.
+function pushbotton_cort_label_boundary_color_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbotton_cort_label_boundary_color (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain
+
+c = uisetcolor(etc_render_fsbrain.cort_label_boundary_color,'Select a color');
+etc_render_fsbrain.cort_label_boundary_color=c;
+set(handles.pushbotton_cort_label_boundary_color,'BackgroundColor',etc_render_fsbrain.cort_label_boundary_color);
+
+
+if(isfield(etc_render_fsbrain,'label_register'))
+    %cortical labels
+    for ss=1:length(etc_render_fsbrain.label_register)
+        if(~isempty(etc_render_fsbrain.label_ctab))
+            label_number=etc_render_fsbrain.label_ctab.table(ss,5);
+            vidx=find((etc_render_fsbrain.label_value)==label_number);
+            if(etc_render_fsbrain.label_register(ss)==1)
+                if(etc_render_fsbrain.flag_show_cort_label)
+                    %plot label
+                    cc=etc_render_fsbrain.label_ctab.table(ss,1:3)./255;
+                    etc_render_fsbrain.h.FaceVertexCData(vidx,:)=repmat(cc(:)',[length(vidx),1]);
+                else
+                    etc_render_fsbrain.h.FaceVertexCData(vidx,:)=etc_render_fsbrain.fvdata(vidx,:);
+                end;
+                if(etc_render_fsbrain.flag_show_cort_label_boundary)
+                    %plot label boundary
+                    figure(etc_render_fsbrain.fig_brain);
+                    if(isfield(etc_render_fsbrain,'h_label_boundary'))
+                        delete(etc_render_fsbrain.h_label_boundary(:));
+                    end;
+                    boundary_face_idx=find(sum(ismember(etc_render_fsbrain.faces,vidx-1),2)==2); %face indices at the boundary of the selected label; two vertices out of three are the selected label
+                    for b_idx=1:length(boundary_face_idx)
+                        boundary_face_vertex_idx=find(ismember(etc_render_fsbrain.faces(boundary_face_idx(b_idx),:),vidx-1)); %find vertices of a boundary face within a label
+                        %hold on;
+                        etc_render_fsbrain.h_label_boundary(b_idx)=line(...
+                            etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,1)',...
+                            etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,2)',...
+                            etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,3)');
+                        
+                        set(etc_render_fsbrain.h_label_boundary(b_idx),'linewidth',2,'color',etc_render_fsbrain.cort_label_boundary_color);
+                    end;
+                else
+                    if(isfield(etc_render_fsbrain,'h_label_boundary'))
+                        delete(etc_render_fsbrain.h_label_boundary(:));
+                    end;
+                end;
+            end;
+        end;
+    end;
+end;

@@ -137,6 +137,10 @@ label_value=[];
 label_ctab=[];
 file_annot='';
 
+flag_show_cort_label=1; %show solid labels
+flag_show_cort_label_boundary=1; %show label boundary
+cort_label_boundary_color=[0 0 1]; %label boundary color
+
 %stc time course
 flag_hold_fig_stc_timecourse=0;
 
@@ -328,6 +332,12 @@ for idx=1:length(varargin)/2
             label_value=option_value;
         case 'label_ctab'
             label_ctab=option_value;
+        case 'cort_label_boundary_color'
+            cort_label_boundary_color=option_value;
+        case 'flag_show_cort_label';
+            flag_show_cort_label=option_value;
+        case 'flag_show_cort_label_boundary'
+            flag_show_cort_label_boundary=option_value;
         case 'file_annot'
             file_annot=option_value;
         case 'electrode'
@@ -908,6 +918,13 @@ if(~isempty(label_vertex)&&~isempty(label_value)&&~isempty(label_ctab))
     
 end;
 
+%figure position
+set(0,'units','pixels')  
+Pix_SS = get(0,'screensize');
+Pix_FF = get(gcf,'position');
+
+set(gcf,'pos',[Pix_SS(3)/2-Pix_FF(3)/2, Pix_SS(4), Pix_FF(3), Pix_FF(4)])
+
 %add exploration toolbar
 addToolbarExplorationButtons(gcf);
 
@@ -1023,6 +1040,9 @@ etc_render_fsbrain.label_value=label_value;
 etc_render_fsbrain.label_ctab=label_ctab;
 etc_render_fsbrain.label_h=[]; %handle to the label points on the cortical surface
 etc_render_fsbrain.label_select_idx=-1; %the index to the selected label
+etc_render_fsbrain.flag_show_cort_label=flag_show_cort_label; %show solid labels
+etc_render_fsbrain.flag_show_cort_label_boundary=flag_show_cort_label_boundary; %show label boundary
+etc_render_fsbrain.cort_label_boundary_color=cort_label_boundary_color; %label boundary color
 
 etc_render_fsbrain.flag_hold_fig_stc_timecourse=flag_hold_fig_stc_timecourse;
 etc_render_fsbrain.handle_fig_stc_timecourse=[];
@@ -1051,8 +1071,6 @@ etc_render_fsbrain.aux_point_size=topo_aux_point_size;
 etc_render_fsbrain.aux_point_label_flag=topo_aux_point_label_flag;
 etc_render_fsbrain.aux_point_text_color=topo_aux_point_text_color;
 etc_render_fsbrain.aux_point_text_size=topo_aux_point_text_size;
-
-
 
 etc_render_fsbrain.aux2_point_coords=topo_aux2_point_coords;
 etc_render_fsbrain.aux2_point_coords_h=topo_aux2_point_coords_h;

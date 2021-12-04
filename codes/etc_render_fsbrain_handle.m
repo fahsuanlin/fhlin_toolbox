@@ -2973,6 +2973,7 @@ view(etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2));
 campos(etc_render_fsbrain.camposition.*1); 
 axis(etc_render_fsbrain.lim);
 
+
 % %add exploration toolbar
 % [vv date] = version;
 % DateNumber = datenum(date);
