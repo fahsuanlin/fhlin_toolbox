@@ -1,7 +1,6 @@
 function [tsnr]=etc_tsnr(varargin)
 
 file_nii={};
-    };
 
 img=[];
 

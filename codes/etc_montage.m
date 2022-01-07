@@ -26,6 +26,7 @@ font_name='helvetica';
 font_size=16;
 font_color=[0 1 1];
 flag_frame=1;
+flag_auto_crop=1;
 flag_display=0;
 horizontalalignment='left';
 
@@ -57,6 +58,8 @@ for i=1:length(varargin)/2
         font_color=option_value;
     case 'flag_frame'
             flag_frame=option_value;
+    case 'flag_auto_crop'
+            flag_auto_crop=option_value;
     case 'flag_display'
             flag_display=option_value;
     case 'horizontalalignment'
@@ -110,8 +113,10 @@ for i=1:nn
 	rr=min(find(hor(floor(length(hor)/2):end)==0))+floor(length(hor)/2)-1;
 	tt=max(find(ver(1:floor(length(ver)/2))==0));
 	dd=min(find(ver(floor(length(ver)/2):end)==0))+floor(length(ver)/2)-1;
-	rect=[ll,tt,rr-ll+1,dd-tt+1];
-
+    if(flag_auto_crop)
+    	crop_rect=[ll,tt,rr-ll+1,dd-tt+1];
+    end;
+    
 	if(~isempty(crop_rect))
 		pp=imcrop(img,crop_rect);
 	else
