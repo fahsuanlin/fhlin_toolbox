@@ -73,6 +73,7 @@ else
     nx=sz(2);
     nz=sz(3);
 
+    timepoints(f_idx)=size(stc,2);
     
     exclude_time_all=[];
     if(~isempty(exclude_time))
