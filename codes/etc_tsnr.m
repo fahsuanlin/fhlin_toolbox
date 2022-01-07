@@ -54,10 +54,9 @@ if(isempty(img))
         d=load_untouch_nii(file_nii{f_idx});
         sz=size(d.img);
         
-        timepoints(f_idx)=sz(end);
-        
         stc=reshape(double(d.img),[prod(sz(1:end-1)),sz(end)]);
-        stc(:,exclude_time)=[];
+        timepoints(f_idx)=size(stc,2);
+        %stc(:,exclude_time)=[];
         
         ss=sz(1:end-1);
         ny=ss(1);
@@ -75,14 +74,14 @@ else
     
     sz=size(img);
     stc=reshape(img,[prod(sz(1:end-1)),sz(end)]);
-    stc(:,exclude_time)=[];
+    timepoints(f_idx)=size(stc,2);
+    %stc(:,exclude_time)=[];
     
     ss=sz(1:end-1);
     ny=ss(1);
     nx=ss(2);
     nz=ss(3);
 
-    timepoints(f_idx)=sz(end);
     
     exclude_time_all=[];
     if(~isempty(exclude_time))
