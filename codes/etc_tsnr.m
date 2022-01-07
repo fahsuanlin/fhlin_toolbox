@@ -13,6 +13,7 @@ confound_polynomial_order=2;
 
 %output_stem='tsnr_epi_60deg';
 
+flag_display=0;
 
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
@@ -64,11 +65,14 @@ if(isempty(img))
 else
     f_idx=1;
     
-    img(:,:,exclude_time)=[];
+    sz=size(img);
+    stc=reshape(img,[prod(sz(1:end-1)),sz(end)]);
+    stc(:,exclude_time)=[];
     
-    [ny, nx, timepoints]=size(img);
-    nz=1;
-    stc=reshape(img,[ny*nx, timepoints]);
+    ny=sz(1);
+    nx=sz(2);
+    nz=sz(3);
+
     
     exclude_time_all=[];
     if(~isempty(exclude_time))
