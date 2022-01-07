@@ -52,9 +52,17 @@ if(isempty(img))
     exclude_time_all=[];
     for f_idx=1:length(file_nii)
         d=load_untouch_nii(file_nii{f_idx});
-        [ny,nx,nz,timepoints(f_idx)]=size(d.img);
+        sz=size(d.img);
         
-        stc=cat(2,stc,reshape(double(d.img),[ny*nx*nz,timepoints(f_idx)]));
+        timepoints(f_idx)=sz(end);
+        
+        stc=reshape(double(img),[prod(sz(1:end-1)),sz(end)]);
+        stc(:,exclude_time)=[];
+        
+        ss=sz(1:end-1);
+        ny=ss(1);
+        nx=ss(2);
+        nz=ss(3);
         
         if(~isempty(exclude_time))
             exclude_time_all=cat(1,exclude_time_all,exclude_time(:)+(timepoints(f_idx)).*(f_idx-1));
@@ -69,11 +77,12 @@ else
     stc=reshape(img,[prod(sz(1:end-1)),sz(end)]);
     stc(:,exclude_time)=[];
     
-    ny=sz(1);
-    nx=sz(2);
-    nz=sz(3);
+    ss=sz(1:end-1);
+    ny=ss(1);
+    nx=ss(2);
+    nz=ss(3);
 
-    timepoints(f_idx)=size(stc,2);
+    timepoints(f_idx)=sz(end);
     
     exclude_time_all=[];
     if(~isempty(exclude_time))
