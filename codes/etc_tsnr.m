@@ -56,7 +56,7 @@ if(isempty(img))
         
         timepoints(f_idx)=sz(end);
         
-        stc=reshape(double(img),[prod(sz(1:end-1)),sz(end)]);
+        stc=reshape(double(d.img),[prod(sz(1:end-1)),sz(end)]);
         stc(:,exclude_time)=[];
         
         ss=sz(1:end-1);
