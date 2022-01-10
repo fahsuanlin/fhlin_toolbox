@@ -13,6 +13,9 @@ function vol = etc_MRIvol2vol(mov,targ,R,varargin)
 
 
 flag_display=0;
+
+frames=[]; %all time points
+
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
@@ -20,6 +23,8 @@ for i=1:length(varargin)/2
     switch(lower(option))
         case 'flag_display'
             flag_display=option_value;
+        case 'frames'
+            frames=option_value;
         otherwise
             fprintf('unknown option [%s]!\nerror!\n',option);
             return;
@@ -112,16 +117,18 @@ if(length(size(mov.vol))==3)
     vol.vol = zeros(nrt,nct,nst);
     vol.vol(tind)=mov.vol(mind);
 else
-    vol.vol = zeros(nrt,nct,nst,size(mov.vol,4));  
-    for t_idx=1:size(mov.vol,4)
+    if(isempty(frames))
+        frames=[1:size(mov.vol,4)];
+    end;
+    for t_idx=1:length(frames)
         if(flag_display)
             fprintf('*');
         end;
-        tmp_mov=mov.vol(:,:,:,t_idx);
+        tmp_mov=mov.vol(:,:,:,frames(t_idx));
         tmp_targ=zeros(nrt,nct,nst);
         tmp_targ(tind)=tmp_mov(mind);
         if(t_idx==1)
-            vol.vol=zeros(size(tmp_targ,1),size(tmp_targ,2),size(tmp_targ,3),size(mov.vol,4));
+            vol.vol=zeros(size(tmp_targ,1),size(tmp_targ,2),size(tmp_targ,3),length(frames));
         end;
         vol.vol(:,:,:,t_idx)=tmp_targ;
     end;
