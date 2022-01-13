@@ -172,10 +172,10 @@ switch lower(param)
                             %if(isempty(etc_render_fsbrain.vol_A))
                                 switch(hemi)
                                     case 'lh'
-                                        etc_render_fsbrain.vol_A(1).loc=etc_render_fsbrain.vertex_coords(vv+1,:);
+                                        etc_render_fsbrain.vol_A(1).loc=etc_render_fsbrain.orig_vertex_coords(vv+1,:);
                                         etc_render_fsbrain.vol_A(1).wb_loc=[];
                                         etc_render_fsbrain.vol_A(1).v_idx=vv;
-                                        etc_render_fsbrain.vol_A(1).vertex_coords=etc_render_fsbrain.vertex_coords;
+                                        etc_render_fsbrain.vol_A(1).vertex_coords=etc_render_fsbrain.orig_vertex_coords;
                                         etc_render_fsbrain.vol_A(1).faces=etc_render_fsbrain.faces;
                                         
                                         etc_render_fsbrain.vol_A(2).loc=[];
@@ -190,10 +190,10 @@ switch lower(param)
                                         etc_render_fsbrain.vol_A(1).vertex_coords=[];
                                         etc_render_fsbrain.vol_A(1).faces=[];
                                         
-                                        etc_render_fsbrain.vol_A(2).loc=etc_render_fsbrain.vertex_coords(vv+1,:);
+                                        etc_render_fsbrain.vol_A(2).loc=etc_render_fsbrain.orig_vertex_coords(vv+1,:);
                                         etc_render_fsbrain.vol_A(2).wb_loc=[];
                                         etc_render_fsbrain.vol_A(2).v_idx=vv;
-                                        etc_render_fsbrain.vol_A(2).vertex_coords=etc_render_fsbrain.vertex_coords;
+                                        etc_render_fsbrain.vol_A(2).vertex_coords=etc_render_fsbrain.orig_vertex_coords;
                                         etc_render_fsbrain.vol_A(2).faces=etc_render_fsbrain.faces;
                                 end;
                             %end;
