@@ -228,7 +228,9 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
                 vidx=find((etc_render_fsbrain.label_value)==label_number);
                 
                 etc_render_fsbrain.h.FaceVertexCData(vidx,:)=etc_render_fsbrain.fvdata(vidx,:);
-                
+                if(isfield(etc_render_fsbrain,'h_label_boundary'))
+                    delete(etc_render_fsbrain.h_label_boundary(:));
+                end;
                 %             %delete highlighted label
                 %             if(isfield(etc_render_fsbrain,'label_h'))
                 %                 if(~isempty(etc_render_fsbrain.label_h))

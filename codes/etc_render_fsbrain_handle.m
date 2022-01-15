@@ -3323,6 +3323,8 @@ try
         else
             X_hemi_cort=[];
             X_hemi_subcort=[];
+
+            Vs{hemi_idx}=[];
         end;
         
         %smooth source estimates at cortical locations

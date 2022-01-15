@@ -2072,6 +2072,7 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
             etc_render_fsbrain.overlay_flag_render=0;
             etc_render_fsbrain.overlay_value_flag_pos=0;
             etc_render_fsbrain.overlay_value_flag_neg=0;
+            etc_render_fsbrain.overlay_vol_stc=[];
             if(~isempty(etc_render_fsbrain.overlay_buffer_main_idx))
                 etc_render_fsbrain.overlay_stc=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).stc;
                 etc_render_fsbrain.overlay_vertex=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).vertex;

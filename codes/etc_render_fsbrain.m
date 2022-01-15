@@ -21,7 +21,7 @@ surf='inflated';
 flag_curv=1;
 hemi='lh'; %hemi={'lh','rh'}; for showing both hemispheres;
 curv=[];
-vol=[];
+vol=[]; 
 vol_reg=eye(4);
 vol_A=[];
 vol_vox=[];
@@ -174,6 +174,9 @@ click_vertex_point_color=[0 1 1];
 
 flag_mirror=0;
 
+
+tmp_set_vol=0;
+
 for idx=1:length(varargin)/2
     option=varargin{idx*2-1};
     option_value=varargin{idx*2};
@@ -190,6 +193,7 @@ for idx=1:length(varargin)/2
             surf=option_value;
         case 'vol'
             vol=option_value;
+            tmp_set_vol=1;
         case 'vol_reg'
             vol_reg=option_value;
         case 'vol_a'
@@ -361,6 +365,11 @@ for idx=1:length(varargin)/2
             return;
     end;
 end
+
+
+if(tmp_set_vol<0.5)
+    vol=MRIread(sprintf('%s/%s/mri/orig.mgz',subjects_dir,subject));
+end;
 
 %get the surface overlay values from volumetric STC.
 if(~isempty(overlay_vol_stc)&~isempty(vol_A))
