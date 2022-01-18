@@ -965,11 +965,11 @@ if(~isempty(etc_render_fsbrain.aux2_point_coords))
     mask=repmat(etc_render_fsbrain.electrode_mask(etc_render_fsbrain.electrode_idx,:),[3 1])';
     tmp=etc_render_fsbrain.aux2_point_coords.';
     if(etc_render_fsbrain.electrode_contact_lock_flag)
-        tmp=tmp-repmat(etc_render_fsbrain.electrode_contact_coord_now.',[1 size(tmp,2)]);
+        tmp=tmp-repmat(etc_render_fsbrain.electrode_contact_coord_now(:),[1 size(tmp,2)]);
     end;
     tmp=(R*(mask.'.*tmp)).';
     if(etc_render_fsbrain.electrode_contact_lock_flag)
-        tmp=tmp+repmat(etc_render_fsbrain.electrode_contact_coord_now,[size(tmp,1),1]);
+        tmp=tmp+repmat(etc_render_fsbrain.electrode_contact_coord_now(:)',[size(tmp,1),1]);
     end;
     
     etc_render_fsbrain.aux2_point_coords(find(mask(:)>eps))=tmp(find(mask(:)>eps));

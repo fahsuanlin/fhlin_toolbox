@@ -17,7 +17,7 @@ flag_display=0;
 %fundamental anatomy geometry
 subjects_dir=getenv('SUBJECTS_DIR');
 subject='fsaverage';
-surf='inflated';
+surf='orig';
 flag_curv=1;
 hemi='lh'; %hemi={'lh','rh'}; for showing both hemispheres;
 curv=[];
@@ -754,8 +754,11 @@ end;
 if(~iscell(hemi))
     if(flag_curv)
         file_curv=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi,'curv');
-        [curv]=read_curv(file_curv);
-        
+        if(exist(file_curv))
+            [curv]=read_curv(file_curv);
+        else
+            curv=[];
+        end;
         curv_hemi=curv;
     else
         curv_hemi=[];

@@ -2875,6 +2875,7 @@ if(~isempty(etc_render_fsbrain.curv))
 end;
 
 ovs=[];
+try
 if(etc_render_fsbrain.overlay_flag_render)
     %2: curvature and overlay color
     if(~isempty(etc_render_fsbrain.overlay_value))
@@ -2933,6 +2934,8 @@ if(etc_render_fsbrain.overlay_flag_render)
         
         etc_render_fsbrain.fvdata(c_idx,:)=inverse_get_color(etc_render_fsbrain.overlay_cmap_neg,-ovs(c_idx),max(etc_render_fsbrain.overlay_threshold),min(etc_render_fsbrain.overlay_threshold));
     end;
+end;
+catch ME
 end;
 
 etc_render_fsbrain.ovs=ovs;
