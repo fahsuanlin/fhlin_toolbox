@@ -235,7 +235,7 @@ switch lower(ext)
             round(str2num(contents{vv})*etc_trace_obj.fs);
             etc_trace_obj.time_duration_idx=round(str2num(contents{vv})*etc_trace_obj.fs);
             
-            etc_trace_obj.time_duration_idx=round(etc_trace_obj.fs*str2double(str{6})); %default: 10-s
+            %etc_trace_obj.time_duration_idx=round(etc_trace_obj.fs*str2double(str{6})); %default: 10-s
             
             etc_trace_obj.load.montage=[];
             etc_trace_obj.load.select=[];

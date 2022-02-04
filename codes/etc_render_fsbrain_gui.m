@@ -370,8 +370,12 @@ set(handles.edit_click_point_size,'string',sprintf('%d',etc_render_fsbrain.click
 set(handles.checkbox_overlay_truncate_neg,'value',etc_render_fsbrain.flag_overlay_truncate_neg);
 set(handles.checkbox_overlay_truncate_pos,'value',etc_render_fsbrain.flag_overlay_truncate_pos);
 
-set(handles.pushbutton_neg_curv_color,'BackgroundColor',etc_render_fsbrain.curv_neg_color);
-set(handles.pushbutton_pos_curv_color,'BackgroundColor',etc_render_fsbrain.curv_pos_color);
+if(~isempty(etc_render_fsbrain.curv_neg_color))
+    set(handles.pushbutton_neg_curv_color,'BackgroundColor',etc_render_fsbrain.curv_neg_color);
+end;
+if(~isempty(etc_render_fsbrain.curv_pos_color))
+    set(handles.pushbutton_pos_curv_color,'BackgroundColor',etc_render_fsbrain.curv_pos_color);
+end;
 
 if(~isempty(etc_render_fsbrain.lut))
     set(handles.listbox_overlay_vol_mask,'string',etc_render_fsbrain.lut.name);
@@ -389,9 +393,15 @@ else
 end;
 
 %cortical labels
-set(handles.checkbox_show_cort_label,'value',etc_render_fsbrain.flag_show_cort_label);
-set(handles.checkbox_show_cort_label_boundary,'value',etc_render_fsbrain.flag_show_cort_label_boundary);
-set(handles.pushbotton_cort_label_boundary_color,'BackgroundColor',etc_render_fsbrain.cort_label_boundary_color);
+if(isfield(etc_render_fsbrain,'flag_show_cort_label'))
+    set(handles.checkbox_show_cort_label,'value',etc_render_fsbrain.flag_show_cort_label);
+end;
+if(isfield(etc_render_fsbrain,'flag_show_cort_label_boundary'))
+    set(handles.checkbox_show_cort_label_boundary,'value',etc_render_fsbrain.flag_show_cort_label_boundary);
+end;
+if(isfield(etc_render_fsbrain,'cort_label_boundary_color'))
+    set(handles.pushbotton_cort_label_boundary_color,'BackgroundColor',etc_render_fsbrain.cort_label_boundary_color);
+end;
 
 if(isempty(etc_render_fsbrain.fig_vol))
         set(handles.checkbox_show_vol_colorbar,'enable','off');

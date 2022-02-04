@@ -9,14 +9,17 @@ for i=1:length(varargin)/2
     switch lower(option)
         case 'h'
             h=option_value;
+        case 'width_l'
+            width_L=option_value;
         otherwise
             fprintf('unknown option [%s].\neerror!\n',option);
             return;
     end;
 end;
 
-
-width_L=128*min(threshold)./(abs(diff(threshold)));
+if(isempty(width_L))
+    width_L=128*min(threshold)./(abs(diff(threshold)));
+end;
 
 %colormap
 a1=ones(1,64);
