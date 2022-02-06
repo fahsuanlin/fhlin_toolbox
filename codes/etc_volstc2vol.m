@@ -170,13 +170,11 @@ for time_idx=1:size(overlay_vol_stc,2)
     
     
     tmp=zeros(size(vol.vol));
-    tmp1=zeros(size(vol.vol));
     
     
     for hemi_idx=1:2
         if(~isempty(Vs{hemi_idx}))
             tmp=tmp+Vs{hemi_idx}; %sub-cortical activity
-            tmp1=tmp1+Vs{hemi_idx}; %sub-cortical activity
         end;
         
         switch hemi_idx
@@ -189,7 +187,6 @@ for time_idx=1:size(overlay_vol_stc,2)
         if(~isempty(X_wb{hemi_idx}))
             if(isempty(vol_ribbon))
                 tmp(loc_vol_idx{hemi_idx})=X_wb{hemi_idx}; %cortical activity; no projection over the cortical ribbon
-                tmp1(loc_vol_idx{hemi_idx})=X_wb{hemi_idx}; %cortical activity; no projection over the cortical ribbon
             else
                 if(isempty(ribbon_idx{hemi_idx})|isempty(cort_ribbon_idx{hemi_idx}))
                     [rr,cc,ss]=meshgrid([1:size(vol_ribbon.vol,1)],[1:size(vol_ribbon.vol,2)],[1:size(vol_ribbon.vol,3)]);

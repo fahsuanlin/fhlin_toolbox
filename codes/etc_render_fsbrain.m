@@ -368,7 +368,44 @@ end
 
 
 if(tmp_set_vol<0.5)
-    vol=MRIread(sprintf('%s/%s/mri/orig.mgz',subjects_dir,subject));
+    vol=[];
+    try
+        vol=MRIread(sprintf('%s/%s/mri/orig.mgz',subjects_dir,subject));
+    catch ME
+    end;
+    
+    
+    %cortical ribbon index setup
+    vol_ribbon=[];
+    cort_ribbon_idx{1}=[];
+    cort_ribbon_idx{2}=[];
+    ribbon_idx{1}=[];
+    ribbon_idx{2}=[];
+    try
+        vol_ribbon=MRIread(sprintf('../../subjects/%s/mri/ribbon.mgz',subject));
+        
+        for hemi_idx=1:2
+            switch hemi_idx
+                case 1
+                    ribbon_value=3; %left hemisphere cortical ribbon value
+                case 2
+                    ribbon_value=42; %right hemisphere cortical ribbon value
+            end;
+            
+            [rr,cc,ss]=meshgrid([1:size(vol_ribbon.vol,1)],[1:size(vol_ribbon.vol,2)],[1:size(vol_ribbon.vol,3)]);
+            
+            X=cat(2,rr(:),cc(:),ss(:));
+            
+            Xcort=X(etc_render_fsbrain.loc_vol_idx{hemi_idx},:);
+            
+            ribbon_idx{hemi_idx}=find(vol_ribbon.vol(:)==ribbon_value);
+            
+            Xribbon=X(ribbon_idx{hemi_idx},:);
+            
+            cort_ribbon_idx{hemi_idx}=knnsearch(Xcort,Xribbon);
+        end;
+    catch ME
+    end;
 end;
 
 %get the surface overlay values from volumetric STC.
@@ -957,6 +994,7 @@ etc_render_fsbrain.brain_axis=gca;
 
 etc_render_fsbrain.subject=subject;
 etc_render_fsbrain.surf=surf;
+etc_render_fsbrain.vol_ribbon=vol_ribbon;
 etc_render_fsbrain.vol=vol;
 etc_render_fsbrain.vol_reg=vol_reg;
 etc_render_fsbrain.vol_A=vol_A;
