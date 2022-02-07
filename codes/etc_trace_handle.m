@@ -724,6 +724,9 @@ switch lower(param)
                             etc_render_fsbrain.click_overlay_vertex=etc_trace_obj.trace_selected_idx;
                         end;
                         etc_render_fsbrain_handle('draw_stc');
+                        etc_render_fsbrain_handle('update_overlay_vol');
+                        etc_render_fsbrain_handle('draw_pointer');
+                        etc_render_fsbrain_handle('redraw');
                     end;                    
                 catch ME
                 end;

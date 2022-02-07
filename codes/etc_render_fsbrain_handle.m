@@ -425,48 +425,48 @@ switch lower(param)
                 if(~isempty(etc_render_fsbrain.overlay_stc))
                     if(size(etc_render_fsbrain.overlay_stc,1)<150)
                         
-                    %etc_trace(etc_render_fsbrian.overlay_stc,'fs',fs,'trigger',trigger_all,'ch_names',label,'aux_data',{data_nobcg});
-                    aux_data={};
-                    if(~isempty(etc_render_fsbrain.overlay_aux_stc))
-                        for vv_idx=1:size(etc_render_fsbrain.overlay_aux_stc,3)
-                            aux_data{vv_idx}=etc_render_fsbrain.overlay_aux_stc(:,:,vv_idx);
-                        end;
-                    end;
-                    
-                    if(~isempty(etc_render_fsbrain.overlay_stc_timeVec))
-                        fs=1./mean(diff(etc_render_fsbrain.overlay_stc_timeVec));
-                        if(~isempty(etc_render_fsbrain.overlay_stc_timeVec_unit))
-                            switch lower(etc_render_fsbrain.overlay_stc_timeVec_unit)
-                                case 'ms'
-                                    fs=fs.*1e3;
+                        %etc_trace(etc_render_fsbrian.overlay_stc,'fs',fs,'trigger',trigger_all,'ch_names',label,'aux_data',{data_nobcg});
+                        aux_data={};
+                        if(~isempty(etc_render_fsbrain.overlay_aux_stc))
+                            for vv_idx=1:size(etc_render_fsbrain.overlay_aux_stc,3)
+                                aux_data{vv_idx}=etc_render_fsbrain.overlay_aux_stc(:,:,vv_idx);
                             end;
                         end;
-                    else
-                        fs=1e3; %default sampling rate; 1000 Hz
-                    end;
-                   
-
-                    time_begin=0;
-                    if(~isempty(etc_render_fsbrain.overlay_stc_timeVec))
-                        time_begin=etc_render_fsbrain.overlay_stc_timeVec(1);
-                        if(~isempty(etc_render_fsbrain.overlay_stc_timeVec_unit))
-                            switch lower(etc_render_fsbrain.overlay_stc_timeVec_unit)
-                                case 'ms'
-                                    time_begin=time_begin/1e3;
+                        
+                        if(~isempty(etc_render_fsbrain.overlay_stc_timeVec))
+                            fs=1./mean(diff(etc_render_fsbrain.overlay_stc_timeVec));
+                            if(~isempty(etc_render_fsbrain.overlay_stc_timeVec_unit))
+                                switch lower(etc_render_fsbrain.overlay_stc_timeVec_unit)
+                                    case 'ms'
+                                        fs=fs.*1e3;
+                                end;
+                            end;
+                        else
+                            fs=1e3; %default sampling rate; 1000 Hz
+                        end;
+                        
+                        
+                        time_begin=0;
+                        if(~isempty(etc_render_fsbrain.overlay_stc_timeVec))
+                            time_begin=etc_render_fsbrain.overlay_stc_timeVec(1);
+                            if(~isempty(etc_render_fsbrain.overlay_stc_timeVec_unit))
+                                switch lower(etc_render_fsbrain.overlay_stc_timeVec_unit)
+                                    case 'ms'
+                                        time_begin=time_begin/1e3;
+                                end;
                             end;
                         end;
-                    end;
-                    
-                    global etc_trace_obj;
-                   
-                    if(isempty(etc_render_fsbrain.aux_point_name))
-                        for ii=1:length(etc_render_fsbrain.overlay_vertex)
-                            etc_render_fsbrain.aux_point_name{ii}=sprintf('ch%03d',ii);
+                        
+                        global etc_trace_obj;
+                        
+                        if(isempty(etc_render_fsbrain.aux_point_name))
+                            for ii=1:length(etc_render_fsbrain.overlay_vertex)
+                                etc_render_fsbrain.aux_point_name{ii}=sprintf('ch%03d',ii);
+                            end;
                         end;
-                    end;
-                    
-                    etc_trace_obj.ch_names=etc_render_fsbrain.aux_point_name;
-                    %if(~isempty(etc_trace_obj))
+                        
+                        etc_trace_obj.ch_names=etc_render_fsbrain.aux_point_name;
+                        %if(~isempty(etc_trace_obj))
                         try
                             etc_trace_obj.topo.vertex=etc_render_fsbrain.vertex_coords;
                             etc_trace_obj.topo.face=etc_render_fsbrain.faces;
@@ -474,12 +474,12 @@ switch lower(param)
                             Index=find(contains(etc_render_fsbrain.aux_point_name,etc_trace_obj.ch_names));
                             if(length(Index)<=length(etc_trace_obj.ch_names)) %all electrodes were found on topology
                                 for ii=1:length(etc_trace_obj.ch_names)
-%                                     for idx=1:length(etc_render_fsbrain.aux_point_name)
-%                                         if(strcmp(etc_render_fsbrain.aux_point_name{idx},etc_trace_obj.ch_names{ii}))
-%                                             Index(ii)=idx;
-%                                             electrode_data_idx(idx)=ii;
-%                                         end;
-%                                     end;
+                                    %                                     for idx=1:length(etc_render_fsbrain.aux_point_name)
+                                    %                                         if(strcmp(etc_render_fsbrain.aux_point_name{idx},etc_trace_obj.ch_names{ii}))
+                                    %                                             Index(ii)=idx;
+                                    %                                             electrode_data_idx(idx)=ii;
+                                    %                                         end;
+                                    %                                     end;
                                     
                                     
                                     IndexC = strcmp(etc_render_fsbrain.aux_point_name,etc_trace_obj.ch_names{ii});
@@ -504,52 +504,111 @@ switch lower(param)
                             end;
                         catch ME
                         end;
-                    %end;
-                    
-                    
-                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%                    
-                    if(isempty(etc_trace_obj))
-                        etc_trace(etc_render_fsbrain.overlay_stc,'fs',fs,'ch_names',etc_render_fsbrain.aux_point_name,'aux_data',aux_data,'time_begin',time_begin,'trace_selected_idx',etc_render_fsbrain.click_overlay_vertex,'ylim',[-max(etc_render_fsbrain.overlay_threshold) max(etc_render_fsbrain.overlay_threshold)]);
-                        %etc_trcae_gui_update_time;
-                    else
-                        trigger=[];
-                        if(isfield(etc_trace_obj,'trigger'))
-                            if(~isempty(etc_trace_obj.trigger))
-                                trigger=etc_trace_obj.trigger;
+                        %end;
+                        
+                        
+                        %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        if(isempty(etc_trace_obj))
+                            etc_trace(etc_render_fsbrain.overlay_stc,'fs',fs,'ch_names',etc_render_fsbrain.aux_point_name,'aux_data',aux_data,'time_begin',time_begin,'trace_selected_idx',etc_render_fsbrain.click_overlay_vertex,'ylim',[-max(etc_render_fsbrain.overlay_threshold) max(etc_render_fsbrain.overlay_threshold)]);
+                            %etc_trcae_gui_update_time;
+                        else
+                            trigger=[];
+                            if(isfield(etc_trace_obj,'trigger'))
+                                if(~isempty(etc_trace_obj.trigger))
+                                    trigger=etc_trace_obj.trigger;
+                                end;
                             end;
+                            
+                            etc_trace(etc_render_fsbrain.overlay_stc,'fs',fs,'ch_names',etc_render_fsbrain.aux_point_name,'aux_data',aux_data,'time_begin',time_begin,'trigger',trigger,'time_select_idx',etc_render_fsbrain.overlay_stc_timeVec_idx,'trace_selected_idx', etc_render_fsbrain.click_overlay_vertex,'ylim',[-max(etc_render_fsbrain.overlay_threshold) max(etc_render_fsbrain.overlay_threshold)],'topo',etc_trace_obj.topo);
+                            %etc_trcae_gui_update_time;
                         end;
-                           
-                        etc_trace(etc_render_fsbrain.overlay_stc,'fs',fs,'ch_names',etc_render_fsbrain.aux_point_name,'aux_data',aux_data,'time_begin',time_begin,'trigger',trigger,'time_select_idx',etc_render_fsbrain.overlay_stc_timeVec_idx,'trace_selected_idx', etc_render_fsbrain.click_overlay_vertex,'ylim',[-max(etc_render_fsbrain.overlay_threshold) max(etc_render_fsbrain.overlay_threshold)],'topo',etc_trace_obj.topo);
-                        %etc_trcae_gui_update_time;
-                    end;
-                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%                    
-                    
-
+                        %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        
+                        
                     else
                         fprintf('Too many [%d] time series!\nskip!\n',size(etc_render_fsbrain.overlay_stc,1));
                     end;
                 end;
             case 't'
-%                 fprintf('\ntemporal integration...\n');
-%                 if(isempty(inverse_time_integration))
-%                     inverse_time_integration=1;
-%                 end;
-%                 
-%                 def={num2str(inverse_time_integration)};
-%                 if(isempty(inverse_stc_timeVec))
-%                     answer=inputdlg('temporal integration',sprintf('temporal integration interval= %s [samples]',num2str(inverse_time_integration)),1,def);
-%                 else
-%                     answer=inputdlg('temporal integration',sprintf('temporal integration interval= %s [ms]',num2str(inverse_time_integration)),1,def);
-%                 end;
-%                 if(~isempty(answer))
-%                     inverse_time_integration=str2num(answer{1});
-%                     if(isempty(inverse_stc_timeVec))
-%                         fprintf('temporal integration = %s [samples]\n',mat2str(inverse_time_integration));
-%                     else
-%                         fprintf('temporal integration = %s [ms]\n',mat2str(inverse_time_integration));
-%                     end;
-%                     redraw;
-%                 end;
+                fprintf('showing time coureses...\n');
+                
+                etc_render_fsbrain.tmp=[];
+                v = evalin('base', 'whos');
+                fn={v.name};
+                
+                fprintf('load a variable for data...\n');
+                
+                [indx,tf] = listdlg('PromptString','Select a variable...',...
+                    'SelectionMode','single',...
+                    'ListString',fn);
+                try
+                    var=fn{indx};
+                    
+                    evalin('base',sprintf('global etc_render_fsbrain; etc_render_fsbrain.tmp=%s; ',var));
+                    if(size(etc_render_fsbrain.tmp,2)==size(etc_render_fsbrain.overlay,2))
+                        fprintf('[%d] channel with matched [%d] time point data...\n',size(etc_render_fsbrain.tmp,1),size(etc_render_fsbrain.tmp,2));
+                    else
+                        fprintf('loaded variable <%s> (%d time points) does not match the time dimesnion of STC (%d time points) \n', var, size(etc_render_fsbrain.tmp,2),size(etc_render_fsbrain.overlay_stc,2));
+                    end;
+                    
+                catch ME
+                end;
+        
+                
+                
+                if(~isempty(etc_render_fsbrain.tmp))
+                    if(size(etc_render_fsbrain.tmp,1)<150)
+                        
+                        
+                        if(~isempty(etc_render_fsbrain.overlay_stc_timeVec))
+                            fs=1./mean(diff(etc_render_fsbrain.overlay_stc_timeVec));
+                            if(~isempty(etc_render_fsbrain.overlay_stc_timeVec_unit))
+                                switch lower(etc_render_fsbrain.overlay_stc_timeVec_unit)
+                                    case 'ms'
+                                        fs=fs.*1e3;
+                                end;
+                            end;
+                        else
+                            fs=1; 
+                        end;
+                        
+                        
+                        time_begin=0;
+                        if(~isempty(etc_render_fsbrain.overlay_stc_timeVec))
+                            time_begin=etc_render_fsbrain.overlay_stc_timeVec(1);
+                            if(~isempty(etc_render_fsbrain.overlay_stc_timeVec_unit))
+                                switch lower(etc_render_fsbrain.overlay_stc_timeVec_unit)
+                                    case 'ms'
+                                        time_begin=time_begin/1e3;
+                                end;
+                            end;
+                        end;
+                        
+                        global etc_trace_obj;
+                        
+                        for ch_idx=1:size(etc_render_fsbrain.tmp,1)
+                            ch_names{ch_idx}=sprintf('%03d',ch_idx);
+                        end;
+                        %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        if(isempty(etc_trace_obj))
+                            etc_trace(etc_render_fsbrain.tmp,'fs',fs,'ch_names',ch_names,'time_begin',time_begin,'ylim',[-max(etc_render_fsbrain.overlay_threshold) max(etc_render_fsbrain.overlay_threshold)]);
+                        else
+%                             trigger=[];
+%                             if(isfield(etc_trace_obj,'trigger'))
+%                                 if(~isempty(etc_trace_obj.trigger))
+%                                     trigger=etc_trace_obj.trigger;
+%                                 end;
+%                             end;
+                            
+                            etc_trace(etc_render_fsbrain.tmp,'fs',fs,'ch_names',ch_names,'time_begin',time_begin,'ylim',[-max(etc_render_fsbrain.overlay_threshold) max(etc_render_fsbrain.overlay_threshold)]);
+                        end;
+                        %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                        
+                        
+                    else
+                        fprintf('Too many [%d] time series!\nskip!\n',size(etc_render_fsbrain.tmp,1));
+                    end;
+                end;
             case 'w' %coordinate GUI
                 %fprintf('\nCoordinate GUI...\n');
                 if(isfield(etc_render_fsbrain,'fig_coord_gui'))
@@ -1355,7 +1414,7 @@ switch lower(param)
                 if(~isempty(etc_trace_obj))
                     etc_trace_obj.time_select_idx=etc_render_fsbrain.overlay_stc_timeVec_idx;
                     etc_trace_obj.flag_time_window_auto_adjust=0;
-                    etc_trcae_gui_update_time('flag_redraw',0);
+                    etc_trcae_gui_update_time('flag_redraw',1);
                 end;
                 
             end;
