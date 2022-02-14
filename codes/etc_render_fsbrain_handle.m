@@ -51,12 +51,14 @@ switch lower(param)
             case 'h'
                 fprintf('interactive rendering commands:\n\n');
                 fprintf('a: archiving image (fmri_overlay.tif if no specified output file name)\n');
+                fprintf('i: load overlay volume\n');
                 fprintf('p: open subject/volume/surface GUI\n');
                 fprintf('g: open visualization option GUI \n');
                 fprintf('k: open registration GUI\n');
                 fprintf('e: open electrode GUI\n');
                 fprintf('b: open sensor location GUI\n');
                 fprintf('v: open trace viewer GUI\n');
+                fprintf('t: load auxillary time course viewer\n');
                 fprintf('f: load overlay (w/stc) file\n');
                 fprintf('l: open label/annotation GUI\n');
                 fprintf('w: open coordinates GUI\n');
@@ -66,6 +68,7 @@ switch lower(param)
                 fprintf('d: interactive overlay threshold change\n');
                 fprintf('c: switch on/off a colorbar\n');
                 fprintf('u: show cluster labels from a file\n');
+                fprintf('d: change threshold\n');
                 fprintf('q: exit\n');
                 fprintf('\n\n fhlin@dec 25, 2014\n');
             case 'a'
@@ -93,7 +96,44 @@ switch lower(param)
                 
                 set(etc_render_fsbrain.fig_subject,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
                 set(etc_render_fsbrain.fig_subject,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
-
+            case 'i'
+                fprintf('\nload overlay volume...\n');
+                
+                [filename, pathname, filterindex] = uigetfile({'*.dat','registration matrix'}, 'Pick a registration matrix file');
+                if(filename==0) return; end;
+                %[filename1, pathname1, filterindex1] = uigetfile({'*.mgz','overlay volume (MGZ)'; '*.mgh','overlay volume (MGH)'; '*.nii','overlay volume (nii)'}, 'Pick an overlay volume');
+                [filename1, pathname1, filterindex1] = uigetfile({'*.*','overlay volume (*.mgz, *.mgh, *.nii)'}, 'Pick an overlay volume');
+                if(filename1==0) return; end;
+                
+                try
+                    xfm=etc_read_xfm('file_xfm',sprintf('%s/%s',pathname,filename));
+                    
+                    [dumm, fstem,fext]=fileparts(filename1);
+                    switch(fext)
+                        case '.mgh'
+                            mov=MRIread(sprintf('%s/%s',pathname1,filename1));
+                        case '.mgz'
+                            mov=MRIread(sprintf('%s/%s',pathname1,filename1));
+                        case '.nii'
+                            mov=MRIread(sprintf('%s/%s',pathname1,filename1));
+                    end;
+                    
+                    Tt = etc_render_fsbrain.vol.tkrvox2ras;
+                    Tm = mov.tkrvox2ras;
+                    etc_render_fsbrain.overlay_vol_xfm = inv(Tm)*xfm*Tt;
+                    
+                    
+                    %prepare overlay volume matched to the underlay volume
+                    etc_render_fsbrain.overlay_vol = etc_MRIvol2vol(mov,etc_render_fsbrain.vol,xfm,'flag_display',1); %only the first volume
+                    
+                    %prepare overlay surface
+                    etc_render_fsbrain.overlay_stc = etc_MRIvol2surf(mov,etc_render_fsbrain.surf,xfm,'subject',etc_render_fsbrain.subject,'hemi',etc_render_fsbrain.hemi,'flag_display',1);
+                    
+                    fprintf('overlay volume updated!\n');
+                catch ME
+                end;
+                
+                
             case 'f'
                 fprintf('\nload overlay...\n');
                 [filename, pathname, filterindex] = uigetfile({'*.stc','STC file (space x time)';'*.w','w file (space x 1)'}, 'Pick an overlay file');
@@ -2337,6 +2377,22 @@ try
         h=findobj('tag','edit_vox_z_round');
         set(h,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(3),'%1.0f'));
         
+        
+        if(isfield(etc_render_fsbrain,'overlay_vol_xfm'))
+            if(~isempty(etc_render_fsbrain.overlay_vol_xfm))
+                tcrs=[etc_render_fsbrain.click_vertex_vox_round(:); 1];
+                
+                mcrs = round(etc_render_fsbrain.overlay_vol_xfm * tcrs);
+                
+                h=findobj('tag','edit_vox_overlay_x_round');
+                set(h,'String',num2str(mcrs(1),'%1.0f'));
+                h=findobj('tag','edit_vox_overlay_y_round');
+                set(h,'String',num2str(mcrs(2),'%1.0f'));
+                h=findobj('tag','edit_vox_overlay_z_round');
+                set(h,'String',num2str(mcrs(3),'%1.0f'));
+            end;
+        end;
+
         h=findobj('tag','edit_mni_x');
         set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_tal(1),'%1.0f'));
         h=findobj('tag','edit_mni_y');

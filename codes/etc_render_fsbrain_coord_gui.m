@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_coord_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_coord_gui
 
-% Last Modified by GUIDE v2.5 15-Mar-2020 00:09:09
+% Last Modified by GUIDE v2.5 13-Feb-2022 22:09:32
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -124,6 +124,31 @@ catch ME
     set(h,'String','');
 end;
 
+
+try
+    if(isfield(etc_render_fsbrain,'overlay_vol_xfm'))
+        if(~isempty(etc_render_fsbrain.overlay_vol_xfm))
+            tcrs=[etc_render_fsbrain.click_vertex_vox_round(:); 1];
+            
+            mcrs = round(etc_render_fsbrain.overlay_vol_xfm * tcrs);
+            
+            h=findobj('tag','edit_vox_overlay_x_round');
+            set(h,'String',num2str(mcrs(1),'%1.0f'));
+            h=findobj('tag','edit_vox_overlay_y_round');
+            set(h,'String',num2str(mcrs(2),'%1.0f'));
+            h=findobj('tag','edit_vox_overlay_z_round');
+            set(h,'String',num2str(mcrs(3),'%1.0f'));
+        end;
+    end;
+catch ME
+    h=findobj('tag','edit_vox_overlay_x_round');
+    set(h,'String','');
+    h=findobj('tag','edit_vox_overlay_y_round');
+    set(h,'String','');
+    h=findobj('tag','edit_vox_overlay_z_round');
+    set(h,'String','');
+end;
+
 try
     h=findobj('tag','edit_mni_x');
     set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_tal(1),'%1.0f'));
@@ -162,7 +187,7 @@ end;
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = etc_render_fsbrain_coord_gui_OutputFcn(hObject, eventdata, handles) 
+function varargout = etc_render_fsbrain_coord_gui_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -981,3 +1006,42 @@ if(~isempty(etc_render_fsbrain.click_vertex))
         end;
     end;
 end;
+
+
+% --- Executes on button press in pushbutton_overlay_vol_xfm.
+function pushbutton_overlay_vol_xfm_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_overlay_vol_xfm (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain;
+
+fprintf('\nload overlay volume transformation matrix...\n');
+[filename, pathname, filterindex] = uigetfile({'*.dat','registration matrix'}, 'Pick a registration matrix file');
+if(filename==0) return; end;
+%[filename1, pathname1, filterindex1] = uigetfile({'*.mgz','overlay volume (MGZ)'; '*.mgh','overlay volume (MGH)'; '*.nii','overlay volume (nii)'}, 'Pick an overlay volume');
+[filename1, pathname1, filterindex1] = uigetfile({'*.*','overlay volume (*.mgz, *.mgh, *.nii)'}, 'Pick an overlay volume');
+if(filename1==0) return; end;
+
+try
+    xfm=etc_read_xfm('file_xfm',sprintf('%s/%s',pathname,filename));
+    
+    [dumm, fstem,fext]=fileparts(filename1);
+    switch(fext)
+        case '.mgh'
+            mov=MRIread(sprintf('%s/%s',pathname1,filename1));
+        case '.mgz'
+            mov=MRIread(sprintf('%s/%s',pathname1,filename1));
+        case '.nii'
+            mov=MRIread(sprintf('%s/%s',pathname1,filename1));
+    end;
+    
+    Tt = etc_render_fsbrain.vol.tkrvox2ras;
+    Tm = mov.tkrvox2ras;
+    etc_render_fsbrain.overlay_vol_xfm = inv(Tm)*xfm*Tt;
+    
+    fprintf('overlay volume registration matrix updated!\n');
+catch ME
+end;
+
+
+

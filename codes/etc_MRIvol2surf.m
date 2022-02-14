@@ -91,11 +91,12 @@ if(isempty(frames))
     frames=[1:size(mov.vol,4)];
 end;
 for t_idx=1:length(frames)
+    if(flag_display) fprintf('*'); end;
     mov_tmp=etc_MRIvol2vol(mov,targ_orig_vol,R,'frames',frames(t_idx));
     tmp=mov_tmp.vol;
     surf_val(:,t_idx)=tmp(round(vox_ind));
 end;
-
+if(flag_display) fprintf('\n'); end;
 return;
 
 

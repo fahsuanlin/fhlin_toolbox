@@ -25,6 +25,7 @@ vol=[];
 vol_reg=eye(4);
 vol_A=[];
 vol_vox=[];
+vol_ribbon=[];
 vol_pre_xfm=eye(4);
 talxfm=[];
 
@@ -68,6 +69,7 @@ overlay_flag_render=1;
 overlay_vol_flag_render=1;
 overlay_fixval_flag=0;
 overlay_Ds=[];
+overlay_vol_xfm=[];
 
 overlay_buffer=[];
 overlay_buffer_idx=[];
@@ -270,6 +272,8 @@ for idx=1:length(varargin)/2
             overlay_vol_mask=option_value;
         case 'overlay_flag_vol_mask'
             overlay_flag_vol_mask=option_value;
+        case 'overlay_vol_xfm'
+            overlay_vol_xfm=option_value;
         case 'cluster_file'
             cluster_file=option_value;
         case 'alpha'
@@ -376,7 +380,6 @@ if(tmp_set_vol<0.5)
     
     
     %cortical ribbon index setup
-    vol_ribbon=[];
     cort_ribbon_idx{1}=[];
     cort_ribbon_idx{2}=[];
     ribbon_idx{1}=[];
@@ -1066,6 +1069,7 @@ etc_render_fsbrain.overlay_fixval_flag=overlay_fixval_flag;
 etc_render_fsbrain.overlay_regrid_flag=overlay_regrid_flag;
 etc_render_fsbrain.overlay_regrid_zero_flag=overlay_regrid_zero_flag;
 etc_render_fsbrain.overlay_Ds=overlay_Ds;
+etc_render_fsbrain.overlay_vol_xfm=overlay_vol_xfm;
 etc_render_fsbrain.flag_overlay_truncate_pos=overlay_truncate_pos;
 etc_render_fsbrain.flag_overlay_truncate_neg=overlay_truncate_neg;
 
