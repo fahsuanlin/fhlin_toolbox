@@ -1,8 +1,10 @@
-function Z_mn=etc_mom_zmn(l1_start, l1_end, l2_start, l2_end,varargin)
+function [M, Z_mn]=etc_mom_zmn(l1_start, l1_end, l2_start, l2_end,varargin)
 
+M=[];
 Z_mn=[];
 
-f=128e6; %Hz; pronton precession frequency at 3T
+%f=128e6; %Hz; pronton precession at 3T
+f=[];
 mu=1.256e-6; %permeability of vaccum
 
 for i=1:length(varargin)./2
@@ -48,5 +50,17 @@ int_I4=etc_mom_i4(t,l1_start, l1_end, l2_start, l2_end);
 %int_I4=integral(F4,0,1, 'ArrayValued',1) 
 
 Z_mn=(em(:)'*en(:)).*sqrt(-1).*w.*mu./4./pi.*(cn.*cm).*(int_I1-sqrt(-1).*k.*int_I2-k.^2./2.*int_I3+sqrt(-1).*k.^3./6.*int_I4); %mutual inductance; current path widths are neglected.
+
+
+if(~isempty(k))
+    M=(em(:)'*en(:)).*mu./4./pi.*(cn.*cm).*(int_I1-sqrt(-1).*k.*int_I2-k.^2./2.*int_I3+sqrt(-1).*k.^3./6.*int_I4); %mutual inductance; current path widths are neglected.
+
+else
+    M=(em(:)'*en(:)).*mu./4./pi.*(cn.*cm).*(int_I1);
+end;
+
+if(~isempty(f))
+    Z_mn=sqrt(-1).*w.*M;
+end;
 
 return;

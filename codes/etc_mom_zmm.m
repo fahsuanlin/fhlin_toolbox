@@ -1,8 +1,10 @@
-function Z_mm=etc_mom_zmm(l_start, l_end, width, varargin)
+function [L,Z_mm]=etc_mom_zmm(l_start, l_end, width, varargin)
 
+L=[];
 Z_mm=[];
 
-f=128e6; %Hz; pronton precession at 3T
+%f=128e6; %Hz; pronton precession at 3T
+f=[];
 mu=1.256e-6; %permeability of vaccum
 
 for i=1:length(varargin)./2
@@ -40,7 +42,15 @@ J4=8./3.*(width.^3.*l^2+width.*width.*l.^4); %width: current path width; l: curr
 
 %Z_mn=sqrt(-1).*w.*mu./4./pi.*(cn.*cm).*(int_I1-sqrt(-1).*k.*int_I2-k.^2./2.*int_I3+sqrt(-1).*k.^3./6.*int_I4); %mutual inductance; current path widths are neglected.
 
-Z_mm=sqrt(-1).*w.*mu./4./pi.*(J1-sqrt(-1).*k.*J2-k.^2./2.*J3+sqrt(-1).*k.^3./6.*J4); %self inductance; current path width must be provided.
+if(~isempty(k))
+    L=mu./4./pi.*(J1-sqrt(-1).*k.*J2-k.^2./2.*J3+sqrt(-1).*k.^3./6.*J4); %self inductance; current path width must be provided.
+else
+    L=mu./4./pi.*(J1);
+end;
+
+if(~isempty(f))
+    Z_mm=sqrt(-1).*w.*L;
+end;
 
 %Z_mm=sqrt(-1).*w.*mu./4./pi.*(J1);
 
