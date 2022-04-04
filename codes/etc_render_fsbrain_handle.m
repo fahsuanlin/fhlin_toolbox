@@ -60,7 +60,8 @@ switch lower(param)
                 fprintf('v: open trace viewer GUI\n');
                 fprintf('t: load auxillary time course viewer\n');
                 fprintf('f: load overlay (w/stc) file\n');
-                fprintf('l: open label/annotation GUI\n');
+                fprintf('l: load labels/annotation\n');
+                fprintf('x: show label GUI\n');
                 fprintf('w: open coordinates GUI\n');
                 fprintf('s: smooth overlay \n');
                 fprintf('o: create an ROI\n');
@@ -70,6 +71,7 @@ switch lower(param)
                 fprintf('c: switch on/off a colorbar\n');
                 fprintf('u: show cluster labels from a file\n');
                 fprintf('d: change threshold\n');
+                fprintf('r: enforce redrawing\n');
                 fprintf('q: exit\n');
                 fprintf('\n\n fhlin@dec 25, 2014\n');
             case 'a'
@@ -80,6 +82,14 @@ switch lower(param)
             case 'q'
                 fprintf('\nclosing all figures!\n');
                 etc_render_fsbrain_handle('del');
+            case 'x'
+                fprintf('\nshow label GUI...\n');
+                etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
+                set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
+                pos=get(etc_render_fsbrain.fig_label_gui,'pos');
+                pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
+                
             case 'n'
                 fprintf('\nswitch between underlay and overlay volumes...\n');
                 
@@ -470,8 +480,8 @@ switch lower(param)
                             
                             %ROI....
                             etc_render_fsbrain.label_idx=roi_idx;
-                            etc_render_fsbrain.label_h=plot3(etc_render_fsbrain.vertex_coords_hemi(roi_idx,1),etc_render_fsbrain.vertex_coords_hemi(roi_idx,2), etc_render_fsbrain.vertex_coords_hemi(roi_idx,3),'r.');
-                            
+                            %etc_render_fsbrain.label_h=plot3(etc_render_fsbrain.vertex_coords_hemi(roi_idx,1),etc_render_fsbrain.vertex_coords_hemi(roi_idx,2), etc_render_fsbrain.vertex_coords_hemi(roi_idx,3),'r.');
+
                             %save the label?
                             %[file, path] = uiputfile({'*.label'});
                             %[file, path] = uigetfile({'*.label','FreeSufer label'}, 'Pick a file');
@@ -486,6 +496,60 @@ switch lower(param)
                                     ' and then clicked Save.'])
                                 inverse_write_label(etc_render_fsbrain.label_idx(:)-1,zeros(size(etc_render_fsbrain.label_idx(:))),zeros(size(etc_render_fsbrain.label_idx(:))),zeros(size(etc_render_fsbrain.label_idx(:))),ones(size(etc_render_fsbrain.label_idx(:))),fn);
                                 fprintf('ROI saved [%s].\n',fn);
+                                
+                                [dummy,fstem]=fileparts(file);
+                                
+                                if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
+                                    etc_render_fsbrain.label_vertex(roi_idx)=etc_render_fsbrain.label_ctab.numEntries+1;
+                                    if(sum(etc_render_fsbrain.label_value(roi_idx))>eps)
+                                        fprintf('Warning! The loaded label overlaps with already-existed label(s), which are not replaced by the new index!\n');
+                                    end;
+                                    maxx=max(etc_render_fsbrain.label_value(:));
+                                    %etc_render_fsbrain.label_value(roi_idx)=etc_render_fsbrain.label_ctab.numEntries+1;
+                                    etc_render_fsbrain.label_value(roi_idx)=maxx+1;
+                                    etc_render_fsbrain.label_ctab.numEntries=etc_render_fsbrain.label_ctab.numEntries+1;
+                                    etc_render_fsbrain.label_ctab.struct_names{end+1}=fstem;
+                                    switch mod(maxx+1,5)
+                                        case 1
+                                            etc_render_fsbrain.label_ctab.table(end+1,:)=[0*256   0.4470*256   0.741*256         0        maxx+1];
+                                        case 2
+                                            etc_render_fsbrain.label_ctab.table(end+1,:)=[0.8500*256 0.3250*256 0.0980*256          0        maxx+1];
+                                        case 3
+                                            etc_render_fsbrain.label_ctab.table(end+1,:)=[0.9290*256 0.6940*256 0.1250*256          0        maxx+1];
+                                        case 4
+                                            etc_render_fsbrain.label_ctab.table(end+1,:)=[0.4940*256 0.1840*256 0.5560*256          0        maxx+1];
+                                        case 5
+                                            etc_render_fsbrain.label_ctab.table(end+1,:)=[0.4660*256 0.6740*256 0.1880*256          0        maxx+1];
+                                    end;
+                                    etc_render_fsbrain.label_register(end+1)=1;
+                                else
+                                    etc_render_fsbrain.label_vertex=zeros(size(etc_render_fsbrain.vertex_coords_hemi,1),1);
+                                    etc_render_fsbrain.label_vertex(roi_idx)=1;
+                                    etc_render_fsbrain.label_value=zeros(size(etc_render_fsbrain.vertex_coords_hemi,1),1);
+                                    etc_render_fsbrain.label_value(roi_idx)=1;
+                                    s.numEntries=1;
+                                    s.orig_tab='';
+                                    s.struct_names={fstem};
+                                    s.table=[0*256   0.4470*256   0.741*256         0        1];
+                                    etc_render_fsbrain.label_ctab=s;
+                                    
+                                    etc_render_fsbrain.label_register=1;
+                                end;
+                                
+                                
+                                if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
+                                    try
+                                        obj=findobj(etc_render_fsbrain.fig_label_gui,'tag','listbox_label');
+                                        
+                                        set(obj,'string',{etc_render_fsbrain.label_ctab.struct_names{:}});
+                                        set(obj,'min',0);
+                                        set(obj,'max',max([2 length(etc_render_fsbrain.label_ctab.struct_names)]));
+                                        set(obj,'value',union(get(obj,'value'),etc_render_fsbrain.label_ctab.numEntries));
+                                    catch ME
+                                    end;
+                                end;
+                                
+                                draw_label([]);
                             end
                             
                             %clear boundary points and vertices
@@ -496,6 +560,7 @@ switch lower(param)
                             etc_render_fsbrain.collect_vertex=[];
                             delete(etc_render_fsbrain.collect_vertex_point(:));
                             etc_render_fsbrain.collect_vertex_point=[];
+                           
                         catch ME
                         end;
                         
@@ -705,11 +770,8 @@ switch lower(param)
                 end;
         
                 
-                
                 if(~isempty(etc_render_fsbrain.tmp))
                     if(size(etc_render_fsbrain.tmp,1)<150)
-                        
-                        
                         if(~isempty(etc_render_fsbrain.overlay_stc_timeVec))
                             fs=1./mean(diff(etc_render_fsbrain.overlay_stc_timeVec));
                             if(~isempty(etc_render_fsbrain.overlay_stc_timeVec_unit))
@@ -997,6 +1059,9 @@ switch lower(param)
                 
                 %if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
                 
+                %draw loaded label
+                draw_label([]);
+                                
                 
             case 'c' %colorbar on/off by key press
                 etc_render_fsbrain.flag_colorbar=~etc_render_fsbrain.flag_colorbar;
@@ -3692,3 +3757,98 @@ catch ME
 end;
 return;
 
+
+function draw_label(select_idx)
+global etc_render_fsbrain;
+
+try
+    if(isempty(select_idx))
+        select_idx=length(etc_render_fsbrain.label_ctab.struct_names);
+    end;
+    
+    if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
+        label_name=etc_render_fsbrain.label_ctab.struct_names{select_idx};
+        
+        fprintf('label <<%s>> selected\n',label_name);
+        
+        %etc_render_fsbrain.label_register(select_idx)=1-etc_render_fsbrain.label_register(select_idx);
+        set(findobj(etc_render_fsbrain.fig_label_gui,'tag','listbox_label'),'Value',find(etc_render_fsbrain.label_register));
+        
+        try
+            %for ss=1:length(etc_render_fsbrain.label_register)
+            for ss=select_idx:select_idx
+                label_number=etc_render_fsbrain.label_ctab.table(ss,5);
+                vidx=find((etc_render_fsbrain.label_value)==label_number);
+                if(etc_render_fsbrain.label_register(ss)==1)
+                    if(etc_render_fsbrain.flag_show_cort_label)
+                        %plot label
+                        cc=etc_render_fsbrain.label_ctab.table(ss,1:3)./255;
+                        etc_render_fsbrain.h.FaceVertexCData(vidx,:)=repmat(cc(:)',[length(vidx),1]);
+                    end;
+                    
+                    if(etc_render_fsbrain.flag_show_cort_label_boundary)
+                        %plot label boundary
+                        figure(etc_render_fsbrain.fig_brain);
+                        %if(isfield(etc_render_fsbrain,'h_label_boundary'))
+                        %    delete(etc_render_fsbrain.h_label_boundary(:));
+                        %end;
+                        boundary_face_idx=find(sum(ismember(etc_render_fsbrain.faces,vidx-1),2)==2); %face indices at the boundary of the selected label; two vertices out of three are the selected label
+                        for b_idx=1:length(boundary_face_idx)
+                            boundary_face_vertex_idx=find(ismember(etc_render_fsbrain.faces(boundary_face_idx(b_idx),:),vidx-1)); %find vertices of a boundary face within a label
+                            %hold on;
+                            etc_render_fsbrain.h_label_boundary{ss}(b_idx)=line(...
+                                etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,1)',...
+                                etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,2)',...
+                                etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,3)');
+                            
+                            set(etc_render_fsbrain.h_label_boundary{ss}(b_idx),'linewidth',2,'color',etc_render_fsbrain.cort_label_boundary_color);
+                        end;
+                    else
+                        delete(etc_render_fsbrain.h_label_boundary{ss}(:));
+                    end;
+                end;
+                
+                
+                label_coords=etc_render_fsbrain.orig_vertex_coords(vidx,:);
+                
+                %find electrode contacts closest to the selected label
+                if(~isempty(etc_render_fsbrain.electrode))
+                    
+                    max_contact=0;
+                    for e_idx=1:length(etc_render_fsbrain.electrode)
+                        if(etc_render_fsbrain.electrode(e_idx).n_contact>max_contact)
+                            max_contact=etc_render_fsbrain.electrode(e_idx).n_contact;
+                        end;
+                    end;
+                    electrode_dist_min=ones(length(etc_render_fsbrain.electrode),max_contact).*nan;
+                    electrode_dist_avg=ones(length(etc_render_fsbrain.electrode),max_contact).*nan;
+                    
+                    for e_idx=1:length(etc_render_fsbrain.electrode)
+                        for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
+                            
+                            surface_coord=etc_render_fsbrain.electrode(e_idx).coord(c_idx,:);
+                            
+                            tmp=label_coords-repmat(surface_coord(:)',[size(label_coords,1),1]);
+                            tmp=sqrt(sum(tmp.^2,2));
+                            
+                            electrode_dist_min(e_idx,c_idx)=min(tmp);
+                            electrode_dist_avg(e_idx,c_idx)=mean(tmp);
+                        end;
+                    end;
+                    
+                    [dummy,min_idx]=sort(electrode_dist_min(:));
+                    fprintf('Top 3 closest contacts\n');
+                    for ii=1:3 %show the nearest three contacts
+                        [ee,cc]=ind2sub(size(electrode_dist_min),min_idx(ii));
+                        fprintf('  <%s_%02d> %2.2f (mm) (%1.1f %1.1f %1.1f)\n',etc_render_fsbrain.electrode(ee).name,cc,dummy(ii),etc_render_fsbrain.electrode(ee).coord(cc,1),etc_render_fsbrain.electrode(ee).coord(cc,2),etc_render_fsbrain.electrode(ee).coord(cc,3));
+                    end;
+                end;
+            end;
+            
+            figure(etc_render_fsbrain.fig_label_gui);
+            
+        catch ME
+        end;
+    end;
+catch ME
+end;

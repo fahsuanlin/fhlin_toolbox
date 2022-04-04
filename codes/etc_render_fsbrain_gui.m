@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_gui
 
-% Last Modified by GUIDE v2.5 04-Dec-2021 13:08:28
+% Last Modified by GUIDE v2.5 04-Apr-2022 09:18:36
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2575,28 +2575,26 @@ if(isfield(etc_render_fsbrain,'label_register'))
                 else
                     etc_render_fsbrain.h.FaceVertexCData(vidx,:)=etc_render_fsbrain.fvdata(vidx,:);
                 end;
-                if(etc_render_fsbrain.flag_show_cort_label_boundary)
-                    %plot label boundary
-                    figure(etc_render_fsbrain.fig_brain);
-                    if(isfield(etc_render_fsbrain,'h_label_boundary'))
-                        delete(etc_render_fsbrain.h_label_boundary(:));
-                    end;
-                    boundary_face_idx=find(sum(ismember(etc_render_fsbrain.faces,vidx-1),2)==2); %face indices at the boundary of the selected label; two vertices out of three are the selected label
-                    for b_idx=1:length(boundary_face_idx)
-                        boundary_face_vertex_idx=find(ismember(etc_render_fsbrain.faces(boundary_face_idx(b_idx),:),vidx-1)); %find vertices of a boundary face within a label
-                        %hold on;
-                        etc_render_fsbrain.h_label_boundary(b_idx)=line(...
-                            etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,1)',...
-                            etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,2)',...
-                            etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,3)');
-                        
-                        set(etc_render_fsbrain.h_label_boundary(b_idx),'linewidth',2,'color',etc_render_fsbrain.cort_label_boundary_color);
-                    end;
-                else
-                    if(isfield(etc_render_fsbrain,'h_label_boundary'))
-                        delete(etc_render_fsbrain.h_label_boundary(:));
-                    end;
-                end;
+%                 if(etc_render_fsbrain.flag_show_cort_label_boundary)
+%                     %plot label boundary
+%                     figure(etc_render_fsbrain.fig_brain);
+%                     %if(isfield(etc_render_fsbrain,'h_label_boundary'))
+%                     %    delete(etc_render_fsbrain.h_label_boundary(:));
+%                     %end;
+%                     boundary_face_idx=find(sum(ismember(etc_render_fsbrain.faces,vidx-1),2)==2); %face indices at the boundary of the selected label; two vertices out of three are the selected label
+%                     for b_idx=1:length(boundary_face_idx)
+%                         boundary_face_vertex_idx=find(ismember(etc_render_fsbrain.faces(boundary_face_idx(b_idx),:),vidx-1)); %find vertices of a boundary face within a label
+%                         %hold on;
+%                         etc_render_fsbrain.h_label_boundary{ss}(b_idx)=line(...
+%                             etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,1)',...
+%                             etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,2)',...
+%                             etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,3)');
+%                         
+%                         set(etc_render_fsbrain.h_label_boundary{ss}(b_idx),'linewidth',2,'color',etc_render_fsbrain.cort_label_boundary_color);
+%                     end;
+%                 else
+%                     delete(etc_render_fsbrain.h_label_boundary{ss}(:));
+%                 end;
             end;
         end;
     end;
@@ -2621,34 +2619,32 @@ if(isfield(etc_render_fsbrain,'label_register'))
             label_number=etc_render_fsbrain.label_ctab.table(ss,5);
             vidx=find((etc_render_fsbrain.label_value)==label_number);
             if(etc_render_fsbrain.label_register(ss)==1)
-                if(etc_render_fsbrain.flag_show_cort_label)
-                    %plot label
-                    cc=etc_render_fsbrain.label_ctab.table(ss,1:3)./255;
-                    etc_render_fsbrain.h.FaceVertexCData(vidx,:)=repmat(cc(:)',[length(vidx),1]);
-                else
-                    etc_render_fsbrain.h.FaceVertexCData(vidx,:)=etc_render_fsbrain.fvdata(vidx,:);
-                end;
+%                 if(etc_render_fsbrain.flag_show_cort_label)
+%                     %plot label
+%                     cc=etc_render_fsbrain.label_ctab.table(ss,1:3)./255;
+%                     etc_render_fsbrain.h.FaceVertexCData(vidx,:)=repmat(cc(:)',[length(vidx),1]);
+%                 else
+%                     etc_render_fsbrain.h.FaceVertexCData(vidx,:)=etc_render_fsbrain.fvdata(vidx,:);
+%                 end;
                 if(etc_render_fsbrain.flag_show_cort_label_boundary)
                     %plot label boundary
                     figure(etc_render_fsbrain.fig_brain);
-                    if(isfield(etc_render_fsbrain,'h_label_boundary'))
-                        delete(etc_render_fsbrain.h_label_boundary(:));
-                    end;
+                    %if(isfield(etc_render_fsbrain,'h_label_boundary'))
+                    %    delete(etc_render_fsbrain.h_label_boundary(:));
+                    %end;
                     boundary_face_idx=find(sum(ismember(etc_render_fsbrain.faces,vidx-1),2)==2); %face indices at the boundary of the selected label; two vertices out of three are the selected label
                     for b_idx=1:length(boundary_face_idx)
                         boundary_face_vertex_idx=find(ismember(etc_render_fsbrain.faces(boundary_face_idx(b_idx),:),vidx-1)); %find vertices of a boundary face within a label
                         %hold on;
-                        etc_render_fsbrain.h_label_boundary(b_idx)=line(...
+                        etc_render_fsbrain.h_label_boundary{ss}(b_idx)=line(...
                             etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,1)',...
                             etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,2)',...
                             etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,3)');
                         
-                        set(etc_render_fsbrain.h_label_boundary(b_idx),'linewidth',2,'color',etc_render_fsbrain.cort_label_boundary_color);
+                        set(etc_render_fsbrain.h_label_boundary{ss}(b_idx),'linewidth',2,'color',etc_render_fsbrain.cort_label_boundary_color);
                     end;
                 else
-                    if(isfield(etc_render_fsbrain,'h_label_boundary'))
-                        delete(etc_render_fsbrain.h_label_boundary(:));
-                    end;
+                    delete(etc_render_fsbrain.h_label_boundary{ss}(:))
                 end;
             end;
         end;
@@ -2673,36 +2669,50 @@ if(isfield(etc_render_fsbrain,'label_register'))
             label_number=etc_render_fsbrain.label_ctab.table(ss,5);
             vidx=find((etc_render_fsbrain.label_value)==label_number);
             if(etc_render_fsbrain.label_register(ss)==1)
-                if(etc_render_fsbrain.flag_show_cort_label)
-                    %plot label
-                    cc=etc_render_fsbrain.label_ctab.table(ss,1:3)./255;
-                    etc_render_fsbrain.h.FaceVertexCData(vidx,:)=repmat(cc(:)',[length(vidx),1]);
-                else
-                    etc_render_fsbrain.h.FaceVertexCData(vidx,:)=etc_render_fsbrain.fvdata(vidx,:);
-                end;
+%                 if(etc_render_fsbrain.flag_show_cort_label)
+%                     %plot label
+%                     cc=etc_render_fsbrain.label_ctab.table(ss,1:3)./255;
+%                     etc_render_fsbrain.h.FaceVertexCData(vidx,:)=repmat(cc(:)',[length(vidx),1]);
+%                 else
+%                     etc_render_fsbrain.h.FaceVertexCData(vidx,:)=etc_render_fsbrain.fvdata(vidx,:);
+%                 end;
                 if(etc_render_fsbrain.flag_show_cort_label_boundary)
                     %plot label boundary
                     figure(etc_render_fsbrain.fig_brain);
-                    if(isfield(etc_render_fsbrain,'h_label_boundary'))
-                        delete(etc_render_fsbrain.h_label_boundary(:));
-                    end;
+%                     if(isfield(etc_render_fsbrain,'h_label_boundary'))
+%                         delete(etc_render_fsbrain.h_label_boundary(:));
+%                     end;
                     boundary_face_idx=find(sum(ismember(etc_render_fsbrain.faces,vidx-1),2)==2); %face indices at the boundary of the selected label; two vertices out of three are the selected label
                     for b_idx=1:length(boundary_face_idx)
-                        boundary_face_vertex_idx=find(ismember(etc_render_fsbrain.faces(boundary_face_idx(b_idx),:),vidx-1)); %find vertices of a boundary face within a label
+%                        boundary_face_vertex_idx=find(ismember(etc_render_fsbrain.faces(boundary_face_idx(b_idx),:),vidx-1)); %find vertices of a boundary face within a label
                         %hold on;
-                        etc_render_fsbrain.h_label_boundary(b_idx)=line(...
-                            etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,1)',...
-                            etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,2)',...
-                            etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,3)');
+%                         etc_render_fsbrain.h_label_boundary{ss}(b_idx)=line(...
+%                             etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,1)',...
+%                             etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,2)',...
+%                             etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,3)');
                         
-                        set(etc_render_fsbrain.h_label_boundary(b_idx),'linewidth',2,'color',etc_render_fsbrain.cort_label_boundary_color);
+                        set(etc_render_fsbrain.h_label_boundary{ss}(b_idx),'linewidth',2,'color',etc_render_fsbrain.cort_label_boundary_color);
                     end;
-                else
-                    if(isfield(etc_render_fsbrain,'h_label_boundary'))
-                        delete(etc_render_fsbrain.h_label_boundary(:));
-                    end;
+%                else
+%                    delete(etc_render_fsbrain{ss}.h_label_boundary(:));
                 end;
             end;
         end;
     end;
 end;
+
+
+% --- Executes on button press in pushbutton_label.
+function pushbutton_label_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_label (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global etc_render_fsbrain;
+
+fprintf('\nshow label GUI...\n');
+etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
+set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
+pos=get(etc_render_fsbrain.fig_label_gui,'pos');
+pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
