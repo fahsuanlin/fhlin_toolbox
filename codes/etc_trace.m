@@ -297,6 +297,8 @@ delete(etc_trace_obj.fig_config); %make it invalid
 etc_trace_obj.fig_trace=etc_trace_gui;
 
 set(etc_trace_obj.fig_trace,'WindowButtonDownFcn','etc_trace_handle(''bd'')');
+set(etc_trace_obj.fig_trace,'WindowButtonUpFcn','etc_trace_handle(''bu'')');
+%f = figure('WindowButtonUpFcn',@dropObject,'units','normalized','WindowButtonMotionFcn',@moveObject);
 set(etc_trace_obj.fig_trace,'KeyPressFcn','etc_trace_handle(''kb'')');
 set(etc_trace_obj.fig_trace,'HandleVisibility','on')
 set(etc_trace_obj.fig_trace,'invert','off');
@@ -304,6 +306,9 @@ set(etc_trace_obj.fig_trace,'Name','');
 set(etc_trace_obj.fig_trace,'DeleteFcn','etc_trace_handle(''del'')');
 set(etc_trace_obj.fig_trace,'CloseRequestFcn','etc_trace_handle(''del'')');
 
+%drag-drop setting
+etc_trace_obj.dragging = [];
+etc_trace_obj.orPos = [];
 
 etc_trace_handle('redraw');
 

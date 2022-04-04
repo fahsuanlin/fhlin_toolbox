@@ -1148,6 +1148,8 @@ etc_render_fsbrain_handle('redraw');
 set(handles.edit_threshold_min,'string',sprintf('%2.1e',min(etc_render_fsbrain.overlay_threshold)));
 set(handles.edit_threshold_max,'string',sprintf('%2.1e',max(etc_render_fsbrain.overlay_threshold)));
 
+etc_render_fsbrain_handle('draw_pointer');
+
 
 
 function edit_selected_electrode_size_Callback(hObject, eventdata, handles)

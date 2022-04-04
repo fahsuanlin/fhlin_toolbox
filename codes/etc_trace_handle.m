@@ -424,6 +424,17 @@ switch lower(param)
                 end;
             otherwise
         end;
+    case 'bu'
+        global etc_render_fsbrain;
+        global etc_trace_obj;
+        figure(etc_trace_obj.fig_trace);
+        
+        clickType = get(gcf, 'SelectionType');
+        if(strcmp(clickType,'extend'))
+            % right mouse clicked!!
+            fprintf('button up!!\n');
+            etc_trace_obj.dragging = [];
+        end;
     case 'bd'
         global etc_render_fsbrain;
         global etc_trace_obj;
@@ -548,7 +559,7 @@ switch lower(param)
             
             
         
-        else %left mouse click
+        elseif(strcmp(clickType,'normal'))%left mouse click
             if(isfield(etc_trace_obj,'time_select_line'))
                 try
                     delete(etc_trace_obj.time_select_line);
@@ -675,6 +686,17 @@ switch lower(param)
                 end;
             end;
             figure(etc_trace_obj.fig_trace);
+        else %middle mouse click
+            fprintf('middle button down!!\n');
+            
+            ylim=get(etc_trace_obj.axis_trace,'ylim');
+
+            if ~isempty(etc_trace_obj.dragging)
+                newPos = get(etc_trace_obj.fig_trace,'CurrentPoint');
+                posDiff = newPos - etc_trace_obj.orPos;
+                etc_trace_obj.orPos = newPos;
+                set(etc_trace_obj.dragging,'Position',get(etc_trace_obj.dragging,'Position') + [posDiff(1:2) 0 0]);
+            end
         end;
         
         
@@ -1128,14 +1150,15 @@ set(etc_trace_obj.fig_trace,'color','w')
 
 return;
 
-
-
-
 function etc_trace_callback(src,~)
 
 global etc_trace_obj;
 
 fprintf('[%s] was selected\n',src.Tag);
+%drag-drop
+%set(src,'ButtonDownFcn',@dragObject);
+etc_trace_obj.dragging = src;
+etc_trace_obj.orPos = get(etc_trace_obj.fig_trace,'CurrentPoint');
 
 %Index = find(strcmp(etc_trace_obj.ch_names,src.Tag));
 Index = find(strcmp(etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names, src.Tag));
@@ -1174,6 +1197,11 @@ figure(etc_trace_obj.fig_trace);
 
 return;
 
+% function dragObject(hObject,eventdata)
+% global etc_trace_obj;
+%         etc_trace_obj.dragging = hObject;
+%         etc_trace_obj.orPos = get(etc_trace_obj.fig_trace,'CurrentPoint');
+% return;
 
 function etc_trace_electrode_listbox_callback(hObj,event)
 

@@ -65,6 +65,7 @@ switch lower(param)
                 fprintf('s: smooth overlay \n');
                 fprintf('o: create an ROI\n');
                 fprintf('m: create an ROI at the selected location with a radius\n');
+                fprintf('n: switch between overlay and underlay volumes\n');
                 fprintf('d: interactive overlay threshold change\n');
                 fprintf('c: switch on/off a colorbar\n');
                 fprintf('u: show cluster labels from a file\n');
@@ -79,8 +80,117 @@ switch lower(param)
             case 'q'
                 fprintf('\nclosing all figures!\n');
                 etc_render_fsbrain_handle('del');
+            case 'n'
+                fprintf('\nswitch between underlay and overlay volumes...\n');
+                
+                if(~isempty(etc_render_fsbrain.vol)&~isempty(etc_render_fsbrain.overlay_vol))
+                    tmp=etc_render_fsbrain.vol;
+                    etc_render_fsbrain.vol=etc_render_fsbrain.overlay_vol;
+                    etc_render_fsbrain.overlay_vol=tmp;
+                    
+                    
+                    %paint volume to surface for 'overlay_value' field
+                    offset=0;
+                    for hemi_idx=1:2
+                        
+                        %choose 10,242 sources arbitrarily for cortical soruces
+                        %vol_A(hemi_idx).v_idx=[1:10242]-1;
+                        %vol_A(hemi_idx).v_idx=[1:10:size(orig_vertex_coords,1)]-1;
+                        
+                        %vol_A(hemi_idx).vertex_coords=vertex_coords;
+                        %vol_A(hemi_idx).faces=faces;
+                        %vol_A(hemi_idx).orig_vertex_coords=orig_vertex_coords;
+                        
+                        SurfVertices=cat(2,etc_render_fsbrain.vol_A(hemi_idx).orig_vertex_coords(etc_render_fsbrain.vol_A(hemi_idx).v_idx+1,:),ones(length(etc_render_fsbrain.vol_A(hemi_idx).v_idx),1));
+                        
+                        vol_vox_tmp=(inv(etc_render_fsbrain.vol.tkrvox2ras)*(etc_render_fsbrain.vol_reg)*(SurfVertices.')).';
+                        vol_vox_tmp=round(vol_vox_tmp(:,1:3));
+                        
+                        %separate data into "cort_idx" and "non_cort_idx" entries; the
+                        %former ones are for cortical locations (defined for ONLY one selected
+                        %hemisphere. the latter ones are for non-cortical locations (may
+                        %include the cortical locations of the other non-selected
+                        %hemisphere).
+                        all_idx=[1:prod(etc_render_fsbrain.overlay_vol.volsize(1:3))];
+                        %[cort_idx,ii]=unique(sub2ind(overlay_vol.volsize(1:3),vol_vox_tmp(:,2),vol_vox_tmp(:,1),vol_vox_tmp(:,3)));
+                        
+                        cort_idx=sub2ind(etc_render_fsbrain.overlay_vol.volsize(1:3),vol_vox_tmp(:,2),vol_vox_tmp(:,1),vol_vox_tmp(:,3));
+                        ii=[1:length(cort_idx)];
+                        etc_render_fsbrain.vol_A(hemi_idx).v_idx=etc_render_fsbrain.vol_A(hemi_idx).v_idx(ii);
+                        non_cort_idx=setdiff(all_idx,cort_idx);
+                        
+                        n_source(hemi_idx)=length(non_cort_idx)+length(cort_idx);
+                        n_dip(hemi_idx)=n_source(hemi_idx)*3;
+                        
+                        
+                        [C,R,S] = meshgrid([1:size(etc_render_fsbrain.overlay_vol.vol,2)],[1:size(etc_render_fsbrain.overlay_vol.vol,1)],[1:size(etc_render_fsbrain.overlay_vol.vol,3)]);
+                        CRS=[C(:) R(:) S(:)];
+                        CRS=cat(2,CRS,ones(size(CRS,1),1))';
+                        
+                        all_coords=inv(etc_render_fsbrain.vol_reg)*etc_render_fsbrain.vol.tkrvox2ras*CRS;
+                        all_coords=all_coords(1:3,:)';
+                        etc_render_fsbrain.vol_A(hemi_idx).loc=all_coords(cort_idx,:);
+                        etc_render_fsbrain.vol_A(hemi_idx).wb_loc=all_coords(non_cort_idx,:)./1e3;
+                        
+                        overlay_vol_value=reshape(etc_render_fsbrain.overlay_vol.vol,[size(etc_render_fsbrain.overlay_vol.vol,1)*size(etc_render_fsbrain.overlay_vol.vol,2)*size(etc_render_fsbrain.overlay_vol.vol,3), size(etc_render_fsbrain.overlay_vol.vol,4)]);
+                        
+                        midx=[cort_idx(:)' non_cort_idx(:)'];
+                        overlay_vol_stc(offset+1:offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx),:)=overlay_vol_value(midx(1:length(cort_idx)),:);
+                        overlay_vol_stc(offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),:)=overlay_vol_value(midx(length(cort_idx)+1:end),:);
+                        
+                        offset=offset+n_source(hemi_idx);
+                        
+                        X_hemi_cort{hemi_idx}=overlay_vol_value(cort_idx,:);
+                        X_hemi_subcort{hemi_idx}=overlay_vol_value(non_cort_idx,:);
+                    end;
+                    
+                    
+                    if(strcmp(etc_render_fsbrain.hemi,'lh'))
+                        overlay_stc=X_hemi_cort{1};
+                        overlay_vertex=etc_render_fsbrain.vol_A(1).v_idx;
+                    else
+                        overlay_stc=X_hemi_cort{2};
+                        overlay_vertex=etc_render_fsbrain.vol_A(2).v_idx;
+                    end;
+                    overlay_value=overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
+                    
+                    
+                    etc_render_fsbrain.overlay_value=overlay_value;
+                end;
+                
+                draw_pointer();
+                redraw;
+            case 'escape'
+                if(isfield(etc_render_fsbrain,'flag_collect_vertex'))
+                    if(etc_render_fsbrain.flag_collect_vertex)
+                        fprintf('\nstop collecting vertices for ROI definition...\n\n');
+                        etc_render_fsbrain.flag_collect_vertex=0;
+                        etc_render_fsbrain.collect_vertex=[];
+                        
+                        delete(etc_render_fsbrain.collect_vertex_boundary_point(:));
+                        etc_render_fsbrain.collect_vertex_boundary_point=[];
+                        etc_render_fsbrain.collect_vertex_boundary=[];
+                        
+                        etc_render_fsbrain.collect_vertex=[];
+                        delete(etc_render_fsbrain.collect_vertex_point(:));
+                        etc_render_fsbrain.collect_vertex_point=[];
+                    end;
+                end;
+                
             case 'r'
                 fprintf('\nredrawing...\n');
+                
+                etc_render_fsbrain.flag_collect_vertex=0;
+                etc_render_fsbrain.collect_vertex=[];
+                    
+                delete(etc_render_fsbrain.collect_vertex_boundary_point(:));
+                etc_render_fsbrain.collect_vertex_boundary_point=[];
+                etc_render_fsbrain.collect_vertex_boundary=[];
+                
+                etc_render_fsbrain.collect_vertex=[];
+                delete(etc_render_fsbrain.collect_vertex_point(:));
+                etc_render_fsbrain.collect_vertex_point=[];
+                
                 redraw;
             case 'p'
                 %fprintf('\nSUBJECT...\n');
@@ -2378,6 +2488,12 @@ try
         set(h,'String',num2str(etc_render_fsbrain.click_vertex_vox_round(3),'%1.0f'));
         
         
+        h=findobj('tag','edit_vox_overlay_x_round');
+        set(h,'String','');
+        h=findobj('tag','edit_vox_overlay_y_round');
+        set(h,'String','');
+        h=findobj('tag','edit_vox_overlay_z_round');
+        set(h,'String','');
         if(isfield(etc_render_fsbrain,'overlay_vol_xfm'))
             if(~isempty(etc_render_fsbrain.overlay_vol_xfm))
                 tcrs=[etc_render_fsbrain.click_vertex_vox_round(:); 1];
@@ -3394,178 +3510,184 @@ global etc_render_fsbrain;
 try
     time_idx=etc_render_fsbrain.overlay_stc_timeVec_idx;
     
-    %initialize
-    loc_vol=[];
-    for hemi_idx=1:2
-        
-        %n_dip(hemi_idx)=size(etc_render_fsbrain.vol_A(hemi_idx).A,2);
-        n_dip(hemi_idx)=(size(etc_render_fsbrain.vol_A(hemi_idx).loc,1)+size(etc_render_fsbrain.vol_A(hemi_idx).wb_loc,1)).*3;
-        n_source(hemi_idx)=n_dip(hemi_idx)/3;
-        
-        switch hemi_idx
-            case 1
-                offset=0;
-            case 2
-                offset=n_source(1);
-        end;
-        
-        %get source estimates at cortical and sub-cortical locations
-        if(~isempty(etc_render_fsbrain.overlay_vol_stc))
-            X_hemi_cort=etc_render_fsbrain.overlay_vol_stc(offset+1:offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx),time_idx);
-            X_hemi_subcort=etc_render_fsbrain.overlay_vol_stc(offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),time_idx);
+    if(~etc_render_fsbrain.flag_overlay_vol2surf)
+        %initialize
+        loc_vol=[];
+        for hemi_idx=1:2
             
-            %smoothing over the volume
-            if(isfield(etc_render_fsbrain.vol_A(hemi_idx),'src_wb_idx'))
-                v=zeros(size(etc_render_fsbrain.vol.vol));
-                tmp=etc_render_fsbrain.overlay_vol_stc(offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),time_idx);
-                if(~isempty(tmp))
-                    v(etc_render_fsbrain.vol_A(hemi_idx).src_wb_idx)=tmp;
-                    pos_idx=find(v(:)>0);
-                    neg_idx=find(v(:)<0);
-                    if(~isempty(pos_idx))
-                        tmp=v(pos_idx);
-                        tmp=sort(tmp);
-                        mx=tmp(round(length(tmp).*0.999));
-                        %mx=max(v(pos_idx));
+            %n_dip(hemi_idx)=size(etc_render_fsbrain.vol_A(hemi_idx).A,2);
+            n_dip(hemi_idx)=(size(etc_render_fsbrain.vol_A(hemi_idx).loc,1)+size(etc_render_fsbrain.vol_A(hemi_idx).wb_loc,1)).*3;
+            n_source(hemi_idx)=n_dip(hemi_idx)/3;
+            
+            switch hemi_idx
+                case 1
+                    offset=0;
+                case 2
+                    offset=n_source(1);
+            end;
+            
+            %get source estimates at cortical and sub-cortical locations
+            if(~isempty(etc_render_fsbrain.overlay_vol_stc))
+                X_hemi_cort=etc_render_fsbrain.overlay_vol_stc(offset+1:offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx),time_idx);
+                X_hemi_subcort=etc_render_fsbrain.overlay_vol_stc(offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),time_idx);
+                
+                %smoothing over the volume
+                if(isfield(etc_render_fsbrain.vol_A(hemi_idx),'src_wb_idx'))
+                    v=zeros(size(etc_render_fsbrain.vol.vol));
+                    tmp=etc_render_fsbrain.overlay_vol_stc(offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),time_idx);
+                    if(~isempty(tmp))
+                        v(etc_render_fsbrain.vol_A(hemi_idx).src_wb_idx)=tmp;
+                        pos_idx=find(v(:)>0);
+                        neg_idx=find(v(:)<0);
+                        if(~isempty(pos_idx))
+                            tmp=v(pos_idx);
+                            tmp=sort(tmp);
+                            mx=tmp(round(length(tmp).*0.999));
+                            %mx=max(v(pos_idx));
+                        else
+                            mx=[];
+                        end;
+                        
+                        if(~isempty(neg_idx))
+                            tmp=-v(neg_idx);
+                            tmp=sort(tmp);
+                            mn=tmp(round(length(tmp).*0.999));
+                            %mn=max(-v(neg_idx));
+                        else
+                            mn=[];
+                        end;
+                        fwhm=4; %<size of smoothing kernel; fwhm in mm.
+                        [vs,kernel]=fmri_smooth(v,fwhm,'vox',[etc_render_fsbrain.vol.xsize,etc_render_fsbrain.vol.ysize,etc_render_fsbrain.vol.zsize]);
+                        if(~isempty(pos_idx))
+                            pos_idx=find(vs(:)>10.*eps);
+                            vs(pos_idx)=fmri_scale(vs(pos_idx),mx,0);
+                        end;
+                        if(~isempty(neg_idx))
+                            neg_idx=find(vs(:)<-10.*eps);
+                            vs(neg_idx)=fmri_scale(vs(neg_idx),0,-mn);
+                        end;
+                        Vs{hemi_idx}=vs;
+                        X_hemi_subcort=vs(etc_render_fsbrain.vol_A(hemi_idx).src_wb_idx);
                     else
-                        mx=[];
+                        X_hemi_subcort=[];
+                        Vs{hemi_idx}=[];
                     end;
-                    
-                    if(~isempty(neg_idx))
-                        tmp=-v(neg_idx);
-                        tmp=sort(tmp);
-                        mn=tmp(round(length(tmp).*0.999));
-                        %mn=max(-v(neg_idx));
-                    else
-                        mn=[];
-                    end;
-                    fwhm=4; %<size of smoothing kernel; fwhm in mm.
-                    [vs,kernel]=fmri_smooth(v,fwhm,'vox',[etc_render_fsbrain.vol.xsize,etc_render_fsbrain.vol.ysize,etc_render_fsbrain.vol.zsize]);
-                    if(~isempty(pos_idx))
-                        pos_idx=find(vs(:)>10.*eps);
-                        vs(pos_idx)=fmri_scale(vs(pos_idx),mx,0);
-                    end;
-                    if(~isempty(neg_idx))
-                        neg_idx=find(vs(:)<-10.*eps);
-                        vs(neg_idx)=fmri_scale(vs(neg_idx),0,-mn);
-                    end;
-                    Vs{hemi_idx}=vs;
-                    X_hemi_subcort=vs(etc_render_fsbrain.vol_A(hemi_idx).src_wb_idx);
                 else
-                    X_hemi_subcort=[];
                     Vs{hemi_idx}=[];
                 end;
             else
+                X_hemi_cort=[];
+                X_hemi_subcort=[];
+                
                 Vs{hemi_idx}=[];
             end;
-        else
-            X_hemi_cort=[];
-            X_hemi_subcort=[];
-
-            Vs{hemi_idx}=[];
+            
+            %smooth source estimates at cortical locations
+            if(~isempty(etc_render_fsbrain.vol_A(hemi_idx).vertex_coords));
+                if(~isempty(X_hemi_cort))
+                    if(isempty(etc_render_fsbrain.vol_ribbon))
+                        ov=zeros(size(etc_render_fsbrain.vol_A(hemi_idx).vertex_coords,1),1);
+                        ov(etc_render_fsbrain.vol_A(hemi_idx).v_idx+1)=X_hemi_cort;
+                    else
+                        ov=X_hemi_cort;
+                    end;
+                else
+                    ov=[];
+                end;
+                flag_overlay_D_init=1;
+                if(isfield(etc_render_fsbrain,'overlay_D'))
+                    if(length(etc_render_fsbrain.overlay_D)==2)
+                        if(~isempty(etc_render_fsbrain.overlay_D{hemi_idx}))
+                            flag_overlay_D_init=0;
+                        end;
+                    end;
+                end;
+                if(flag_overlay_D_init) etc_render_fsbrain.overlay_D{hemi_idx}=[];end;
+                
+                if(~isempty(ov))
+                    if(isempty(etc_render_fsbrain.vol_ribbon))
+                        [ovs,dd0,dd1,overlay_Ds,etc_render_fsbrain.overlay_D{hemi_idx}]=inverse_smooth('','vertex',etc_render_fsbrain.vol_A(hemi_idx).vertex_coords','face',etc_render_fsbrain.vol_A(hemi_idx).faces','value',ov,'value_idx',etc_render_fsbrain.vol_A(hemi_idx).v_idx+1,'step',etc_render_fsbrain.overlay_smooth,'n_ratio',length(ov)/size(X_hemi_cort,1),'flag_display',0,'flag_regrid',0,'flag_fixval',0,'D',etc_render_fsbrain.overlay_D{hemi_idx});
+                    else
+                        ovs=ov;
+                    end;
+                else
+                    ovs=[];
+                end;
+                %assemble smoothed source at cortical locations and sources at sub-cortical locations
+                X_wb{hemi_idx}=cat(1,ovs(:),X_hemi_subcort(:));
+                
+                flag_cal_loc_vol_idx=1;
+                if(isfield(etc_render_fsbrain,'loc_vol_idx'))
+                    if(length(etc_render_fsbrain.loc_vol_idx)==2)
+                        if(~isempty(etc_render_fsbrain.loc_vol_idx{hemi_idx}))
+                            flag_cal_loc_vol_idx=0;
+                        end;
+                    end;
+                end;
+                
+                
+                if(flag_cal_loc_vol_idx==1)
+                    etc_render_fsbrain.loc_vol_idx{hemi_idx}=[];
+                    %get coordinates from surface to volume
+                    loc=cat(1,etc_render_fsbrain.vol_A(hemi_idx).vertex_coords./1e3,etc_render_fsbrain.vol_A(hemi_idx).wb_loc);
+                    %loc=cat(1,etc_render_fsbrain.vol_A(hemi_idx).orig_vertex_coords./1e3,etc_render_fsbrain.vol_A(hemi_idx).wb_loc);
+                    loc_surf=[loc.*1e3 ones(size(loc,1),1)]';
+                    tmp=inv(etc_render_fsbrain.vol.tkrvox2ras)*(etc_render_fsbrain.vol_reg)*loc_surf;
+                    loc_vol{hemi_idx}=round(tmp(1:3,:))';
+                    etc_render_fsbrain.loc_vol{hemi_idx}=round(tmp(1:3,:))';
+                    etc_render_fsbrain.loc_vol_idx{hemi_idx}=sub2ind(size(etc_render_fsbrain.vol.vol),loc_vol{hemi_idx}(:,2),loc_vol{hemi_idx}(:,1),loc_vol{hemi_idx}(:,3));
+                end;
+            else
+                X_wb{hemi_idx}=[];
+            end;
         end;
         
-        %smooth source estimates at cortical locations
-        if(~isempty(etc_render_fsbrain.vol_A(hemi_idx).vertex_coords));
-            if(~isempty(X_hemi_cort))
+        
+        tmp=zeros(size(etc_render_fsbrain.vol.vol));
+        
+        for hemi_idx=1:2
+            if(~isempty(Vs{hemi_idx}))
+                tmp=tmp+Vs{hemi_idx};
+            end;
+            if(~isempty(X_wb{hemi_idx}))
                 if(isempty(etc_render_fsbrain.vol_ribbon))
-                    ov=zeros(size(etc_render_fsbrain.vol_A(hemi_idx).vertex_coords,1),1);
-                    ov(etc_render_fsbrain.vol_A(hemi_idx).v_idx+1)=X_hemi_cort;
+                    tmp(etc_render_fsbrain.loc_vol_idx{hemi_idx})=X_wb{hemi_idx};  %cortical activity; no projection over the cortical ribbon
                 else
-                    ov=X_hemi_cort;
-                end;
-            else
-                ov=[];
-            end;
-            flag_overlay_D_init=1;
-            if(isfield(etc_render_fsbrain,'overlay_D'))
-                if(length(etc_render_fsbrain.overlay_D)==2)
-                    if(~isempty(etc_render_fsbrain.overlay_D{hemi_idx}))
-                        flag_overlay_D_init=0;
+                    
+                    switch hemi_idx
+                        case 1
+                            ribbon_value=3; %left hemisphere cortical ribbon value
+                        case 2
+                            ribbon_value=42; %right hemisphere cortical ribbon value
                     end;
+                    
+                    [rr,cc,ss]=meshgrid([1:size(etc_render_fsbrain.vol_ribbon.vol,1)],[1:size(etc_render_fsbrain.vol_ribbon.vol,2)],[1:size(etc_render_fsbrain.vol_ribbon.vol,3)]);
+                    
+                    X=cat(2,rr(:),cc(:),ss(:));
+                    
+                    Xcort=X(etc_render_fsbrain.loc_vol_idx{hemi_idx},:);
+                    
+                    ribbon_idx{hemi_idx}=find(etc_render_fsbrain.vol_ribbon.vol(:)==ribbon_value);
+                    
+                    Xribbon=X(ribbon_idx{hemi_idx},:);
+                    
+                    cort_ribbon_idx{hemi_idx}=knnsearch(Xcort,Xribbon);
+                    
+                    
+                    tmp(ribbon_idx{hemi_idx})=X_wb{hemi_idx}(cort_ribbon_idx{hemi_idx});
                 end;
-            end;
-            if(flag_overlay_D_init) etc_render_fsbrain.overlay_D{hemi_idx}=[];end;
-            
-            if(~isempty(ov))
-                if(isempty(etc_render_fsbrain.vol_ribbon))
-                    [ovs,dd0,dd1,overlay_Ds,etc_render_fsbrain.overlay_D{hemi_idx}]=inverse_smooth('','vertex',etc_render_fsbrain.vol_A(hemi_idx).vertex_coords','face',etc_render_fsbrain.vol_A(hemi_idx).faces','value',ov,'value_idx',etc_render_fsbrain.vol_A(hemi_idx).v_idx+1,'step',etc_render_fsbrain.overlay_smooth,'n_ratio',length(ov)/size(X_hemi_cort,1),'flag_display',0,'flag_regrid',0,'flag_fixval',0,'D',etc_render_fsbrain.overlay_D{hemi_idx});
-                else
-                    ovs=ov;
-                end;
-            else
-                ovs=[];
-            end;
-            %assemble smoothed source at cortical locations and sources at sub-cortical locations
-            X_wb{hemi_idx}=cat(1,ovs(:),X_hemi_subcort(:));
-            
-            flag_cal_loc_vol_idx=1;
-            if(isfield(etc_render_fsbrain,'loc_vol_idx'))
-                if(length(etc_render_fsbrain.loc_vol_idx)==2)
-                    if(~isempty(etc_render_fsbrain.loc_vol_idx{hemi_idx}))
-                        flag_cal_loc_vol_idx=0;
-                    end;
-                end;
-            end;
-            
-            
-            if(flag_cal_loc_vol_idx==1)
-                etc_render_fsbrain.loc_vol_idx{hemi_idx}=[];
-                %get coordinates from surface to volume
-                loc=cat(1,etc_render_fsbrain.vol_A(hemi_idx).vertex_coords./1e3,etc_render_fsbrain.vol_A(hemi_idx).wb_loc);
-                %loc=cat(1,etc_render_fsbrain.vol_A(hemi_idx).orig_vertex_coords./1e3,etc_render_fsbrain.vol_A(hemi_idx).wb_loc);
-                loc_surf=[loc.*1e3 ones(size(loc,1),1)]';
-                tmp=inv(etc_render_fsbrain.vol.tkrvox2ras)*(etc_render_fsbrain.vol_reg)*loc_surf;
-                loc_vol{hemi_idx}=round(tmp(1:3,:))';
-                etc_render_fsbrain.loc_vol{hemi_idx}=round(tmp(1:3,:))';
-                etc_render_fsbrain.loc_vol_idx{hemi_idx}=sub2ind(size(etc_render_fsbrain.vol.vol),loc_vol{hemi_idx}(:,2),loc_vol{hemi_idx}(:,1),loc_vol{hemi_idx}(:,3));
-            end;
-        else
-            X_wb{hemi_idx}=[];
-        end;
-    end;
-    
-    
-    tmp=zeros(size(etc_render_fsbrain.vol.vol));
-    
-    for hemi_idx=1:2
-        if(~isempty(Vs{hemi_idx}))
-            tmp=tmp+Vs{hemi_idx};
-        end;
-        if(~isempty(X_wb{hemi_idx}))
-            if(isempty(etc_render_fsbrain.vol_ribbon))
-                tmp(etc_render_fsbrain.loc_vol_idx{hemi_idx})=X_wb{hemi_idx};  %cortical activity; no projection over the cortical ribbon
-            else
-                
-                switch hemi_idx
-                    case 1
-                        ribbon_value=3; %left hemisphere cortical ribbon value
-                    case 2
-                        ribbon_value=42; %right hemisphere cortical ribbon value
-                end;
-                
-                [rr,cc,ss]=meshgrid([1:size(etc_render_fsbrain.vol_ribbon.vol,1)],[1:size(etc_render_fsbrain.vol_ribbon.vol,2)],[1:size(etc_render_fsbrain.vol_ribbon.vol,3)]);
-                
-                X=cat(2,rr(:),cc(:),ss(:));
-                
-                Xcort=X(etc_render_fsbrain.loc_vol_idx{hemi_idx},:);
-                
-                ribbon_idx{hemi_idx}=find(etc_render_fsbrain.vol_ribbon.vol(:)==ribbon_value);
-                
-                Xribbon=X(ribbon_idx{hemi_idx},:);
-                
-                cort_ribbon_idx{hemi_idx}=knnsearch(Xcort,Xribbon);
-                
-                
-                tmp(ribbon_idx{hemi_idx})=X_wb{hemi_idx}(cort_ribbon_idx{hemi_idx});
             end;
         end;
+        
+        if(isempty(etc_render_fsbrain.overlay_vol))
+            etc_render_fsbrain.overlay_vol=etc_render_fsbrain.vol;
+        end;
+        etc_render_fsbrain.overlay_vol.vol=tmp;
+        
+        
+    else
+        
     end;
-    
-    if(isempty(etc_render_fsbrain.overlay_vol))
-        etc_render_fsbrain.overlay_vol=etc_render_fsbrain.vol;
-    end;
-    etc_render_fsbrain.overlay_vol.vol=tmp;
 catch ME
 end;
 return;

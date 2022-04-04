@@ -125,6 +125,12 @@ catch ME
 end;
 
 
+h=findobj('tag','edit_vox_overlay_x_round');
+set(h,'String','');
+h=findobj('tag','edit_vox_overlay_y_round');
+set(h,'String','');
+h=findobj('tag','edit_vox_overlay_z_round');
+set(h,'String','');
 try
     if(isfield(etc_render_fsbrain,'overlay_vol_xfm'))
         if(~isempty(etc_render_fsbrain.overlay_vol_xfm))

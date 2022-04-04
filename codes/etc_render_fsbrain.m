@@ -654,6 +654,7 @@ end;
 
 %prepare mapping overlay values from "overlay_vol" 
 if(~isempty(overlay_vol))
+    flag_overlay_vol2surf=1;
     offset=0;
     for hemi_idx=1:2
         
@@ -754,6 +755,8 @@ if(~isempty(overlay_vol))
     end;
     overlay_buffer(end).timeVec=overlay_stc_timeVec;
     overlay_buffer(end).hemi=hemi;
+else
+    flag_overlay_vol2surf=0;
 end;    
     
     
@@ -1072,6 +1075,8 @@ etc_render_fsbrain.overlay_Ds=overlay_Ds;
 etc_render_fsbrain.overlay_vol_xfm=overlay_vol_xfm;
 etc_render_fsbrain.flag_overlay_truncate_pos=overlay_truncate_pos;
 etc_render_fsbrain.flag_overlay_truncate_neg=overlay_truncate_neg;
+etc_render_fsbrain.flag_overlay_vol2surf=flag_overlay_vol2surf;
+
 
 etc_render_fsbrain.flag_orthogonal_slice_ax=flag_orthogonal_slice_ax;
 etc_render_fsbrain.flag_orthogonal_slice_sag=flag_orthogonal_slice_sag;
