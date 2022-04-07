@@ -69,6 +69,12 @@ if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_
     set(handles.listbox_label,'max',max([2 length(etc_render_fsbrain.label_ctab.struct_names)]));
     set(handles.listbox_label,'value',[]);
     guidata(hObject, handles);
+else
+    set(handles.listbox_label,'string',{''});
+    set(handles.listbox_label,'min',0);
+    set(handles.listbox_label,'max',2);
+    set(handles.listbox_label,'value',[]);
+    guidata(hObject, handles);    
 end;
 
 set(hObject,'KeyPressFcn',@etc_render_fsbrain_kbhandle);

@@ -2870,6 +2870,15 @@ end;
 
 etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).color=c;
 set(handles.pushbutton_electrode_color,'BackgroundColor',c);
+
+count=1;
+for e_idx=1:length(etc_render_fsbrain.electrode)
+        for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
+            etc_render_fsbrain.aux2_point_individual_color(count,:)=etc_render_fsbrain.electrode(e_idx).color;
+            count=count+1;
+        end;
+end;
+
 try
         etc_render_fsbrain_handle('redraw');        
 catch ME

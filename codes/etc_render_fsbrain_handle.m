@@ -76,9 +76,13 @@ switch lower(param)
                 fprintf('\n\n fhlin@dec 25, 2014\n');
             case 'a'
                 fprintf('archiving...\n');
-                fn=sprintf('etc_render_fsbrain.tif');
+                fn=sprintf('etc_render_fsbrain_vol.png');
                 fprintf('saving [%s]...\n',fn);
-                print(fn,'-dtiff');
+                print(etc_render_fsbrain.fig_vol,fn,'-dpng','-r300')
+                fn=sprintf('etc_render_fsbrain_surf.png');
+                fprintf('saving [%s]...\n',fn);
+                print(etc_render_fsbrain.fig_brain,fn,'-dpng','-r300')
+                %print(fn,'-dtiff');
             case 'q'
                 fprintf('\nclosing all figures!\n');
                 etc_render_fsbrain_handle('del');
@@ -190,18 +194,24 @@ switch lower(param)
             case 'r'
                 fprintf('\nredrawing...\n');
                 
-                etc_render_fsbrain.flag_collect_vertex=0;
-                etc_render_fsbrain.collect_vertex=[];
+                try
+                    etc_render_fsbrain.flag_collect_vertex=0;
+                    etc_render_fsbrain.collect_vertex=[];
+                    if(isfield(etc_render_fsbrain,'collect_vertex_boundary_point'))
+                        delete(etc_render_fsbrain.collect_vertex_boundary_point(:));
+                    end;
+                    etc_render_fsbrain.collect_vertex_boundary_point=[];
+                    etc_render_fsbrain.collect_vertex_boundary=[];
                     
-                delete(etc_render_fsbrain.collect_vertex_boundary_point(:));
-                etc_render_fsbrain.collect_vertex_boundary_point=[];
-                etc_render_fsbrain.collect_vertex_boundary=[];
-                
-                etc_render_fsbrain.collect_vertex=[];
-                delete(etc_render_fsbrain.collect_vertex_point(:));
-                etc_render_fsbrain.collect_vertex_point=[];
-                
-                redraw;
+                    etc_render_fsbrain.collect_vertex=[];
+                    if(isfield(etc_render_fsbrain,'collect_vertex_point'))
+                        delete(etc_render_fsbrain.collect_vertex_point(:));
+                    end;
+                    etc_render_fsbrain.collect_vertex_point=[];
+                    
+                    redraw;
+                catch ME
+                end;
             case 'p'
                 %fprintf('\nSUBJECT...\n');
                 if(isfield(etc_render_fsbrain,'fig_subject'))
@@ -3480,6 +3490,11 @@ try
 catch ME
 end;
 
+if(~isempty(etc_render_fsbrain.label_ctab))
+    for idx=1:etc_render_fsbrain.label_ctab.numEntries
+        draw_label(idx);
+    end;
+end;
 return;
 
 function update_label()
