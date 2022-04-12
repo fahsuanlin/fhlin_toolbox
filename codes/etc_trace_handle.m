@@ -1148,6 +1148,8 @@ end;
 set(etc_trace_obj.axis_trace,'fontname','helvetica','fontsize',12);
 set(etc_trace_obj.fig_trace,'color','w')
 
+set(etc_trace_obj.cliipping,'off');
+
 return;
 
 function etc_trace_callback(src,~)

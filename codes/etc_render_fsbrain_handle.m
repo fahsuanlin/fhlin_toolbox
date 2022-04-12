@@ -31,8 +31,14 @@ for i=1:length(varargin)/2
     end;
 end;
 
-if(isempty(cc))
-    cc=get(gcf,'currentchar');
+if(isvalid(etc_render_fsbrain.fig_brain))
+    if(get(etc_render_fsbrain.fig_brain,'Visible')=='off');
+        
+    else
+        if(isempty(cc))
+            cc=get(gcf,'currentchar');
+        end;
+    end;
 end;
 
 switch lower(param)
@@ -978,7 +984,7 @@ switch lower(param)
                                             etc_render_fsbrain.fcvdata_orig=etc_render_fsbrain.h.FaceVertexCData;
                                             etc_render_fsbrain.label_register=zeros(1,length(etc_render_fsbrain.label_ctab.struct_names));
                                             
-                                            figure(etc_render_fsbrain.fig_label_gui);
+                                            set(0,'CurrentFigure',etc_render_fsbrain.fig_label_gui);
                                         else
                                             etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
                                             set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
@@ -1098,10 +1104,10 @@ switch lower(param)
                             etc_render_fsbrain.brain_axis_pos=get(etc_render_fsbrain.brain_axis,'pos');
                         end;
                         set(etc_render_fsbrain.brain_axis,'pos',[etc_render_fsbrain.brain_axis_pos(1) 0.2 etc_render_fsbrain.brain_axis_pos(3) 0.8]);
-                        figure(etc_render_fsbrain.fig_brain);
+                        set(0,'CurrentFigure',etc_render_fsbrain.fig_brain);
                         etc_render_fsbrain.h_colorbar=subplot('position',[etc_render_fsbrain.brain_axis_pos(1) 0.0 etc_render_fsbrain.brain_axis_pos(3) 0.2]);
                         
-                        %figure(etc_render_fsbrain.fig_brain);
+                        %set(0,'CurrentFigure',etc_render_fsbrain.fig_brain);
 
                         cmap=[etc_render_fsbrain.overlay_cmap; etc_render_fsbrain.overlay_cmap_neg];
                         hold on;
@@ -1150,10 +1156,10 @@ switch lower(param)
                         %    etc_render_fsbrain.brain_axis_pos=get(etc_render_fsbrain.brain_axis,'pos');
                         %end;
                         %set(etc_render_fsbrain.brain_axis,'pos',[etc_render_fsbrain.brain_axis_pos(1) 0.2 etc_render_fsbrain.brain_axis_pos(3) 0.8]);
-                        figure(etc_render_fsbrain.fig_vol); hold on;
+                        set(0,'CurrentFigure',etc_render_fsbrain.fig_vol); hold on;
                         %etc_render_fsbrain.h_colorbar_vol=subplot('position',[etc_render_fsbrain.brain_axis_pos(1) 0.0 etc_render_fsbrain.brain_axis_pos(3) 0.2]);
                         
-                        %figure(etc_render_fsbrain.fig_vol);
+                        %set(0,'CurrentFigure',etc_render_fsbrain.fig_vol);
                         
                         cmap=[etc_render_fsbrain.overlay_cmap; etc_render_fsbrain.overlay_cmap_neg];
                         hold on;
@@ -1480,7 +1486,7 @@ switch lower(param)
                     end;
                 end;
                 %redraw;
-                figure(etc_render_fsbrain.fig_brain);
+                set(0,'CurrentFigure',etc_render_fsbrain.fig_brain);
             elseif(gcf==etc_render_fsbrain.fig_vol)
                 
                 %add exploration toolbar
@@ -1586,7 +1592,7 @@ switch lower(param)
                         
                     end;
                 end;
-                figure(etc_render_fsbrain.fig_vol);
+                set(0,'CurrentFigure',etc_render_fsbrain.fig_vol);
                 
             elseif(gcf==etc_render_fsbrain.fig_stc)
                 xx=get(gca,'currentpoint');
@@ -1626,12 +1632,12 @@ switch lower(param)
                 end;
                 
                 if(isvalid(etc_render_fsbrain.fig_brain))
-                    figure(etc_render_fsbrain.fig_brain);
+                    set(0,'CurrentFigure',etc_render_fsbrain.fig_brain);
                     etc_render_fsbrain.camposition=campos;
                     redraw;
                     draw_pointer('pt',etc_render_fsbrain.click_coord,'min_dist_idx',etc_render_fsbrain.click_vertex,'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
                 end;
-                figure(etc_render_fsbrain.fig_stc);
+                set(0,'CurrentFigure',etc_render_fsbrain.fig_stc);
                 
                 
                 global etc_trace_obj;
@@ -1726,7 +1732,7 @@ switch lower(param)
                     end;
                 end;
                 
-                figure(etc_render_fsbrain.fig_vol);
+                set(0,'CurrentFigure',etc_render_fsbrain.fig_vol);
         end;
         
         global etc_trace_obj;
@@ -1793,7 +1799,7 @@ try
     
     
     if(isvalid(etc_render_fsbrain.fig_brain))
-        figure(etc_render_fsbrain.fig_brain);
+        set(0,'CurrentFigure',etc_render_fsbrain.fig_brain);
     end;
     
     if(ishandle(etc_render_fsbrain.h)&isempty(pt))
@@ -1933,7 +1939,7 @@ try
     end;
     
     if(~isempty(etc_render_fsbrain.vol_vox))
-        figure(etc_render_fsbrain.fig_vol);
+        set(0,'CurrentFigure',etc_render_fsbrain.fig_vol);
         
         set(etc_render_fsbrain.fig_vol,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
         set(etc_render_fsbrain.fig_vol,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
@@ -2656,7 +2662,7 @@ try
             tmp=inv(etc_render_fsbrain.vol_reg)*tmp;
             
             [X,Y,Z] = meshgrid(linspace(tmp(1,2),tmp(1,3),sz(2)),tmp(2,1),linspace(tmp(3,2),tmp(3,3),sz(3)));
-            figure(etc_render_fsbrain.fig_brain);
+            set(0,'CurrentFigure',etc_render_fsbrain.fig_brain);
             
             if(isfield(etc_render_fsbrain,'h_orthogonal_slice_cor'))
                 delete(etc_render_fsbrain.h_orthogonal_slice_cor);
@@ -2708,7 +2714,7 @@ try
             tmp=inv(etc_render_fsbrain.vol_reg)*tmp;
 
             [X,Y,Z] = meshgrid(tmp(1,1),linspace(tmp(2,2),tmp(2,3),sz(1)),linspace(tmp(3,2),tmp(3,3),sz(3)));
-            figure(etc_render_fsbrain.fig_brain);
+            set(0,'CurrentFigure',etc_render_fsbrain.fig_brain);
             
             if(isfield(etc_render_fsbrain,'h_orthogonal_slice_sag'))
                 delete(etc_render_fsbrain.h_orthogonal_slice_sag);
@@ -2759,7 +2765,7 @@ try
             tmp=inv(etc_render_fsbrain.vol_reg)*tmp;
 
             [X,Y,Z] = meshgrid(linspace(tmp(1,2),tmp(1,3),sz(2)),linspace(tmp(2,3),tmp(2,2),sz(1)),tmp(3,1));
-            figure(etc_render_fsbrain.fig_brain);
+            set(0,'CurrentFigure',etc_render_fsbrain.fig_brain);
             
             if(isfield(etc_render_fsbrain,'h_orthogonal_slice_ax'))
                 delete(etc_render_fsbrain.h_orthogonal_slice_ax);
@@ -2799,7 +2805,7 @@ try
     %overlay
     if(~isempty(etc_render_fsbrain.overlay_vertex))
         try
-            figure(etc_render_fsbrain.fig_brain);
+            set(0,'CurrentFigure',etc_render_fsbrain.fig_brain);
             
             
           
@@ -2876,7 +2882,7 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
             pos=get(etc_render_fsbrain.fig_brain,'outerpos');
             set(etc_render_fsbrain.fig_stc,'outerpos',[pos(1), pos(2)-pos(4), pos(3), pos(4)]);
         else
-            figure(etc_render_fsbrain.fig_stc);
+            set(0,'CurrentFigure',etc_render_fsbrain.fig_stc);
         end;
         
         set(etc_render_fsbrain.fig_stc,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
@@ -3142,10 +3148,10 @@ if(~isvalid(etc_render_fsbrain.fig_brain))
     etc_render_fsbrain.fig_brain=figure;
 else
     if(strcmp(get(etc_render_fsbrain.fig_brain,'visible'),'on'))
-        figure(etc_render_fsbrain.fig_brain);
+        set(0,'CurrentFigure',etc_render_fsbrain.fig_brain);
+        hold on;
     end;
 end;
-hold on;
 
 %set axes
 if(~isfield(etc_render_fsbrain,'brain_axis'))
@@ -3156,13 +3162,13 @@ if(~isvalid(etc_render_fsbrain.brain_axis))
 else
     if(strcmp(get(etc_render_fsbrain.fig_brain,'visible'),'on'))
         axes(etc_render_fsbrain.brain_axis);
+        
+        xlim=get(gca,'xlim');
+        ylim=get(gca,'ylim');
+        zlim=get(gca,'zlim');
+        
+        etc_render_fsbrain.lim=[xlim(:)' ylim(:)' zlim(:)'];
     end;
-    
-    xlim=get(gca,'xlim');
-    ylim=get(gca,'ylim');   
-    zlim=get(gca,'zlim');
-
-    etc_render_fsbrain.lim=[xlim(:)' ylim(:)' zlim(:)'];
 end;
 
 % %if(isempty(etc_render_fsbrain.view_angle))
@@ -3176,9 +3182,11 @@ end;
 
 %delete brain patch object
 if(ishandle(etc_render_fsbrain.h))
-    [etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2)]=view;
-    etc_render_fsbrain.camposition=campos;
-    delete(etc_render_fsbrain.h);
+    if(strcmp(get(etc_render_fsbrain.fig_brain,'visible'),'on'))
+        [etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2)]=view;
+        etc_render_fsbrain.camposition=campos;
+        delete(etc_render_fsbrain.h);
+    end;
 end;
 
 %0: solid color
@@ -3259,12 +3267,12 @@ end;
 
 etc_render_fsbrain.ovs=ovs;
 
-h=patch('Faces',etc_render_fsbrain.faces+1,'Vertices',etc_render_fsbrain.vertex_coords,'FaceVertexCData',etc_render_fsbrain.fvdata,'facealpha',etc_render_fsbrain.alpha,'CDataMapping','direct','facecolor','interp','edgecolor','none');
-material dull;
+h=patch(etc_render_fsbrain.brain_axis, 'Faces',etc_render_fsbrain.faces+1,'Vertices',etc_render_fsbrain.vertex_coords,'FaceVertexCData',etc_render_fsbrain.fvdata,'facealpha',etc_render_fsbrain.alpha,'CDataMapping','direct','facecolor','interp','edgecolor','none');
+material(h,'dull');
 
 etc_render_fsbrain.h=h;
 
-axis off vis3d equal;
+axis(etc_render_fsbrain.brain_axis,'off','vis3d','equal');
 
 if(etc_render_fsbrain.flag_camlight)
     camlight(-90,0);
@@ -3285,15 +3293,15 @@ end;
 if(~isempty(etc_render_fsbrain.overlay_threshold))
     if(length(etc_render_fsbrain.overlay_threshold)==2)
         if(etc_render_fsbrain.overlay_threshold(1)<etc_render_fsbrain.overlay_threshold(2))
-            set(gca,'climmode','manual','clim',etc_render_fsbrain.overlay_threshold);
+            set(etc_render_fsbrain.brain_axis,'climmode','manual','clim',etc_render_fsbrain.overlay_threshold);
         end;
     end;
 end;
-set(gcf,'color',etc_render_fsbrain.bg_color);
+set(etc_render_fsbrain.fig_brain,'color',etc_render_fsbrain.bg_color);
 
-view(etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2));
-campos(etc_render_fsbrain.camposition.*1); 
-axis(etc_render_fsbrain.lim);
+view(etc_render_fsbrain.brain_axis,etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2));
+campos(etc_render_fsbrain.brain_axis,etc_render_fsbrain.camposition.*1); 
+axis(etc_render_fsbrain.brain_axis,etc_render_fsbrain.lim);
 
 
 % %add exploration toolbar
@@ -3343,18 +3351,18 @@ try
                 if(etc_render_fsbrain.aux_point_label_flag)
                     if(~isempty(etc_render_fsbrain.aux_point_name))
                         if(strcmp(etc_render_fsbrain.aux_point_name{idx},'.'))
-                            etc_render_fsbrain.aux_point_name_h(idx)=text(etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3),''); hold on;
+                            etc_render_fsbrain.aux_point_name_h(idx)=text(etc_render_fsbrain.brain_axis,etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3),''); hold on;
                             set(etc_render_fsbrain.aux_point_name_h(idx),'color',etc_render_fsbrain.aux_point_text_color);
                             set(etc_render_fsbrain.aux_point_name_h(idx),'fontsize',etc_render_fsbrain.aux_point_text_size);
                         else
-                            etc_render_fsbrain.aux_point_name_h(idx)=text(etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3),etc_render_fsbrain.aux_point_name{idx}); hold on;
+                            etc_render_fsbrain.aux_point_name_h(idx)=text(etc_render_fsbrain.brain_axis,etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3),etc_render_fsbrain.aux_point_name{idx}); hold on;
                             set(etc_render_fsbrain.aux_point_name_h(idx),'color',etc_render_fsbrain.aux_point_text_color);
                             set(etc_render_fsbrain.aux_point_name_h(idx),'fontsize',etc_render_fsbrain.aux_point_text_size);
                         end;
                     end;
                 end;
             end;
-            etc_render_fsbrain.aux_point_coords_h(1)=surf(xx,yy,zz);
+            etc_render_fsbrain.aux_point_coords_h(1)=surf(etc_render_fsbrain.brain_axis,xx,yy,zz);
             %set(etc_render_fsbrain.aux_point_coords_h(1),'facecolor','r','edgecolor','none');
             set(etc_render_fsbrain.aux_point_coords_h(1),'facecolor',etc_render_fsbrain.aux_point_color,'edgecolor','none');
         end;
@@ -3410,7 +3418,7 @@ try
                         zz=cat(1,zz,etc_render_fsbrain.aux2_point_coords(idx,3));
                         if(~isempty(etc_render_fsbrain.aux2_point_name))
                             if(etc_render_fsbrain.show_contact_names_flag)
-                                etc_render_fsbrain.aux2_point_name_h(idx)=text(etc_render_fsbrain.aux2_point_coords(idx,1),etc_render_fsbrain.aux2_point_coords(idx,2),etc_render_fsbrain.aux2_point_coords(idx,3),etc_render_fsbrain.aux2_point_name{idx}); hold on;
+                                etc_render_fsbrain.aux2_point_name_h(idx)=text(etc_render_fsbrain.brain_axis,etc_render_fsbrain.aux2_point_coords(idx,1),etc_render_fsbrain.aux2_point_coords(idx,2),etc_render_fsbrain.aux2_point_coords(idx,3),etc_render_fsbrain.aux2_point_name{idx}); hold on;
                             end;
                         end;
                     end;
@@ -3418,13 +3426,26 @@ try
                     %set(etc_render_fsbrain.aux2_point_coords_h,'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
                     
                     for idx=1:size(etc_render_fsbrain.aux2_point_coords,1)
-                        etc_render_fsbrain.aux2_point_coords_h(idx)=plot3(xx(idx),yy(idx),zz(idx),'.');
+                        etc_render_fsbrain.aux2_point_coords_h(idx)=plot3(etc_render_fsbrain.brain_axis, xx(idx),yy(idx),zz(idx),'.');
                         if(isfield(etc_render_fsbrain,'aux2_point_individual_color'))
-                            try
-                                set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_individual_color(idx,:),'markersize',etc_render_fsbrain.aux2_point_size);
-                            catch ME
-                            end
-                            set(etc_render_fsbrain.aux2_point_coords_h(idx),'markersize',etc_render_fsbrain.aux2_point_size);
+                            if(~isempty(etc_render_fsbrain.aux2_point_individual_color))
+                                try
+                                    set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_individual_color(idx,:),'markersize',etc_render_fsbrain.aux2_point_size);
+                                catch ME
+                                end
+                                set(etc_render_fsbrain.aux2_point_coords_h(idx),'markersize',etc_render_fsbrain.aux2_point_size);
+                            else
+                                electrode_idx=min(find((idx>n_e_cumsum)<eps));
+                                if(isfield(etc_render_fsbrain.electrode(electrode_idx),'color'))
+                                    if(~isempty(etc_render_fsbrain.electrode(electrode_idx).color))
+                                        set(etc_render_fsbrain.aux2_point_coords_h(idx),'MarkerEdgeColor',etc_render_fsbrain.electrode(electrode_idx).color,'markersize',etc_render_fsbrain.aux2_point_size);
+                                    else
+                                        set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
+                                    end;
+                                else
+                                    set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
+                                end;
+                            end;
                         else
                             electrode_idx=min(find((idx>n_e_cumsum)<eps));
                             if(isfield(etc_render_fsbrain.electrode(electrode_idx),'color'))
@@ -3455,7 +3476,7 @@ try
                                     zz=etc_render_fsbrain.aux2_point_coords(idx+contact_idx,3);
                                     
                                     if(etc_render_fsbrain.selected_electrode_flag)
-                                        etc_render_fsbrain.selected_electrode_coords_h(contact_idx)=plot3(xx,yy,zz,'.');
+                                        etc_render_fsbrain.selected_electrode_coords_h(contact_idx)=plot3(etc_render_fsbrain.brain_axis, xx,yy,zz,'.');
                                         set(etc_render_fsbrain.selected_electrode_coords_h(contact_idx),'color',etc_render_fsbrain.selected_electrode_color,'markersize',etc_render_fsbrain.selected_electrode_size);
                                     end;
                                 end;
@@ -3475,7 +3496,7 @@ try
                                 zz=etc_render_fsbrain.aux2_point_coords(idx,3);
                                 
                                 if(etc_render_fsbrain.selected_contact_flag)
-                                    etc_render_fsbrain.selected_contact_coords_h=plot3(xx,yy,zz,'.');
+                                    etc_render_fsbrain.selected_contact_coords_h=plot3(etc_render_fsbrain.brain_axis, xx,yy,zz,'.');
                                     set(etc_render_fsbrain.selected_contact_coords_h,'color',etc_render_fsbrain.selected_contact_color,'markersize',etc_render_fsbrain.selected_contact_size);
                                     %                    set(etc_render_fsbrain.aux2_point_coords_h(3),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
                                 end;
@@ -3515,7 +3536,7 @@ global etc_render_fsbrain;
                     
                     if(etc_render_fsbrain.flag_show_cort_label_boundary)
                         %plot label boundary
-                        figure(etc_render_fsbrain.fig_brain);
+                        set(0,'CurrentFigure',etc_render_fsbrain.fig_brain);
                         if(isfield(etc_render_fsbrain,'h_label_boundary'))
                             delete(etc_render_fsbrain.h_label_boundary(:));
                         end;
@@ -3575,7 +3596,7 @@ global etc_render_fsbrain;
                 end;
             end;
 
-            figure(etc_render_fsbrain.fig_label_gui);
+            set(0,'CurrentFigure',etc_render_fsbrain.fig_label_gui);
             
         catch ME
         end;
@@ -3803,7 +3824,7 @@ try
                     
                     if(etc_render_fsbrain.flag_show_cort_label_boundary)
                         %plot label boundary
-                        figure(etc_render_fsbrain.fig_brain);
+                        set(0,'CurrentFigure',etc_render_fsbrain.fig_brain);
                         %if(isfield(etc_render_fsbrain,'h_label_boundary'))
                         %    delete(etc_render_fsbrain.h_label_boundary(:));
                         %end;
@@ -3860,7 +3881,7 @@ try
                 end;
             end;
             
-            figure(etc_render_fsbrain.fig_label_gui);
+            set(0,'CurrentFigure',etc_render_fsbrain.fig_label_gui);
             
         catch ME
         end;
