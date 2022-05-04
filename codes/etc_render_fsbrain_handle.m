@@ -3442,16 +3442,10 @@ set(etc_render_fsbrain.fig_brain,'color',etc_render_fsbrain.bg_color);
 
 view(etc_render_fsbrain.brain_axis,etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2));
 campos(etc_render_fsbrain.brain_axis,etc_render_fsbrain.camposition.*1); 
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
-axis(etc_render_fsbrain.brain_axis,etc_render_fsbrain.lim);
-
-=======
 set(etc_render_fsbrain.brain_axis,'xlim',etc_render_fsbrain.lim(1:2));
 set(etc_render_fsbrain.brain_axis,'ylim',etc_render_fsbrain.lim(3:4));
 set(etc_render_fsbrain.brain_axis,'zlim',etc_render_fsbrain.lim(5:6));
-
 %axis(etc_render_fsbrain.brain_axis,etc_render_fsbrain.lim);
->>>>>>> f7eb819 (050422):etc_render_fsbrain_handle.m
 
 % %add exploration toolbar
 % [vv date] = version;
