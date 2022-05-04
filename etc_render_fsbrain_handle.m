@@ -72,43 +72,21 @@ switch lower(param)
                 fprintf('s: smooth overlay \n');
                 fprintf('o: create an ROI\n');
                 fprintf('m: create an ROI at the selected location with a radius\n');
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
                 fprintf('n: switch between overlay and underlay volumes\n');
                 fprintf('d: interactive overlay threshold change\n');
                 fprintf('c: switch on/off a colorbar\n');
                 fprintf('u: show cluster labels from a file\n');
                 fprintf('d: change threshold\n');
                 fprintf('r: enforce redrawing\n');
-=======
-                fprintf('d: interactive overlay threshold change\n');
-                fprintf('c: switch on/off a colorbar\n');
-                fprintf('u: show cluster labels from a file\n');
->>>>>>> 7dbe60a (111121):etc_render_fsbrain_handle.m
-=======
-                fprintf('n: switch between overlay and underlay volumes\n');
-                fprintf('d: interactive overlay threshold change\n');
-                fprintf('c: switch on/off a colorbar\n');
-                fprintf('u: show cluster labels from a file\n');
-                fprintf('d: change threshold\n');
-                fprintf('r: enforce redrawing\n');
->>>>>>> f7eb819 (050422):etc_render_fsbrain_handle.m
                 fprintf('q: exit\n');
                 fprintf('\n\n fhlin@dec 25, 2014\n');
             case 'a'
                 fprintf('archiving...\n');
                 fn=sprintf('etc_render_fsbrain_vol.png');
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
                 fprintf('saving [%s]...\n',fn);
                 print(etc_render_fsbrain.fig_vol,fn,'-dpng','-r300')
                 fn=sprintf('etc_render_fsbrain_surf.png');
                 fprintf('saving [%s]...\n',fn);
-=======
-                fprintf('saving [%s]...\n',fn);
-                print(etc_render_fsbrain.fig_vol,fn,'-dpng','-r300')
-                fn=sprintf('etc_render_fsbrain_surf.png');
-                fprintf('saving [%s]...\n',fn);
->>>>>>> f7eb819 (050422):etc_render_fsbrain_handle.m
                 print(etc_render_fsbrain.fig_brain,fn,'-dpng','-r300')
                 %print(fn,'-dtiff');
             case 'q'
@@ -898,10 +876,6 @@ switch lower(param)
                                 etc_render_fsbrain.label_value(ii+1)=maxx+1;
                                 etc_render_fsbrain.label_ctab.numEntries=etc_render_fsbrain.label_ctab.numEntries+1;
                                 etc_render_fsbrain.label_ctab.struct_names{end+1}=filename;
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
-=======
->>>>>>> f7eb819 (050422):etc_render_fsbrain_handle.m
                                 switch mod(maxx+1,5)
                                     case 1
                                         etc_render_fsbrain.label_ctab.table(end+1,:)=[0*256   0.4470*256   0.741*256         0        maxx+1];
@@ -914,13 +888,6 @@ switch lower(param)
                                     case 5
                                         etc_render_fsbrain.label_ctab.table(end+1,:)=[0.4660*256 0.6740*256 0.1880*256          0        maxx+1];
                                 end;
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
-=======
-                                etc_render_fsbrain.label_ctab.table(end+1,:)=[220          60         120          0        maxx+1];
-                                
->>>>>>> 7dbe60a (111121):etc_render_fsbrain_handle.m
-=======
->>>>>>> f7eb819 (050422):etc_render_fsbrain_handle.m
                                 etc_render_fsbrain.label_register(end+1)=0;
                             else
                                 etc_render_fsbrain.label_vertex=zeros(size(etc_render_fsbrain.vertex_coords_hemi,1),1);
@@ -2015,7 +1982,6 @@ try
                     tmp=etc_render_fsbrain.overlay_vol_mask.vol(etc_render_fsbrain.click_vertex_vox_round(2),etc_render_fsbrain.click_vertex_vox_round(1),etc_render_fsbrain.click_vertex_vox_round(3));
                     ii=find(etc_render_fsbrain.lut.number==tmp);
                     fprintf('clicked anatomical label:: <<%s>>\n',etc_render_fsbrain.lut.name{ii});
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
         end;
         
         %locations of the nearest electrode contact
@@ -2071,63 +2037,6 @@ try
         catch ME
         end;
         
-=======
-        end;
-        
-        %locations of the nearest electrode contact
-        try
-            label_coords=etc_render_fsbrain.vertex_coords(etc_render_fsbrain.click_vertex,:);
-            if(strcmp(etc_render_fsbrain.surf,'orig')|strcmp(etc_render_fsbrain.surf,'smoothwm')|strcmp(etc_render_fsbrain.surf,'pial'))
-                
-            else
-                fprintf('surface <%s> not "orig"/"pial"/"smoothwm". Electrode contacts locations are mapped from this surface back to the "orig" volume.\n',etc_render_fsbrain.surf);
-                vv=etc_render_fsbrain.vertex_coords;
-                dist=sqrt(sum((vv-repmat([label_coords(1),label_coords(2),label_coords(3)],[size(vv,1),1])).^2,2));
-                [min_dist,min_dist_idx]=min(dist);
-                label_coords=etc_render_fsbrain.orig_vertex_coords(min_dist_idx,:);
-            end;
-            
-            
-            %label_coords=etc_render_fsbrain.orig_vertex_coords(etc_render_fsbrain.click_vertex,:);
-            
-            %find electrode contacts closest to the selected label
-            if(~isempty(etc_render_fsbrain.electrode))
-                
-                max_contact=0;
-                for e_idx=1:length(etc_render_fsbrain.electrode)
-                    if(etc_render_fsbrain.electrode(e_idx).n_contact>max_contact)
-                        max_contact=etc_render_fsbrain.electrode(e_idx).n_contact;
-                    end;
-                end;
-                electrode_dist_min=ones(length(etc_render_fsbrain.electrode),max_contact).*nan;
-                electrode_dist_avg=ones(length(etc_render_fsbrain.electrode),max_contact).*nan;
-                
-                for e_idx=1:length(etc_render_fsbrain.electrode)
-                    for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
-                        
-                        surface_coord=etc_render_fsbrain.electrode(e_idx).coord(c_idx,:);
-                        
-                        tmp=label_coords-repmat(surface_coord(:)',[size(label_coords,1),1]);
-                        tmp=sqrt(sum(tmp.^2,2));
-                        
-                        electrode_dist_min(e_idx,c_idx)=min(tmp);
-                        electrode_dist_avg(e_idx,c_idx)=mean(tmp);
-                    end;
-                end;
-                
-                [dummy,min_idx]=sort(electrode_dist_min(:));
-                fprintf('Top 3 closest contacts to the clicked point:\n');
-                for ii=1:3 %show the nearest three contacts
-                    [ee,cc]=ind2sub(size(electrode_dist_min),min_idx(ii));
-                    fprintf('  <%s_%02d> %2.2f (mm) (%1.1f %1.1f %1.1f)\n',etc_render_fsbrain.electrode(ee).name,cc,dummy(ii),etc_render_fsbrain.electrode(ee).coord(cc,1),etc_render_fsbrain.electrode(ee).coord(cc,2),etc_render_fsbrain.electrode(ee).coord(cc,3));
-                end;
-            end;
-            
-            
-        catch ME
-        end;
-        
->>>>>>> f7eb819 (050422):etc_render_fsbrain_handle.m
         
         try
             [zz,xx,yy]=size(etc_render_fsbrain.vol.vol);
@@ -2326,25 +2235,11 @@ try
                         obj=findobj(etc_render_fsbrain.fig_gui,'tag','listbox_overlay_vol_mask');
                         idx=get(obj,'value');
                         for ii=1:length(idx)
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
                             fprintf('segmentation <<<%s>> selected\n',etc_render_fsbrain.lut.name{idx(ii)});
                             %find electrode contacts closest to the selected segmentation
                             mask_idx=find(etc_render_fsbrain.overlay_vol_mask.vol(:)==etc_render_fsbrain.lut.number(idx(ii)));
                             
                             if(isempty(mask_idx)) fprintf('no image voxel for the selected segmentation.\n'); end;
-=======
-                            
-                            %find electrode contacts closest to the selected segmentation
-                            mask_idx=find(etc_render_fsbrain.overlay_vol_mask.vol(:)==etc_render_fsbrain.lut.number(idx(ii)));
->>>>>>> 7dbe60a (111121):etc_render_fsbrain_handle.m
-=======
-                            fprintf('segmentation <<<%s>> selected\n',etc_render_fsbrain.lut.name{idx(ii)});
-                            %find electrode contacts closest to the selected segmentation
-                            mask_idx=find(etc_render_fsbrain.overlay_vol_mask.vol(:)==etc_render_fsbrain.lut.number(idx(ii)));
-                            
-                            if(isempty(mask_idx)) fprintf('no image voxel for the selected segmentation.\n'); end;
->>>>>>> f7eb819 (050422):etc_render_fsbrain_handle.m
                             [rr,cc,ss]=ind2sub(size(etc_render_fsbrain.overlay_vol_mask.vol),mask_idx);
                             seg_coords=[cc(:) rr(:) ss(:)];
                             
@@ -2375,27 +2270,12 @@ try
                                 end;
                                 
                                 [dummy,min_idx]=sort(electrode_dist_min(:));
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
                                 fprintf('Top 3 closest contacts\n');
                                 for ii=1:3 %show the nearest three contacts
                                     [ee,cc]=ind2sub(size(electrode_dist_min),min_idx(ii));
                                     fprintf('  [%s_%02d]: %2.2f (vox) (%1.1f %1.1f %1.1f)\n',etc_render_fsbrain.electrode(ee).name,cc,dummy(ii),etc_render_fsbrain.electrode(ee).coord(cc,1),etc_render_fsbrain.electrode(ee).coord(cc,2),etc_render_fsbrain.electrode(ee).coord(cc,3));
                                 end;
                                 
-=======
-=======
-                                fprintf('Top 3 closest contacts\n');
->>>>>>> f7eb819 (050422):etc_render_fsbrain_handle.m
-                                for ii=1:3 %show the nearest three contacts
-                                    [ee,cc]=ind2sub(size(electrode_dist_min),min_idx(ii));
-                                    fprintf('  [%s_%02d]: %2.2f (vox) (%1.1f %1.1f %1.1f)\n',etc_render_fsbrain.electrode(ee).name,cc,dummy(ii),etc_render_fsbrain.electrode(ee).coord(cc,1),etc_render_fsbrain.electrode(ee).coord(cc,2),etc_render_fsbrain.electrode(ee).coord(cc,3));
-                                end;
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
->>>>>>> 7dbe60a (111121):etc_render_fsbrain_handle.m
-=======
-                                
->>>>>>> f7eb819 (050422):etc_render_fsbrain_handle.m
                             end;
                         end;
                         
@@ -2492,8 +2372,6 @@ try
                         selected_contact_idx=idx+etc_render_fsbrain.electrode_contact_idx;
                     end;
                 end;
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
                 
                 if(isfield(etc_render_fsbrain,'electrode'))
                     if(~isempty(etc_render_fsbrain.electrode))
@@ -2503,25 +2381,6 @@ try
                         n_e_cumsum=cumsum(n_e);
                     end;
                 end;
-=======
-
-                for e_idx=1:length(etc_render_fsbrain.electrode)
-                    n_e(e_idx)=etc_render_fsbrain.electrode(e_idx).n_contact;
-                end;
-                n_e_cumsum=cumsum(n_e);
-                
->>>>>>> 7dbe60a (111121):etc_render_fsbrain_handle.m
-=======
-                
-                if(isfield(etc_render_fsbrain,'electrode'))
-                    if(~isempty(etc_render_fsbrain.electrode))
-                        for e_idx=1:length(etc_render_fsbrain.electrode)
-                            n_e(e_idx)=etc_render_fsbrain.electrode(e_idx).n_contact;
-                        end;
-                        n_e_cumsum=cumsum(n_e);
-                    end;
-                end;
->>>>>>> f7eb819 (050422):etc_render_fsbrain_handle.m
                 for v_idx=1:size(etc_render_fsbrain.aux2_point_coords,1)
                     surface_coord=etc_render_fsbrain.aux2_point_coords(v_idx,:);
                     
@@ -3442,23 +3301,10 @@ set(etc_render_fsbrain.fig_brain,'color',etc_render_fsbrain.bg_color);
 
 view(etc_render_fsbrain.brain_axis,etc_render_fsbrain.view_angle(1), etc_render_fsbrain.view_angle(2));
 campos(etc_render_fsbrain.brain_axis,etc_render_fsbrain.camposition.*1); 
-<<<<<<< HEAD
 set(etc_render_fsbrain.brain_axis,'xlim',etc_render_fsbrain.lim(1:2));
 set(etc_render_fsbrain.brain_axis,'ylim',etc_render_fsbrain.lim(3:4));
 set(etc_render_fsbrain.brain_axis,'zlim',etc_render_fsbrain.lim(5:6));
 %axis(etc_render_fsbrain.brain_axis,etc_render_fsbrain.lim);
-=======
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
-axis(etc_render_fsbrain.brain_axis,etc_render_fsbrain.lim);
-
-=======
-set(etc_render_fsbrain.brain_axis,'xlim',etc_render_fsbrain.lim(1:2));
-set(etc_render_fsbrain.brain_axis,'ylim',etc_render_fsbrain.lim(3:4));
-set(etc_render_fsbrain.brain_axis,'zlim',etc_render_fsbrain.lim(5:6));
-
-%axis(etc_render_fsbrain.brain_axis,etc_render_fsbrain.lim);
->>>>>>> f7eb819 (050422):etc_render_fsbrain_handle.m
->>>>>>> 8330c015e45bc0d14fdd30209044685d219a4cfc
 
 % %add exploration toolbar
 % [vv date] = version;
@@ -3574,15 +3420,7 @@ try
                         zz=cat(1,zz,etc_render_fsbrain.aux2_point_coords(idx,3));
                         if(~isempty(etc_render_fsbrain.aux2_point_name))
                             if(etc_render_fsbrain.show_contact_names_flag)
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
                                 etc_render_fsbrain.aux2_point_name_h(idx)=text(etc_render_fsbrain.brain_axis,etc_render_fsbrain.aux2_point_coords(idx,1),etc_render_fsbrain.aux2_point_coords(idx,2),etc_render_fsbrain.aux2_point_coords(idx,3),etc_render_fsbrain.aux2_point_name{idx}); hold on;
-=======
-                                etc_render_fsbrain.aux2_point_name_h(idx)=text(etc_render_fsbrain.aux2_point_coords(idx,1),etc_render_fsbrain.aux2_point_coords(idx,2),etc_render_fsbrain.aux2_point_coords(idx,3),etc_render_fsbrain.aux2_point_name{idx}); hold on;
->>>>>>> 7dbe60a (111121):etc_render_fsbrain_handle.m
-=======
-                                etc_render_fsbrain.aux2_point_name_h(idx)=text(etc_render_fsbrain.brain_axis,etc_render_fsbrain.aux2_point_coords(idx,1),etc_render_fsbrain.aux2_point_coords(idx,2),etc_render_fsbrain.aux2_point_coords(idx,3),etc_render_fsbrain.aux2_point_name{idx}); hold on;
->>>>>>> f7eb819 (050422):etc_render_fsbrain_handle.m
                             end;
                         end;
                     end;
@@ -3590,10 +3428,6 @@ try
                     %set(etc_render_fsbrain.aux2_point_coords_h,'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
                     
                     for idx=1:size(etc_render_fsbrain.aux2_point_coords,1)
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
-=======
->>>>>>> f7eb819 (050422):etc_render_fsbrain_handle.m
                         etc_render_fsbrain.aux2_point_coords_h(idx)=plot3(etc_render_fsbrain.brain_axis, xx(idx),yy(idx),zz(idx),'.');
                         if(isfield(etc_render_fsbrain,'aux2_point_individual_color'))
                             if(~isempty(etc_render_fsbrain.aux2_point_individual_color))
@@ -3602,7 +3436,6 @@ try
                                 catch ME
                                 end
                                 set(etc_render_fsbrain.aux2_point_coords_h(idx),'markersize',etc_render_fsbrain.aux2_point_size);
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
                             else
                                 electrode_idx=min(find((idx>n_e_cumsum)<eps));
                                 if(isfield(etc_render_fsbrain.electrode(electrode_idx),'color'))
@@ -3627,45 +3460,6 @@ try
                                 set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
                             end;
                         end;
-=======
-                        etc_render_fsbrain.aux2_point_coords_h(idx)=plot3(xx(idx),yy(idx),zz(idx),'.');
-                        
-                        electrode_idx=min(find((idx>n_e_cumsum)<eps));
-                        if(isfield(etc_render_fsbrain.electrode(electrode_idx),'color'))
-                            if(~isempty(etc_render_fsbrain.electrode(electrode_idx).color))
-                                set(etc_render_fsbrain.aux2_point_coords_h(idx),'MarkerEdgeColor',etc_render_fsbrain.electrode(electrode_idx).color,'markersize',etc_render_fsbrain.aux2_point_size);
-=======
->>>>>>> f7eb819 (050422):etc_render_fsbrain_handle.m
-                            else
-                                electrode_idx=min(find((idx>n_e_cumsum)<eps));
-                                if(isfield(etc_render_fsbrain.electrode(electrode_idx),'color'))
-                                    if(~isempty(etc_render_fsbrain.electrode(electrode_idx).color))
-                                        set(etc_render_fsbrain.aux2_point_coords_h(idx),'MarkerEdgeColor',etc_render_fsbrain.electrode(electrode_idx).color,'markersize',etc_render_fsbrain.aux2_point_size);
-                                    else
-                                        set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
-                                    end;
-                                else
-                                    set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
-                                end;
-                            end;
-                        else
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
-                            set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
-                        end;                        
->>>>>>> 7dbe60a (111121):etc_render_fsbrain_handle.m
-=======
-                            electrode_idx=min(find((idx>n_e_cumsum)<eps));
-                            if(isfield(etc_render_fsbrain.electrode(electrode_idx),'color'))
-                                if(~isempty(etc_render_fsbrain.electrode(electrode_idx).color))
-                                    set(etc_render_fsbrain.aux2_point_coords_h(idx),'MarkerEdgeColor',etc_render_fsbrain.electrode(electrode_idx).color,'markersize',etc_render_fsbrain.aux2_point_size);
-                                else
-                                    set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
-                                end;
-                            else
-                                set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
-                            end;
-                        end;
->>>>>>> f7eb819 (050422):etc_render_fsbrain_handle.m
                     end
                 end;
                 
@@ -3684,15 +3478,7 @@ try
                                     zz=etc_render_fsbrain.aux2_point_coords(idx+contact_idx,3);
                                     
                                     if(etc_render_fsbrain.selected_electrode_flag)
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
                                         etc_render_fsbrain.selected_electrode_coords_h(contact_idx)=plot3(etc_render_fsbrain.brain_axis, xx,yy,zz,'.');
-=======
-                                        etc_render_fsbrain.selected_electrode_coords_h(contact_idx)=plot3(xx,yy,zz,'.');
->>>>>>> 7dbe60a (111121):etc_render_fsbrain_handle.m
-=======
-                                        etc_render_fsbrain.selected_electrode_coords_h(contact_idx)=plot3(etc_render_fsbrain.brain_axis, xx,yy,zz,'.');
->>>>>>> f7eb819 (050422):etc_render_fsbrain_handle.m
                                         set(etc_render_fsbrain.selected_electrode_coords_h(contact_idx),'color',etc_render_fsbrain.selected_electrode_color,'markersize',etc_render_fsbrain.selected_electrode_size);
                                     end;
                                 end;
@@ -3712,15 +3498,7 @@ try
                                 zz=etc_render_fsbrain.aux2_point_coords(idx,3);
                                 
                                 if(etc_render_fsbrain.selected_contact_flag)
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
                                     etc_render_fsbrain.selected_contact_coords_h=plot3(etc_render_fsbrain.brain_axis, xx,yy,zz,'.');
-=======
-                                    etc_render_fsbrain.selected_contact_coords_h=plot3(xx,yy,zz,'.');
->>>>>>> 7dbe60a (111121):etc_render_fsbrain_handle.m
-=======
-                                    etc_render_fsbrain.selected_contact_coords_h=plot3(etc_render_fsbrain.brain_axis, xx,yy,zz,'.');
->>>>>>> f7eb819 (050422):etc_render_fsbrain_handle.m
                                     set(etc_render_fsbrain.selected_contact_coords_h,'color',etc_render_fsbrain.selected_contact_color,'markersize',etc_render_fsbrain.selected_contact_size);
                                     %                    set(etc_render_fsbrain.aux2_point_coords_h(3),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
                                 end;
@@ -3897,7 +3675,6 @@ try
                         X_hemi_subcort=[];
                         Vs{hemi_idx}=[];
                     end;
-<<<<<<< HEAD:codes/etc_render_fsbrain_handle.m
                 else
                     Vs{hemi_idx}=[];
                 end;
@@ -3950,60 +3727,6 @@ try
                         end;
                     end;
                 end;
-=======
-                else
-                    Vs{hemi_idx}=[];
-                end;
-            else
-                X_hemi_cort=[];
-                X_hemi_subcort=[];
-                
-                Vs{hemi_idx}=[];
-            end;
-            
-            %smooth source estimates at cortical locations
-            if(~isempty(etc_render_fsbrain.vol_A(hemi_idx).vertex_coords));
-                if(~isempty(X_hemi_cort))
-                    if(isempty(etc_render_fsbrain.vol_ribbon))
-                        ov=zeros(size(etc_render_fsbrain.vol_A(hemi_idx).vertex_coords,1),1);
-                        ov(etc_render_fsbrain.vol_A(hemi_idx).v_idx+1)=X_hemi_cort;
-                    else
-                        ov=X_hemi_cort;
-                    end;
-                else
-                    ov=[];
-                end;
-                flag_overlay_D_init=1;
-                if(isfield(etc_render_fsbrain,'overlay_D'))
-                    if(length(etc_render_fsbrain.overlay_D)==2)
-                        if(~isempty(etc_render_fsbrain.overlay_D{hemi_idx}))
-                            flag_overlay_D_init=0;
-                        end;
-                    end;
-                end;
-                if(flag_overlay_D_init) etc_render_fsbrain.overlay_D{hemi_idx}=[];end;
-                
-                if(~isempty(ov))
-                    if(isempty(etc_render_fsbrain.vol_ribbon))
-                        [ovs,dd0,dd1,overlay_Ds,etc_render_fsbrain.overlay_D{hemi_idx}]=inverse_smooth('','vertex',etc_render_fsbrain.vol_A(hemi_idx).vertex_coords','face',etc_render_fsbrain.vol_A(hemi_idx).faces','value',ov,'value_idx',etc_render_fsbrain.vol_A(hemi_idx).v_idx+1,'step',etc_render_fsbrain.overlay_smooth,'n_ratio',length(ov)/size(X_hemi_cort,1),'flag_display',0,'flag_regrid',0,'flag_fixval',0,'D',etc_render_fsbrain.overlay_D{hemi_idx});
-                    else
-                        ovs=ov;
-                    end;
-                else
-                    ovs=[];
-                end;
-                %assemble smoothed source at cortical locations and sources at sub-cortical locations
-                X_wb{hemi_idx}=cat(1,ovs(:),X_hemi_subcort(:));
-                
-                flag_cal_loc_vol_idx=1;
-                if(isfield(etc_render_fsbrain,'loc_vol_idx'))
-                    if(length(etc_render_fsbrain.loc_vol_idx)==2)
-                        if(~isempty(etc_render_fsbrain.loc_vol_idx{hemi_idx}))
-                            flag_cal_loc_vol_idx=0;
-                        end;
-                    end;
-                end;
->>>>>>> f7eb819 (050422):etc_render_fsbrain_handle.m
                 
                 
                 if(flag_cal_loc_vol_idx==1)
