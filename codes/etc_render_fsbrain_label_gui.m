@@ -147,8 +147,13 @@ try
                 end;
 
 
+<<<<<<< HEAD:codes/etc_render_fsbrain_label_gui.m
                 label_coords=etc_render_fsbrain.orig_vertex_coords(vidx,:);
 
+=======
+                label_coords=etc_render_fsbrain.vertex_coords(vidx,:);
+                
+>>>>>>> 7dbe60a (111121):etc_render_fsbrain_label_gui.m
                 %find electrode contacts closest to the selected label
                 if(~isempty(etc_render_fsbrain.electrode))
                     
@@ -175,10 +180,16 @@ try
                     end;
                     
                     [dummy,min_idx]=sort(electrode_dist_min(:));
+<<<<<<< HEAD:codes/etc_render_fsbrain_label_gui.m
                     fprintf('Top 3 closest contacts\n');
                     for ii=1:3 %show the nearest three contacts
                         [ee,cc]=ind2sub(size(electrode_dist_min),min_idx(ii));
                         fprintf('  <%s_%02d> %2.2f (mm) (%1.1f %1.1f %1.1f)\n',etc_render_fsbrain.electrode(ee).name,cc,dummy(ii),etc_render_fsbrain.electrode(ee).coord(cc,1),etc_render_fsbrain.electrode(ee).coord(cc,2),etc_render_fsbrain.electrode(ee).coord(cc,3));
+=======
+                    for ii=1:3 %show the nearest three contacts
+                        [ee,cc]=ind2sub(size(electrode_dist_min),min_idx(ii));
+                        fprintf('closest electrode contact:: [%s_%02d]: %2.2f (mm) (%1.1f %1.1f %1.1f)\n',etc_render_fsbrain.electrode(ee).name,cc,dummy(ii),etc_render_fsbrain.electrode(ee).coord(cc,1),etc_render_fsbrain.electrode(ee).coord(cc,2),etc_render_fsbrain.electrode(ee).coord(cc,3));
+>>>>>>> 7dbe60a (111121):etc_render_fsbrain_label_gui.m
                     end;
                 end;
             end;
