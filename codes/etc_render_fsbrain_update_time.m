@@ -52,7 +52,6 @@ try
     end;
     
     %etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
-    
     etc_render_fsbrain_handle('redraw');
     
     global etc_trace_obj;
