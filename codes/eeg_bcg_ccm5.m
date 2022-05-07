@@ -82,6 +82,7 @@ tmp=sort(cat(1,-tmp(2:end),tmp(:)));
 
 %extending the ECG time series by temporal symmetry; preparing for manifold
 %construction without worrying the edges
+ecg=ecg(:);
 ecg_ext=cat(1,ecg(max(tmp):-1:2),ecg(:),ecg(end-1:-1:end-max(tmp)+1));
 
 ecg_manifold=[];

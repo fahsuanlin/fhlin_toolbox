@@ -118,8 +118,9 @@ if(sum(abs(eeg_trigger))>0)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     %estimating shift
-    eeg_sum=squeeze(sum(eeg,1));
-    epoch_sum=zeros(n_samp,length(trigger));
+    %eeg_sum=squeeze(sum(eeg,1));
+    eeg_sum=squeeze(sum(abs(eeg),1));
+    eepoch_sum=zeros(n_samp,length(trigger));
     for tr_idx=1:length(trigger)
         if(~isempty(n_samp))
             if(trigger(tr_idx)+n_samp-1<=length(eeg_sum))
@@ -272,8 +273,17 @@ if(sum(abs(eeg_trigger))>0)
             %tr_idx
             
             bnd0(tr_idx,:)=[tmp(1) tmp(end)]; %aligning ends (prep.)
-            tmp=tmp(:)-D*inv(D'*D)*(D'*tmp(:)); %AAS by regression 
+            
+            [u,s,v]=svd(D,'econ');
+            ss=diag(s);
+            css2=cumsum(ss.^2)./sum(ss(:).^2);
+            css2_idx=find(css2>0.99);
+            css2_idx=css2_idx(1);
+            tmp=tmp(:)-D*(v(:,1:css2_idx)*diag(1./(ss(1:css2_idx)))*u(:,1:css2_idx)'*tmp(:));
+            
+            %tmp=tmp(:)-D*inv(D'*D)*(D'*tmp(:)); %AAS by regression 
 
+            
             buffer(:,tr_idx)=tmp(:);
         end;
         

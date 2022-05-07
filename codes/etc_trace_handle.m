@@ -1147,12 +1147,7 @@ end;
 %font style
 set(etc_trace_obj.axis_trace,'fontname','helvetica','fontsize',12);
 set(etc_trace_obj.fig_trace,'color','w')
-
-<<<<<<< HEAD:codes/etc_trace_handle.m
-set(etc_trace_obj.cliipping,'off');
-=======
-%set(etc_trace_obj.cliipping,'off');
->>>>>>> f7eb819 (050422):etc_trace_handle.m
+%set(etc_trace_obj.axis_trace,'cliipping','off');
 
 return;
 
