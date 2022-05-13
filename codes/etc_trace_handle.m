@@ -422,8 +422,16 @@ switch lower(param)
                         end;
                     end;
                 end;
+                
+            case 28
+                fprintf('fast rewinding...\n');
+                etc_trace_control_gui('pushbutton_rrfast_Callback');
+            case 29
+                fprintf('fast forwarding...\n');
+                etc_trace_control_gui('pushbutton_fffast_Callback');
             otherwise
         end;
+        
     case 'bu'
         global etc_render_fsbrain;
         global etc_trace_obj;

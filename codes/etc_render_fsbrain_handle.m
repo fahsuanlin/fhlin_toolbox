@@ -73,9 +73,15 @@ switch lower(param)
                 fprintf('\n\n fhlin@dec 25, 2014\n');
             case 'a'
                 fprintf('archiving...\n');
-                fn=sprintf('etc_render_fsbrain.tif');
+                %figure(etc_render_fsbrain.fig_brain);
+                fn=sprintf('etc_render_fsbrain_surf.png');
                 fprintf('saving [%s]...\n',fn);
-                print(fn,'-dtiff');
+                %print(fn,'-dpng');
+                exportgraphics(etc_render_fsbrain.fig_brain,fn,'resolution',300);          
+                %figure(etc_render_fsbrain.fig_vol);
+                fn=sprintf('etc_render_fsbrain_vol.png');
+                fprintf('saving [%s]...\n',fn);
+                exportgraphics(etc_render_fsbrain.fig_vol,fn,'resolution',300);          
             case 'q'
                 fprintf('\nclosing all figures!\n');
                 etc_render_fsbrain_handle('del');

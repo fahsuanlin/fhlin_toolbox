@@ -22,7 +22,7 @@ function varargout = etc_trace_control_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_control_gui
 
-% Last Modified by GUIDE v2.5 05-Jul-2020 11:18:01
+% Last Modified by GUIDE v2.5 06-May-2022 23:28:18
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -2098,3 +2098,10 @@ end;
 % etc_trace_obj.flag_time_window_auto_adjust=0;
 % if((etc_trace_obj.time_window_begin_idx>=1)&&((etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1)<=size(etc_trace_obj.data,2)))
 etc_trcae_gui_update_time;
+
+
+% --- Executes when figure1 is resized.
+function figure1_SizeChangedFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)

@@ -279,8 +279,8 @@ if(sum(abs(eeg_trigger))>0)
             css2=cumsum(ss.^2)./sum(ss(:).^2);
             css2_idx=find(css2>0.99);
             css2_idx=css2_idx(1);
-            tmp=tmp(:)-D*(v(:,1:css2_idx)*diag(1./(ss(1:css2_idx)))*u(:,1:css2_idx)'*tmp(:));
-            
+            tmp0=tmp(:)-D*(v(:,1:css2_idx)*diag(1./(ss(1:css2_idx)))*u(:,1:css2_idx)'*tmp(:));
+            tmp=tmp0;
             %tmp=tmp(:)-D*inv(D'*D)*(D'*tmp(:)); %AAS by regression 
 
             

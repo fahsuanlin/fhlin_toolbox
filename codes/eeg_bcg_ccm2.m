@@ -1,6 +1,7 @@
 function [eeg_bcg, qrs_i_raw]=eeg_bcg_ccm2(eeg,ecg,fs,varargin)
 
 %defaults
+flag_auto_hp=0;
 flag_display=0;
 nn=5;
 delay_time=0; %s
@@ -18,6 +19,8 @@ for i=1:length(varargin)/2
     switch lower(option)
         case 'flag_display'
             flag_display=option_value;
+        case 'flag_auto_hp'
+            flag_auto_hp=option_value;
         case 'nn'
             nn=option_value;
         case 'delay_time'
@@ -45,6 +48,15 @@ ha=[];
 h1=[];
 hb=[];
 h2=[];
+
+if(flag_auto_hp)
+    ecg_fluc=filtfilt(ones(4e4,1)./4e4,1,ecg);
+    ecg=ecg-ecg_fluc;
+    for ch_idx=1:size(eeg,1)
+        eeg_fluc(ch_idx,:)=filtfilt(ones(4e4,1)./4e4,1,eeg(ch_idx,:));
+        eeg(ch_idx,:)=eeg(ch_idx,:)-eeg_fluc(ch_idx,:);
+    end;
+end;
 
 if(isempty(n_ecg))
     n_ecg=ceil(nn+1/2); %search the nearest -n_ecg:+n_ecg
@@ -483,6 +495,13 @@ end;
 
 eeg_bcg=eeg-eeg_bcg_pred;
 
+
+if(flag_auto_hp)
+    ecg=ecg+ecg_fluc;
+    for ch_idx=1:size(eeg,1)
+        eeg_bcg(ch_idx,:)=eeg_bcg(ch_idx,:)+eeg_fluc(ch_idx,:);
+    end;
+end;
 if(flag_display) fprintf('BCG CCM correction done!\n'); end;
 
 %----------------------------

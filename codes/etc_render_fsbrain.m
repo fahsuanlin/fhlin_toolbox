@@ -385,7 +385,7 @@ if(tmp_set_vol<0.5)
     ribbon_idx{1}=[];
     ribbon_idx{2}=[];
     try
-        vol_ribbon=MRIread(sprintf('../../subjects/%s/mri/ribbon.mgz',subject));
+        vol_ribbon=MRIread(sprintf('%s/%s/mri/ribbon.mgz',subjects_dir,subject));
         
         for hemi_idx=1:2
             switch hemi_idx
