@@ -67,6 +67,7 @@ global etc_trace_obj;
 etc_trace_obj.axis_trace=findobj('tag','axis_trace');
 
 handles.output=gcf;
+tmp=1;
 
 % Update handles structure
 guidata(hObject, handles);

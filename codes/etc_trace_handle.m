@@ -1110,13 +1110,15 @@ try
     idx=find((etc_trace_obj.trigger.time>=etc_trace_obj.time_window_begin_idx)&(etc_trace_obj.trigger.time<=(etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx)));
     
     if(etc_trace_obj.config_current_trigger_flag)
-        h=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.trigger.time(idx)-etc_trace_obj.time_window_begin_idx,[2 1]),repmat(get(etc_trace_obj.axis_trace,'ylim')',[1 length(idx)]),'LineWidth',2,'LineStyle',':','Color',etc_trace_obj.config_current_trigger_color);
+        h=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.trigger.time(idx)-etc_trace_obj.time_window_begin_idx,[1 2])',repmat(get(etc_trace_obj.axis_trace,'ylim')',[1 length(idx)]),'LineWidth',2,'LineStyle',':','Color',etc_trace_obj.config_current_trigger_color);
     end;
     
     %current selected trigger
     if(isfield(etc_trace_obj,'trigger_now'))
         if(~isempty(etc_trace_obj.trigger_now))
-            trigger_idx=find(etc_trace_obj.trigger.event==etc_trace_obj.trigger_now);
+            %trigger_idx=find(etc_trace_obj.trigger.event==etc_trace_obj.trigger_now);
+            IndexC = strfind(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
+            trigger_idx=find(not(cellfun('isempty',IndexC)));
             trigger_time_idx=etc_trace_obj.trigger.time(trigger_idx);
             idx=find((etc_trace_obj.trigger.time(trigger_idx)>=etc_trace_obj.time_window_begin_idx)&(etc_trace_obj.trigger.time(trigger_idx)<=(etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx)));
         
