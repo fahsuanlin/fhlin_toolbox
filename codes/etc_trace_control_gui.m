@@ -22,7 +22,7 @@ function varargout = etc_trace_control_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_control_gui
 
-% Last Modified by GUIDE v2.5 06-May-2022 23:28:18
+% Last Modified by GUIDE v2.5 02-Jun-2022 14:20:06
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -214,6 +214,18 @@ end;
 %threshold
 hObject=findobj('tag','edit_threshold');
 set(hObject,'String',num2str(mean(abs(etc_trace_obj.ylim))));
+
+
+%topology
+hObject=findobj('tag','checkbox_topo_component');
+set(hObject,'Enable','Off');
+if(isfield(etc_trace_obj,'topo_component'));
+    if(~isempty(etc_trace_obj.topo_component))
+        set(hObject,'Enable','On');
+        set(hObject,'Value',1);
+    end;
+end;
+
 
 %create a context menu....not successful....
 cm = uicontextmenu;
@@ -1554,7 +1566,11 @@ if(~strcmp(contents{1},'[none]'))
     fprintf('[%s] selected in the list box\n',etc_trace_obj.ch_names{Index});
     etc_trace_obj.trace_selected_idx=Index;
     
+    
     etc_trace_handle('redraw');
+
+    etc_trace_handle('bd');
+
 end;
 
 % --- Executes during object creation, after setting all properties.
@@ -2105,3 +2121,21 @@ function figure1_SizeChangedFcn(hObject, eventdata, handles)
 % hObject    handle to figure1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in checkbox_topo_component.
+function checkbox_topo_component_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_topo_component (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_topo_component
+%topology
+
+global etc_trace_obj;
+
+if(isfield(etc_trace_obj,'topo_component'));
+    if(~isempty(etc_trace_obj.topo_component))
+        etc_trace_obj.flag_topo_component=get(hObject,'Value');
+    end;
+end;

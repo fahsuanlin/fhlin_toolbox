@@ -250,6 +250,7 @@ etc_trace_obj.scaling_idx=1;
 etc_trace_obj.data=data;
 etc_trace_obj.data_name=data_name;
 etc_trace_obj.aux_data=aux_data;
+
 etc_trace_obj.aux_data_name=aux_data_name;
 etc_trace_obj.aux_data_idx=aux_data_idx;
 
@@ -257,6 +258,22 @@ etc_trace_obj.all_data=all_data;
 etc_trace_obj.all_data_name=all_data_name;
 etc_trace_obj.all_data_main_idx=all_data_main_idx;
 etc_trace_obj.all_data_aux_idx=all_data_aux_idx;
+
+
+if(~isempty(aux_data))
+    if(length(aux_data)~=length(aux_data_name))
+       
+        for ii=1:length(aux_data)
+            etc_trace_obj.aux_data_name{ii}=sprintf('aux%03d',ii);
+            
+            
+            %etc_trace_obj.all_data{ii+1}=etc_trace_obj.aux_data{ii};
+            %
+            %etc_trace_obj.all_data_name{ii+1}=aux_data_name{ii};
+            %etc_trace_obj.all_data_aux_idx=cat(2,etc_trace_obj.all_data_aux_idx,1);
+        end;
+    end;
+end;
 
 init_data;
 
@@ -335,6 +352,17 @@ function init_data()
 
 global etc_trace_obj;
 
+cc=[
+    0.8500    0.3250    0.0980
+    0.9290    0.6940    0.1250
+    0.4940    0.1840    0.5560
+    0.4660    0.6740    0.1880
+    0.3010    0.7450    0.9330
+    0.6350    0.0780    0.1840
+    0    0.4470    0.7410
+    ]; %color order
+
+
 if(isempty(etc_trace_obj.data))
     for idx=1:length(etc_trace_obj.aux_data)
         etc_trace_obj.all_data{idx}=etc_trace_obj.aux_data{idx};
@@ -355,10 +383,15 @@ else
     
     for idx=1:length(etc_trace_obj.aux_data)
         etc_trace_obj.all_data{idx+1}=etc_trace_obj.aux_data{idx};
-        etc_trace_obj.all_data_name{idx+1}=etc_trace_obj.aux_data_name{idx};
+        if(~isempty(etc_trace_obj.aux_data_name{idx}))
+            etc_trace_obj.all_data_name{idx+1}=etc_trace_obj.aux_data_name{idx};
+        end;
+        etc_trace_obj.all_data_color(idx+1,:)=cc(mod(length(etc_trace_obj.all_data)-1,7)+1,:);
+        etc_trace_obj.aux_data_color(idx,:)=etc_trace_obj.all_data_color(idx+1,:);
     end;    
     etc_trace_obj.all_data_aux_idx=cat(2,0,ones(1,length(etc_trace_obj.aux_data)));
-    
+    etc_trace_obj.aux_data_idx=find(etc_trace_obj.all_data_aux_idx);
+
 end;
 
 return;

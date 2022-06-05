@@ -1,6 +1,7 @@
-function [eeg_bcg, qrs_i_raw]=eeg_bcg_ccm2(eeg,ecg,fs,varargin)
+function [eeg_bcg, qrs_i_raw, eeg_bcg_pred]=eeg_bcg_ccm2(eeg,ecg,fs,varargin)
 
 %defaults
+flag_cce=0;
 flag_auto_hp=0;
 flag_display=0;
 nn=5;
@@ -21,6 +22,8 @@ for i=1:length(varargin)/2
             flag_display=option_value;
         case 'flag_auto_hp'
             flag_auto_hp=option_value;
+        case 'flag_cce'
+            flag_cce=option_value;
         case 'nn'
             nn=option_value;
         case 'delay_time'
@@ -50,10 +53,10 @@ hb=[];
 h2=[];
 
 if(flag_auto_hp)
-    ecg_fluc=filtfilt(ones(4e4,1)./4e4,1,ecg);
+    ecg_fluc=filtfilt(ones(4e2,1)./4e2,1,ecg);
     ecg=ecg-ecg_fluc;
     for ch_idx=1:size(eeg,1)
-        eeg_fluc(ch_idx,:)=filtfilt(ones(4e4,1)./4e4,1,eeg(ch_idx,:));
+        eeg_fluc(ch_idx,:)=filtfilt(ones(4e2,1)./4e2,1,eeg(ch_idx,:));
         eeg(ch_idx,:)=eeg(ch_idx,:)-eeg_fluc(ch_idx,:);
     end;
 end;
@@ -124,7 +127,13 @@ for ii=2:max(ecg_idx)-1
 end;
 
 %search over ECG cycles
-[IDX,D] = knnsearch(ecg(ecg_ccm_idx(2:end-1,:)),ecg(ecg_ccm_idx(2:end-1,:)),'K',nn+1);
+if(~flag_cce)
+    [IDX,D] = knnsearch(ecg(ecg_ccm_idx(2:end-1,:)),ecg(ecg_ccm_idx(2:end-1,:)),'K',nn+1);
+else
+    [uu,ss,vv]=svd(eeg,'econ');
+    v1=vv(:,1)';
+    [IDX,D] = knnsearch(v1(ecg_ccm_idx(2:end-1,:)),v1(ecg_ccm_idx(2:end-1,:)),'K',nn+1);
+end;
 IDX=IDX+1; %offset by one ECG cycle, because the first ECG cycle is ignored.
 
 %append indices for the first and last ECG cycles
@@ -300,6 +309,13 @@ for t_idx=1:size(eeg,2)
 end;
 
 eeg_bcg=eeg-eeg_bcg_pred;
+
+if(flag_auto_hp)
+    ecg=ecg+ecg_fluc;
+    for ch_idx=1:size(eeg,1)
+        eeg_bcg(ch_idx,:)=eeg_bcg(ch_idx,:)+eeg_fluc(ch_idx,:);
+    end;
+end;
 
 if(flag_display) fprintf('BCG CCM correction done!\n'); end;
 
@@ -496,12 +512,6 @@ end;
 eeg_bcg=eeg-eeg_bcg_pred;
 
 
-if(flag_auto_hp)
-    ecg=ecg+ecg_fluc;
-    for ch_idx=1:size(eeg,1)
-        eeg_bcg(ch_idx,:)=eeg_bcg(ch_idx,:)+eeg_fluc(ch_idx,:);
-    end;
-end;
 if(flag_display) fprintf('BCG CCM correction done!\n'); end;
 
 %----------------------------

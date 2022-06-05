@@ -22,7 +22,7 @@ function varargout = etc_trace_load_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_load_gui
 
-% Last Modified by GUIDE v2.5 15-Apr-2020 13:52:35
+% Last Modified by GUIDE v2.5 04-Jun-2022 13:51:19
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -71,6 +71,15 @@ if(~isempty(etc_trace_obj.data))
 else
     set(handles.text_load_var,'String','');
 end;
+
+if(isfield(etc_trace_obj,'topo_component'))
+    if(~isempty(etc_trace_obj.topo_component))
+        set(handles.text_load_topo_component,'String',mat2str(size(etc_trace_obj.data)));
+    else
+        set(handles.text_load_topocomponent,'String','');
+    end;
+end;
+
 if(~isempty(etc_trace_obj.fs))
     set(handles.edit_load_sf,'String',num2str(etc_trace_obj.fs));
 else
@@ -84,7 +93,6 @@ else
     set(handles.edit_load_time_begin,'String','0.0');
 end;
 if(~isempty(etc_trace_obj.data)) set(handles.edit_load_time_begin,'enable','off'); end;
-
 
 if(~isempty(etc_trace_obj.trigger))
     set(handles.text_load_trigger,'String',sprintf('[%d] event/time',length(etc_trace_obj.trigger.time)));
@@ -914,3 +922,116 @@ end;
 
 return;
 
+
+% --- Executes on button press in pushbutton_load_topo_component.
+function pushbutton_load_topo_component_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_load_topo_component (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+
+v = evalin('base', 'whos');
+fn={v.name};
+
+fprintf('load a variable for topography components...\n');
+
+[indx,tf] = listdlg('PromptString','Select a variable...',...
+    'SelectionMode','single',...
+    'ListString',fn);
+etc_trace_obj.tmp=0;
+if(indx)
+    try
+        var=fn{indx};
+        evalin('base',sprintf('global etc_trace_obj; if(ndims(%s)==2) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var,var));
+        fprintf('Trying to load variable [%s] as the data...',var);
+        if(etc_trace_obj.tmp)            
+            
+            prompt = {'name for the loaded data'};
+            dlgtitle = '';
+            dims = [1 35];
+            definput = {sprintf('%s',var)};
+            answer = inputdlg(prompt,dlgtitle,dims,definput);
+            if(isempty(answer)) return; end;
+            name=answer{1};
+            
+            
+            %if(length(etc_trace_obj.all_data)<1) %main....
+                evalin('base',sprintf('etc_trace_obj.tmp=%s; ',var));
+                if(size(etc_trace_obj.tmp,1)~=length(etc_trace_obj.ch_names))
+                    answer = questdlg('# of channel mis-match between data [%d] and channel name [%d]\nupdate channel name or abort?','Data',...
+                        'update','abort','update');
+                    % Handle response
+                    switch answer
+                        case 'update'
+                            ch_names={};
+                            for idx=1:size(etc_trace_obj.tmp,1)
+                                ch_names{idx}=sprintf('%03d',idx);
+                            end;
+                            etc_trace_obj.ch_names=ch_names;
+                            
+                            set(handles.text_load_label,'String',sprintf('[%d] channel(s)',length(etc_trace_obj.ch_names)));
+                            
+                        case 'abort'
+                            return;
+                    end
+                end;
+                
+                evalin('base',sprintf('etc_trace_obj.topo_component=%s; ',var));
+
+                obj=findobj('Tag','text_load_topo_component');
+                set(obj,'String',sprintf('%s',var));
+
+                obj=findobj('Tag','checkbox_topo_component');
+                set(obj,'Enable','On');
+                set(obj,'Value',1);
+                
+                fprintf('topography components loaded!\n');
+            %end;
+            fprintf('Done!\n');
+        else
+            fprintf('The chosen variable [%s] is not a 2D matrix. Rejected!\n',var);
+        end;
+        
+    catch ME
+    end;
+end;
+
+
+% --- Executes on button press in pushbutton_load_topo_component_ch.
+function pushbutton_load_topo_component_ch_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_load_topo_component_ch (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+v = evalin('base', 'whos');
+fn={v.name};
+
+fprintf('load a variable for topography component labels...\n');
+
+[indx,tf] = listdlg('PromptString','Select a variable...',...
+    'SelectionMode','single',...
+    'ListString',fn);
+etc_trace_obj.tmp=0;
+if(indx)
+    try
+        var=fn{indx};
+        evalin('base',sprintf('global etc_trace_obj; if(length(%s)==size(etc_trace_obj.topo_component,2)) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var));
+        if(etc_trace_obj.tmp)
+            fprintf('Trying to load variable [%s] as topography component channel labels...',var);
+            evalin('base',sprintf('etc_trace_obj.topo_component_ch=%s; ',var));
+            
+            obj=findobj('Tag','text_load_topo_component_ch');
+            set(obj,'String',sprintf('%s',var));
+            
+            set(handles.text_load_topo_component_ch,'String',sprintf('[%d] channel(s)',length(etc_trace_obj.topo_component_ch)));
+            
+            fprintf('Done!\n');
+        else
+            %fprintf('the first dimension of [%s] (%d) does not match that of data (%d). Error in loading the channel variable...\n',var,length(var),size(etc_trace_obj.topo_component,1));
+        end;
+        
+    catch ME
+    end;
+end;

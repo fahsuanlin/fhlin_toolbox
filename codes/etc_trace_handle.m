@@ -197,8 +197,13 @@ switch lower(param)
             case 'c'
                 fprintf('show controls....\n');
                 if(isfield(etc_trace_obj,'fig_control'))
-                    if(isvalid(etc_trace_obj.fig_control))
-                        figure(etc_trace_obj.fig_control);
+                    if(~isempty(etc_trace_obj.fig_control))
+                        if(isvalid(etc_trace_obj.fig_control))
+                            figure(etc_trace_obj.fig_control);
+                        else
+                            etc_trace_obj.fig_control=[];
+                            etc_trace_obj.fig_control=etc_trace_control_gui;
+                        end
                     else
                         etc_trace_obj.fig_control=[];
                         etc_trace_obj.fig_control=etc_trace_control_gui;
@@ -224,6 +229,20 @@ switch lower(param)
                         try
                             data=etc_trace_obj.data(:,etc_trace_obj.time_select_idx);
                             
+                            if(isfield(etc_trace_obj,'flag_topo_component'))
+                                if(etc_trace_obj.flag_topo_component) %PCA/ICA type topology
+                                    if(isfield(etc_trace_obj,'topo_component_ch'))
+                                        if(~isempty(etc_trace_obj.topo_component_ch))
+                                            if(isfield(etc_trace_obj,'trace_selected_idx'))
+                                                if(~isempty(etc_trace_obj.trace_selected_idx))
+                                                    data=etc_trace_obj.topo_component(etc_trace_obj.trace_selected_idx,:);
+                                                end;
+                                            end;
+                                        end;
+                                    end;
+                                end;
+                            end;
+                                        
                             global etc_render_fsbrain;
                             
                             if(isempty(etc_trace_obj.topo)) %no topo field, the first time loading the topology
@@ -234,11 +253,30 @@ switch lower(param)
                                         etc_trace_obj.topo.vertex=vertex;
                                         etc_trace_obj.topo.face=face;
                                         
-                                        Index=find(contains(electrode_name,etc_trace_obj.ch_names));
-                                        if(length(Index)<=length(etc_trace_obj.ch_names)) %all electrodes were found on topology
-                                            for ii=1:length(etc_trace_obj.ch_names)
+                                        
+                                        
+                                        if(isfield(etc_trace_obj,'flag_topo_component'))
+                                            if(etc_trace_obj.flag_topo_component) %PCA/ICA type topology
+                                                        if(isfield(etc_trace_obj,'topo_component_ch'))
+                                                            if(~isempty(etc_trace_obj.topo_component_ch))
+                                                                topo_ch=etc_trace_obj.topo_component_ch;
+                                                            end;
+                                                        end;
+                                            else
+                                                topo_ch=etc_trace_obj.ch_names; % time-domain topology
+                                            end;
+                                        else
+                                            topo_ch=etc_trace_obj.ch_names; % time-domain topology
+                                        end;
+                                        
+                                        
+                                        
+                                        %Index=find(contains(electrode_name,etc_trace_obj.ch_names));
+                                        Index=find(contains(electrode_name,topo_ch));
+                                        if(length(Index)<=length(topo_ch)) %all electrodes were found on topology
+                                            for ii=1:length(topo_ch)
                                                 for idx=1:length(electrode_name)
-                                                    if(strcmp(electrode_name{idx},etc_trace_obj.ch_names{ii}))
+                                                    if(strcmp(electrode_name{idx},topo_ch{ii}))
                                                         Index(ii)=idx;
                                                         electrode_data_idx(idx)=ii;
                                                     end;
@@ -429,7 +467,52 @@ switch lower(param)
             case 29
                 fprintf('fast forwarding...\n');
                 etc_trace_control_gui('pushbutton_fffast_Callback');
+            case 31
+                fprintf('next trace...\n');
+                
+                etc_trace_obj.all_data_main_idx=etc_trace_obj.all_data_main_idx+1;
+                if(etc_trace_obj.all_data_main_idx>length(etc_trace_obj.all_data))
+                    etc_trace_obj.all_data_main_idx=1;
+                end;
+                
+                obj=findobj('Tag','listbox_data');
+                if(~isempty(obj))
+                    set(obj,'Value',etc_trace_obj.all_data_main_idx);
+                end;
+
+                etc_trace_obj.all_data_aux_idx=zeros(1, length(etc_trace_obj.all_data));
+                etc_trace_obj.all_data_aux_idx(etc_trace_obj.all_data_main_idx)=1;
+               
+                etc_trace_load_gui('update_data');;
+                
+                etc_trcae_gui_update_time();
+                
+                etc_trace_handle('redraw');                
+            case 30
+                fprintf('previous trace...\n');
+                
+                etc_trace_obj.all_data_main_idx=etc_trace_obj.all_data_main_idx-1;
+                if(etc_trace_obj.all_data_main_idx<1)
+                    etc_trace_obj.all_data_main_idx=length(etc_trace_obj.all_data);
+                end;
+                
+                obj=findobj('Tag','listbox_data');
+                if(~isempty(obj))
+                    set(obj,'Value',etc_trace_obj.all_data_main_idx);
+                end;
+                
+                etc_trace_obj.all_data_aux_idx=zeros(1, length(etc_trace_obj.all_data));
+                etc_trace_obj.all_data_aux_idx(etc_trace_obj.all_data_main_idx)=1;
+                
+                etc_trace_load_gui('update_data');;
+                
+                etc_trcae_gui_update_time();
+                
+                etc_trace_handle('redraw');                
+
+            
             otherwise
+                fprintf('cc=[%c]\n',cc);
         end;
         
     case 'bu'
@@ -567,7 +650,7 @@ switch lower(param)
             
             
         
-        elseif(strcmp(clickType,'normal'))%left mouse click
+        elseif(strcmp(clickType,'normal')|strcmp(clickType,'open'))%left mouse click
             if(isfield(etc_trace_obj,'time_select_line'))
                 try
                     delete(etc_trace_obj.time_select_line);
@@ -626,7 +709,23 @@ switch lower(param)
             
             %update topology
             try
-                data=etc_trace_obj.data(:,etc_trace_obj.time_select_idx);
+                if(isfield(etc_trace_obj,'flag_topo_component'))
+                    if(etc_trace_obj.flag_topo_component) %PCA/ICA type topology
+                        if(isfield(etc_trace_obj,'trace_selected_idx'))
+                            if(~isempty(etc_trace_obj.trace_selected_idx))
+                                if(isfield(etc_trace_obj,'topo_component'))
+                                    if(~isempty(etc_trace_obj.topo_component))
+                                        data=etc_trace_obj.topo_component(etc_trace_obj.trace_selected_idx,:);
+                                    end;
+                                end;
+                            end;
+                        end;
+                    else
+                        data=etc_trace_obj.data(:,etc_trace_obj.time_select_idx); % time-domain topology
+                    end;
+                else
+                    data=etc_trace_obj.data(:,etc_trace_obj.time_select_idx); % time-domain topology
+                end;
             catch ME
             end;
             if(isfield(etc_trace_obj,'fig_topology'))
@@ -639,6 +738,7 @@ switch lower(param)
                         delete(etc_render_fsbrain.click_overlay_vertex_point);
                         
                         etc_render_fsbrain.flag_camlight=0;
+                        
                         etc_render_fsbrain.overlay_value=data(etc_trace_obj.topo.electrode_data_idx);
                         etc_render_fsbrain_handle('redraw');
                         
@@ -1066,6 +1166,9 @@ try
 catch ME
 end;
 
+
+
+
 try
     switch(etc_trace_obj.view_style)
         case {'trace','butterfly'}
@@ -1157,7 +1260,7 @@ end;
 %font style
 set(etc_trace_obj.axis_trace,'fontname','helvetica','fontsize',12);
 set(etc_trace_obj.fig_trace,'color','w')
-%set(etc_trace_obj.axis_trace,'cliipping','off');
+set(etc_trace_obj.axis_trace,'Clipping','off');
 
 return;
 
@@ -1223,6 +1326,8 @@ fprintf('[%s] selected in the list box\n',etc_trace_obj.ch_names{Index});
 etc_trace_obj.trace_selected_idx=Index;
 
 redraw;
+
+etc_trace_handle('bd');
 
 return;
 
