@@ -167,7 +167,53 @@ switch lower(ext)
             headerFile=sprintf('%s/%s%s',path,fstem,'.vhdr');
             % first get the continuous data as a matlab array
             etc_trace_obj.tmp = double(bva_loadeeg(headerFile));
-        end;    
+            
+            
+            [dummy1 ch_names_now ] = bva_readheader(headerFile);
+
+            
+            if(isfield(etc_trace_obj,'flag_topo_component'))
+                if(etc_trace_obj.flag_topo_component) %PCA/ICA type topology
+                    if(isfield(etc_trace_obj,'topo_component_ch'))
+                        if(~isempty(etc_trace_obj.topo_component_ch))
+                            topo_ch=etc_trace_obj.topo_component_ch;
+                        end;
+                    end;
+                else
+                    topo_ch=etc_trace_obj.ch_names; % time-domain topology
+                end;
+            else
+                topo_ch=etc_trace_obj.ch_names; % time-domain topology
+            end;
+            
+            Index=find(contains(ch_names_now,topo_ch));
+            if(length(Index)<=length(topo_ch)) %all electrodes were found on topology
+                for ii=1:length(topo_ch)
+                    for idx=1:length(ch_names_now)
+                        if(strcmp(ch_names_now{idx},topo_ch{ii}))
+                            Index(ii)=idx;
+                            electrode_data_idx(idx)=ii;
+                        end;
+                    end;
+                end;
+                if(isempty(Index))
+                    fprintf('Cannot find corresponding channels!\nError in loading the data!\n');
+                    return;
+                end;
+                etc_trace_obj.tmp=etc_trace_obj.tmp(electrode_data_idx,:);
+            else
+                etc_trace_obj.tmp=[];
+                fprintf('Error in finding the corresponding channel names!\n'); return;
+            end;
+            
+            
+%            if(size(etc_trace_obj.tmp,1)~=size(etc_trace_obj.data,1))
+%                fprintf('The number of the channedl of the loaded variable [%d] is not equal to the number of the channel of the existed data [%d]!Error!\n',size(etc_trace_obj.tmp,1), size(etc_trace_obj.data,1));
+%                return;
+%            end;
+        end;
+        
+        
         
         flag_reref=etc_trace_obj.loadfile.flag_reref;
         %re-referencing
@@ -404,9 +450,11 @@ switch lower(ext)
             ll(end+1)=size(etc_trace_obj.tmp,2);
             mll=max(ll);
             for ii=1:length(etc_trace_obj.all_data)
+                fprintf('\tAppending NaN to the end of data [%d]...\n',ii);
                 etc_trace_obj.all_data{ii}(:,end+1:mll)=nan;
             end;
             etc_trace_obj.tmp(:,end+1:mll)=nan;
+                
             if(~isfield(etc_trace_obj,'all_data_color'))
                 for ii=1:length(etc_trace_obj.all_data)
                     etc_trace_obj.all_data_color(ii,:)=cc(mod(ii-1,7)+1,:)

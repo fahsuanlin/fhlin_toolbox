@@ -20,6 +20,8 @@ flag_ppca=0;
 flag_mcfix=0;
 flag_bcg_nsvd_auto=0;
 
+flag_pan_tompkin2=0;
+
 trigger=[];
 
 for i=1:length(varargin)/2
@@ -56,6 +58,8 @@ for i=1:length(varargin)/2
             flag_ppca=option_value;
         case 'flag_bcg_nsvd_auto'
             flag_bcg_nsvd_auto=option_value;
+        case 'flag_pan_tompkin2'
+            flag_pan_tompkin2=option_value;
         case 'trigger'
             trigger=option_value;
         otherwise
@@ -73,7 +77,12 @@ bad_trials=[];
 if(flag_display) fprintf('detecting EKG peaks...\n'); end;
 %[qrs_amp_raw,qrs_i_raw,delay]=pan_tompkin(ecg,fs,flag_display,'flag_fhlin',1);
 %[pks,qrs_i_raw] = findpeaks(ecg,'MINPEAKDISTANCE',round(0.7*fs));
-[pks,qrs_i_raw] =pan_tompkin(ecg,fs,0,'flag_fhlin',1);
+
+if(flag_pan_tompkin2)
+    [pks,qrs_i_raw] =pan_tompkin2(ecg,fs);
+else
+    [pks,qrs_i_raw] =pan_tompkin(ecg,fs,0,'flag_fhlin',1);
+end;
 
 BCG_tPre_sample=round(BCG_tPre.*fs);
 BCG_tPost_sample=round(BCG_tPost.*fs);

@@ -72,16 +72,26 @@ switch lower(param)
                 fprintf('q: exit\n');
                 fprintf('\n\n fhlin@dec 25, 2014\n');
             case 'a'
-                fprintf('archiving...\n');
-                %figure(etc_render_fsbrain.fig_brain);
-                fn=sprintf('etc_render_fsbrain_surf.png');
-                fprintf('saving [%s]...\n',fn);
-                %print(fn,'-dpng');
-                exportgraphics(etc_render_fsbrain.fig_brain,fn,'resolution',300);          
-                %figure(etc_render_fsbrain.fig_vol);
-                fn=sprintf('etc_render_fsbrain_vol.png');
-                fprintf('saving [%s]...\n',fn);
-                exportgraphics(etc_render_fsbrain.fig_vol,fn,'resolution',300);          
+                fprintf('exporting graphics...\n');
+                if(~isempty(etc_render_fsbrain.fig_brain))
+                    %figure(etc_render_fsbrain.fig_brain);
+                    fn=sprintf('etc_render_fsbrain_surf.png');
+                    fprintf('saving [%s]...\n',fn);
+                    %print(fn,'-dpng');
+                    exportgraphics(etc_render_fsbrain.fig_brain,fn,'resolution',300);
+                    %figure(etc_render_fsbrain.fig_vol);
+                end;
+                
+                if(~isempty(etc_render_fsbrain.fig_vol))
+                    fn=sprintf('etc_render_fsbrain_vol.png');
+                    fprintf('saving [%s]...\n',fn);
+                    exportgraphics(etc_render_fsbrain.fig_vol,fn,'resolution',300);
+                end;
+                if(~isempty(etc_render_fsbrain.fig_stc))
+                    fn=sprintf('etc_render_fsbrain_stc.png');
+                    fprintf('saving [%s]...\n',fn);
+                    exportgraphics(etc_render_fsbrain.fig_stc,fn,'resolution',300);
+                end;
             case 'q'
                 fprintf('\nclosing all figures!\n');
                 etc_render_fsbrain_handle('del');

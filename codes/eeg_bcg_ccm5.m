@@ -12,6 +12,8 @@ nn=6;
 delay_time=0; %s
 delay=round(fs.*(delay_time));
 
+flag_pan_tompkin2=0;
+
 eeg_bcg=[];
 
 for i=1:length(varargin)/2
@@ -30,6 +32,8 @@ for i=1:length(varargin)/2
             E=option_value;
         case 'delay_time'
             delay_time=option_value;
+        case 'flag_pan_tompkin2'
+            flag_pan_tompkin2=option_value;
         otherwise
             fprintf('unknown option [%s]...\n',option);
             fprintf('error!\n');
@@ -72,6 +76,12 @@ if(flag_display) fprintf('detecting EKG peaks...\n'); end;
 
 %[pks,qrs_i_raw] =pan_tompkin(ecg,fs,0,'flag_fhlin',1);
 %[R1,qrs_i_raw]  = findpeaks(ecg, 'MinPeakHeight',200,'MinPeakDistance',300);
+if(flag_pan_tompkin2)
+    [pks,qrs_i_raw] =pan_tompkin2(ecg,fs);
+else
+    [pks,qrs_i_raw] =pan_tompkin(ecg,fs,0,'flag_fhlin',1);
+end;
+
 tic;
 if(flag_display) waitbar_h = waitbar(0,'Searching indices over the cardiac manifold...'); end;
 ccm_IDX=nan(size(ecg,1),nn);
@@ -123,16 +133,20 @@ for idx=1:size(ecg,1)
     %[R1,TR1]  = findpeaks(tmp(E:end-E+1), 'MinPeakDistance',1500,'NPeaks',nn+1,'SortStr','Descend');
     ecg_manifold_tmp=ecg_manifold;
     for search_idx=1:nn+1
+        %find the closest time instant with the most similar dynamics
         [TR1(search_idx),R1(search_idx)] = knnsearch(ecg_manifold_tmp,ecg_manifold(idx,:),'K',1);
-        if(TR1(search_idx)-500<1)
+        
+        %block one-second before and after the found time instant for the
+        %next search
+        if(TR1(search_idx)-round(1./fs)<1)
             IDX_start=1;
         else
-            IDX_start=TR1(search_idx)-500;
+            IDX_start=TR1(search_idx)-round(1./fs);
         end;
-        if(TR1(search_idx)+500>size(ecg,1))
+        if(TR1(search_idx)+round(1./fs)>size(ecg,1))
             IDX_end=size(ecg,1);
         else
-            IDX_end=TR1(search_idx)+500;
+            IDX_end=TR1(search_idx)+round(1./fs);
         end;
         
         ecg_manifold_tmp(IDX_start:IDX_end,:)=nan;

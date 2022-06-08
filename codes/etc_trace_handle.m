@@ -154,6 +154,20 @@ switch lower(param)
                 fprintf('\nredrawing...\n');
                 redraw;
             case 'g'
+                fprintf('analyze...\n');
+                if(isfield(etc_trace_obj,'fig_analyze'))
+                    etc_trace_obj.fig_analyze=[];
+                end;
+                etc_trace_obj.fig_analyze=etc_trace_analyze_gui;
+
+                set(etc_trace_obj.fig_analyze,'Name','analyze','Resize','off');
+
+                set(etc_trace_obj.fig_analyze,'units','pixel');
+                set(etc_trace_obj.fig_analyze,'units','pixel');
+
+                pp0=get(etc_trace_obj.fig_analyze,'outerpos');
+                pp1=get(etc_trace_obj.fig_trace,'outerpos');
+                set(etc_trace_obj.fig_analyze,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
             case 'k'
             case 's' %mark triggers/events
                 %if(etc_trace_obj.flag_mark)

@@ -76,9 +76,14 @@ if(isfield(etc_trace_obj,'topo_component'))
     if(~isempty(etc_trace_obj.topo_component))
         set(handles.text_load_topo_component,'String',mat2str(size(etc_trace_obj.data)));
     else
-        set(handles.text_load_topocomponent,'String','');
+        set(handles.text_load_topo_component_ch,'String','');
+        set(handles.text_load_topo_component,'String','');
     end;
+else
+    set(handles.text_load_topo_component_ch,'String','');
+    set(handles.text_load_topo_component,'String','');
 end;
+
 
 if(~isempty(etc_trace_obj.fs))
     set(handles.edit_load_sf,'String',num2str(etc_trace_obj.fs));
@@ -222,7 +227,8 @@ if(etc_trace_obj.time_duration_idx<2)
         fprintf('the duration [%1.1f] (s) has less than 2 data samples!\nerror!\n',str{idx});
     end;
 else
-    set(obj,'Value',6); %10-s
+    %set(obj,'Value',6); %10-s
+    set(obj,'Value',max(find(size(etc_trace_obj.data,2)>round(etc_trace_obj.fs*str2double(str(:)))))); 
     etc_trace_obj.time_duration_idx=round(etc_trace_obj.fs*str2double(str{6}));
 end;
 
@@ -299,8 +305,8 @@ if(indx)
             if(length(etc_trace_obj.all_data)<1) %main....
                 evalin('base',sprintf('etc_trace_obj.tmp=%s; ',var));
                 if(size(etc_trace_obj.tmp,1)~=length(etc_trace_obj.ch_names))
-                    answer = questdlg('# of channel mis-match between data [%d] and channel name [%d]\nupdate channel name or abort?','Data',...
-                        'update','abort','update');
+                    str=sprintf('# of channel mis-match between data [%d] and channel name [%d]!Update channel name or abort?!\n',size(etc_trace_obj.tmp,1),length(etc_trace_obj.ch_names));
+                    answer = questdlg(str,'Data','update','abort','update');
                     % Handle response
                     switch answer
                         case 'update'
@@ -453,6 +459,10 @@ if(indx)
                 %evalin('base',sprintf('etc_trace_obj.all_data{end+1}=%s; ',var));
                 evalin('base',sprintf('etc_trace_obj.tmp=%s; ',var));
                 
+                if(size(etc_trace_obj.tmp,1)~=length(etc_trace_obj.ch_names))
+                    fprintf('# of channel mis-match between data [%d] and channel name [%d]!\n!Error!\n',size(etc_trace_obj.tmp,1),length(etc_trace_obj.ch_names));
+                    return;
+                end;
                 
                 %adjust all data such that nan is appended when necessary.
                 for ii=1:length(etc_trace_obj.all_data)
@@ -461,6 +471,7 @@ if(indx)
                 ll(end+1)=size(etc_trace_obj.tmp,2);
                 mll=max(ll);
                 for ii=1:length(etc_trace_obj.all_data)
+                    fprintf('\tAppending NaN to the end of data [%d]...\n',ii);
                     etc_trace_obj.all_data{ii}(:,end+1:mll)=nan;
                 end;
                 etc_trace_obj.tmp(:,end+1:mll)=nan;
@@ -674,7 +685,8 @@ if(indx)
             
             fprintf('Done!\n');
         else
-            fprintf('the first dimension of [%s] (%d) does not match that of data (%d). Error in loading the channel variable...\n',var,length(var),size(etc_trace_obj.data,1));
+            evalin('base',sprintf('global etc_trace_obj; etc_trace_obj.tmp=%s;',var));
+            fprintf('the first dimension of [%s] (%d) does not match that of data (%d). Error in loading the channel variable...\n',var,length(etc_trace_obj.tmp),size(etc_trace_obj.ch_names,1));
         end;
         
     catch ME

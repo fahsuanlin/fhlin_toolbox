@@ -11,6 +11,8 @@ tau=10;
 E=5;
 n_ecg=[]; %search the nearest -n_ecg:+n_ecg; 10 is a good number; consider how this interacts with 'nn'
 
+flag_pan_tompkin2=0;
+
 eeg_bcg=[];
 qrs_i_raw=[];
 
@@ -34,6 +36,8 @@ for i=1:length(varargin)/2
             E=option_value;
         case 'n_ecg'
             n_ecg=option_value;
+        case 'flag_pan_tompkin2'
+            flag_pan_tompkin2=option_value;
         otherwise
             fprintf('unknown option [%s]...\n',option);
             fprintf('error!\n');
@@ -71,7 +75,11 @@ end;
 if(flag_display) fprintf('detecting EKG peaks...\n'); end;
 %[qrs_amp_raw,qrs_i_raw,delay]=pan_tompkin(ecg,fs,flag_display,'flag_fhlin',1);
 %[pks,qrs_i_raw] = findpeaks(ecg,'MINPEAKDISTANCE',round(0.7*fs));
-[pks,qrs_i_raw] =pan_tompkin(ecg,fs,0,'flag_fhlin',1);
+if(flag_pan_tompkin2)
+    [pks,qrs_i_raw] =pan_tompkin2(ecg,fs);
+else
+    [pks,qrs_i_raw] =pan_tompkin(ecg,fs,0,'flag_fhlin',1);
+end;
 
 %     tt=[1:length(ecg)]./fs;
 %     figure; plot(tt,ecg); hold on;

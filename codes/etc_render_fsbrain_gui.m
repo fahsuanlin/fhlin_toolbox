@@ -22,16 +22,6 @@ function varargout = etc_render_fsbrain_gui(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_gui
 
-<<<<<<< HEAD:codes/etc_render_fsbrain_gui.m
-<<<<<<< HEAD:codes/etc_render_fsbrain_gui.m
-% Last Modified by GUIDE v2.5 04-Apr-2022 09:18:36
-=======
-% Last Modified by GUIDE v2.5 25-Sep-2021 13:44:34
->>>>>>> 7dbe60a (111121):etc_render_fsbrain_gui.m
-=======
-% Last Modified by GUIDE v2.5 04-Apr-2022 09:18:36
->>>>>>> f7eb819 (050422):etc_render_fsbrain_gui.m
-
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -378,20 +368,12 @@ set(handles.edit_click_point_size,'string',sprintf('%d',etc_render_fsbrain.click
 set(handles.checkbox_overlay_truncate_neg,'value',etc_render_fsbrain.flag_overlay_truncate_neg);
 set(handles.checkbox_overlay_truncate_pos,'value',etc_render_fsbrain.flag_overlay_truncate_pos);
 
-<<<<<<< HEAD:codes/etc_render_fsbrain_gui.m
-<<<<<<< HEAD:codes/etc_render_fsbrain_gui.m
-=======
->>>>>>> f7eb819 (050422):etc_render_fsbrain_gui.m
 if(~isempty(etc_render_fsbrain.curv_neg_color))
     set(handles.pushbutton_neg_curv_color,'BackgroundColor',etc_render_fsbrain.curv_neg_color);
 end;
 if(~isempty(etc_render_fsbrain.curv_pos_color))
     set(handles.pushbutton_pos_curv_color,'BackgroundColor',etc_render_fsbrain.curv_pos_color);
 end;
-<<<<<<< HEAD:codes/etc_render_fsbrain_gui.m
-=======
-set(handles.pushbutton_neg_curv_color,'BackgroundColor',etc_render_fsbrain.curv_neg_color);
-set(handles.pushbutton_pos_curv_color,'BackgroundColor',etc_render_fsbrain.curv_pos_color);
 
 % if(isempty(etc_render_fsbrain.lut))
 %     set(handles.listbox_overlay_vol_mask,'string',{});
@@ -410,9 +392,7 @@ set(handles.pushbutton_pos_curv_color,'BackgroundColor',etc_render_fsbrain.curv_
 
     else
         set(handles.listbox_overlay_vol_mask,'string',{});
->>>>>>> 7dbe60a (111121):etc_render_fsbrain_gui.m
-=======
->>>>>>> f7eb819 (050422):etc_render_fsbrain_gui.m
+    end;
 
 if(~isempty(etc_render_fsbrain.lut))
     set(handles.listbox_overlay_vol_mask,'string',etc_render_fsbrain.lut.name);
@@ -2584,10 +2564,6 @@ function edit22_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-<<<<<<< HEAD:codes/etc_render_fsbrain_gui.m
-<<<<<<< HEAD:codes/etc_render_fsbrain_gui.m
-=======
->>>>>>> f7eb819 (050422):etc_render_fsbrain_gui.m
 
 
 % --- Executes on button press in checkbox_show_cort_label.
@@ -2756,10 +2732,4 @@ etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
 set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
 pos=get(etc_render_fsbrain.fig_label_gui,'pos');
 pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
-<<<<<<< HEAD:codes/etc_render_fsbrain_gui.m
 set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
-=======
->>>>>>> 7dbe60a (111121):etc_render_fsbrain_gui.m
-=======
-set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
->>>>>>> f7eb819 (050422):etc_render_fsbrain_gui.m
