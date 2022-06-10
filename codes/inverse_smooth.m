@@ -198,8 +198,14 @@ if(flag_050619)
         dd0=[dd1;dd2;dd3;dd4;dd5;dd6];
         dd0=unique(dd0,'rows');
         dd0(:,3)=1;
-        dijk_A=spones(spconvert(dd0));
-        Dm=dijkstra(dijk_A,value_idx);
+        
+       
+        G = digraph(dd0(:,1),dd0(:,2));
+        Dm = distances(G, value_idx);
+        
+        %dijk_A=spones(spconvert(dd0)); %<---replaced by 'digraph' and 'distances' functions after Matlab 2021.
+        %Dm=dijkstra(dijk_A,value_idx);
+        
         Dme=exp(-Dm.*2);
         Dme=Dme./repmat(sum(Dme,1),[size(Dme,1) 1]);
         non_value_idx=setdiff([1:size(Dme,2)],value_idx);

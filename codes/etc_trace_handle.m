@@ -499,6 +499,8 @@ switch lower(param)
                
                 etc_trace_load_gui('update_data');;
                 
+                fprintf('data entry now:: [%s]\n', etc_trace_obj.all_data_name{etc_trace_obj.all_data_main_idx});
+                
                 etc_trcae_gui_update_time();
                 
                 etc_trace_handle('redraw');                
@@ -519,7 +521,9 @@ switch lower(param)
                 etc_trace_obj.all_data_aux_idx(etc_trace_obj.all_data_main_idx)=1;
                 
                 etc_trace_load_gui('update_data');;
-                
+
+                fprintf('data entry now:: [%s]\n', etc_trace_obj.all_data_name{etc_trace_obj.all_data_main_idx});
+
                 etc_trcae_gui_update_time();
                 
                 etc_trace_handle('redraw');                
