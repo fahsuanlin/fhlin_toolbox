@@ -7,8 +7,8 @@ eeg_bcg_pred=[];
 flag_cce=0;
 flag_auto_hp=0;
 flag_display=0;
-E=75;
-nn=6;
+E=20;
+nn=10;
 delay_time=0; %s
 delay=round(fs.*(delay_time));
 

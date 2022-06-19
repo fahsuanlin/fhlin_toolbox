@@ -1,4 +1,4 @@
-function [eeg_bcg, qrs_i_raw, eeg_bcg_pred]=eeg_bcg_ccm2(eeg,ecg,fs,varargin)
+function [eeg_bcg, qrs_i_raw, eeg_bcg_pred, eeg_manifold_neighbor, eeg_manifold_now, eeg_manifold_now_approx, ecg_manifold_neighbor, ecg_manifold_now, ecg_manifold_now_approx, ccm_D, ccm_IDX, manifold_w]=eeg_bcg_ccm2(eeg,ecg,fs,varargin)
 
 %defaults
 flag_cce=0;
@@ -11,6 +11,8 @@ tau=10;
 E=5;
 n_ecg=[]; %search the nearest -n_ecg:+n_ecg; 10 is a good number; consider how this interacts with 'nn'
 
+flag_reg=0;
+
 flag_pan_tompkin2=0;
 
 eeg_bcg=[];
@@ -22,6 +24,8 @@ for i=1:length(varargin)/2
     switch lower(option)
         case 'flag_display'
             flag_display=option_value;
+        case 'flag_reg'
+            flag_reg=option_value;
         case 'flag_auto_hp'
             flag_auto_hp=option_value;
         case 'flag_cce'
@@ -57,7 +61,7 @@ hb=[];
 h2=[];
 
 if(flag_auto_hp)
-    ecg_fluc=filtfilt(ones(4e2,1)./4e2,1,ecg);
+    ecg_fluc=filtfilt(ones(1e2,1)./1e2,1,ecg);
     ecg=ecg-ecg_fluc;
     for ch_idx=1:size(eeg,1)
         eeg_fluc(ch_idx,:)=filtfilt(ones(4e2,1)./4e2,1,eeg(ch_idx,:));
@@ -119,19 +123,26 @@ qrs_phase_idx=find((angle(exp(sqrt(-1).*(ecg_phase_percent)./100.*2.*pi))*100/2/
 ll=ecg_offset_idx-ecg_onset_idx;
 ll([1 end-1 end])=[]; %remove the first and last ECG; potentially incomplete.
 mll=min(ll);
-if(tau.*(E-1)<=(mll-1))
-    tmp=[0:tau:tau.*(E)-1];
-else
-    tmp=[0:tau:mll-1];
-end;
+% if(tau.*(E-1)<=(mll-1))
+%     tmp=[0:tau:tau.*(E)-1];
+%     %tmp=[1-tau.*(E):tau:tau.*(E)-1];
+% else
+%     tmp=[0:tau:mll-1];
+%     %tmp=[1-mll:tau:mll-1];
+% end;
+tmp=[1-tau.*(E):tau:tau.*(2*E)-1];
+
 ecg_ccm_idx=ones(max(ecg_idx),length(tmp)).*nan;
 for ii=2:max(ecg_idx)-1
-%    ecg_ccm_idx(ii,:)=[0:mll-1]+ecg_onset_idx(ii);
-    if(tau.*(E-1)<=(mll-1))
-        ecg_ccm_idx(ii,:)=[0:tau:tau.*(E)-1]+ecg_onset_idx(ii);
-    else
-        ecg_ccm_idx(ii,:)=[0:tau:mll-1]+ecg_onset_idx(ii);        
-    end;
+%     if(tau.*(E-1)<=(mll-1))
+%         ecg_ccm_idx(ii,:)=[0:tau:tau.*(E)-1]+ecg_onset_idx(ii);
+%         %ecg_ccm_idx(ii,:)=[1-tau.*(E):tau:tau.*(E)-1]+ecg_onset_idx(ii);
+%     else
+%         ecg_ccm_idx(ii,:)=[0:tau:mll-1]+ecg_onset_idx(ii);
+%         %ecg_ccm_idx(ii,:)=[1-mll:tau:mll-1]+ecg_onset_idx(ii);
+%     end;
+    ecg_ccm_idx(ii,:)=[1-tau.*(E):tau:tau.*(2*E)-1]+ecg_onset_idx(ii);
+
 end;
 
 %search over ECG cycles
@@ -145,12 +156,13 @@ end;
 IDX=IDX+1; %offset by one ECG cycle, because the first ECG cycle is ignored.
 
 %append indices for the first and last ECG cycles
-IDX(2:end+1,:)=IDX;
-IDX(1,:)=nan;
-IDX(end+1,:)=nan;
-D(2:end+1,:)=D;
-D(1,:)=nan;
-D(end+1,:)=nan;
+IDX_buffer=ones(size(IDX,1)+2,size(IDX,2)).*nan;
+IDX_buffer(2:end-1,:)=IDX;
+IDX=IDX_buffer;
+
+D_buffer=ones(size(D,1)+2,size(D,2)).*nan;
+D_buffer(2:end-1,:)=D;
+D=D_buffer;
 
 %remove self;
 IDX(:,1)=[];
@@ -183,11 +195,14 @@ for t_idx=1:size(eeg,2)
         if(ccm_D(t_idx,1)<eps) ccm_D(t_idx,1)=eps; end;
         U=exp(-ccm_D(t_idx,:)./ccm_D(t_idx,1));
         W=U./sum(U);
-        
+        manifold_w(t_idx,:)=W;
         try
-            manifold_neighbor=ecg(ecg_ccm_idx(ecg_idx(ccm_IDX(t_idx,:)),:))'; %cardiac manifolds of the nearest neighbors
-            manifold_now=ecg(ecg_ccm_idx(ecg_idx(t_idx),:))'; %cardiac manifold now
-            manifold_now_approx=manifold_neighbor*W'; %approximated cardiac manifold now from nearest neighbors
+            ecg_manifold_neighbor(:,:,t_idx)=ecg(ecg_ccm_idx(IDX(ecg_idx(t_idx),:),:))'; %cardiac manifolds of the nearest neighbors
+            %ecg_manifold_neighbor(:,:,t_idx)=ecg(ecg_ccm_idx(ecg_idx(ccm_IDX(t_idx,:)),:))'; %cardiac manifolds of the nearest neighbors
+            ecg_manifold_now(:,:,t_idx)=ecg(ecg_ccm_idx(ecg_idx(t_idx),:))'; %cardiac manifold now
+            %manifold_t_idx=[1-tau.*(E):tau:tau.*(2*E)-1];
+            %ecg_manifold_now(:,:,t_idx)=ecg(t_idx+manifold_t_idx)'; %cardiac manifold now
+            ecg_manifold_now_approx(:,t_idx)=ecg_manifold_neighbor(:,:,t_idx)*W'; %approximated cardiac manifold now from nearest neighbors
         catch ME
         end;
         
@@ -254,6 +269,20 @@ for t_idx=1:size(eeg,2)
                 %non_nan_idx=find(~isnan(ccm_IDX(t_idx,:)));
                 %eeg_bcg_pred(non_ecg_channel(ch_idx),t_idx)=eeg(non_ecg_channel(ch_idx),ccm_IDX(t_idx,non_nan_idx))*W(non_nan_idx)';
                 eeg_bcg_pred(non_ecg_channel(ch_idx),t_idx)=eeg(non_ecg_channel(ch_idx),ccm_IDX(t_idx,:))*W';
+                
+                
+%                 for m_idx=0:0
+%                     tmp=eeg(non_ecg_channel(ch_idx),ccm_IDX(t_idx,:)+tau.*m_idx); %EEG manifolds of the nearest neighbors
+%                     eeg_manifold_neighbor(:,m_idx+1,ch_idx,t_idx)=tmp;
+%                 end;
+
+                manifold_t_idx=[1-tau.*(E):tau:tau.*(2*E)-1];
+                for m_idx=1:length(manifold_t_idx)
+                    eeg_manifold_neighbor(:,m_idx,ch_idx,t_idx)=eeg(non_ecg_channel(ch_idx),ecg_onset_idx(IDX(ecg_idx(t_idx),:))+manifold_t_idx(m_idx));
+                end;
+                
+                eeg_manifold_now(:,:,ch_idx,t_idx)=eeg(non_ecg_channel(ch_idx),t_idx+manifold_t_idx); %EEG manifold now
+                eeg_manifold_now_approx(:,ch_idx,t_idx)= squeeze(eeg_manifold_neighbor(:,1,ch_idx,t_idx))'*W'; %approximated cardiac manifold now from nearest neighbors
             catch ME
                 fprintf('Error in BCG CCM prediction!\n');
                 fprintf('t_idx=%d\n',t_idx);
@@ -325,7 +354,25 @@ for t_idx=1:size(eeg,2)
     end;
 end;
 
-eeg_bcg=eeg-eeg_bcg_pred;
+
+if(~flag_reg)
+    eeg_bcg=eeg-eeg_bcg_pred;
+elseif(flag_reg)
+    for ii=1:max(ecg_idx)
+        time_idx=find(ecg_idx==ii);
+        A=[];
+        for ch_idx=1:size(eeg,1)
+            y=eeg(ch_idx,time_idx);
+            A(:,1)=eeg_bcg_pred(ch_idx,time_idx);
+            A(:,2)=1;
+            if(rank(A)==2)
+                eeg_bcg(ch_idx,time_idx)=y(:)-A*inv(A'*A)*A'*y(:);
+            else
+                eeg_bcg(ch_idx,time_idx)=eeg(ch_idx,time_idx);
+            end;
+        end;
+    end;
+end;
 
 if(flag_auto_hp)
     ecg=ecg+ecg_fluc;

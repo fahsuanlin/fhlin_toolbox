@@ -116,9 +116,9 @@ end;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-global etc_trace_obj;
+%global etc_trace_obj;
 
-etc_trace_obj=[];
+%etc_trace_obj=[];
 
 try
     delete(etc_trace_obj.fig_trace);
@@ -379,14 +379,15 @@ else
         etc_trace_obj.all_data_name{1}=etc_trace_obj.data_name;
     end;
     etc_trace_obj.all_data_main_idx=1;
-    
+    etc_trace_obj.all_data_color(1,:)=cc(1,:);
     
     for idx=1:length(etc_trace_obj.aux_data)
         etc_trace_obj.all_data{idx+1}=etc_trace_obj.aux_data{idx};
         if(~isempty(etc_trace_obj.aux_data_name{idx}))
             etc_trace_obj.all_data_name{idx+1}=etc_trace_obj.aux_data_name{idx};
         end;
-        etc_trace_obj.all_data_color(idx+1,:)=cc(mod(length(etc_trace_obj.all_data)-1,7)+1,:);
+        %etc_trace_obj.all_data_color(idx+1,:)=cc(mod(length(etc_trace_obj.all_data)-1,7)+1,:);
+        etc_trace_obj.all_data_color(idx+1,:)=cc(mod(idx-1,7)+1,:);
         etc_trace_obj.aux_data_color(idx,:)=etc_trace_obj.all_data_color(idx+1,:);
     end;    
     etc_trace_obj.all_data_aux_idx=cat(2,0,ones(1,length(etc_trace_obj.aux_data)));

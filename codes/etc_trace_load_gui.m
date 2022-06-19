@@ -22,7 +22,7 @@ function varargout = etc_trace_load_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_load_gui
 
-% Last Modified by GUIDE v2.5 04-Jun-2022 13:51:19
+% Last Modified by GUIDE v2.5 14-Jun-2022 23:10:41
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -104,6 +104,11 @@ if(~isempty(etc_trace_obj.trigger))
 else
     set(handles.text_load_trigger,'String','');
 end;
+
+
+set(handles.text_load_trigger_var,'String','');
+
+
 if(~isempty(etc_trace_obj.ch_names))
     set(handles.text_load_label,'String',sprintf('[%d] channel(s)',length(etc_trace_obj.ch_names)));
 else
@@ -229,7 +234,7 @@ if(etc_trace_obj.time_duration_idx<2)
 else
     %set(obj,'Value',6); %10-s
     set(obj,'Value',max(find(size(etc_trace_obj.data,2)>round(etc_trace_obj.fs*str2double(str(:)))))); 
-    etc_trace_obj.time_duration_idx=round(etc_trace_obj.fs*str2double(str{6}));
+    etc_trace_obj.time_duration_idx=round(etc_trace_obj.fs*str2double(str{get(obj,'Value')}));
 end;
 
 %check loaded data entries...
@@ -1047,3 +1052,84 @@ if(indx)
     catch ME
     end;
 end;
+
+
+% --- Executes on button press in pushbutton_load_trigger_var.
+function pushbutton_load_trigger_var_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_load_trigger_var (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_trace_obj;
+
+v = evalin('base', 'whos');
+fn={v.name};
+
+fprintf('load a variable for trigger vector...\n');
+
+[indx,tf] = listdlg('PromptString','Select a variable...',...
+    'SelectionMode','single',...
+    'ListString',fn);
+etc_trace_obj.tmp=0;
+if(indx)
+    try
+        var=fn{indx};
+        %evalin('base',sprintf('global etc_trace_obj; if(isfield(%s,''time'')&&isfield(%s,''event'')) etc_trace_obj.tmp=1; else etc_trace_obj.tmp=0; end;',var,var));
+        evalin('base',sprintf('etc_trace_obj.tmp=1;'));
+        
+        fprintf('Trying to load variable [%s] as the trigger vector...',var);
+        if(etc_trace_obj.tmp)
+            
+            answer = questdlg('take as new or merge with the existed trigger?','Menu',...
+                'take as new','merge','cancel','take as new');
+            % Handle response
+            switch answer
+                case 'take as new'
+                    f_option = 1;
+                case 'merge'
+                    f_option = 2;
+                case 'cancel'
+                    f_option= 0;
+            end
+            if(f_option==1) %replace....
+                evalin('base',sprintf('global trigger_tmp; trigger_tmp=%s; ',var));
+                global trigger_tmp;
+                global TRIGGER_tmp;
+                
+                for var_idx=1:length(trigger_tmp)
+                    TRIGGER_tmp.time(var_idx)=trigger_tmp(var_idx);
+                    TRIGGER_tmp.event{var_idx}=sprintf('%03d',33);
+                end;
+                
+                evalin('base',sprintf('global TRIGGER_tmp; etc_trace_obj.trigger=TRIGGER_tmp;'));
+                
+                clear TRIGGER_tmp;
+                clear trigger_tmp;
+                
+                obj=findobj('Tag','text_load_trigger_var');
+                set(obj,'String',sprintf('%s',var));
+                
+                fprintf('trigger replaced/loaded!\n');
+            elseif(f_option==2)
+                evalin('base',sprintf('global trigger_tmp; trigger_tmp=%s; ',var));
+                global trigger_tmp;
+                
+                if(isempty(etc_trace_obj.trigger))
+                    etc_trace_obj.trigger=trigger_tmp;
+                else
+                    etc_trace_obj.trigger=etc_trigger_append(etc_trace_obj.trigger,trigger_tmp);
+                end;
+                clear trigger_tmp;
+                
+                obj=findobj('Tag','text_load_trigger');
+                set(obj,'String',sprintf('%s',var));
+                
+                fprintf('trigger merged!\n');
+            end;
+        else
+            fprintf('error in loading the trigger variable...\n',var);
+        end;
+        
+    catch ME
+    end;
+end;
+

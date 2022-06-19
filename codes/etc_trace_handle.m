@@ -24,7 +24,13 @@ if(isempty(etc_trace_obj))
 end;
 
 if(isempty(cc))
-    %cc=get(etc_trace_obj.fig_trace,'currentchar');
+    %fprintf('key=%s\n',get(gcf,'currentkey'));
+    modifier=get(gcf,'currentmod');
+    if(~isempty(modifier))
+        %fprintf('modifier=%s\n',modifier{1});
+    else
+        modifier{1}='none';
+    end;
     cc=get(gcf,'currentchar');
 end;
 
@@ -476,59 +482,253 @@ switch lower(param)
                 end;
                 
             case 28
-                fprintf('fast rewinding...\n');
-                etc_trace_control_gui('pushbutton_rrfast_Callback');
+                switch lower(modifier{1})
+                    case 'shift'
+                        fprintf('next trigger...\n');
+                        etc_trace_control_gui('pushbutton_trigger_rr_Callback');
+                    otherwise
+                        fprintf('fast rewinding...\n');
+                        etc_trace_control_gui('pushbutton_rrfast_Callback');
+                end;
             case 29
-                fprintf('fast forwarding...\n');
-                etc_trace_control_gui('pushbutton_fffast_Callback');
+                switch lower(modifier{1})
+                    case 'shift'
+                        fprintf('previous trigger...\n');
+                        etc_trace_control_gui('pushbutton_trigger_ff_Callback');
+                    otherwise
+                        fprintf('fast forwarding...\n');
+                        etc_trace_control_gui('pushbutton_fffast_Callback');
+                end;
             case 31
-                fprintf('next trace...\n');
-                
-                etc_trace_obj.all_data_main_idx=etc_trace_obj.all_data_main_idx+1;
-                if(etc_trace_obj.all_data_main_idx>length(etc_trace_obj.all_data))
-                    etc_trace_obj.all_data_main_idx=1;
-                end;
-                
-                obj=findobj('Tag','listbox_data');
-                if(~isempty(obj))
-                    set(obj,'Value',etc_trace_obj.all_data_main_idx);
-                end;
-
-                etc_trace_obj.all_data_aux_idx=zeros(1, length(etc_trace_obj.all_data));
-                etc_trace_obj.all_data_aux_idx(etc_trace_obj.all_data_main_idx)=1;
-               
-                etc_trace_load_gui('update_data');;
-                
-                fprintf('data entry now:: [%s]\n', etc_trace_obj.all_data_name{etc_trace_obj.all_data_main_idx});
-                
-                etc_trcae_gui_update_time();
-                
-                etc_trace_handle('redraw');                
+                switch lower(modifier{1})
+                    case 'shift'
+                        str={};
+                        if(~isempty(etc_trace_obj.trigger))
+                            str=unique(etc_trace_obj.trigger.event);
+                            if(isfield(etc_trace_obj,'trigger_now'))
+                                if(isempty(etc_trace_obj.trigger_now))
+                                    return;
+                                else
+                                    IndexC = strcmp(str,etc_trace_obj.trigger_now);
+                                    trigger_value=find(IndexC)+1;
+                                    if(trigger_value>length(str))
+                                        trigger_value=1;
+                                    end;
+                                    obj=findobj('tag','listbox_trigger');
+                                    if(~isempty(obj))
+                                        set(obj,'Value',trigger_value);
+                                    end;
+                                    etc_trace_obj.trigger_now=str{trigger_value};
+                                end;
+                            else
+                                return;
+                            end;
+                        else
+                            return;
+                        end;%
+                        
+                        fprintf('update to the next trigger [%s]...\n', etc_trace_obj.trigger_now);
+                        
+                        %update the default event/trigger name in the event/trigger window
+                        hObject=findobj('tag','edit_local_trigger_class');
+                        if(~isempty(hObject))
+                            set(hObject,'string',etc_trace_obj.trigger_now);
+                        end;
+                        
+                        
+                        %IndexC = strfind(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
+                        %trigger_match_idx = find(not(cellfun('isempty',IndexC)));
+                        IndexC = strcmp(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
+                        trigger_match_idx = find(IndexC);
+                        trigger_match_time_idx=etc_trace_obj.trigger.time(trigger_match_idx);
+                        trigger_match_time_idx=sort(trigger_match_time_idx);
+                        fprintf('[%d] trigger {%s} found at time index [%s].\n',length(trigger_match_idx),etc_trace_obj.trigger_now,mat2str(trigger_match_time_idx));
+                        
+                        %find the nearest one
+                        [dummy,idx]=min(abs(trigger_match_time_idx-etc_trace_obj.time_select_idx));
+                        if(idx<=1) idx=1; end;
+                        etc_trace_obj.time_select_idx=trigger_match_time_idx(idx);
+                        fprintf('now at the [%d]-th trigger {%s} found at time index [%s] <%1.3f s>.\n',idx,etc_trace_obj.trigger_now,mat2str(trigger_match_time_idx(idx)),trigger_match_time_idx(idx)./etc_trace_obj.fs+etc_trace_obj.time_begin);
+                        
+                        hObject=findobj('tag','edit_trigger_time');
+                        set(hObject,'String',sprintf('%1.3f',trigger_match_time_idx(idx)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+                        hObject=findobj('tag','edit_trigger_time_idx');
+                        set(hObject,'String',sprintf('%d',trigger_match_time_idx(idx)));
+                        
+                        
+                        %update even/trigger window
+                        hObject=findobj('tag','edit_local_trigger_time');
+                        set(hObject,'String',sprintf('%1.3f',trigger_match_time_idx(idx)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+                        hObject=findobj('tag','edit_local_trigger_time_idx');
+                        set(hObject,'String',sprintf('%d',trigger_match_time_idx(idx)));
+                        
+                        if(~isempty(idx))
+                            for ii=1:length(etc_trace_obj.trigger.time)
+                                if((etc_trace_obj.trigger.time(ii)==trigger_match_time_idx(idx))&&(strcmp(etc_trace_obj.trigger.event{ii},etc_trace_obj.trigger_now)))
+                                    break;
+                                end;
+                            end;
+                            hObject=findobj('tag','listbox_time');
+                            set(hObject,'Value',ii);
+                            hObject=findobj('tag','listbox_time_idx');
+                            set(hObject,'Value',ii);
+                            hObject=findobj('tag','listbox_class');
+                            set(hObject,'Value',ii);
+                        end;
+                        
+                        %update average window
+                        hObject=findobj('tag','listbox_avg_trigger');
+                        str=get(hObject,'String');
+                        for i=1:length(str)
+                            if(strcmp(str{i},etc_trace_obj.trigger_now))
+                                break;
+                            end;
+                        end;
+                        set(hObject,'Value',i);
+                        
+                        
+                        etc_trcae_gui_update_time;
+                        
+                    otherwise
+                        fprintf('next trace...\n');
+                        
+                        etc_trace_obj.all_data_main_idx=etc_trace_obj.all_data_main_idx+1;
+                        if(etc_trace_obj.all_data_main_idx>length(etc_trace_obj.all_data))
+                            etc_trace_obj.all_data_main_idx=1;
+                        end;
+                        
+                        obj=findobj('Tag','listbox_data');
+                        if(~isempty(obj))
+                            set(obj,'Value',etc_trace_obj.all_data_main_idx);
+                        end;
+                        
+                        etc_trace_obj.all_data_aux_idx=zeros(1, length(etc_trace_obj.all_data));
+                        etc_trace_obj.all_data_aux_idx(etc_trace_obj.all_data_main_idx)=1;
+                        
+                        etc_trace_load_gui('update_data');;
+                        
+                        fprintf('data entry now:: [%s]\n', etc_trace_obj.all_data_name{etc_trace_obj.all_data_main_idx});
+                        
+                        etc_trcae_gui_update_time();
+                        
+                        etc_trace_handle('redraw');
+                end;               
             case 30
-                fprintf('previous trace...\n');
-                
-                etc_trace_obj.all_data_main_idx=etc_trace_obj.all_data_main_idx-1;
-                if(etc_trace_obj.all_data_main_idx<1)
-                    etc_trace_obj.all_data_main_idx=length(etc_trace_obj.all_data);
+                switch lower(modifier{1})
+                    case 'shift'
+                        str={};
+                        if(~isempty(etc_trace_obj.trigger))
+                            str=unique(etc_trace_obj.trigger.event);
+                            if(isfield(etc_trace_obj,'trigger_now'))
+                                if(isempty(etc_trace_obj.trigger_now))
+                                    return;
+                                else
+                                    IndexC = strcmp(str,etc_trace_obj.trigger_now);
+                                    trigger_value=find(IndexC)-1;
+                                    if(trigger_value<1)
+                                        trigger_value=length(str);
+                                    end;
+                                    obj=findobj('tag','listbox_trigger');
+                                    if(~isempty(obj))
+                                        set(obj,'Value',trigger_value);
+                                    end;
+                                    etc_trace_obj.trigger_now=str{trigger_value};
+                                end;
+                            else
+                                return;
+                            end;
+                        else
+                            return;
+                        end;%
+                        
+                        fprintf('update to the next trigger [%s]...\n', etc_trace_obj.trigger_now);
+                        
+                        %update the default event/trigger name in the event/trigger window
+                        hObject=findobj('tag','edit_local_trigger_class');
+                        if(~isempty(hObject))
+                            set(hObject,'string',etc_trace_obj.trigger_now);
+                        end;
+                        
+                        
+                        %IndexC = strfind(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
+                        %trigger_match_idx = find(not(cellfun('isempty',IndexC)));
+                        IndexC = strcmp(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
+                        trigger_match_idx = find(IndexC);
+                        trigger_match_time_idx=etc_trace_obj.trigger.time(trigger_match_idx);
+                        trigger_match_time_idx=sort(trigger_match_time_idx);
+                        fprintf('[%d] trigger {%s} found at time index [%s].\n',length(trigger_match_idx),etc_trace_obj.trigger_now,mat2str(trigger_match_time_idx));
+                        
+                        %find the nearest one
+                        [dummy,idx]=min(abs(trigger_match_time_idx-etc_trace_obj.time_select_idx));
+                        if(idx<=1) idx=1; end;
+                        etc_trace_obj.time_select_idx=trigger_match_time_idx(idx);
+                        fprintf('now at the [%d]-th trigger {%s} found at time index [%s] <%1.3f s>.\n',idx,etc_trace_obj.trigger_now,mat2str(trigger_match_time_idx(idx)),trigger_match_time_idx(idx)./etc_trace_obj.fs+etc_trace_obj.time_begin);
+                        
+                        hObject=findobj('tag','edit_trigger_time');
+                        set(hObject,'String',sprintf('%1.3f',trigger_match_time_idx(idx)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+                        hObject=findobj('tag','edit_trigger_time_idx');
+                        set(hObject,'String',sprintf('%d',trigger_match_time_idx(idx)));
+                        
+                        
+                        %update even/trigger window
+                        hObject=findobj('tag','edit_local_trigger_time');
+                        set(hObject,'String',sprintf('%1.3f',trigger_match_time_idx(idx)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+                        hObject=findobj('tag','edit_local_trigger_time_idx');
+                        set(hObject,'String',sprintf('%d',trigger_match_time_idx(idx)));
+                        
+                        if(~isempty(idx))
+                            for ii=1:length(etc_trace_obj.trigger.time)
+                                if((etc_trace_obj.trigger.time(ii)==trigger_match_time_idx(idx))&&(strcmp(etc_trace_obj.trigger.event{ii},etc_trace_obj.trigger_now)))
+                                    break;
+                                end;
+                            end;
+                            hObject=findobj('tag','listbox_time');
+                            set(hObject,'Value',ii);
+                            hObject=findobj('tag','listbox_time_idx');
+                            set(hObject,'Value',ii);
+                            hObject=findobj('tag','listbox_class');
+                            set(hObject,'Value',ii);
+                        end;
+                        
+                        %update average window
+                        hObject=findobj('tag','listbox_avg_trigger');
+                        str=get(hObject,'String');
+                        for i=1:length(str)
+                            if(strcmp(str{i},etc_trace_obj.trigger_now))
+                                break;
+                            end;
+                        end;
+                        set(hObject,'Value',i);
+                        
+                        
+                        etc_trcae_gui_update_time;
+                        
+                    otherwise
+                        fprintf('previous trace...\n');
+                        
+                        etc_trace_obj.all_data_main_idx=etc_trace_obj.all_data_main_idx-1;
+                        if(etc_trace_obj.all_data_main_idx<1)
+                            etc_trace_obj.all_data_main_idx=length(etc_trace_obj.all_data);
+                        end;
+                        
+                        obj=findobj('Tag','listbox_data');
+                        if(~isempty(obj))
+                            set(obj,'Value',etc_trace_obj.all_data_main_idx);
+                        end;
+                        
+                        etc_trace_obj.all_data_aux_idx=zeros(1, length(etc_trace_obj.all_data));
+                        etc_trace_obj.all_data_aux_idx(etc_trace_obj.all_data_main_idx)=1;
+                        
+                        etc_trace_load_gui('update_data');;
+                        
+                        fprintf('data entry now:: [%s]\n', etc_trace_obj.all_data_name{etc_trace_obj.all_data_main_idx});
+                        
+                        etc_trcae_gui_update_time();
+                        
+                        etc_trace_handle('redraw');
                 end;
-                
-                obj=findobj('Tag','listbox_data');
-                if(~isempty(obj))
-                    set(obj,'Value',etc_trace_obj.all_data_main_idx);
-                end;
-                
-                etc_trace_obj.all_data_aux_idx=zeros(1, length(etc_trace_obj.all_data));
-                etc_trace_obj.all_data_aux_idx(etc_trace_obj.all_data_main_idx)=1;
-                
-                etc_trace_load_gui('update_data');;
-
-                fprintf('data entry now:: [%s]\n', etc_trace_obj.all_data_name{etc_trace_obj.all_data_main_idx});
-
-                etc_trcae_gui_update_time();
-                
-                etc_trace_handle('redraw');                
-
-            
+            case 56
+                %fprintf('shift...\n');
             otherwise
                 fprintf('cc=[%c]\n',cc);
         end;
