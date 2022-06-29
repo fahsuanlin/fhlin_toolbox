@@ -145,13 +145,18 @@ for ii=2:max(ecg_idx)-1
 
 end;
 
+ecg_ccm_idx(find(ecg_ccm_idx(:)>length(ecg)))=nan;
+
 %search over ECG cycles
+not_nan=find(~isnan(mean(ecg_ccm_idx,2)));
 if(~flag_cce)
-    [IDX,D] = knnsearch(ecg(ecg_ccm_idx(2:end-1,:)),ecg(ecg_ccm_idx(2:end-1,:)),'K',nn+1);
+    %[IDX,D] = knnsearch(ecg(ecg_ccm_idx(2:end-1,:)),ecg(ecg_ccm_idx(2:end-1,:)),'K',nn+1);
+    [IDX,D] = knnsearch(ecg(ecg_ccm_idx(not_nan,:)),ecg(ecg_ccm_idx(not_nan,:)),'K',nn+1);
 else
     [uu,ss,vv]=svd(eeg,'econ');
     v1=vv(:,1)';
-    [IDX,D] = knnsearch(v1(ecg_ccm_idx(2:end-1,:)),v1(ecg_ccm_idx(2:end-1,:)),'K',nn+1);
+    %[IDX,D] = knnsearch(v1(ecg_ccm_idx(2:end-1,:)),v1(ecg_ccm_idx(2:end-1,:)),'K',nn+1);
+    [IDX,D] = knnsearch(v1(ecg_ccm_idx(not_nan,:)),v1(ecg_ccm_idx(not_nan,:)),'K',nn+1);
 end;
 IDX=IDX+1; %offset by one ECG cycle, because the first ECG cycle is ignored.
 
