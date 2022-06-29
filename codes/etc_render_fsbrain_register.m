@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_register(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_register
 
-% Last Modified by GUIDE v2.5 06-Oct-2017 13:33:35
+% Last Modified by GUIDE v2.5 25-Jun-2022 13:43:01
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -102,6 +102,9 @@ else
     end;    
 end;
 
+if(isfield(etc_render_fsbrain,'overlay_flag_paint_on_cortex'))
+    handles.checkbox_paint_on_cortex.Value=etc_render_fsbrain.overlay_flag_paint_on_cortex;
+end;
 
 % --- Outputs from this function are returned to the command line.
 function varargout = etc_render_fsbrain_register_OutputFcn(hObject, eventdata, handles) 
@@ -136,6 +139,9 @@ end;
 
 if(~isempty(etc_render_fsbrain.overlay_vol))
     if(isfield(etc_render_fsbrain,'overlay_vol_xfm'))
+        if(isempty(etc_render_fsbrain.overlay_vol_xfm))
+            etc_render_fsbrain.overlay_vol_xfm=eye(4);
+        end;
         Rtmp=R;
         Rtmp(4,:)=0;
         Rtmp(:,4)=0;
@@ -144,8 +150,12 @@ if(~isempty(etc_render_fsbrain.overlay_vol))
         
         etc_render_fsbrain.overlay_vol=MRIvol2vol(etc_render_fsbrain.overlay_vol,etc_render_fsbrain.overlay_vol,inv(Rtmp));
         
-        etc_render_fsbrain_overlay_vol_update;
-        etc_render_fsbrain_handle('update_overlay_vol');
+        if(isfield(etc_render_fsbrain,'overlay_flag_paint_on_cortex'))
+            if(etc_render_fsbrain.overlay_flag_paint_on_cortex)
+                etc_render_fsbrain_overlay_vol_update;
+                etc_render_fsbrain_handle('update_overlay_vol');
+            end;
+        end;
         etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',[]);
         etc_render_fsbrain_handle('redraw');
         if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
@@ -180,6 +190,9 @@ end;
 
 if(~isempty(etc_render_fsbrain.overlay_vol))
     if(isfield(etc_render_fsbrain,'overlay_vol_xfm'))
+        if(isempty(etc_render_fsbrain.overlay_vol_xfm))
+            etc_render_fsbrain.overlay_vol_xfm=eye(4);
+        end;
         Rtmp=R;
         Rtmp(4,:)=0;
         Rtmp(:,4)=0;
@@ -188,8 +201,12 @@ if(~isempty(etc_render_fsbrain.overlay_vol))
         
         etc_render_fsbrain.overlay_vol=MRIvol2vol(etc_render_fsbrain.overlay_vol,etc_render_fsbrain.overlay_vol,inv(Rtmp));
         
-        etc_render_fsbrain_overlay_vol_update;
-        etc_render_fsbrain_handle('update_overlay_vol');
+        if(isfield(etc_render_fsbrain,'overlay_flag_paint_on_cortex'))
+            if(etc_render_fsbrain.overlay_flag_paint_on_cortex)
+                etc_render_fsbrain_overlay_vol_update;
+                etc_render_fsbrain_handle('update_overlay_vol');
+            end;
+        end;
         etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',[]);
         etc_render_fsbrain_handle('redraw');
         if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
@@ -247,14 +264,21 @@ end;
 
 if(~isempty(etc_render_fsbrain.overlay_vol))
     if(isfield(etc_render_fsbrain,'overlay_vol_xfm'))
+        if(isempty(etc_render_fsbrain.overlay_vol_xfm))
+            etc_render_fsbrain.overlay_vol_xfm=eye(4);
+        end;
         Rtmp=eye(4);
         Rtmp(1:3,4)=(uu.'.*dist.*1e3)';
         etc_render_fsbrain.overlay_vol_xfm=(Rtmp)*etc_render_fsbrain.overlay_vol_xfm;
         
         etc_render_fsbrain.overlay_vol=MRIvol2vol(etc_render_fsbrain.overlay_vol,etc_render_fsbrain.overlay_vol,inv(Rtmp));
         
-        etc_render_fsbrain_overlay_vol_update;
-        etc_render_fsbrain_handle('update_overlay_vol');
+        if(isfield(etc_render_fsbrain,'overlay_flag_paint_on_cortex'))
+            if(etc_render_fsbrain.overlay_flag_paint_on_cortex)
+                etc_render_fsbrain_overlay_vol_update;
+                etc_render_fsbrain_handle('update_overlay_vol');
+            end;
+        end;
         etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',[]);
         etc_render_fsbrain_handle('redraw');
         if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
@@ -289,14 +313,21 @@ end;
 
 if(~isempty(etc_render_fsbrain.overlay_vol))
     if(isfield(etc_render_fsbrain,'overlay_vol_xfm'))
+        if(isempty(etc_render_fsbrain.overlay_vol_xfm))
+            etc_render_fsbrain.overlay_vol_xfm=eye(4);
+        end;
         Rtmp=eye(4);
         Rtmp(1:3,4)=(uu.'.*dist.*1e3)';
         etc_render_fsbrain.overlay_vol_xfm=(Rtmp)*etc_render_fsbrain.overlay_vol_xfm;
         
         etc_render_fsbrain.overlay_vol=MRIvol2vol(etc_render_fsbrain.overlay_vol,etc_render_fsbrain.overlay_vol,inv(Rtmp));
         
-        etc_render_fsbrain_overlay_vol_update;
-        etc_render_fsbrain_handle('update_overlay_vol');
+        if(isfield(etc_render_fsbrain,'overlay_flag_paint_on_cortex'))
+            if(etc_render_fsbrain.overlay_flag_paint_on_cortex)
+                etc_render_fsbrain_overlay_vol_update;
+                etc_render_fsbrain_handle('update_overlay_vol');
+            end;
+        end;
         etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',[]);
         etc_render_fsbrain_handle('redraw');
         if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
@@ -331,14 +362,21 @@ end;
 
 if(~isempty(etc_render_fsbrain.overlay_vol))
     if(isfield(etc_render_fsbrain,'overlay_vol_xfm'))
+        if(isempty(etc_render_fsbrain.overlay_vol_xfm))
+            etc_render_fsbrain.overlay_vol_xfm=eye(4);
+        end;
         Rtmp=eye(4);
         Rtmp(1:3,4)=(rr.'.*dist.*1e3)';
         etc_render_fsbrain.overlay_vol_xfm=(Rtmp)*etc_render_fsbrain.overlay_vol_xfm;
         
         etc_render_fsbrain.overlay_vol=MRIvol2vol(etc_render_fsbrain.overlay_vol,etc_render_fsbrain.overlay_vol,inv(Rtmp));
         
-        etc_render_fsbrain_overlay_vol_update;
-        etc_render_fsbrain_handle('update_overlay_vol');
+        if(isfield(etc_render_fsbrain,'overlay_flag_paint_on_cortex'))
+            if(etc_render_fsbrain.overlay_flag_paint_on_cortex)
+                etc_render_fsbrain_overlay_vol_update;
+                etc_render_fsbrain_handle('update_overlay_vol');
+            end;
+        end;
         etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',[]);
         etc_render_fsbrain_handle('redraw');
         if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
@@ -373,14 +411,21 @@ end;
 
 if(~isempty(etc_render_fsbrain.overlay_vol))
     if(isfield(etc_render_fsbrain,'overlay_vol_xfm'))
+        if(isempty(etc_render_fsbrain.overlay_vol_xfm))
+            etc_render_fsbrain.overlay_vol_xfm=eye(4);
+        end;
         Rtmp=eye(4);
         Rtmp(1:3,4)=(rr.'.*dist.*1e3)';
         etc_render_fsbrain.overlay_vol_xfm=(Rtmp)*etc_render_fsbrain.overlay_vol_xfm;
         
         etc_render_fsbrain.overlay_vol=MRIvol2vol(etc_render_fsbrain.overlay_vol,etc_render_fsbrain.overlay_vol,inv(Rtmp));
         
-        etc_render_fsbrain_overlay_vol_update;
-        etc_render_fsbrain_handle('update_overlay_vol');
+        if(isfield(etc_render_fsbrain,'overlay_flag_paint_on_cortex'))
+            if(etc_render_fsbrain.overlay_flag_paint_on_cortex)
+                etc_render_fsbrain_overlay_vol_update;
+                etc_render_fsbrain_handle('update_overlay_vol');
+            end;
+        end;
         etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',[]);
         etc_render_fsbrain_handle('redraw');
         if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
@@ -546,6 +591,38 @@ if(~isempty(etc_render_fsbrain.aux_point_coords)||~isempty(etc_render_fsbrain.ov
             fprintf('variable "overlay_xfm" exported and saved in [%s]\n',filename);
         end;
     end;
+end;
+
+
+% --- Executes on button press in checkbox_paint_on_cortex.
+function checkbox_paint_on_cortex_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_paint_on_cortex (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_paint_on_cortex
+global etc_render_fsbrain;
+
+etc_render_fsbrain.overlay_flag_paint_on_cortex= get(hObject,'Value');
+
+if(isfield(etc_render_fsbrain,'overlay_vol_backup'))
+    etc_render_fsbrain.overlay_vol=etc_render_fsbrain.overlay_vol_backup;
+else
+    etc_render_fsbrain.overlay_vol_backup=etc_render_fsbrain.overlay_vol;   
+end;
+
+if(etc_render_fsbrain.overlay_flag_paint_on_cortex)
+    etc_render_fsbrain_overlay_vol_update;
+    etc_render_fsbrain_handle('update_overlay_vol');
+else
+    if(isfield(etc_render_fsbrain,'overlay_vol_backup'))
+        etc_render_fsbrain.overlay_vol=etc_render_fsbrain.overlay_vol_backup;
+    end;
+end;
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',[]);
+etc_render_fsbrain_handle('redraw');
+if(length(etc_render_fsbrain.overlay_stc_timeVec)>1)
+    etc_render_fsbrain_handle('draw_stc');
 end;
 
 

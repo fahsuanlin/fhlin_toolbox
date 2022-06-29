@@ -88,6 +88,8 @@ overlay_vol_mask_alpha=0.5;
 overlay_vol_mask=[];
 overlay_flag_vol_mask=1;
 
+overlay_flag_paint_on_cortex=1;
+
 flag_orthogonal_slice_ax=0;
 flag_orthogonal_slice_sag=0;
 flag_orthogonal_slice_cor=0;
@@ -274,6 +276,8 @@ for idx=1:length(varargin)/2
             overlay_flag_vol_mask=option_value;
         case 'overlay_vol_xfm'
             overlay_vol_xfm=option_value;
+        case 'overlay_flag_paint_on_cortex'
+            overlay_flag_paint_on_cortex=option_value;
         case 'cluster_file'
             cluster_file=option_value;
         case 'alpha'
@@ -1071,6 +1075,7 @@ etc_render_fsbrain.overlay_vol_flag_render=overlay_vol_flag_render;
 etc_render_fsbrain.overlay_fixval_flag=overlay_fixval_flag;
 etc_render_fsbrain.overlay_regrid_flag=overlay_regrid_flag;
 etc_render_fsbrain.overlay_regrid_zero_flag=overlay_regrid_zero_flag;
+etc_render_fsbrain.overlay_flag_paint_on_cortex=overlay_flag_paint_on_cortex;
 etc_render_fsbrain.overlay_Ds=overlay_Ds;
 etc_render_fsbrain.overlay_vol_xfm=overlay_vol_xfm;
 etc_render_fsbrain.flag_overlay_truncate_pos=overlay_truncate_pos;
