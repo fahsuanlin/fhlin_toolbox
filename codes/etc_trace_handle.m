@@ -1023,8 +1023,34 @@ switch lower(param)
                 etc_trace_obj.orPos = newPos;
                 set(etc_trace_obj.dragging,'Position',get(etc_trace_obj.dragging,'Position') + [posDiff(1:2) 0 0]);
             end
+            
+            
+            
+            
+            out=get(gca,'CurrentPoint');
+        handles.lineObj=[findobj(gca, 'Type', 'line');findobj(gca, 'Type', 'patch')];
+            set(gca,'NextPlot','replace')
+            set(gcf,'Pointer','fullcrosshair');
+        handles.macro_active=1;
+        handles.xpos0=out(1,1);%--store initial position x
+        handles.ypos0=out(1,2);%--store initial position y
+        xl=get(gca,'XLim');yl=get(gca,'YLim');
+        if ((handles.xpos0 > xl(1) & handles.xpos0 < xl(2)) & (handles.ypos0 > yl(1) & handles.ypos0 < yl(2))) %--disable if outside axes
+            [handles.currentlineObj,handles.currentlinestyle]=line_pickup(handles.lineObj,[out(1,1) out(1,2)]);%--choose the right curve via line_pickup
+            if handles.currentlineObj~=0 %--if curve foundd
+                handles.xData = get(handles.lineObj(handles.currentlineObj), 'XData');%--assign x data
+                handles.yData = get(handles.lineObj(handles.currentlineObj), 'YData');%--assign y data 
+            end
+            handles.currentTitle=get(get(gca, 'Title'), 'String');
+            guidata(gca,handles)
+            
+            title(['[' num2str(out(1,1)) ',' num2str(out(1,2)) ']']);
+        else
+            interactive_move(0);
+        end    
+            
+            
         end;
-        
         
         if(gcf==etc_trace_obj.fig_trace)
             if(~isempty(etc_render_fsbrain))

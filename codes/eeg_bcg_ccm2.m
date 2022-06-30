@@ -176,7 +176,7 @@ D(:,1)=[];
 ccm_IDX=zeros(size(eeg,2),nn).*nan;
 ccm_D=zeros(size(eeg,2),nn).*nan;
 
-for ii=2:max(ecg_idx)-1
+for ii=min(not_nan):max(not_nan)
     ccm_IDX(ecg_onset_idx(ii):ecg_offset_idx(ii),:)=repmat(ecg_onset_idx(IDX(ii,:)),[ecg_offset_idx(ii)-ecg_onset_idx(ii)+1,1])+repmat([0:ecg_offset_idx(ii)-ecg_onset_idx(ii)]',[1,nn]);
     %ccm_IDX(ecg_onset_idx(ii):ecg_offset_idx(ii),:)=repmat(IDX(ii,:),[ecg_offset_idx(ii)-ecg_onset_idx(ii)+1,1]);    
     ccm_D(ecg_onset_idx(ii):ecg_offset_idx(ii),:)=repmat(D(ii,:),[ecg_offset_idx(ii)-ecg_onset_idx(ii)+1,1]);    
@@ -286,8 +286,12 @@ for t_idx=1:size(eeg,2)
                     eeg_manifold_neighbor(:,m_idx,ch_idx,t_idx)=eeg(non_ecg_channel(ch_idx),ecg_onset_idx(IDX(ecg_idx(t_idx),:))+manifold_t_idx(m_idx));
                 end;
                 
-                eeg_manifold_now(:,:,ch_idx,t_idx)=eeg(non_ecg_channel(ch_idx),t_idx+manifold_t_idx); %EEG manifold now
-                eeg_manifold_now_approx(:,ch_idx,t_idx)= squeeze(eeg_manifold_neighbor(:,1,ch_idx,t_idx))'*W'; %approximated cardiac manifold now from nearest neighbors
+                tmp=t_idx+manifold_t_idx;
+                if(min(tmp)<1|max(tmp)>size(eeg,2))
+                else
+                    eeg_manifold_now(:,:,ch_idx,t_idx)=eeg(non_ecg_channel(ch_idx),t_idx+manifold_t_idx); %EEG manifold now
+                    eeg_manifold_now_approx(:,ch_idx,t_idx)= squeeze(eeg_manifold_neighbor(:,1,ch_idx,t_idx))'*W'; %approximated cardiac manifold now from nearest neighbors
+                end;
             catch ME
                 fprintf('Error in BCG CCM prediction!\n');
                 fprintf('t_idx=%d\n',t_idx);
