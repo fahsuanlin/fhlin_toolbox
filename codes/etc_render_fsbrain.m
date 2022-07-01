@@ -686,6 +686,15 @@ if(~isempty(overlay_vol))
         all_idx=[1:prod(overlay_vol.volsize(1:3))];
         %[cort_idx,ii]=unique(sub2ind(overlay_vol.volsize(1:3),vol_vox_tmp(:,2),vol_vox_tmp(:,1),vol_vox_tmp(:,3)));
         
+        
+        for ii=1:size(vol_vox_tmp,2)
+            vol_vox_tmp(find(vol_vox_tmp(:,ii)<1),ii)=nan;
+            vol_vox_tmp(find(vol_vox_tmp(:,ii)>overlay_vol.volsize(ii)),ii)=nan;
+        end;
+        tmp=mean(vol_vox_tmp,2);
+        vol_vox_tmp(find(isnan(tmp)),:)=[];
+        vol_A(hemi_idx).v_idx(find(isnan(tmp)))=[];
+        
         cort_idx=sub2ind(overlay_vol.volsize(1:3),vol_vox_tmp(:,2),vol_vox_tmp(:,1),vol_vox_tmp(:,3));
         ii=[1:length(cort_idx)];
         vol_A(hemi_idx).v_idx=vol_A(hemi_idx).v_idx(ii);
@@ -704,7 +713,9 @@ if(~isempty(overlay_vol))
         vol_A(hemi_idx).loc=all_coords(cort_idx,:);
         vol_A(hemi_idx).wb_loc=all_coords(non_cort_idx,:)./1e3;
                 
-        overlay_vol_value=reshape(overlay_vol.vol,[size(overlay_vol.vol,1)*size(overlay_vol.vol,2)*size(overlay_vol.vol,3), size(overlay_vol.vol,4)]);
+        tmp_value=overlay_vol.vol;
+        %tmp_value=permute(tmp_value,[2 1 3 4]);
+        overlay_vol_value=reshape(tmp_value,[size(overlay_vol.vol,1)*size(overlay_vol.vol,2)*size(overlay_vol.vol,3), size(overlay_vol.vol,4)]);
         
         midx=[cort_idx(:)' non_cort_idx(:)'];
         overlay_vol_stc(offset+1:offset+length(vol_A(hemi_idx).v_idx),:)=overlay_vol_value(midx(1:length(cort_idx)),:);
@@ -1199,6 +1210,15 @@ if(~isempty(etc_render_fsbrain.overlay_stc)&~isempty(etc_render_fsbrain.overlay_
             loc_surf=[etc_render_fsbrain.orig_vertex_coords(vv+1,:) ones(length(vv),1)]';
             tmp=inv(etc_render_fsbrain.vol.tkrvox2ras)*(etc_render_fsbrain.vol_reg)*loc_surf;
             loc_vol=round(tmp(1:3,:))';
+            
+            
+            for ii=1:size(loc_vol,2)
+                loc_vol(find(loc_vol(:,ii)<1),ii)=nan;
+                loc_vol(find(loc_vol(:,ii)>etc_render_fsbrain.vol.volsize(ii)),ii)=nan;
+            end;
+            tmp=mean(loc_vol,2);
+            loc_vol(find(isnan(tmp)),:)=[];
+            
             etc_render_fsbrain.vol_A(1).src_wb_idx=sub2ind(size(etc_render_fsbrain.vol.vol),loc_vol(:,2),loc_vol(:,1),loc_vol(:,3));
             
             etc_render_fsbrain.vol_A(2).loc=[];
@@ -1225,7 +1245,14 @@ if(~isempty(etc_render_fsbrain.overlay_stc)&~isempty(etc_render_fsbrain.overlay_
             loc_surf=[etc_render_fsbrain.orig_vertex_coords(vv+1,:) ones(length(vv),1)]';
             tmp=inv(etc_render_fsbrain.vol.tkrvox2ras)*(etc_render_fsbrain.vol_reg)*loc_surf;
             loc_vol=round(tmp(1:3,:))';
-            etc_render_fsbrain.vol_A(1).src_wb_idx=sub2ind(size(etc_render_fsbrain.vol.vol),loc_vol(:,2),loc_vol(:,1),loc_vol(:,3));
+            for ii=1:size(loc_vol,2)
+                loc_vol(find(loc_vol(:,ii)<1),ii)=nan;
+                loc_vol(find(loc_vol(:,ii)>etc_render_fsbrain.vol.volsize(ii)),ii)=nan;
+            end;
+            tmp=mean(loc_vol,2);
+            loc_vol(find(isnan(tmp)),:)=[];           
+            
+            etc_render_fsbrain.vol_A(2).src_wb_idx=sub2ind(size(etc_render_fsbrain.vol.vol),loc_vol(:,2),loc_vol(:,1),loc_vol(:,3));
     end;
     etc_render_fsbrain.overlay_vol_stc=etc_render_fsbrain.overlay_stc;
 end;
