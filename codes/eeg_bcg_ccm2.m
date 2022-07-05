@@ -146,6 +146,7 @@ for ii=2:max(ecg_idx)-1
 end;
 
 ecg_ccm_idx(find(ecg_ccm_idx(:)>length(ecg)))=nan;
+ecg_ccm_idx(find(ecg_ccm_idx(:)<0))=nan;
 
 %search over ECG cycles
 not_nan=find(~isnan(mean(ecg_ccm_idx,2)));
@@ -177,9 +178,13 @@ ccm_IDX=zeros(size(eeg,2),nn).*nan;
 ccm_D=zeros(size(eeg,2),nn).*nan;
 
 for ii=min(not_nan):max(not_nan)
+    try
     ccm_IDX(ecg_onset_idx(ii):ecg_offset_idx(ii),:)=repmat(ecg_onset_idx(IDX(ii,:)),[ecg_offset_idx(ii)-ecg_onset_idx(ii)+1,1])+repmat([0:ecg_offset_idx(ii)-ecg_onset_idx(ii)]',[1,nn]);
     %ccm_IDX(ecg_onset_idx(ii):ecg_offset_idx(ii),:)=repmat(IDX(ii,:),[ecg_offset_idx(ii)-ecg_onset_idx(ii)+1,1]);    
     ccm_D(ecg_onset_idx(ii):ecg_offset_idx(ii),:)=repmat(D(ii,:),[ecg_offset_idx(ii)-ecg_onset_idx(ii)+1,1]);    
+    catch ME
+        ii
+    end;
 end;
 ccm_IDX(find(ccm_IDX(:)>size(eeg,2)))=nan;
 
