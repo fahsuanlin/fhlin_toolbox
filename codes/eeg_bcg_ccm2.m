@@ -146,7 +146,7 @@ for ii=2:max(ecg_idx)-1
 end;
 
 ecg_ccm_idx(find(ecg_ccm_idx(:)>length(ecg)))=nan;
-ecg_ccm_idx(find(ecg_ccm_idx(:)<0))=nan;
+ecg_ccm_idx(find(ecg_ccm_idx(:)<1))=nan;
 
 %search over ECG cycles
 not_nan=find(~isnan(mean(ecg_ccm_idx,2)));
