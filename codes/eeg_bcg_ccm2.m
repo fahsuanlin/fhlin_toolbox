@@ -159,15 +159,24 @@ else
     %[IDX,D] = knnsearch(v1(ecg_ccm_idx(2:end-1,:)),v1(ecg_ccm_idx(2:end-1,:)),'K',nn+1);
     [IDX,D] = knnsearch(v1(ecg_ccm_idx(not_nan,:)),v1(ecg_ccm_idx(not_nan,:)),'K',nn+1);
 end;
-IDX=IDX+1; %offset by one ECG cycle, because the first ECG cycle is ignored.
+%IDX=IDX+1; %offset by one ECG cycle, because the first ECG cycle is ignored.
+IDX=not_nan(IDX); %IDX back to the full ECG cycles
 
 %append indices for the first and last ECG cycles
-IDX_buffer=ones(size(IDX,1)+2,size(IDX,2)).*nan;
-IDX_buffer(2:end-1,:)=IDX;
+% IDX_buffer=ones(size(IDX,1)+2,size(IDX,2)).*nan;
+% IDX_buffer(2:end-1,:)=IDX;
+% IDX=IDX_buffer;
+% 
+% D_buffer=ones(size(D,1)+2,size(D,2)).*nan;
+% D_buffer(2:end-1,:)=D;
+% D=D_buffer;
+
+IDX_buffer=ones(size(ecg_ccm_idx,1),size(IDX,2)).*nan;
+IDX_buffer(not_nan,:)=IDX;
 IDX=IDX_buffer;
 
-D_buffer=ones(size(D,1)+2,size(D,2)).*nan;
-D_buffer(2:end-1,:)=D;
+D_buffer=ones(size(ecg_ccm_idx,1),size(D,2)).*nan;
+D_buffer(not_nan,:)=D;
 D=D_buffer;
 
 %remove self;
