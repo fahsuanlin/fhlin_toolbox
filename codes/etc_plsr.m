@@ -93,10 +93,14 @@ else
 end;
 
 if(flag_norm_y)
+    mean_y=mean(y,1);
     yy=y-repmat(mean(y,1),[size(y,1),1]);
+    std_y=std(yy,0,1);
     yy=yy./repmat(std(yy,0,1),[size(yy,1),1]);
 else
     yy=y;
+    mean_y=[];
+    std_y=[];
 end;
 
 
@@ -153,6 +157,10 @@ end;
 if(~isempty(X_pred))
     for x_pred_idx=1:size(X_pred,1)
         Y_pred(x_pred_idx,:)=X_pred(x_pred_idx,:)*(P*inv(P'*P))*B*C';
+    end;
+    if(flag_norm_y)
+        tmp=Y_pred.*repmat(std_y,[size(Y_pred,1),1]);
+        Y_pred=tmp+repmat(mean_y,[size(Y_pred,1),1]);
     end;
 end;
 %PLS regression
