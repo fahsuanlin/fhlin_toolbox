@@ -22,7 +22,7 @@ function varargout = etc_trace_trigger_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_trigger_gui
 
-% Last Modified by GUIDE v2.5 17-Apr-2020 16:16:07
+% Last Modified by GUIDE v2.5 09-Jul-2022 22:14:56
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -61,6 +61,14 @@ guidata(hObject, handles);
 % UIWAIT makes etc_trace_trigger_gui wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 global etc_trace_obj;
+
+set(handles.edit_local_trigger_time_idx,'string','');
+set(handles.edit_local_trigger_time,'string','');
+set(handles.edit_local_trigger_class,'string','');
+
+set(handles.listbox_time_idx,'string','');
+set(handles.listbox_time,'string','');
+set(handles.listbox_class,'string','');
 
 if(isempty(etc_trace_obj.trigger)) return; end;
 
@@ -171,56 +179,57 @@ obj_listbox_time=findobj('tag','listbox_time');
 obj_listbox_class=findobj('tag','listbox_class');
 selected_value=get(obj_listbox_time_idx,'Value');
 
-%set class listbox
-obj_listbox_class.Value=selected_value;
-obj_listbox_time.Value=selected_value;
-obj_listbox_time_idx.Value=selected_value;
-
-contents = cellstr(get(obj_listbox_time_idx,'String'));
-etc_trace_obj.time_select_idx=str2num(contents{get(obj_listbox_time_idx,'Value')});
-etc_trace_obj.trigger_time_idx=str2num(contents{get(obj_listbox_time_idx,'Value')});
-contents = cellstr(get(obj_listbox_class,'String'));
-etc_trace_obj.trigger_now=contents{selected_value};
-
-
-hObject=findobj('tag','edit_local_trigger_time_idx');
-set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
-hObject=findobj('tag','edit_local_trigger_time');
-set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
-hObject=findobj('tag','edit_local_trigger_class');
-set(hObject,'String',etc_trace_obj.trigger_now);
-
-%update trigger info in the trace window
-% trigger list box
-all_trigger=get(obj_listbox_class,'String');
-obj_listbox_trigger=findobj('tag','listbox_trigger');
-set(obj_listbox_trigger,'string',unique(all_trigger));
-all_trigger=unique(all_trigger);
-%IndexC = strfind(all_trigger,etc_trace_obj.trigger_now);
-%Index = find(not(cellfun('isempty',IndexC)));
-IndexC = strcmp(all_trigger,etc_trace_obj.trigger_now);
-Index = find(IndexC);
-set(obj_listbox_trigger,'Value',Index);
-
-hObject=findobj('tag','edit_trigger_time_idx');
-set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
-hObject=findobj('tag','edit_trigger_time');
-set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
-
-%
-% etc_trace_obj.data
-% etc_trace_obj.fs
-% etc_trace_obj.time_begin
-% etc_trace_obj.time_select_idx;
-% etc_trace_obj.time_window_begin_idx;
-% etc_trace_obj.time_duration_idx;
-% etc_trace_obj.flag_time_window_auto_adjust=1;
-%
-etc_trcae_gui_update_time;
-
-figure(etc_trace_obj.fig_trigger);
-
-
+if(~isempty(selected_value))
+    %set class listbox
+    obj_listbox_class.Value=selected_value;
+    obj_listbox_time.Value=selected_value;
+    obj_listbox_time_idx.Value=selected_value;
+    
+    contents = cellstr(get(obj_listbox_time_idx,'String'));
+    etc_trace_obj.time_select_idx=str2num(contents{get(obj_listbox_time_idx,'Value')});
+    etc_trace_obj.trigger_time_idx=str2num(contents{get(obj_listbox_time_idx,'Value')});
+    contents = cellstr(get(obj_listbox_class,'String'));
+    etc_trace_obj.trigger_now=contents{selected_value};
+    
+    
+    hObject=findobj('tag','edit_local_trigger_time_idx');
+    set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
+    hObject=findobj('tag','edit_local_trigger_time');
+    set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+    hObject=findobj('tag','edit_local_trigger_class');
+    set(hObject,'String',etc_trace_obj.trigger_now);
+    
+    %update trigger info in the trace window
+    % trigger list box
+    all_trigger=get(obj_listbox_class,'String');
+    obj_listbox_trigger=findobj('tag','listbox_trigger');
+    set(obj_listbox_trigger,'string',unique(all_trigger));
+    all_trigger=unique(all_trigger);
+    %IndexC = strfind(all_trigger,etc_trace_obj.trigger_now);
+    %Index = find(not(cellfun('isempty',IndexC)));
+    IndexC = strcmp(all_trigger,etc_trace_obj.trigger_now);
+    Index = find(IndexC);
+    set(obj_listbox_trigger,'Value',Index);
+    
+    hObject=findobj('tag','edit_trigger_time_idx');
+    set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
+    hObject=findobj('tag','edit_trigger_time');
+    set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+    
+    %
+    % etc_trace_obj.data
+    % etc_trace_obj.fs
+    % etc_trace_obj.time_begin
+    % etc_trace_obj.time_select_idx;
+    % etc_trace_obj.time_window_begin_idx;
+    % etc_trace_obj.time_duration_idx;
+    % etc_trace_obj.flag_time_window_auto_adjust=1;
+    %
+    etc_trcae_gui_update_time;
+    
+    figure(etc_trace_obj.fig_trigger);
+    
+end;
 
 % Hints: contents = cellstr(get(hObject,'String')) returns listbox_time_idx contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from listbox_time_idx
@@ -258,56 +267,59 @@ obj_listbox_time=findobj('tag','listbox_time');
 obj_listbox_class=hObject;
 selected_value=get(obj_listbox_class,'Value');
 
-%set class listbox
-obj_listbox_class.Value=selected_value;
-obj_listbox_time.Value=selected_value;
-obj_listbox_time_idx.Value=selected_value;
-
-contents = cellstr(get(obj_listbox_time_idx,'String'));
-etc_trace_obj.time_select_idx=str2num(contents{get(obj_listbox_time_idx,'Value')});
-etc_trace_obj.trigger_time_idx=str2num(contents{get(obj_listbox_time_idx,'Value')});
-contents = cellstr(get(obj_listbox_class,'String'));
-etc_trace_obj.trigger_now=contents{selected_value};
-
-
-hObject=findobj('tag','edit_local_trigger_time_idx');
-set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
-hObject=findobj('tag','edit_local_trigger_time');
-set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
-hObject=findobj('tag','edit_loca_trigger_class');
-set(hObject,'String',etc_trace_obj.trigger_now);
-
-%update trigger info in the trace window
-% trigger list box
-all_trigger=get(obj_listbox_class,'String');
-obj_listbox_trigger=findobj('tag','listbox_trigger');
-set(obj_listbox_trigger,'string',unique(all_trigger));
-all_trigger=unique(all_trigger);
-%IndexC = strfind(all_trigger,etc_trace_obj.trigger_now);
-%Index = find(not(cellfun('isempty',IndexC)));
-IndexC = strcmp(all_trigger,etc_trace_obj.trigger_now);
-Index = find(IndexC);
-set(obj_listbox_trigger,'Value',Index);
-
-hObject=findobj('tag','edit_trigger_time_idx');
-set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
-hObject=findobj('tag','edit_trigger_time');
-set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
-
-
-%
-% etc_trace_obj.data
-% etc_trace_obj.fs
-% etc_trace_obj.time_begin
-% etc_trace_obj.time_select_idx;
-% etc_trace_obj.time_window_begin_idx;
-% etc_trace_obj.time_duration_idx;
-% etc_trace_obj.flag_time_window_auto_adjust=1;
-%
-etc_trcae_gui_update_time;
-
-figure(etc_trace_obj.fig_trigger);
-
+if(~isempty(selected_value))
+    
+    %set class listbox
+    obj_listbox_class.Value=selected_value;
+    obj_listbox_time.Value=selected_value;
+    obj_listbox_time_idx.Value=selected_value;
+    
+    contents = cellstr(get(obj_listbox_time_idx,'String'));
+    etc_trace_obj.time_select_idx=str2num(contents{get(obj_listbox_time_idx,'Value')});
+    etc_trace_obj.trigger_time_idx=str2num(contents{get(obj_listbox_time_idx,'Value')});
+    contents = cellstr(get(obj_listbox_class,'String'));
+    etc_trace_obj.trigger_now=contents{selected_value};
+    
+    
+    hObject=findobj('tag','edit_local_trigger_time_idx');
+    set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
+    hObject=findobj('tag','edit_local_trigger_time');
+    set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+    hObject=findobj('tag','edit_loca_trigger_class');
+    set(hObject,'String',etc_trace_obj.trigger_now);
+    
+    %update trigger info in the trace window
+    % trigger list box
+    all_trigger=get(obj_listbox_class,'String');
+    obj_listbox_trigger=findobj('tag','listbox_trigger');
+    set(obj_listbox_trigger,'string',unique(all_trigger));
+    all_trigger=unique(all_trigger);
+    %IndexC = strfind(all_trigger,etc_trace_obj.trigger_now);
+    %Index = find(not(cellfun('isempty',IndexC)));
+    IndexC = strcmp(all_trigger,etc_trace_obj.trigger_now);
+    Index = find(IndexC);
+    set(obj_listbox_trigger,'Value',Index);
+    
+    hObject=findobj('tag','edit_trigger_time_idx');
+    set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
+    hObject=findobj('tag','edit_trigger_time');
+    set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+    
+    
+    %
+    % etc_trace_obj.data
+    % etc_trace_obj.fs
+    % etc_trace_obj.time_begin
+    % etc_trace_obj.time_select_idx;
+    % etc_trace_obj.time_window_begin_idx;
+    % etc_trace_obj.time_duration_idx;
+    % etc_trace_obj.flag_time_window_auto_adjust=1;
+    %
+    etc_trcae_gui_update_time;
+    
+    figure(etc_trace_obj.fig_trigger);
+    
+end;
 
 % --- Executes during object creation, after setting all properties.
 function listbox_class_CreateFcn(hObject, eventdata, handles)
@@ -387,6 +399,11 @@ try
         else
             class_now=str;
         end;
+        if(isempty(class_now))
+            fprintf('Trigger class cannot be empty! error!\n');
+            return;
+        end;
+        
         etc_trace_obj.trigger_now=class_now;
         
         if(~isempty(etc_trace_obj.trigger))
@@ -820,56 +837,57 @@ obj_listbox_time=hObject;
 obj_listbox_class=findobj('tag','listbox_class');
 selected_value=get(obj_listbox_time,'Value');
 
-%set class listbox
-obj_listbox_class.Value=selected_value;
-obj_listbox_time.Value=selected_value;
-obj_listbox_time_idx.Value=selected_value;
-
-contents = cellstr(get(obj_listbox_time_idx,'String'));
-etc_trace_obj.time_select_idx=str2num(contents{get(obj_listbox_time_idx,'Value')});
-etc_trace_obj.trigger_time_idx=str2num(contents{get(obj_listbox_time_idx,'Value')});
-contents = cellstr(get(obj_listbox_class,'String'));
-etc_trace_obj.trigger_now=contents{selected_value};
-
-
-hObject=findobj('tag','edit_local_trigger_time_idx');
-set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
-hObject=findobj('tag','edit_local_trigger_time');
-set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
-hObject=findobj('tag','edit_local_trigger_class');
-set(hObject,'String',etc_trace_obj.trigger_now);
-
-%update trigger info in the trace window
-% trigger list box
-all_trigger=get(obj_listbox_class,'String');
-obj_listbox_trigger=findobj('tag','listbox_trigger');
-set(obj_listbox_trigger,'string',unique(all_trigger));
-all_trigger=unique(all_trigger);
-%IndexC = strfind(all_trigger,etc_trace_obj.trigger_now);
-%Index = find(not(cellfun('isempty',IndexC)));
-IndexC = strcmp(all_trigger,etc_trace_obj.trigger_now);
-Index = find(IndexC);
-set(obj_listbox_trigger,'Value',Index);
-
-hObject=findobj('tag','edit_trigger_time_idx');
-set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
-hObject=findobj('tag','edit_trigger_time');
-set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
-
-
-%
-% etc_trace_obj.data
-% etc_trace_obj.fs
-% etc_trace_obj.time_begin
-% etc_trace_obj.time_select_idx;
-% etc_trace_obj.time_window_begin_idx;
-% etc_trace_obj.time_duration_idx;
-% etc_trace_obj.flag_time_window_auto_adjust=1;
-%
-etc_trcae_gui_update_time;
-
-figure(etc_trace_obj.fig_trigger);
-
+if(~isempty(selected_value))
+    %set class listbox
+    obj_listbox_class.Value=selected_value;
+    obj_listbox_time.Value=selected_value;
+    obj_listbox_time_idx.Value=selected_value;
+    
+    contents = cellstr(get(obj_listbox_time_idx,'String'));
+    etc_trace_obj.time_select_idx=str2num(contents{get(obj_listbox_time_idx,'Value')});
+    etc_trace_obj.trigger_time_idx=str2num(contents{get(obj_listbox_time_idx,'Value')});
+    contents = cellstr(get(obj_listbox_class,'String'));
+    etc_trace_obj.trigger_now=contents{selected_value};
+    
+    
+    hObject=findobj('tag','edit_local_trigger_time_idx');
+    set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
+    hObject=findobj('tag','edit_local_trigger_time');
+    set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+    hObject=findobj('tag','edit_local_trigger_class');
+    set(hObject,'String',etc_trace_obj.trigger_now);
+    
+    %update trigger info in the trace window
+    % trigger list box
+    all_trigger=get(obj_listbox_class,'String');
+    obj_listbox_trigger=findobj('tag','listbox_trigger');
+    set(obj_listbox_trigger,'string',unique(all_trigger));
+    all_trigger=unique(all_trigger);
+    %IndexC = strfind(all_trigger,etc_trace_obj.trigger_now);
+    %Index = find(not(cellfun('isempty',IndexC)));
+    IndexC = strcmp(all_trigger,etc_trace_obj.trigger_now);
+    Index = find(IndexC);
+    set(obj_listbox_trigger,'Value',Index);
+    
+    hObject=findobj('tag','edit_trigger_time_idx');
+    set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
+    hObject=findobj('tag','edit_trigger_time');
+    set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+    
+    
+    %
+    % etc_trace_obj.data
+    % etc_trace_obj.fs
+    % etc_trace_obj.time_begin
+    % etc_trace_obj.time_select_idx;
+    % etc_trace_obj.time_window_begin_idx;
+    % etc_trace_obj.time_duration_idx;
+    % etc_trace_obj.flag_time_window_auto_adjust=1;
+    %
+    etc_trcae_gui_update_time;
+    
+    figure(etc_trace_obj.fig_trigger);
+end;
 
 % --- Executes during object creation, after setting all properties.
 function edit_local_trigger_time_CreateFcn(hObject, eventdata, handles)
@@ -1378,4 +1396,3 @@ if(strcmp(answer,'clear'))
     
     
 end;
-

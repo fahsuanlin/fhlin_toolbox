@@ -198,6 +198,22 @@ switch lower(param)
                 pp1=get(etc_trace_obj.fig_trace,'outerpos');
                 set(etc_trace_obj.fig_trigger,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
                 set(etc_trace_obj.fig_trigger,'Resize','off');
+            case 'i'
+                fprintf('show intervals....\n');
+                if(isfield(etc_trace_obj,'fig_interval'))
+                    etc_trace_obj.fig_interval=[];
+                end;
+                etc_trace_obj.fig_interval=etc_trace_interval_gui;
+
+                set(etc_trace_obj.fig_interval,'Name','interval','resize','off');
+
+                set(etc_trace_obj.fig_interval,'units','pixel');
+                set(etc_trace_obj.fig_trace,'units','pixel');
+
+                pp0=get(etc_trace_obj.fig_interval,'outerpos');
+                pp1=get(etc_trace_obj.fig_trace,'outerpos');
+                set(etc_trace_obj.fig_interval,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
+                set(etc_trace_obj.fig_interval,'Resize','off');
                 
             case 'f'
                 fprintf('show configuration....\n');
@@ -741,9 +757,22 @@ switch lower(param)
         clickType = get(gcf, 'SelectionType');
         if(strcmp(clickType,'extend'))
             % right mouse clicked!!
-            fprintf('button up!!\n');
+            %fprintf('button up!!\n');
             etc_trace_obj.dragging = [];
         end;
+        
+        set(gcf, 'windowbuttonmotionfcn', '');
+        set(gca, 'xlimmode','auto');
+
+        handles=guidata(gca);
+
+        if(isfield(handles,'rectangle'))
+            delete(handles.rectangle);
+        end;
+        handles.rectangle=[];
+        
+        guidata(gca,handles);
+
     case 'bd'
         global etc_render_fsbrain;
         global etc_trace_obj;
@@ -1013,41 +1042,38 @@ switch lower(param)
             end;
             figure(etc_trace_obj.fig_trace);
         else %middle mouse click
-            fprintf('middle button down!!\n');
+            %fprintf('middle button down!!\n');
             
             ylim=get(etc_trace_obj.axis_trace,'ylim');
 
-            if ~isempty(etc_trace_obj.dragging)
-                newPos = get(etc_trace_obj.fig_trace,'CurrentPoint');
-                posDiff = newPos - etc_trace_obj.orPos;
-                etc_trace_obj.orPos = newPos;
-                set(etc_trace_obj.dragging,'Position',get(etc_trace_obj.dragging,'Position') + [posDiff(1:2) 0 0]);
-            end
+%             if ~isempty(etc_trace_obj.dragging)
+%                 newPos = get(etc_trace_obj.fig_trace,'CurrentPoint');
+%                 posDiff = newPos - etc_trace_obj.orPos;
+%                 etc_trace_obj.orPos = newPos;
+%                 set(etc_trace_obj.dragging,'Position',get(etc_trace_obj.dragging,'Position') + [posDiff(1:2) 0 0]);
+%             end
             
             
-            
+            %dragging
+            set(gcf, 'windowbuttonmotionfcn', {@myclick,2});
+            set(gca, 'xlimmode','manual');
             
             out=get(gca,'CurrentPoint');
-        handles.lineObj=[findobj(gca, 'Type', 'line');findobj(gca, 'Type', 'patch')];
             set(gca,'NextPlot','replace')
             set(gcf,'Pointer','fullcrosshair');
-        handles.macro_active=1;
-        handles.xpos0=out(1,1);%--store initial position x
-        handles.ypos0=out(1,2);%--store initial position y
-        xl=get(gca,'XLim');yl=get(gca,'YLim');
-        if ((handles.xpos0 > xl(1) & handles.xpos0 < xl(2)) & (handles.ypos0 > yl(1) & handles.ypos0 < yl(2))) %--disable if outside axes
-            [handles.currentlineObj,handles.currentlinestyle]=line_pickup(handles.lineObj,[out(1,1) out(1,2)]);%--choose the right curve via line_pickup
-            if handles.currentlineObj~=0 %--if curve foundd
-                handles.xData = get(handles.lineObj(handles.currentlineObj), 'XData');%--assign x data
-                handles.yData = get(handles.lineObj(handles.currentlineObj), 'YData');%--assign y data 
+            handles.macro_active=1;
+            handles.xpos0=out(1,1);%--store initial position x
+            handles.ypos0=out(1,2);%--store initial position y
+            xl=get(gca,'XLim');yl=get(gca,'YLim');
+            if ((handles.xpos0 > xl(1) & handles.xpos0 < xl(2)) & (handles.ypos0 > yl(1) & handles.ypos0 < yl(2))) %--disable if outside axes
+                handles.rectangle=[];
+                %handles.currentTitle=get(get(gca, 'Title'), 'String');
+                guidata(gca,handles)
+                
+                %title(['[' num2str(out(1,1)) ',' num2str(out(1,2)) ']']);
+            else
+                
             end
-            handles.currentTitle=get(get(gca, 'Title'), 'String');
-            guidata(gca,handles)
-            
-            title(['[' num2str(out(1,1)) ',' num2str(out(1,2)) ']']);
-        else
-            interactive_move(0);
-        end    
             
             
         end;
@@ -1208,7 +1234,7 @@ end;
 
 % if((etc_trace_obj.time_begin_idx>=1)&&(etc_trace_obj.time_end_idx<=size(etc_trace_obj.data,2)))
 %     tmp=etc_trace_obj.data(:,etc_trace_obj.time_begin_idx:etc_trace_obj.time_end_idx);
-% elseif((etc_trace_obj.time_begin_idx<1)&&(etc_trace_obj.time_end_idx<=size(etc_trace_obj.data,2)))
+% elseif((etc_trace_obj.time_begin_idx<1)&&(etc_trace_obj.time_end_idx<=size(etc_trace_obj.d'ta,2)))
 %     tmp=etc_trace_obj.data(:,1:etc_trace_obj.time_end_idx);
 % elseif((etc_trace_obj.time_begin_idx>=1)&&(etc_trace_obj.time_end_idx>size(etc_trace_obj.data,2)))
 %     tmp=etc_trace_obj.data(:,etc_trace_obj.time_begin_idx:end);
@@ -1573,7 +1599,105 @@ redraw;
 
 etc_trace_handle('bd');
 
-return;
 
+
+function myclick(h,event,type)
+global etc_trace_obj;
+
+handles=guidata(gca);
+switch type
+    case 1 %---Button down
+        out=get(gca,'CurrentPoint');
+        %handles.lineObj=[findobj(gca, 'Type', 'line');findobj(gca, 'Type', 'patch')];
+        set(gca,'NextPlot','replace')
+        set(gcf,'Pointer','fullcrosshair');
+        handles.macro_active=1;
+        handles.xpos0=out(1,1);%--store initial position x
+        handles.ypos0=out(1,2);%--store initial position y
+        xl=get(gca,'XLim');yl=get(gca,'YLim');
+        if ((handles.xpos0 > xl(1) & handles.xpos0 < xl(2)) & (handles.ypos0 > yl(1) & handles.ypos0 < yl(2))) %--disable if outside axes
+            
+            handles.currentTitle=get(get(gca, 'Title'), 'String');
+            guidata(gca,handles)
+            
+            title(['[' num2str(out(1,1)) ',' num2str(out(1,2)) ']']);
+        else
+            %interactive_move(0);
+        end
+    case 2%---Button Move
+        if handles.macro_active
+            out=get(gca,'CurrentPoint');
+            set(gcf,'Pointer','fullcrosshair');
+            %title(['[' num2str(out(1,1)) ',' num2str(out(1,2)) ']']);
+            fprintf('[ %s , %s ]\r ',num2str(out(1,1)), num2str(out(1,2)));
+            
+            
+            if(~isempty(handles.rectangle))
+                delete(handles.rectangle);
+            end;
+            
+            %handles.xpos0=out(1,1);%--store initial position x
+            %handles.ypos0=out(1,2);%--store initial position y
+            ylim=get(gca,'ylim');
+            
+            
+            x1=min([handles.xpos0 out(1,1)]);
+            x2=max([handles.xpos0 out(1,1)]);
+            %y1=min([handles.ypos0 out(1,2)]);
+            %y2=max([handles.ypos0 out(1,2)]);
+            y1=min(ylim);
+            y2=max(ylim);
+            
+            %set(handles.rectangle,'edgecolor','none','facecolor',[0.8500 0.3250 0.0980]);
+            handles.rectangle = patch('vertices', [x1 y1; x2 y1; x2 y2; x1 y2], ...
+                'faces', [1, 2, 3, 4], ...
+                'FaceColor', [0.8500 0.3250 0.0980], ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', 0.1);
+            
+            global hh;
+            hh=handles.rectangle;
+            
+            guidata(gca,handles)
+            
+            
+            %update trigger GUI
+            hObject=findobj('tag','edit_local_interval_on_time_idx');
+            set(hObject,'String',num2str(round(x1)));
+            hObject=findobj('tag','edit_local_interval_off_time_idx');
+            set(hObject,'String',num2str(round(x2)));
+            hObject=findobj('tag','edit_local_interval_on_time');
+            set(hObject,'String',num2str((round(x1)-1)/etc_trace_obj.fs+etc_trace_obj.time_begin));
+            hObject=findobj('tag','edit_local_interval_off_time');
+            set(hObject,'String',num2str((round(x2)-1)/etc_trace_obj.fs+etc_trace_obj.time_begin));
+            %hObject=findobj('tag','edit_local_interval_on_time');
+            %set(hObject,'String',(etc_trace_obj.time_select_idx-1)/etc_trace_obj.fs+etc_trace_obj.time_begin);
+%             if(isfield(etc_trace_obj,'trigger_now'))
+%                 if(~isempty(etc_trace_obj.trigger_now))
+%                     hObject=findobj('tag','edit_local_trigger_class');
+%                     set(hObject,'String',num2str(etc_trace_obj.trigger_now));
+%                 else
+%                     fprintf('now the trigger is set for "def_0" (default trigger name)!\n');
+%                     etc_trace_obj.trigger_now='def_0'; %default event name
+%                     hObject=findobj('tag','edit_local_trigger_class');
+%                     set(hObject,'String',num2str(etc_trace_obj.trigger_now));
+%                 end;
+%             end;
+            
+        end
+        
+    case 3 %----Button up (cleanup some variable)
+        set(gcf,'Pointer','arrow');
+        set(gca,'NextPlot','add')
+        %if handles.currentlineObj~=0,set(handles.lineObj(handles.currentlineObj),'LineStyle',handles.currentlinestyle),end
+        handles.macro_active=0;
+        handles.key='';
+        %title(handles.currentTitle);
+        guidata(gca,handles)
+        
+    case 4 %----Button press
+        handles.key=get(gcf,'CurrentCharacter');
+        guidata(gca,handles)
+end;
 
 

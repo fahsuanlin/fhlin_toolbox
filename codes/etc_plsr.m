@@ -1,4 +1,4 @@
-function [W, P, T, C, U, Y_pred, B]=etc_plsr(x,y,varargin)
+function [W, P, T, C, U, Y_pred, B,yy_est]=etc_plsr(x,y,varargin)
 % etc_plsr    Partial least squares regression
 %
 % [W, P, T, C, U, Y_pred, B]=etc_plsr(X,Y,[option1, option_value1,...])
@@ -31,6 +31,8 @@ U=[];
 
 X_pred=[];
 Y_pred=[];
+
+yy_est=[];
 
 flag_norm_x=1; %normalize x to be z-scores
 flag_norm_y=1; %normalize y to be z-scores
@@ -86,8 +88,16 @@ end;
 
 %centralize data by getting z-scores
 if(flag_norm_x)
+    mean_x=mean(x,1);
     xx=x-repmat(mean(x,1),[size(x,1),1]);
-    xx=xx./repmat(std(xx,0,1),[size(xx,1),1]);
+    std_x=std(xx,0,1);
+    std_x_nan=find(std_x<eps);
+    std_x(std_x_nan)=1;
+    xx=xx./repmat(std_x,[size(xx,1),1]);
+    if(~isempty(X_pred))
+        X_pred=X_pred-repmat(mean_x,[size(X_pred,1),1]);
+        X_pred=X_pred./repmat(std_x,[size(X_pred,1),1]);
+    end;
 else
     xx=x;
 end;
@@ -151,6 +161,13 @@ for idx=1:n_comp
     yy_pred=t1*(t1'*u1)*cc(:,1)';
     yy=yy-yy_pred;
     B(idx,idx)=t1'*u1;  
+end;
+
+Bpls=pinv(P')*B*C';
+yy_est=xx0*Bpls;
+if(flag_norm_y)
+     tmp=yy_est.*repmat(std_y,[size(yy_est,1),1]);
+     yy_est=tmp+repmat(mean_y,[size(yy_est,1),1]);
 end;
 
 %making prediction

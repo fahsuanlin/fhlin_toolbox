@@ -16,6 +16,8 @@ h=[];
 
 trace_selected_idx=[];
 
+interval=[];
+
 trigger=[];
 aux_data={};
 aux_data_name={};
@@ -43,6 +45,8 @@ config_aux_trace_width=1;
 config_aux_trace_color=[0.8500    0.3250    0.0980];
 config_aux_trace_flag=1;
 config_current_time_color=[1 0 1]; %magenta
+config_current_interval_color=[0.8500 0.3250 0.0980]; %gray
+config_current_interval_flag=1;
 config_current_trigger_color=[1 1 1].*0.6; %gray
 config_current_trigger_flag=1;
 config_current_time_flag=1;
@@ -63,6 +67,8 @@ for i=1:length(varargin)/2
             time_select_idx=option_value;
         case 'trigger'
             trigger=option_value;
+        case 'interval'
+            interval=option_value;
         case 'trace_selected_idx'
             trace_selected_idx=option_value;
         case 'ch_names'
@@ -101,6 +107,10 @@ for i=1:length(varargin)/2
             config_aux_trace_flag=option_value;
         case 'config_current_time_color'
             config_current_time_color=option_value;
+        case 'config_current_interval_color'
+            config_current_interval_color=option_value;
+        case 'config_current_interval_flag'
+            config_current_interval_flag=option_value;
         case 'config_current_trigger_color'
             config_current_trigger_color=option_value;
         case 'config_current_trigger_flag'
@@ -153,6 +163,19 @@ etc_trace_obj.time_duration_idx=round(duration.*fs);
 etc_trace_obj.time_window_begin_idx=1;
 etc_trace_obj.flag_time_window_auto_adjust=1;
 
+
+if(~isempty(interval))
+    if(isfield(interval,'event'))
+        if(~iscell(interval.event))
+            str={};
+            for idx=1:length(interval.event)
+                str{idx}=sprintf('%d',interval.event(idx));
+            end;
+            interval.event=str;
+        end;
+    end;
+end;
+etc_trace_obj.interval=interval;
 
 if(~isempty(trigger))
     if(isfield(trigger,'event'))
@@ -291,6 +314,8 @@ etc_trace_obj.config_aux_trace_width=config_trace_width;
 etc_trace_obj.config_aux_trace_color=config_aux_trace_color;
 etc_trace_obj.config_aux_trace_flag=config_aux_trace_flag;
 etc_trace_obj.config_current_time_color=config_current_time_color;
+etc_trace_obj.config_current_interval_color=config_current_interval_color;
+etc_trace_obj.config_current_interval_flag=config_current_interval_flag;
 etc_trace_obj.config_current_trigger_color=config_current_trigger_color;
 etc_trace_obj.config_current_trigger_flag=config_current_trigger_flag;
 etc_trace_obj.config_current_time_flag=config_current_time_flag;
@@ -300,6 +325,8 @@ etc_trace_obj.montage_ch_name={};
 
 etc_trace_obj.fig_topology=figure('visible','off');
 delete(etc_trace_obj.fig_topology); %make it invalid
+etc_trace_obj.fig_interval=figure('visible','off');
+delete(etc_trace_obj.fig_interval); %make it invalid
 etc_trace_obj.fig_trigger=figure('visible','off');
 delete(etc_trace_obj.fig_trigger); %make it invalid
 etc_trace_obj.fig_montage=figure('visible','off');
