@@ -12,6 +12,8 @@ bcg_nsvd=4;
 bcg_post_nsvd=2;
 n_ma_bcg=21;
 
+qrs_i_raw=[];
+
 fig_bcg=[];
 flag_dyn_bcg=1;
 flag_post_ssp=0;
@@ -62,6 +64,8 @@ for i=1:length(varargin)/2
             flag_pan_tompkin2=option_value;
         case 'trigger'
             trigger=option_value;
+        case 'qrs_i_raw'
+            qrs_i_raw=option_value;
         otherwise
             fprintf('unknown option [%s]...\n',option);
             fprintf('error!\n');
@@ -78,10 +82,14 @@ if(flag_display) fprintf('detecting EKG peaks...\n'); end;
 %[qrs_amp_raw,qrs_i_raw,delay]=pan_tompkin(ecg,fs,flag_display,'flag_fhlin',1);
 %[pks,qrs_i_raw] = findpeaks(ecg,'MINPEAKDISTANCE',round(0.7*fs));
 
-if(flag_pan_tompkin2)
-    [pks,qrs_i_raw] =pan_tompkin2(ecg,fs);
+if(isempty(qrs_i_raw))
+    if(flag_pan_tompkin2)
+        [pks,qrs_i_raw] =pan_tompkin2(ecg,fs);
+    else
+        [pks,qrs_i_raw] =pan_tompkin(ecg,fs,0,'flag_fhlin',1);
+    end;
 else
-    [pks,qrs_i_raw] =pan_tompkin(ecg,fs,0,'flag_fhlin',1);
+    
 end;
 
 BCG_tPre_sample=round(BCG_tPre.*fs);
@@ -355,7 +363,8 @@ for ch_idx=1:length(non_ecg_channel)
                     y=bcg_all{non_ecg_channel(ch_idx)}(trial_idx,:)';
 
                     if(size(bcg_all{non_ecg_channel(ch_idx)},1)<=n_ma_bcg)
-                        trial_sel=[1:n_ma_bcg];
+                        %trial_sel=[1:n_ma_bcg];
+                        trial_sel=[1:size(bcg_all{non_ecg_channel(ch_idx)},1)];
                     else
                         if(trial_idx<=round((n_ma_bcg-1)/2))
                             trial_sel=[1:n_ma_bcg];
