@@ -69,7 +69,7 @@ if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_
     etc_render_fsbrain.label_ctab.numEntries=etc_render_fsbrain.label_ctab.numEntries+1;
     etc_render_fsbrain.label_ctab.struct_names{end+1}=file_label;
     if(isempty(cort_label_color))
-        switch mod(maxx+1,5)
+        switch mod(maxx+1,5)+1
             case 1
                 etc_render_fsbrain.label_ctab.table(end+1,:)=[0*256   0.4470*256   0.741*256         0        maxx+1];
             case 2
@@ -102,7 +102,6 @@ else
     
     etc_render_fsbrain.label_register=1;
 end;
-
 
 etc_render_fsbrain_handle('update_label');
 
