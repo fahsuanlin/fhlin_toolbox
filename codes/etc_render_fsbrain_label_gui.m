@@ -108,10 +108,15 @@ try
         contents = cellstr(get(hObject,'String'));
         select_idx=get(hObject,'Value');
         
-        fprintf('label <<%s>> selected\n',contents{get(hObject,'Value')})
         
         etc_render_fsbrain.label_register(select_idx)=1-etc_render_fsbrain.label_register(select_idx);
         set(hObject,'Value',find(etc_render_fsbrain.label_register));
+        
+        if( etc_render_fsbrain.label_register(select_idx))
+            fprintf('label <<%s>> selected\n',contents{get(hObject,'Value')})
+        else
+            fprintf('label <<%s>> un-selected\n',contents{get(hObject,'Value')})
+        end;
         
         try
             for ss=1:length(etc_render_fsbrain.label_register)    
