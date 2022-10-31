@@ -945,6 +945,24 @@ switch lower(param)
                                         etc_render_fsbrain.label_register=zeros(1,length(etc_render_fsbrain.label_ctab.struct_names));
                                     end;
                                 end;
+                                
+                                %create ROI boundary
+                                ss=size(etc_render_fsbrain.label_ctab.table,1);
+                                label_number=etc_render_fsbrain.label_ctab.table(ss,5);
+                                vidx=find((etc_render_fsbrain.label_value)==label_number);
+                                boundary_face_idx=find(sum(ismember(etc_render_fsbrain.faces,vidx-1),2)==2); %face indices at the boundary of the selected label; two vertices out of three are the selected label
+                                for b_idx=1:length(boundary_face_idx)
+                                    boundary_face_vertex_idx=find(ismember(etc_render_fsbrain.faces(boundary_face_idx(b_idx),:),vidx-1)); %find vertices of a boundary face within a label
+                                    etc_render_fsbrain.h_label_boundary{ss}(b_idx)=line(...
+                                        etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,1)',...
+                                        etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,2)',...
+                                        etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,3)');
+                                    
+                                    set(etc_render_fsbrain.h_label_boundary{ss}(b_idx),'linewidth',2,'color',etc_render_fsbrain.cort_label_boundary_color,'visible','off');
+                                end;
+                                
+                                update_label;
+                                
                             end;
                         case '.nii' %AAL
                             file_annot=sprintf('%s/%s',pathname,filename);
