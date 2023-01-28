@@ -141,6 +141,8 @@ label_value=[];
 label_ctab=[];
 file_annot='';
 
+%ROI label
+cort_label_filename='';
 flag_show_cort_label=1; %show solid labels
 flag_show_cort_label_boundary=1; %show label boundary
 cort_label_boundary_color=[0 0 1]; %label boundary color
@@ -344,6 +346,8 @@ for idx=1:length(varargin)/2
             label_value=option_value;
         case 'label_ctab'
             label_ctab=option_value;
+        case 'cort_label_filename'
+            cort_label_filename=option_value;
         case 'cort_label_boundary_color'
             cort_label_boundary_color=option_value;
         case 'flag_show_cort_label';
@@ -988,6 +992,12 @@ if(~isempty(label_vertex)&&~isempty(label_value)&&~isempty(label_ctab))
     
 end;
 
+
+
+
+
+
+
 %figure position
 set(0,'units','pixels')  
 Pix_SS = get(0,'screensize');
@@ -1194,6 +1204,46 @@ etc_render_fsbrain.h_colorbar_vol=[];
 etc_render_fsbrain.h_colorbar_vol_pos=[];
 etc_render_fsbrain.h_colorbar_vol_neg=[];
 etc_render_fsbrain.brain_axis_pos=[];
+
+
+
+%ROI label
+if(~isempty(cort_label_filename))
+
+    file_label=sprintf('%s/%s','.',cort_label_filename);
+    [ii,d0,d1,d2, vv] = inverse_read_label(file_label);
+
+
+    etc_render_fsbrain.label_vertex=zeros(size(etc_render_fsbrain.vertex_coords_hemi,1),1);
+    etc_render_fsbrain.label_vertex(ii+1)=1;
+    etc_render_fsbrain.label_value=zeros(size(etc_render_fsbrain.vertex_coords_hemi,1),1);
+    etc_render_fsbrain.label_value(ii+1)=1;
+    s.numEntries=1;
+    s.orig_tab='';
+    s.struct_names={cort_label_filename};
+    s.table=[0*256   0.4470*256   0.741*256         0        1];
+    etc_render_fsbrain.label_ctab=s;
+
+    etc_render_fsbrain.label_register=1;
+
+
+    %create ROI boundary
+    ss=size(etc_render_fsbrain.label_ctab.table,1);
+    label_number=etc_render_fsbrain.label_ctab.table(ss,5);
+    vidx=find((etc_render_fsbrain.label_value)==label_number);
+    boundary_face_idx=find(sum(ismember(etc_render_fsbrain.faces,vidx-1),2)==2); %face indices at the boundary of the selected label; two vertices out of three are the selected label
+    for b_idx=1:length(boundary_face_idx)
+        boundary_face_vertex_idx=find(ismember(etc_render_fsbrain.faces(boundary_face_idx(b_idx),:),vidx-1)); %find vertices of a boundary face within a label
+        etc_render_fsbrain.h_label_boundary{ss}(b_idx)=line(...
+            etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,1)',...
+            etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,2)',...
+            etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,3)');
+
+        set(etc_render_fsbrain.h_label_boundary{ss}(b_idx),'linewidth',2,'color',etc_render_fsbrain.cort_label_boundary_color,'visible','off');
+    end;
+
+    etc_render_fsbrain_handle('update_label');
+end;
 
 
 

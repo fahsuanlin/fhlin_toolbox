@@ -112,6 +112,56 @@ switch lower(param)
                 
                 set(etc_render_fsbrain.fig_subject,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
                 set(etc_render_fsbrain.fig_subject,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
+
+            case 'j'
+                fprintf('\nswitch hemisphere...\n');
+                try
+                    if(strcmp(etc_render_fsbrain.hemi,'lh'))
+                        %change to RH
+                        etc_render_fsbrain.hemi='rh';
+                    else
+                        %change to LH
+                        etc_render_fsbrain.hemi='lh';
+                    end;
+
+                    subjects_dir=getenv('SUBJECTS_DIR');
+
+                    file_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,etc_render_fsbrain.subject,etc_render_fsbrain.hemi,etc_render_fsbrain.surf);
+
+                    [vv, ff] = read_surf(file_surf);
+
+                    etc_render_fsbrain.vertex_coords_hemi=vv;
+                    etc_render_fsbrain.faces_hemi=ff;
+
+                    etc_render_fsbrain.faces=ff;
+                    etc_render_fsbrain.vertex_coords=vv;
+
+                    file_orig_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,etc_render_fsbrain.subject,etc_render_fsbrain.hemi,'orig');
+
+                    [vv, ff] = read_surf(file_orig_surf);
+                    etc_render_fsbrain.orig_vertex_coords_hemi=vv;
+                    etc_render_fsbrain.orig_faces_hemi=ff;
+
+                    etc_render_fsbrain.orig_faces=ff;
+                    etc_render_fsbrain.orig_vertex_coords=vv;
+
+
+                    if(~isempty(etc_render_fsbrain.curv))
+                        file_curv=sprintf('%s/%s/surf/%s.%s',subjects_dir,etc_render_fsbrain.subject,etc_render_fsbrain.hemi,'curv');
+                        if(exist(file_curv))
+                            [curv]=read_curv(file_curv);
+                        else
+                            curv=[];
+                        end;
+                        etc_render_fsbrain.curv=curv;
+                    end;
+
+
+                    redraw;
+
+                catch
+                end;
+
             case 'i'
                 fprintf('\nload overlay volume...\n');
                 
@@ -1393,7 +1443,7 @@ switch lower(param)
                 [vv date] = version;
                 DateNumber = datenum(date);
                 if(DateNumber>737426) %after January 1, 2019; Matlab verion 2019 and later
-                    addToolbarExplorationButtons(etc_render_fsbrain.fig_vol);
+                    addToolbarExplorationButtons(etc_render_fsbrain.fig_brain);
                 end;
                 
                 etc_render_fsbrain.flag_overlay_stc_surf=1;
@@ -1421,6 +1471,8 @@ switch lower(param)
                                 end;
                             end;
                         end;
+                    else
+                        fprintf('no overlay_stc_timeVec field in the etc_render_fsbrain object!\n')
                     end;
                 end;
                 %redraw;
@@ -3361,10 +3413,14 @@ try
                         etc_render_fsbrain.aux2_point_coords_h(idx)=plot3(xx(idx),yy(idx),zz(idx),'.');
                         if(isfield(etc_render_fsbrain,'aux2_point_individual_color'))
                             try
-                                set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_individual_color(idx,:),'markersize',etc_render_fsbrain.aux2_point_size);
+                                if(isfield(etc_render_fsbrain,'aux2_point_individual_size'))
+                                    set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_individual_color(idx,:),'markersize',etc_render_fsbrain.aux2_point_individual_size(idx));
+                                else
+                                    set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_individual_color(idx,:),'markersize',etc_render_fsbrain.aux2_point_size);
+                                end;
                             catch ME
                             end
-                            set(etc_render_fsbrain.aux2_point_coords_h(idx),'markersize',etc_render_fsbrain.aux2_point_size);
+                            %set(etc_render_fsbrain.aux2_point_coords_h(idx),'markersize',etc_render_fsbrain.aux2_point_size);
                         else
                             electrode_idx=min(find((idx>n_e_cumsum)<eps));
                             if(isfield(etc_render_fsbrain.electrode(electrode_idx),'color'))
