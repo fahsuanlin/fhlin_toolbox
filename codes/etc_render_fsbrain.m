@@ -370,6 +370,12 @@ for idx=1:length(varargin)/2
             click_vertex_point_size=option_value;
         case 'click_vertex_point_color'
             click_vertex_point_color=option_value;
+        case 'selected_electrode_flag'
+            selected_electrode_flag=option_value;
+        case 'selected_contact_flag'
+            selected_contact_flag=option_value;
+        case 'aux2_point_individual_color'
+            aux2_point_individual_color=option_value;
         case 'pt'
             pt=option_value;
         otherwise
@@ -668,7 +674,7 @@ if(~isempty(overlay_vol))
         
         %choose 10,242 sources arbitrarily for cortical soruces
         %vol_A(hemi_idx).v_idx=[1:10242]-1;
-        vol_A(hemi_idx).v_idx=[1:10:size(orig_vertex_coords,1)]-1;
+        vol_A(hemi_idx).v_idx=[1:1:size(orig_vertex_coords,1)]-1;
         
         vol_A(hemi_idx).vertex_coords=vertex_coords;
         vol_A(hemi_idx).faces=faces;
@@ -1169,6 +1175,7 @@ etc_render_fsbrain.aux2_point_color_e=topo_aux2_point_color_e;
 etc_render_fsbrain.aux2_point_size_e=topo_aux2_point_size_e;
 etc_render_fsbrain.aux2_point_color_c=topo_aux2_point_color_c;
 etc_render_fsbrain.aux2_point_size_c=topo_aux2_point_size_c;
+etc_render_fsbrain.aux2_point_individual_color=aux2_point_individual_color;
 
 etc_render_fsbrain.selected_electrode_size=selected_electrode_size;
 etc_render_fsbrain.selected_electrode_flag=selected_electrode_flag;

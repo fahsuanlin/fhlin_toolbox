@@ -2,7 +2,7 @@ function talxfm=etc_read_xfm(varargin)
 
 talxfm=[];
 
-subject_dir=[];
+subjects_dir=[];
 subject=[];
 file_xfm='';
 
@@ -10,8 +10,8 @@ for idx=1:length(varargin)/2
     option=varargin{idx*2-1};
     option_value=varargin{idx*2};
     switch lower(option)
-        case 'subject_dir'
-            subject=option_value;
+        case 'subjects_dir'
+            subjects_dir=option_value;
         case 'subject'
             subject=option_value;
         case 'file_xfm'
@@ -22,10 +22,13 @@ for idx=1:length(varargin)/2
     end;
 end
 
+if(isempty(subjects_dir))
 if(~isempty(getenv('SUBJECTS_DIR')))
     fprintf('environment variable "SUBJECTS_DIR" was set to [%s].\n',getenv('SUBJECTS_DIR'));
     subjects_dir=getenv('SUBJECTS_DIR');
 end;
+end;
+
 if(~isempty(subject))
     fprintf('subject [%s] was set.\n',subject);
 end;
