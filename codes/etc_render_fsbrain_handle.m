@@ -3411,8 +3411,22 @@ try
                     
                     for idx=1:size(etc_render_fsbrain.aux2_point_coords,1)
                         etc_render_fsbrain.aux2_point_coords_h(idx)=plot3(xx(idx),yy(idx),zz(idx),'.');
+
+                        if(isempty(etc_render_fsbrain.aux2_point_name_h))
+                            UserData.name=sprintf('%04d',idx);
+                            set(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData',UserData);
+                        else
+                            UserData.name=etc_render_fsbrain.aux2_point_name_h(idx).String;
+                            set(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData',UserData);
+                        end;
+
+                        set(etc_render_fsbrain.aux2_point_coords_h(idx),'ButtonDownFcn',@aux2_point_click);
                         if(isfield(etc_render_fsbrain,'aux2_point_individual_color'))
                             try
+                                UserData=get(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData');
+                                UserData.color=etc_render_fsbrain.aux2_point_individual_color(idx,:);
+                                set(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData',UserData);
+                        
                                 if(isfield(etc_render_fsbrain,'aux2_point_individual_size'))
                                     set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_individual_color(idx,:),'markersize',etc_render_fsbrain.aux2_point_individual_size(idx));
                                 else
@@ -3425,11 +3439,31 @@ try
                             electrode_idx=min(find((idx>n_e_cumsum)<eps));
                             if(isfield(etc_render_fsbrain.electrode(electrode_idx),'color'))
                                 if(~isempty(etc_render_fsbrain.electrode(electrode_idx).color))
+
+                                    UserData=get(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData');
+                                    UserData.color=etc_render_fsbrain.etc_render_fsbrain.electrode(electrode_idx).color;
+                                    set(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData',UserData);
+
+                                    etc_render_fsbrain.aux2_point_individual_color(idx,:)=etc_render_fsbrain.electrode(electrode_idx).color;
+
                                     set(etc_render_fsbrain.aux2_point_coords_h(idx),'MarkerEdgeColor',etc_render_fsbrain.electrode(electrode_idx).color,'markersize',etc_render_fsbrain.aux2_point_size);
                                 else
+                                    UserData=get(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData');
+                                    UserData.color=etc_render_fsbrain.aux2_point_color;
+                                    set(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData',UserData);
+
+                                    etc_render_fsbrain.aux2_point_individual_color(idx,:)=etc_render_fsbrain.aux2_point_color;
+                                    
                                     set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
                                 end;
                             else
+
+                                UserData=get(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData');
+                                UserData.color=etc_render_fsbrain.aux2_point_color;
+                                set(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData',UserData);
+
+                                etc_render_fsbrain.aux2_point_individual_color(idx,:)=etc_render_fsbrain.aux2_point_color;
+
                                 set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
                             end;
                         end;
@@ -3743,5 +3777,19 @@ try
     etc_render_fsbrain.overlay_vol.vol=tmp;
 catch ME
 end;
+
+function aux2_point_click(src,~)
+   if(isempty(src.UserData))
+       UserData=get(src,'UserData');
+       fprintf('>>>> point [%s] clicked.\n',UserData.name);
+       %src.Color= 'r';
+   else
+       %UserData=get(src,'UserData');
+       %src.Color= UserData.color;
+       %set(src,'UserData',{});
+   end;
+
+
+
 return;
 
