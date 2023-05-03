@@ -113,6 +113,7 @@ selected_contact_coords_h=[];
 topo_aux2_point_name={};
 topo_aux2_point_name_h=[];
 topo_aux2_point_color=[0 1  0];
+aux2_point_individual_color=[0    0.4471    0.7412];
 topo_aux2_point_color=[0    0.4471    0.7412];
 topo_aux2_point_size=44;
 topo_aux2_point_color_e=[0.3984    0.5977         0];

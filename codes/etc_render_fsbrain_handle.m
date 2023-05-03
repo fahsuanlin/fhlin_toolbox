@@ -32,7 +32,8 @@ for i=1:length(varargin)/2
 end;
 
 if(isempty(cc))
-    cc=get(gcf,'currentchar');
+    %cc=get(gcf,'currentchar');
+    cc=get(gcbf,'currentchar');
 end;
 
 switch lower(param)
@@ -3416,7 +3417,7 @@ try
                             UserData.name=sprintf('%04d',idx);
                             set(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData',UserData);
                         else
-                            UserData.name=etc_render_fsbrain.aux2_point_name_h(idx).String;
+                            UserData.name=get(etc_render_fsbrain.aux2_point_name_h(idx),'String');
                             set(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData',UserData);
                         end;
 
