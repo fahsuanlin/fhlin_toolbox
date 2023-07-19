@@ -1450,8 +1450,9 @@ switch lower(param)
                 etc_render_fsbrain.flag_overlay_stc_surf=1;
                 etc_render_fsbrain.flag_overlay_stc_vol=0;
                 
-                
-                update_overlay_vol;
+                if(etc_render_fsbrain.overlay_flag_paint_on_cortex)
+                    update_overlay_vol;
+                end;
                 draw_pointer;
                 
                 if(isfield(etc_render_fsbrain,'overlay_stc_timeVec_idx'))
@@ -1489,8 +1490,9 @@ switch lower(param)
                 
                 etc_render_fsbrain.flag_overlay_stc_surf=0;
                 etc_render_fsbrain.flag_overlay_stc_vol=1;
-                
-                update_overlay_vol;
+                if(etc_render_fsbrain.overlay_flag_paint_on_cortex)
+                    update_overlay_vol;
+                end;
                 xx=get(gca,'currentpoint');
                 xx=xx(1,1:2);
                 
