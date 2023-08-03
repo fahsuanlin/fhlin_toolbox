@@ -65,6 +65,8 @@ overlay_buffer_main_idx=[];
 topo_truncate_pos=0;
 topo_truncate_neg=0;
 
+topo_flag_paint_on_cortex=1;
+
 flag_orthogonal_slice_ax=0;
 flag_orthogonal_slice_sag=0;
 flag_orthogonal_slice_cor=0;
@@ -259,6 +261,8 @@ for idx=1:length(varargin)/2
             overlay_vol_mask=option_value;
         case 'overlay_flag_vol_mask'
             overlay_flag_vol_mask=option_value;
+        case 'topo_flag_paint_on_cortex'
+            topo_flag_paint_on_cortex=option_value;
         case 'default_solid_color'
             default_solid_color=option_value;
         case 'cluster_file'
@@ -577,6 +581,7 @@ etc_render_fsbrain.overlay_flag_render=topo_flag_render;
 etc_render_fsbrain.overlay_fixval_flag=topo_fixval_flag;
 etc_render_fsbrain.overlay_regrid_flag=topo_regrid_flag;
 etc_render_fsbrain.overlay_regrid_zero_flag=topo_regrid_zero_flag;
+etc_render_fsbrain.overlay_flag_paint_on_cortex=topo_flag_paint_on_cortex;
 etc_render_fsbrain.overlay_Ds=topo_Ds;
 etc_render_fsbrain.flag_overlay_truncate_pos=topo_truncate_pos;
 etc_render_fsbrain.flag_overlay_truncate_neg=topo_truncate_neg;
