@@ -14,6 +14,7 @@ n_ecg=[]; %search the nearest -n_ecg:+n_ecg; 10 is a good number; consider how t
 flag_reg=0;
 
 flag_pan_tompkin2=0;
+flag_wavelet_ecg=0;
 
 eeg_bcg=[];
 qrs_i_raw=[];
@@ -42,6 +43,8 @@ for i=1:length(varargin)/2
             n_ecg=option_value;
         case 'flag_pan_tompkin2'
             flag_pan_tompkin2=option_value;
+        case 'flag_wavelet_ecg'
+            flag_wavelet_ecg=option_value;
         otherwise
             fprintf('unknown option [%s]...\n',option);
             fprintf('error!\n');
@@ -79,10 +82,30 @@ end;
 if(flag_display) fprintf('detecting EKG peaks...\n'); end;
 %[qrs_amp_raw,qrs_i_raw,delay]=pan_tompkin(ecg,fs,flag_display,'flag_fhlin',1);
 %[pks,qrs_i_raw] = findpeaks(ecg,'MINPEAKDISTANCE',round(0.7*fs));
-if(flag_pan_tompkin2)
-    [pks,qrs_i_raw] =pan_tompkin2(ecg,fs);
+if(flag_wavelet_ecg)
+    tfr=inverse_waveletcoef([2:0.1:12],ecg,fs,5); %20 Hz to 120 Hz;  assuming ECG has been decimated by 10x (60 Hz in threory).
+    [dummy,pks_tmp]=findpeaks(-abs(tfr(41,:)),'MinPeakDistance',30); %6Hz; assuming ECG has been decimated by 10x (60 Hz in threory).
+    for p_idx=1:length(pks_tmp)+1
+        if(p_idx==1)
+            pks_start=1;
+        else
+            pks_start=pks_tmp(p_idx-1);
+        end;
+        if(p_idx==length(pks_tmp)+1)
+            pks_end=length(ecg);
+        else
+            pks_end=pks_tmp(p_idx);
+        end;
+        %[dummy,qrs_i_raw_tmp]=findpeaks(ecg(pks_start:pks_end),'NPeaks',1);
+        [dummy,qrs_i_raw_tmp]=max(ecg(pks_start:pks_end));
+        qrs_i_raw(p_idx)=qrs_i_raw_tmp+pks_start;
+    end;
 else
-    [pks,qrs_i_raw] =pan_tompkin(ecg,fs,0,'flag_fhlin',1);
+    if(flag_pan_tompkin2)
+        [pks,qrs_i_raw] =pan_tompkin2(ecg,fs);
+    else
+        [pks,qrs_i_raw] =pan_tompkin(ecg,fs,0,'flag_fhlin',1);
+    end;
 end;
 
 %     tt=[1:length(ecg)]./fs;
@@ -103,11 +126,17 @@ ecg_idx(qrs_i_raw)=[1:length(qrs_i_raw)];
 %subplot(312); plot(ecg_idx); set(gca,'xlim',[1 1000]);
 
 
+%%%% ecg_idx (length = N_time) indicates which ECG cycle (from 1 at the beginning to N_ecg) at each time instant. 
+
 %ecg_idx=fillmissing(ecg_idx,'nearest');
 ecg_idx=fillmissing(ecg_idx,'next');
 ecg_idx(find(isnan(ecg_idx)))=max(ecg_idx)+1;
 
 %subplot(313); plot(ecg_idx); set(gca,'xlim',[1 1000]);
+
+%%%% ecg_onset_idx (length = N_ecg+1) includes the indices to the onset of each ECG cycle
+%%%% ecg_offset_idx (length = N_ecg+1) includes the indices to the offset of each ECG cycle
+%%%% ecg_phase_percent (length = N_time) indicates the phase of the cardiac cycle at each time instant
 
 %get ECG phases
 idx=find(diff(ecg_idx));
@@ -132,6 +161,8 @@ mll=min(ll);
 % end;
 tmp=[1-tau.*(E):tau:tau.*(2*E)-1];
 
+
+%%%% ecg_ccm_idx (size = N_ecg x N_dynamics)indicates the tiem indices for each cardiac cycle
 ecg_ccm_idx=ones(max(ecg_idx),length(tmp)).*nan;
 for ii=2:max(ecg_idx)-1
 %     if(tau.*(E-1)<=(mll-1))
@@ -149,6 +180,8 @@ ecg_ccm_idx(find(ecg_ccm_idx(:)>length(ecg)))=nan;
 ecg_ccm_idx(find(ecg_ccm_idx(:)<1))=nan;
 
 %search over ECG cycles
+%%%% IDX (size = N_ecg x N_neighbor) gives the time indices to the nearest ECG dynamics 
+%%%% D (size = N_ecg x N_neighbor) gives the distance to the nearest ECG dynamics 
 not_nan=find(~isnan(mean(ecg_ccm_idx,2)));
 if(~flag_cce)
     %[IDX,D] = knnsearch(ecg(ecg_ccm_idx(2:end-1,:)),ecg(ecg_ccm_idx(2:end-1,:)),'K',nn+1);
@@ -182,6 +215,9 @@ D=D_buffer;
 %remove self;
 IDX(:,1)=[];
 D(:,1)=[];
+
+%%%% ccm_IDX (size = N_time x N_neighbor) gives the time indices to the nearest ECG dynamics 
+%%%% ccm_D (size = N_time x N_neighbor) gives the distance to the nearest ECG dynamics 
 
 ccm_IDX=zeros(size(eeg,2),nn).*nan;
 ccm_D=zeros(size(eeg,2),nn).*nan;
@@ -378,9 +414,9 @@ for t_idx=1:size(eeg,2)
 end;
 
 
-if(~flag_reg)
+if(~flag_reg) %subtraction to suppress BCG artifacts
     eeg_bcg=eeg-eeg_bcg_pred;
-elseif(flag_reg)
+elseif(flag_reg) %regression to suppress BCG artifacts
     for ii=1:max(ecg_idx)
         time_idx=find(ecg_idx==ii);
         A=[];
