@@ -1,4 +1,4 @@
-function [eeg_bcg, qrs_i_raw, eeg_bcg_pred, eeg_manifold_neighbor, eeg_manifold_now, eeg_manifold_now_approx, ecg_manifold_neighbor, ecg_manifold_now, ecg_manifold_now_approx, ccm_D, ccm_IDX, manifold_w,check]=eeg_bcg_ccm2(eeg,ecg,fs,varargin)
+function [eeg_bcg, qrs_i_raw, eeg_bcg_pred, cccm_D, cccm_IDX, check]=eeg_bcg_cccm(eeg,ecg,fs,varargin)
 
 %defaults
 flag_cce=0;
@@ -17,8 +17,12 @@ flag_pan_tompkin2=0;
 flag_wavelet_ecg=0;
 
 eeg_bcg=[];
+eeg_bcg_pred=[];
+
 qrs_i_raw=[];
 check=[];
+cccm_D=[];
+cccm_IDX=[];
 
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
@@ -168,95 +172,126 @@ mll=min(ll);
 tmp=[1-tau.*(E):tau:tau.*(2*E)-1];
 
 
-%%%% ecg_ccm_idx (size = N_ecg x N_dynamics)indicates the tiem indices for each cardiac cycle
-ecg_ccm_idx=ones(max(ecg_idx),length(tmp)).*nan;
-for ii=2:max(ecg_idx)-1
-%     if(tau.*(E-1)<=(mll-1))
-%         ecg_ccm_idx(ii,:)=[0:tau:tau.*(E)-1]+ecg_onset_idx(ii);
-%         %ecg_ccm_idx(ii,:)=[1-tau.*(E):tau:tau.*(E)-1]+ecg_onset_idx(ii);
-%     else
-%         ecg_ccm_idx(ii,:)=[0:tau:mll-1]+ecg_onset_idx(ii);
-%         %ecg_ccm_idx(ii,:)=[1-mll:tau:mll-1]+ecg_onset_idx(ii);
-%     end;
-    ecg_ccm_idx(ii,:)=[1-tau.*(E):tau:tau.*(2*E)-1]+ecg_onset_idx(ii);
 
-end;
+for ch_idx=1:length(non_ecg_channel)
 
-ecg_ccm_idx(find(ecg_ccm_idx(:)>length(ecg)))=nan;
-ecg_ccm_idx(find(ecg_ccm_idx(:)<1))=nan;
-
-check.ecg_ccm_idx=ecg_ccm_idx;
-
-
-%search over ECG cycles
-%%%% IDX (size = N_ecg x N_neighbor) gives the time indices to the nearest ECG dynamics 
-%%%% D (size = N_ecg x N_neighbor) gives the distance to the nearest ECG dynamics 
-not_nan=find(~isnan(mean(ecg_ccm_idx,2)));
-if(~flag_cce)
-    %[IDX,D] = knnsearch(ecg(ecg_ccm_idx(2:end-1,:)),ecg(ecg_ccm_idx(2:end-1,:)),'K',nn+1);
-    [IDX,D] = knnsearch(ecg(ecg_ccm_idx(not_nan,:)),ecg(ecg_ccm_idx(not_nan,:)),'K',nn+1);
-else
-    [uu,ss,vv]=svd(eeg,'econ');
-    v1=vv(:,1)';
-    %[IDX,D] = knnsearch(v1(ecg_ccm_idx(2:end-1,:)),v1(ecg_ccm_idx(2:end-1,:)),'K',nn+1);
-    [IDX,D] = knnsearch(v1(ecg_ccm_idx(not_nan,:)),v1(ecg_ccm_idx(not_nan,:)),'K',nn+1);
-end;
-check.ecg_dyn=ecg(ecg_ccm_idx(not_nan,:));
-
-%IDX=IDX+1; %offset by one ECG cycle, because the first ECG cycle is ignored.
-IDX=not_nan(IDX); %IDX back to the full ECG cycles
-
-%append indices for the first and last ECG cycles
-% IDX_buffer=ones(size(IDX,1)+2,size(IDX,2)).*nan;
-% IDX_buffer(2:end-1,:)=IDX;
-% IDX=IDX_buffer;
-% 
-% D_buffer=ones(size(D,1)+2,size(D,2)).*nan;
-% D_buffer(2:end-1,:)=D;
-% D=D_buffer;
-
-IDX_buffer=ones(size(ecg_ccm_idx,1),size(IDX,2)).*nan;
-IDX_buffer(not_nan,:)=IDX;
-IDX=IDX_buffer;
-
-D_buffer=ones(size(ecg_ccm_idx,1),size(D,2)).*nan;
-D_buffer(not_nan,:)=D;
-D=D_buffer;
-
-%remove self;
-IDX(:,1)=[];
-D(:,1)=[];
-
-check.IDX=IDX;
-check.D=D;
-
-%%%% ccm_IDX (size = N_time x N_neighbor) gives the time indices to the nearest ECG dynamics 
-%%%% ccm_D (size = N_time x N_neighbor) gives the distance to the nearest ECG dynamics 
-
-ccm_IDX=zeros(size(eeg,2),nn).*nan;
-ccm_D=zeros(size(eeg,2),nn).*nan;
-
-for ii=min(not_nan):max(not_nan)
+    dd=eeg(non_ecg_channel(ch_idx),:);
+    dd_buffer=zeros(max(max(ecg_idx))-2,median(ll));
     try
-    ccm_IDX(ecg_onset_idx(ii):ecg_offset_idx(ii),:)=repmat(ecg_onset_idx(IDX(ii,:)),[ecg_offset_idx(ii)-ecg_onset_idx(ii)+1,1])+repmat([0:ecg_offset_idx(ii)-ecg_onset_idx(ii)]',[1,nn]);
-    %ccm_IDX(ecg_onset_idx(ii):ecg_offset_idx(ii),:)=repmat(IDX(ii,:),[ecg_offset_idx(ii)-ecg_onset_idx(ii)+1,1]);    
-    ccm_D(ecg_onset_idx(ii):ecg_offset_idx(ii),:)=repmat(D(ii,:),[ecg_offset_idx(ii)-ecg_onset_idx(ii)+1,1]);    
-    catch ME
-        ii
+        for ii=2:max(ecg_idx)-1
+            dd_buffer(ii-1,:)=dd(ecg_onset_idx(ii):ecg_onset_idx(ii)+median(ll)-1);
+        end;
+
+    catch
     end;
+    [dummy, peak_idx]=sort(mean(abs(dd_buffer),1));
+    peak_idx=peak_idx(end-2*E:end); %<--- only the most significant 2*E time points are chosen as features.
+    peak_idx=[0:median(ll)-1]; %<---all time points are chosen as features.
+
+    check.peak_idx(:,ch_idx)=peak_idx(:);
+
+    %%%% ecg_ccm_idx (size = N_ecg x N_dynamics)indicates the time indices for each cardiac cycle
+    %ecg_ccm_idx=ones(max(ecg_idx),length(tmp)).*nan;
+    ecg_ccm_idx=ones(max(ecg_idx),length(peak_idx)).*nan;
+    for ii=2:max(ecg_idx)-1
+        %     if(tau.*(E-1)<=(mll-1))
+        %         ecg_ccm_idx(ii,:)=[0:tau:tau.*(E)-1]+ecg_onset_idx(ii);
+        %         %ecg_ccm_idx(ii,:)=[1-tau.*(E):tau:tau.*(E)-1]+ecg_onset_idx(ii);
+        %     else
+        %         ecg_ccm_idx(ii,:)=[0:tau:mll-1]+ecg_onset_idx(ii);
+        %         %ecg_ccm_idx(ii,:)=[1-mll:tau:mll-1]+ecg_onset_idx(ii);
+        %     end;
+        
+        
+        %ecg_ccm_idx(ii,:)=[1-tau.*(E):tau:tau.*(2*E)-1]+ecg_onset_idx(ii);
+        ecg_ccm_idx(ii,:)=peak_idx+ecg_onset_idx(ii);
+    end;
+
+    ecg_ccm_idx(find(ecg_ccm_idx(:)>length(ecg)))=nan;
+    ecg_ccm_idx(find(ecg_ccm_idx(:)<1))=nan;
+
+    check.ecg_ccm_idx=ecg_ccm_idx;
+
+
+
+    %search over ECG cycles
+    %%%% IDX (size = N_ecg x N_neighbor) gives the time indices to the nearest EEG dynamics
+    %%%% D (size = N_ecg x N_neighbor) gives the distance to the nearest EEG dynamics
+    not_nan=find(~isnan(mean(ecg_ccm_idx,2)));
+    if(~flag_cce)
+        %[IDX,D] = knnsearch(ecg(ecg_ccm_idx(2:end-1,:)),ecg(ecg_ccm_idx(2:end-1,:)),'K',nn+1);
+        %[IDX,D] = knnsearch(ecg(ecg_ccm_idx(not_nan,:)),ecg(ecg_ccm_idx(not_nan,:)),'K',nn+1);
+        dd=eeg(non_ecg_channel(ch_idx),:);
+        [IDX,D] = knnsearch(dd(ecg_ccm_idx(not_nan,:)),dd(ecg_ccm_idx(not_nan,:)),'K',nn+1);
+        
+    else
+        [uu,ss,vv]=svd(eeg,'econ');
+        v1=vv(:,1)';
+        %[IDX,D] = knnsearch(v1(ecg_ccm_idx(2:end-1,:)),v1(ecg_ccm_idx(2:end-1,:)),'K',nn+1);
+        %[IDX,D] = knnsearch(v1(ecg_ccm_idx(not_nan,:)),v1(ecg_ccm_idx(not_nan,:)),'K',nn+1);
+        [IDX,D] = knnsearch(v1(non_ecg_channel(ch_idx), ecg_ccm_idx(not_nan,:)),v1(non_ecg_channel(ch_idx), ecg_ccm_idx(not_nan,:)),'K',nn+1);
+    end;
+    eeg_ch_now=eeg(non_ecg_channel(ch_idx),:);
+    check.eeg_dyn(:,:,ch_idx)=eeg_ch_now(ecg_ccm_idx(not_nan,:));
+
+    %IDX=IDX+1; %offset by one ECG cycle, because the first ECG cycle is ignored.
+    IDX=not_nan(IDX); %IDX back to the full ECG cycles
+
+    %append indices for the first and last ECG cycles
+    % IDX_buffer=ones(size(IDX,1)+2,size(IDX,2)).*nan;
+    % IDX_buffer(2:end-1,:)=IDX;
+    % IDX=IDX_buffer;
+    %
+    % D_buffer=ones(size(D,1)+2,size(D,2)).*nan;
+    % D_buffer(2:end-1,:)=D;
+    % D=D_buffer;
+
+    IDX_buffer=ones(size(ecg_ccm_idx,1),size(IDX,2)).*nan;
+    IDX_buffer(not_nan,:)=IDX;
+    IDX=IDX_buffer;
+
+    D_buffer=ones(size(ecg_ccm_idx,1),size(D,2)).*nan;
+    D_buffer(not_nan,:)=D;
+    D=D_buffer;
+
+    %remove self;
+    IDX(:,1)=[];
+    D(:,1)=[];
+
+    check.IDX(:,:,ch_idx)=IDX;
+    check.D(:,:,ch_idx)=D;
+
+    %%%% ccm_IDX (size = N_time x N_neighbor) gives the time indices to the nearest EEG dynamics
+    %%%% ccm_D (size = N_time x N_neighbor) gives the distance to the nearest EEG dynamics
+
+    ccm_IDX=zeros(size(eeg,2),nn).*nan;
+    ccm_D=zeros(size(eeg,2),nn).*nan;
+
+    for ii=min(not_nan):max(not_nan)
+        try
+            ccm_IDX(ecg_onset_idx(ii):ecg_offset_idx(ii),:)=repmat(ecg_onset_idx(IDX(ii,:)),[ecg_offset_idx(ii)-ecg_onset_idx(ii)+1,1])+repmat([0:ecg_offset_idx(ii)-ecg_onset_idx(ii)]',[1,nn]);
+            %ccm_IDX(ecg_onset_idx(ii):ecg_offset_idx(ii),:)=repmat(IDX(ii,:),[ecg_offset_idx(ii)-ecg_onset_idx(ii)+1,1]);
+            ccm_D(ecg_onset_idx(ii):ecg_offset_idx(ii),:)=repmat(D(ii,:),[ecg_offset_idx(ii)-ecg_onset_idx(ii)+1,1]);
+        catch ME
+            fprintf('incorrect ccm_IDX for cycle [%d]!\n',ii)
+        end;
+    end;
+    ccm_IDX(find(ccm_IDX(:)>size(eeg,2)))=nan;
+
+    time_idx=[1:size(eeg,2)];
+    time_idx(find(isnan(ccm_IDX(:,1))))=nan;
+
+    time_idx(find(isnan(sum(ccm_IDX,2))))=nan;
+    if(flag_display)
+        fprintf('[%d] (%1.1f%%) time points excluded from CCM because data are out of time series range.\n',length(find(isnan(sum(ccm_IDX,2)))),length(find(isnan(sum(ccm_IDX,2))))./size(eeg,2).*100);
+    end;
+
+    check.ccm_IDX(:,:,ch_idx)=ccm_IDX;
+    check.ccm_D(:,:,ch_idx)=ccm_D;
+
+    cccm_IDX(:,:,ch_idx)=ccm_IDX;
+    cccm_D(:,:,ch_idx)=ccm_D;
 end;
-ccm_IDX(find(ccm_IDX(:)>size(eeg,2)))=nan;
-
-time_idx=[1:size(eeg,2)];
-time_idx(find(isnan(ccm_IDX(:,1))))=nan;
-
-time_idx(find(isnan(sum(ccm_IDX,2))))=nan;
-if(flag_display)
-    fprintf('[%d] (%1.1f%%) time points excluded from CCM because data are out of time series range.\n',length(find(isnan(sum(ccm_IDX,2)))),length(find(isnan(sum(ccm_IDX,2))))./size(eeg,2).*100);
-end;
-
-check.ccm_IDX=ccm_IDX;
-check.ccm_D=ccm_D;
 
 for t_idx=1:size(eeg,2)
     
@@ -268,19 +303,16 @@ for t_idx=1:size(eeg,2)
         U=exp(-ccm_D(t_idx,:)./ccm_D(t_idx,1));
         W=U./sum(U);
         manifold_w(t_idx,:)=W;
-        try
-            ecg_manifold_neighbor(:,:,t_idx)=ecg(ecg_ccm_idx(IDX(ecg_idx(t_idx),:),:))'; %cardiac manifolds of the nearest neighbors
-            %ecg_manifold_neighbor(:,:,t_idx)=ecg(ecg_ccm_idx(ecg_idx(ccm_IDX(t_idx,:)),:))'; %cardiac manifolds of the nearest neighbors
-            ecg_manifold_now(:,:,t_idx)=ecg(ecg_ccm_idx(ecg_idx(t_idx),:))'; %cardiac manifold now
-            %manifold_t_idx=[1-tau.*(E):tau:tau.*(2*E)-1];
-            %ecg_manifold_now(:,:,t_idx)=ecg(t_idx+manifold_t_idx)'; %cardiac manifold now
-            ecg_manifold_now_approx(:,t_idx)=ecg_manifold_neighbor(:,:,t_idx)*W'; %approximated cardiac manifold now from nearest neighbors
-        catch ME
-        end;
         
         debug_ch=1;
         for ch_idx=1:length(non_ecg_channel)
-             %fprintf('*');
+        %for ch_idx=1:1
+
+            U=exp(-cccm_D(t_idx,:,ch_idx)./cccm_D(t_idx,1,ch_idx));
+            W=U./sum(U);
+
+
+            %fprintf('*');
             if(flag_display&&mod(t_idx,1000)==0&&t_idx==1000&&ch_idx==debug_ch)
                 figure(1); clf;
                 subplot(121); hold on;
@@ -340,25 +372,17 @@ for t_idx=1:size(eeg,2)
             try
                 %non_nan_idx=find(~isnan(ccm_IDX(t_idx,:)));
                 %eeg_bcg_pred(non_ecg_channel(ch_idx),t_idx)=eeg(non_ecg_channel(ch_idx),ccm_IDX(t_idx,non_nan_idx))*W(non_nan_idx)';
-                eeg_bcg_pred(non_ecg_channel(ch_idx),t_idx)=eeg(non_ecg_channel(ch_idx),ccm_IDX(t_idx,:))*W';
+                %eeg_bcg_pred(non_ecg_channel(ch_idx),t_idx)=eeg(non_ecg_channel(ch_idx),ccm_IDX(t_idx,:))*W';
                 
-                
-%                 for m_idx=0:0
-%                     tmp=eeg(non_ecg_channel(ch_idx),ccm_IDX(t_idx,:)+tau.*m_idx); %EEG manifolds of the nearest neighbors
-%                     eeg_manifold_neighbor(:,m_idx+1,ch_idx,t_idx)=tmp;
-%                 end;
+                W_now=W;
+                cccm_IDX_now=cccm_IDX(t_idx,:,ch_idx);
+                not_nan_idx=find(~isnan(cccm_IDX_now));
+                nan_idx=find(isnan(cccm_IDX_now));
+                data_now=eeg(non_ecg_channel(ch_idx),cccm_IDX(t_idx,not_nan_idx,ch_idx));
+                W_now(nan_idx)=[];
+                eeg_bcg_pred(non_ecg_channel(ch_idx),t_idx)=data_now*W_now';
 
-                manifold_t_idx=[1-tau.*(E):tau:tau.*(2*E)-1];
-                for m_idx=1:length(manifold_t_idx)
-                    eeg_manifold_neighbor(:,m_idx,ch_idx,t_idx)=eeg(non_ecg_channel(ch_idx),ecg_onset_idx(IDX(ecg_idx(t_idx),:))+manifold_t_idx(m_idx));
-                end;
-                
-                tmp=t_idx+manifold_t_idx;
-                if(min(tmp)<1|max(tmp)>size(eeg,2))
-                else
-                    eeg_manifold_now(:,:,ch_idx,t_idx)=eeg(non_ecg_channel(ch_idx),t_idx+manifold_t_idx); %EEG manifold now
-                    eeg_manifold_now_approx(:,ch_idx,t_idx)= squeeze(eeg_manifold_neighbor(:,1,ch_idx,t_idx))'*W'; %approximated cardiac manifold now from nearest neighbors
-                end;
+
             catch ME
                 fprintf('Error in BCG CCM prediction!\n');
                 fprintf('t_idx=%d\n',t_idx);
@@ -407,20 +431,20 @@ for t_idx=1:size(eeg,2)
                 
                 set(gcf,'pos',[100        1000        2100           300]);
                 
-                figure(3); clf; hold on;
-                dd=ecg(ecg_ccm_idx(2:end-1,:));
-                plot(dd(:,1),dd(:,2),'.')
-                
-                if(~isempty(hha)) delete(hha); end;
-                if(~isempty(hh1)) delete(hh1); end;
-                
-                hh1=plot(ecg(ecg_ccm_idx(ecg_idx(t_idx),1)),ecg(ecg_ccm_idx(ecg_idx(t_idx),2)),'o');
-                set(hh1,'linewidth',2,'color',[ 0.4660    0.6740    0.1880]);
-                hha=plot(ecg(ecg_ccm_idx(ecg_idx(ccm_IDX(t_idx,:)),1)),ecg(ecg_ccm_idx(ecg_idx(ccm_IDX(t_idx,:)),2)),'ro');
-                set(hha,'linewidth',2);
-                xlabel('EKG(t) (a.u.)');
-                ylabel('EKG(t+\tau) (a.u.)');
-                etc_plotstyle;
+%                 figure(3); clf; hold on;
+%                 dd=ecg(ecg_ccm_idx(2:end-1,:));
+%                 plot(dd(:,1),dd(:,2),'.')
+%                 
+%                 if(~isempty(hha)) delete(hha); end;
+%                 if(~isempty(hh1)) delete(hh1); end;
+%                 
+%                 hh1=plot(ecg(ecg_ccm_idx(ecg_idx(t_idx),1)),ecg(ecg_ccm_idx(ecg_idx(t_idx),2)),'o');
+%                 set(hh1,'linewidth',2,'color',[ 0.4660    0.6740    0.1880]);
+%                 hha=plot(ecg(ecg_ccm_idx(ecg_idx(ccm_IDX(t_idx,:)),1)),ecg(ecg_ccm_idx(ecg_idx(ccm_IDX(t_idx,:)),2)),'ro');
+%                 set(hha,'linewidth',2);
+%                 xlabel('EKG(t) (a.u.)');
+%                 ylabel('EKG(t+\tau) (a.u.)');
+%                 etc_plotstyle;
 
                 if(t_idx==2000) keyboard; end;
                    
