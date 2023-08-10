@@ -84,6 +84,18 @@ if(n_ecg<10)
     n_ecg=10; %minimum....
 end;
 
+
+outlier_idx=isoutlier(ecg,'median','ThresholdFactor',4);
+ecg_now=ecg;
+if(~isempty(outlier_idx))
+    if(flag_display)
+        fprintf('ECG has outliers...correcting...\n');
+    end;
+    
+    ecg_now(find(outlier_idx))=median(ecg);
+end;
+ecg=ecg_now;
+
 if(flag_display) fprintf('detecting EKG peaks...\n'); end;
 %[qrs_amp_raw,qrs_i_raw,delay]=pan_tompkin(ecg,fs,flag_display,'flag_fhlin',1);
 %[pks,qrs_i_raw] = findpeaks(ecg,'MINPEAKDISTANCE',round(0.7*fs));
