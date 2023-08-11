@@ -224,7 +224,7 @@ tmp=[1-tau.*(E):tau:tau.*(2*E)-1];
 for ch_idx=1:length(non_ecg_channel)
 
     dd=eeg(non_ecg_channel(ch_idx),:);
-    dd_buffer=zeros(max(max(ecg_idx))-2,median(ll));
+    dd_buffer=zeros(max(max(ecg_idx))-2,round(median(ll)));
     try
         for ii=2:max(ecg_idx)-1
             dd_buffer(ii-1,:)=dd(ecg_onset_idx(ii):ecg_onset_idx(ii)+median(ll)-1);
