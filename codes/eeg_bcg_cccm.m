@@ -120,7 +120,7 @@ if(flag_wavelet_ecg)
     wav=fmri_scale(abs(tfr(200,:))./10,200,-200); wav=wav-mean(wav);
 
     %[dummy,pks_tmp]=findpeaks(wav,'MinPeakDistance',20,'MinPeakProminence',40); %6Hz; assuming ECG has been decimated by 10x (60 Hz in threory).
-    [dummy,pks_tmp]=findpeaks(wav,'MinPeakDistance',20,'MinPeakProminence',40,'Annotate','extents'); %6Hz; assuming ECG has been decimated by 10x (60 Hz in threory).
+    [dummy,pks_tmp]=findpeaks(wav,'MinPeakDistance',20,'MinPeakProminence',20,'Annotate','extents'); %6Hz; assuming ECG has been decimated by 10x (60 Hz in threory).
 %     for p_idx=1:length(pks_tmp)+1
 %         if(p_idx==1)
 %             pks_start=1;
@@ -154,14 +154,14 @@ check.qrs_i_raw=qrs_i_raw;
 
 
 
-% t=zeros(1,size(eeg,2));
-% t(qrs_i_raw)=1;
-% t=cumsum(t);
-% t=((-1).^t).*20;
-% %etc_trace([wav; fmri_scale(v1,-100,100); eeg(11,:);t(1:size(eeg,2));ecg./5],'fs',fs);
-% %etc_trace([wav1; wav2; wav3; wav4; wav5; wav; fmri_scale(v1,-100,100); eeg(11,:);t;ecg./5],'fs',fs);
-% etc_trace([wav; fmri_scale(v1,-100,100); eeg(11,:);t;ecg./5],'fs',fs);
-% keyboard;
+t=zeros(1,size(eeg,2));
+t(qrs_i_raw)=1;
+t=cumsum(t);
+t=((-1).^t).*20;
+%etc_trace([wav; fmri_scale(v1,-100,100); eeg(11,:);t(1:size(eeg,2));ecg./5],'fs',fs);
+%etc_trace([wav1; wav2; wav3; wav4; wav5; wav; fmri_scale(v1,-100,100); eeg(11,:);t;ecg./5],'fs',fs);
+etc_trace([wav; fmri_scale(v1,-100,100); eeg(11,:);t;ecg./5],'fs',fs);
+keyboard;
 
 %     tt=[1:length(ecg)]./fs;
 %     figure; plot(tt,ecg); hold on;
