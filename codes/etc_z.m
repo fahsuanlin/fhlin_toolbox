@@ -34,6 +34,14 @@ for i=1:length(varargin)/2
     end;
 end;
 
+if(isempty(baseline_idx))
+     if(dim==2)
+        baseline_idx=[1:size(a,2)];
+     else(dim==1)
+        baseline_idx=[1:size(a,1)];
+     end;
+end;
+
 if(flag_baseline_correct)    
     if(dim==2)
         a=bsxfun(@minus,a,mean(a(:,baseline_idx),2));
