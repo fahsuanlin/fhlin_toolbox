@@ -446,7 +446,7 @@ for t_idx=1:size(eeg,2)
                 fprintf('Error in BCG CCM prediction!\n');
                 fprintf('t_idx=%d\n',t_idx);
             end;
-            if(flag_display&&mod(t_idx,1000)==0&&ch_idx==debug_ch)
+            if(:&&mod(t_idx,1000)==0&&ch_idx==debug_ch)
                 figure(1);
                 subplot(121);
                 xx=cat(1,t_idx,ccm_IDX(t_idx,:)');
