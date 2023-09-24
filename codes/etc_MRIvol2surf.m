@@ -45,8 +45,11 @@ for i=1:length(varargin)/2
 end;
 
 
-
-file_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi,surf);
+if(~ispc)
+    file_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi,surf);
+else
+    file_surf=sprintf('%s\\%s\\surf\\%s.%s',subjects_dir,subject,hemi,surf);    
+end;
 if(flag_display) fprintf('reading [%s]...\n',file_surf); end;
 
 [vertex_coords, faces] = read_surf(file_surf);
@@ -54,7 +57,11 @@ if(flag_display) fprintf('reading [%s]...\n',file_surf); end;
 vertex_coords_hemi=vertex_coords;
 faces_hemi=faces;
 
-file_orig_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi,'orig');
+if(~ispc)
+    file_orig_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi,'orig');
+else
+    file_orig_surf=sprintf('%s\\%s\\surf\\%s.%s',subjects_dir,subject,hemi,'orig');    
+end;
 if(flag_display) fprintf('reading orig [%s]...\n',file_orig_surf); end;
 
 [orig_vertex_coords, orig_faces] = read_surf(file_orig_surf);
@@ -70,17 +77,28 @@ for hemi_idx=1:2
         case 2
             hemi_str='rh';
     end;
-    
-    file_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi_str,surf);
+    if(~ispc)
+        file_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi_str,surf);
+    else
+        file_surf=sprintf('%s\\%s\\surf\\%s.%s',subjects_dir,subject,hemi_str,surf);
+    end;
     %fprintf('reading [%s]...\n',file_surf);
     [hemi_vertex_coords{hemi_idx}, hemi_faces{hemi_idx}] = read_surf(file_surf);
     
-    file_orig_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi_str,'orig');
+    if(~ispc)
+        file_orig_surf=sprintf('%s/%s/surf/%s.%s',subjects_dir,subject,hemi_str,'orig');
+    else
+        file_orig_surf=sprintf('%s\\%s\\surf\\%s.%s',subjects_dir,subject,hemi_str,'orig');    
+    end;
     %fprintf('reading orig [%s]...\n',file_orig_surf);
     [hemi_orig_vertex_coords{hemi_idx}, hemi_orig_faces{hemi_idx}] = read_surf(file_orig_surf);
 end;
 
-targ_orig_vol=MRIread(sprintf('%s/%s/mri/orig.mgz',subjects_dir,subject));
+if(~ispc)
+    targ_orig_vol=MRIread(sprintf('%s/%s/mri/orig.mgz',subjects_dir,subject));
+else
+    targ_orig_vol=MRIread(sprintf('%s\\%s\\mri\\orig.mgh',subjects_dir,subject));
+end;
 
 tmp=cat(2,orig_vertex_coords,ones(size(orig_vertex_coords,1),1));
 
