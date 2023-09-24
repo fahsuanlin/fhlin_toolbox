@@ -211,16 +211,6 @@ if(etc_render_fsbrain.sensor_add_gui_ok)
     etc_render_fsbrain.aux_point_name{end+1}=etc_render_fsbrain.new_sensor.name;
     etc_render_fsbrain.aux_point_coords(end+1,:)=etc_render_fsbrain.click_coord(:).';
 
-%     [sx,sy,sz] = sphere(8);
-%     sr=etc_render_fsbrain.aux_point_size;
-%     xx=[]; yy=[]; zz=[];
-%     xx=cat(1,xx,sx.*sr.*2*400+etc_render_fsbrain.click_coord(1));
-%     yy=cat(1,yy,sy.*sr.*2*400+etc_render_fsbrain.click_coord(2));
-%     zz=cat(1,zz,sz.*sr.*2.*400+etc_render_fsbrain.click_coord(3));
-%     figure(etc_render_fsbrain.fig_brain);
-%     etc_render_fsbrain.aux_point_coords_h(end+1)=surf(xx,yy,zz);
-%     set(etc_render_fsbrain.aux_point_coords_h(end),'facecolor',etc_render_fsbrain.aux_point_color);
-%     set(etc_render_fsbrain.aux_point_coords_h(end),'edgecolor','none');
 
     %the first electrode
     if(length(etc_render_fsbrain.aux_point_name)==1)
@@ -504,21 +494,6 @@ vv=etc_render_fsbrain.vertex_coords;
 dist=sqrt(sum((vv-repmat([etc_render_fsbrain.click_coord(1),etc_render_fsbrain.click_coord(2),etc_render_fsbrain.click_coord(3)],[size(vv,1),1])).^2,2));
 [min_dist,min_dist_idx]=min(dist);
 etc_render_fsbrain.click_vertex=min_dist_idx;
-
-
-%     etc_render_fsbrain.aux_point_coords(etc_render_fsbrain.aux_point_idx,:)=etc_render_fsbrain.click_coord(:).';
-% 
-%     [sx,sy,sz] = sphere(8);
-%     sr=etc_render_fsbrain.aux_point_size;
-%     xx=[]; yy=[]; zz=[];
-%     xx=cat(1,xx,sx.*sr.*2*400+etc_render_fsbrain.click_coord(1));
-%     yy=cat(1,yy,sy.*sr.*2*400+etc_render_fsbrain.click_coord(2));
-%     zz=cat(1,zz,sz.*sr.*2.*400+etc_render_fsbrain.click_coord(3));
-%     figure(etc_render_fsbrain.fig_brain);
-%     delete(etc_render_fsbrain.aux_point_coords_h(etc_render_fsbrain.aux_point_idx));
-%     etc_render_fsbrain.aux_point_coords_h(etc_render_fsbrain.aux_point_idx)=surf(xx,yy,zz);
-%     set(etc_render_fsbrain.aux_point_coords_h(end),'facecolor',etc_render_fsbrain.aux_point_color);
-%     set(etc_render_fsbrain.aux_point_coords_h(end),'edgecolor','none');
 
 
 etc_render_fsbrain_handle('redraw');

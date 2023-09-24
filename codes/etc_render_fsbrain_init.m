@@ -33,6 +33,8 @@ lut=[];
 
 pt=[];
 
+brain_axis=[];
+
 %color 
 default_solid_color=[1.0000    0.7031    0.3906];
 curv_pos_color=[1 1 1].*0.4;
@@ -379,6 +381,8 @@ for idx=1:length(varargin)/2
             aux2_point_individual_color=option_value;
         case 'pt'
             pt=option_value;
+        case 'brain_axis'
+            brain_axis=option_value;
         otherwise
             fprintf('unknown option [%s]...\n',option);
             return;
@@ -930,10 +934,20 @@ end;
 %%%%%%%%%%%%%%%%%%%%%%%%
 % main routine for rendering...
 %%%%%%%%%%%%%%%%%%%%%%%%
-h=patch('Faces',faces+1,'Vertices',vertex_coords,'FaceVertexCData',fvdata,'facealpha',alpha,'CDataMapping','direct','facecolor','interp','edgecolor','none');   
-material dull;
+if(isempty(brain_axis))
+    brain_axis=gca;
+else
+    if(~isvalid(brain_axis))
+        brain_axis=gca;
+    end;
+end;
+axes(brain_axis);
 
-axis off vis3d equal;
+
+h=patch(brain_axis,'Faces',faces+1,'Vertices',vertex_coords,'FaceVertexCData',fvdata,'facealpha',alpha,'CDataMapping','direct','facecolor','interp','edgecolor','none');   
+material(h,'dull');
+
+axis(brain_axis,'off','vis3d','equal');
 
 if(~flag_redraw)
     if(isempty(lim))
@@ -952,10 +966,10 @@ if(~flag_redraw)
         ylim=lim(3:4);
         zlim=lim(5:6);
     end;
-    set(gca,'xlim',[xmin xmax],'ylim',[ymin ymax],'zlim',[zmin zmax]);
+    set(brain_axis,'xlim',[xmin xmax],'ylim',[ymin ymax],'zlim',[zmin zmax]);
     
     if(~isempty(overlay_threshold))
-        set(gca,'climmode','manual','clim',overlay_threshold);
+        set(brain_axis,'climmode','manual','clim',overlay_threshold);
     end;
     set(gcf,'color',bg_color);
     
@@ -978,10 +992,10 @@ if(~flag_redraw)
     end;
     
     if(flag_camlight)
-       camlight(-90,0);
-       camlight(90,0);    
-       camlight(0,0);
-       camlight(180,0);    
+       camlight(brain_axis,-90,0);
+       camlight(brain_axis,90,0);    
+       camlight(brain_axis,0,0);
+       camlight(brain_axis,180,0);    
        
        flag_camlight=0;
     end;
@@ -1028,7 +1042,7 @@ addToolbarExplorationButtons(gcf);
 %%%%%%%%%%%%%%%%%%%%%%%%
 global etc_render_fsbrain;
 
-etc_render_fsbrain.brain_axis=gca;
+etc_render_fsbrain.brain_axis=brain_axis;
 
 etc_render_fsbrain.subject=subject;
 etc_render_fsbrain.surf=surf;

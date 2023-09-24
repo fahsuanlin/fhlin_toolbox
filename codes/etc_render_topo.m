@@ -33,7 +33,8 @@ topo_cmap=tmp(161:end,:);
 topo_cmap_neg=flipud(tmp(1:96,:));
 
 
-
+brain_axis=[];
+brain_fig=[];
 
 %overlay
 topo_value=[];
@@ -319,6 +320,10 @@ for idx=1:length(varargin)/2
             click_vertex_point_size=option_value;
         case 'click_vertex_point_color'
             click_vertex_point_color=option_value;
+        case 'brain_axis'
+            brain_axis=option_value;
+        case 'brain_fig'
+            brain_fig=option_value;
         otherwise
             fprintf('unknown option [%s]...\n',option);
             return;
@@ -404,16 +409,106 @@ if(~isempty(topo_value))
     fvdata(c_idx,:)=inverse_get_color(topo_cmap_neg,-ovs(c_idx),max(topo_threshold),min(topo_threshold));
 end;
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-h=patch('Faces',vol_face+1,'Vertices',vol_vertex,'FaceVertexCData',fvdata,'facealpha',alpha,'CDataMapping','direct','facecolor','interp','edgecolor','none');
-material dull;
+if(isempty(brain_fig))
+    brain_fig=gcf;
+else
+    if(~isvalid(brain_fig))
+        brain_fig=gcf;
+    end;
+end;
+switch(brain_fig.Type)
+    case 'figure'
+        figure(brain_fig);
+    case 'tab'
+        
+end;
 
-axis off vis3d equal;
+if(isempty(brain_axis))
+    brain_axis=gca;
+else
+    if(~isvalid(brain_axis))
+        brain_axis=gca;
+    end;
+end;
+axes(brain_axis);
+
+
+%h=patch(brain_axis,'Faces',faces+1,'Vertices',vertex_coords,'FaceVertexCData',fvdata,'facealpha',alpha,'CDataMapping','direct','facecolor','interp','edgecolor','none');   
+h=patch(brain_axis,'Faces',vol_face+1,'Vertices',vol_vertex,'FaceVertexCData',fvdata,'facealpha',alpha,'CDataMapping','direct','facecolor','interp','edgecolor','none');
+material(h,'dull');
+
+axis(brain_axis,'off','vis3d','equal');
+
+%if(~flag_redraw)
+%     if(isempty(lim))
+%         xmin=min(vertex_coords(:,1));
+%         xmax=max(vertex_coords(:,1));
+%         ymin=min(vertex_coords(:,2));
+%         ymax=max(vertex_coords(:,2));
+%         zmin=min(vertex_coords(:,3));
+%         zmax=max(vertex_coords(:,3));
+%         xlim=[xmin xmax];
+%         ylim=[ymin ymax];
+%         zlim=[zmin zmax];
+%         lim=[xlim(:)' ylim(:)' zlim(:)'];
+%     else
+%         xlim=lim(1:2);
+%         ylim=lim(3:4);
+%         zlim=lim(5:6);
+%     end;
+%     set(brain_axis,'xlim',[xmin xmax],'ylim',[ymin ymax],'zlim',[zmin zmax]);
+%     
+%     if(~isempty(overlay_threshold))
+%         set(brain_axis,'climmode','manual','clim',overlay_threshold);
+%     end;
+%     set(brain_fig,'color',bg_color);
+%     
+%     view(view_angle(1), view_angle(2));
+    
+%     if(isempty(camposition_l))
+%         cp=campos;
+%         cp=cp./norm(cp);
+%         
+%         campos(1300.*cp);
+%         camposition=1300.*cp;
+%     else
+%         
+%         cp=campos;
+%         cp=cp./norm(cp);
+%         
+%         camposition=camposition_l.*cp;
+%         campos(camposition);
+% %        campos(camposition);
+%     end;
+    
+    if(flag_camlight)
+       camlight(brain_axis,-90,0);
+       camlight(brain_axis,90,0);    
+       camlight(brain_axis,0,0);
+       camlight(brain_axis,180,0);    
+       
+       flag_camlight=0;
+    end;
+%end;
+
+
+
+% h=patch('Faces',vol_face+1,'Vertices',vol_vertex,'FaceVertexCData',fvdata,'facealpha',alpha,'CDataMapping','direct','facecolor','interp','edgecolor','none');
+% material dull;
+% 
+% axis off vis3d equal;
 
 if(~isempty(topo_threshold))
-    set(gca,'climmode','manual','clim',topo_threshold);
+    set(brain_axis,'climmode','manual','clim',topo_threshold);
 end;
-set(gcf,'color',bg_color);
+switch(brain_fig.Type)
+    case 'figure'
+        set(brain_fig,'color',bg_color);
+    case 'tab'
+        set(brain_fig,'BackgroundColor',bg_color);
+end;
 
 if(isempty(view_angle))
     view_angle=[-135 20];
@@ -495,14 +590,14 @@ set(topo_aux2_point_coords_h,'color',topo_aux2_point_color,'markersize',topo_aux
 %
 % campos(1300.*cp);
 
-if(flag_camlight)
-    camlight(-90,0);
-    camlight(90,0);
-    camlight(0,0);
-    camlight(180,0);
-
-    flag_camlight=0;
-end;
+% if(flag_camlight)
+%     camlight(-90,0);
+%     camlight(90,0);
+%     camlight(0,0);
+%     camlight(180,0);
+% 
+%     flag_camlight=0;
+% end;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -533,7 +628,7 @@ etc_render_fsbrain.alpha=alpha;
 etc_render_fsbrain.flag_camlight=flag_camlight;
 
 
-etc_render_fsbrain.fig_brain=gcf;
+etc_render_fsbrain.fig_brain=brain_fig;
 etc_render_fsbrain.fig_stc=[];
 etc_render_fsbrain.fig_gui=[];
 etc_render_fsbrain.fig_vol=[];
@@ -681,12 +776,16 @@ etc_render_fsbrain.brain_axis_pos=[];
 %%%%%%%%%%%%%%%%%%%%%%%%
 %setup call-back function
 %%%%%%%%%%%%%%%%%%%%%%%%
-set(gcf,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
-set(gcf,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
-set(gcf,'CloseRequestFcn','etc_render_fsbrain_handle(''del'')');
-set(gcf,'KeyPressFcn',@etc_render_fsbrain_kbhandle);
-set(gcf,'invert','off');
 
+switch(brain_fig.Type)
+    case 'figure'
+        set(brain_fig,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
+        set(brain_fig,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
+        set(brain_fig,'CloseRequestFcn','etc_render_fsbrain_handle(''del'')');
+        set(brain_fig,'KeyPressFcn',@etc_render_fsbrain_kbhandle);
+        set(brain_fig,'invert','off');
+    case 'tab'
+end;
 hold on;
 
 if(~isempty(view_angle))

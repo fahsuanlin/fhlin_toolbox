@@ -15,6 +15,7 @@ flag_reg=0;
 
 flag_pan_tompkin2=0;
 flag_wavelet_ecg=0;
+flag_eegsvd_ecg=0;
 
 eeg_bcg=[];
 eeg_bcg_pred=[];
@@ -50,6 +51,8 @@ for i=1:length(varargin)/2
             flag_pan_tompkin2=option_value;
         case 'flag_wavelet_ecg'
             flag_wavelet_ecg=option_value;
+        case 'flag_eegsvd_ecg'
+            flag_eegsvd_ecg=option_value;
         otherwise
             fprintf('unknown option [%s]...\n',option);
             fprintf('error!\n');
@@ -120,7 +123,7 @@ if(flag_wavelet_ecg)
     wav=fmri_scale(abs(tfr(200,:))./10,200,-200); wav=wav-mean(wav);
 
     %[dummy,pks_tmp]=findpeaks(wav,'MinPeakDistance',20,'MinPeakProminence',40); %6Hz; assuming ECG has been decimated by 10x (60 Hz in threory).
-    [dummy,pks_tmp]=findpeaks(wav,'MinPeakDistance',20,'MinPeakProminence',20,'Annotate','extents'); %6Hz; assuming ECG has been decimated by 10x (60 Hz in threory).
+    [dummy,read_inside_eeg_cccm]=findpeaks(wav,'MinPeakDistance',20,'MinPeakProminence',20,'Annotate','extents'); %6Hz; assuming ECG has been decimated by 10x (60 Hz in threory).
 %     for p_idx=1:length(pks_tmp)+1
 %         if(p_idx==1)
 %             pks_start=1;
@@ -141,6 +144,10 @@ if(flag_wavelet_ecg)
 %         end;
         qrs_i_raw=pks_tmp;
 %    end;
+elseif(flag_eegsvd_ecg)
+    [uu,ss,vv]=svd(eeg,'econ');
+    v1=vv(:,1)';
+    [dummy,qrs_i_raw]=findpeaks(fmri_scale(v1, -200, 200),'MinPeakDistance',20,'MinPeakProminence',20,'Annotate','extents'); %6Hz; assuming ECG has been decimated by 10x (60 Hz in threory).
 else
     if(flag_pan_tompkin2)
         [pks,qrs_i_raw] =pan_tompkin2(ecg,fs);
@@ -153,14 +160,14 @@ qrs_i_raw=unique(qrs_i_raw,'stable');
 check.qrs_i_raw=qrs_i_raw;
 
 
-% 
+
 % t=zeros(1,size(eeg,2));
 % t(qrs_i_raw)=1;
 % t=cumsum(t);
 % t=((-1).^t).*20;
 % %etc_trace([wav; fmri_scale(v1,-100,100); eeg(11,:);t(1:size(eeg,2));ecg./5],'fs',fs);
 % %etc_trace([wav1; wav2; wav3; wav4; wav5; wav; fmri_scale(v1,-100,100); eeg(11,:);t;ecg./5],'fs',fs);
-% etc_trace([wav; fmri_scale(v1,-100,100); eeg(11,:);t;ecg./5],'fs',fs);
+% etc_trace([fmri_scale(v1,-100,100); eeg(11,:);t;ecg./5],'fs',fs);
 % keyboard;
 
 %     tt=[1:length(ecg)]./fs;
@@ -446,7 +453,7 @@ for t_idx=1:size(eeg,2)
                 fprintf('Error in BCG CCM prediction!\n');
                 fprintf('t_idx=%d\n',t_idx);
             end;
-            if(:&&mod(t_idx,1000)==0&&ch_idx==debug_ch)
+            if(flag_display&&mod(t_idx,1000)==0&&ch_idx==debug_ch)
                 figure(1);
                 subplot(121);
                 xx=cat(1,t_idx,ccm_IDX(t_idx,:)');
