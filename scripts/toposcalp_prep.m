@@ -2,7 +2,7 @@ close all; clear all;
 
 output_file='toposcalp_prep.mat';
 
-surfin_os='/Users/fhlin_admin/workspace/subjects//lf/bem/watershed/lf_outer_skull_surface';
+surfin_os='/Users/fhlin/workspace/subjects//lf/bem/watershed/lf_outer_skull_surface';
 
 electrodes_init={
     'Fp1';

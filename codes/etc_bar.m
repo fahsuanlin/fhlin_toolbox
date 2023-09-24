@@ -2,31 +2,25 @@ function [h_bar,h_errrorbar]=etc_bar(x,y,e)
 
 
 h_bar = bar(x, y, 'grouped');
-xdata = get(h_bar, 'XData');
-ydata = get(h_bar ,'YData');
-
-% Determine number of bars
-sizz = size(y);
-nb = sizz(1)*sizz(2);
-xb = [];
-yb = [];
-for i = 1:2,
-    xb = [xb xdata{i,1}];
-    yb = [yb ydata{i,1}];
-end;
-
-% To find the center of each bar - need to look at the output vectors xb, yb
-% find where yb is non-zero - for each bar there is a pair of non-zero yb values.
-% The center of these values is the middle of the bar
-
-nz = find(yb);
-for i = 1:nb,
-    center(i) = (xb(nz(i*2))-xb(nz((i*2)-1)))/2 + xb(nz((i*2)-1));
-end;
-
-% To place the error bars - use the following:
 
 
+
+
+hold on
+% Calculate the number of groups and number of bars in each group
+[ngroups,nbars] = size(y);
+% Get the x coordinate of the bars
+xx = nan(nbars, ngroups);
+for i = 1:nbars
+    xx(i,:) = h_bar(i).XEndPoints;
+end
+% Plot the errorbars
+errorbar(xx',y,e,'k','linestyle','none');
+hold off
+ 
+etc_plotstyle;
+
+return;
 hold on;
 h_errorbar=errorbar(center, y, e);
 set(h_errorbar(1),'linewidth',1);            % This changes the thickness of the errorbars

@@ -2870,11 +2870,6 @@ end;
 
 etc_render_fsbrain.electrode(etc_render_fsbrain.electrode_idx).color=c;
 set(handles.pushbutton_electrode_color,'BackgroundColor',c);
-<<<<<<< HEAD:codes/etc_render_fsbrain_electrode_gui.m
-<<<<<<< HEAD:codes/etc_render_fsbrain_electrode_gui.m
-=======
->>>>>>> f7eb819 (050422):etc_render_fsbrain_electrode_gui.m
-
 count=1;
 for e_idx=1:length(etc_render_fsbrain.electrode)
         for c_idx=1:etc_render_fsbrain.electrode(e_idx).n_contact
@@ -2882,12 +2877,6 @@ for e_idx=1:length(etc_render_fsbrain.electrode)
             count=count+1;
         end;
 end;
-
-<<<<<<< HEAD:codes/etc_render_fsbrain_electrode_gui.m
-=======
->>>>>>> 7dbe60a (111121):etc_render_fsbrain_electrode_gui.m
-=======
->>>>>>> f7eb819 (050422):etc_render_fsbrain_electrode_gui.m
 try
         etc_render_fsbrain_handle('redraw');        
 catch ME

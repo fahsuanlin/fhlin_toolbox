@@ -198,6 +198,22 @@ switch lower(param)
                 pp1=get(etc_trace_obj.fig_trace,'outerpos');
                 set(etc_trace_obj.fig_trigger,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
                 set(etc_trace_obj.fig_trigger,'Resize','off');
+            case 'i'
+                fprintf('show intervals....\n');
+                if(isfield(etc_trace_obj,'fig_interval'))
+                    etc_trace_obj.fig_interval=[];
+                end;
+                etc_trace_obj.fig_interval=etc_trace_interval_gui;
+
+                set(etc_trace_obj.fig_interval,'Name','interval','resize','off');
+
+                set(etc_trace_obj.fig_interval,'units','pixel');
+                set(etc_trace_obj.fig_trace,'units','pixel');
+
+                pp0=get(etc_trace_obj.fig_interval,'outerpos');
+                pp1=get(etc_trace_obj.fig_trace,'outerpos');
+                set(etc_trace_obj.fig_interval,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
+                set(etc_trace_obj.fig_interval,'Resize','off');
                 
             case 'f'
                 fprintf('show configuration....\n');
@@ -741,9 +757,22 @@ switch lower(param)
         clickType = get(gcf, 'SelectionType');
         if(strcmp(clickType,'extend'))
             % right mouse clicked!!
-            fprintf('button up!!\n');
+            %fprintf('button up!!\n');
             etc_trace_obj.dragging = [];
         end;
+        
+        set(gcf, 'windowbuttonmotionfcn', '');
+        set(gca, 'xlimmode','auto');
+
+        handles=guidata(gca);
+
+        if(isfield(handles,'rectangle'))
+            delete(handles.rectangle);
+        end;
+        handles.rectangle=[];
+        
+        guidata(gca,handles);
+
     case 'bd'
         global etc_render_fsbrain;
         global etc_trace_obj;
@@ -779,10 +808,19 @@ switch lower(param)
                 end;
                 if(strcmp(add_trigger,'No')) return; end;
             end;
-            
+
             time_idx_now=etc_trace_obj.time_select_idx;
             class_now=etc_trace_obj.trigger_now;
-            
+
+            duration_now=nan;
+
+            if(~isempty(etc_trace_obj.trace_selected_idx))
+                ch_now=etc_trace_obj.ch_names{etc_trace_obj.trace_selected_idx};
+            else
+                ch_now='';
+            end;
+
+
             if(isempty(class_now)) return; end;
                         
             all_time_idx=[];
@@ -808,6 +846,12 @@ switch lower(param)
                 if(isempty(etc_trace_obj.trigger))
                     etc_trace_obj.trigger.time=time_idx_now;
                     etc_trace_obj.trigger.event{1}=class_now;
+                    etc_trace_obj.trigger.duration(1)=nan;
+                    if(~isempty(etc_trace_obj.trace_selected_idx))
+                        etc_trace_obj.trigger.ch{1}=etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names{etc_trace_obj.trace_selected_idx};
+                    else
+                        etc_trace_obj.trigger.ch{1}='';
+                    end;
                 else
                     etc_trace_obj.trigger.time=cat(1,time_idx_now, etc_trace_obj.trigger.time(:));
                     for i=1:length(etc_trace_obj.trigger.event)
@@ -815,12 +859,28 @@ switch lower(param)
                     end;
                     tmp{1}=class_now;
                     etc_trace_obj.trigger.event=tmp;
+
+                    tmp=[];;
+                    for i=1:length(etc_trace_obj.trigger.duration)
+                        tmp(i+1)=etc_trace_obj.trigger.duration(i);
+                    end;
+                    tmp(1)=duration_now;
+                    etc_trace_obj.trigger.duration=tmp;
+
+                    tmp=[];;
+                    for i=1:length(etc_trace_obj.trigger.ch)
+                        tmp{i+1}=etc_trace_obj.trigger.ch{i};
+                    end;
+                    tmp{1}=ch_now;
+                    etc_trace_obj.trigger.ch=tmp;
                 end;
 
                 %update event list boxes
                 obj_time=findobj('tag','listbox_time');
                 obj_time_idx=findobj('tag','listbox_time_idx');
                 obj_class=findobj('tag','listbox_class');
+                obj_duration=findobj('tag','listbox_duration');
+                obj_ch=findobj('tag','listbox_ch');
                 
                 
                 str=[];
@@ -835,6 +895,18 @@ switch lower(param)
                 set(obj_time,'string',str);
                 set(obj_class,'string',etc_trace_obj.trigger.event);
 
+                str={};
+                for i=1:length(etc_trace_obj.trigger.duration)
+                    str{i}=sprintf('%1.3f',etc_trace_obj.trigger.duration(i));
+                end;
+                set(obj_duration,'string',str);
+
+                str={};
+                for i=1:length(etc_trace_obj.trigger.ch)
+                    str{i}=etc_trace_obj.trigger.ch{i};
+                end;
+                set(obj_ch,'string',str);
+
     
                 %update event edits
                 hObject=findobj('tag','edit_local_trigger_time_idx');
@@ -845,6 +917,12 @@ switch lower(param)
                 set(hObject,'Value',1);
                 hObject=findobj('tag','edit_local_trigger_class');
                 set(hObject,'string',sprintf('%s',class_now));
+                set(hObject,'Value',1);
+                hObject=findobj('tag','edit_local_trigger_duration');
+                set(hObject,'string',sprintf('%1.3f',etc_trace_obj.trigger.duration(1)));
+                set(hObject,'Value',1);
+                hObject=findobj('tag','edit_local_trigger_ch');
+                set(hObject,'string',etc_trace_obj.trigger.ch{1});
                 set(hObject,'Value',1);
 
                 %update trace trigger
@@ -1013,41 +1091,41 @@ switch lower(param)
             end;
             figure(etc_trace_obj.fig_trace);
         else %middle mouse click
-            fprintf('middle button down!!\n');
+            %fprintf('middle button down!!\n');
             
             ylim=get(etc_trace_obj.axis_trace,'ylim');
 
-            if ~isempty(etc_trace_obj.dragging)
-                newPos = get(etc_trace_obj.fig_trace,'CurrentPoint');
-                posDiff = newPos - etc_trace_obj.orPos;
-                etc_trace_obj.orPos = newPos;
-                set(etc_trace_obj.dragging,'Position',get(etc_trace_obj.dragging,'Position') + [posDiff(1:2) 0 0]);
-            end
+%             if ~isempty(etc_trace_obj.dragging)
+%                 newPos = get(etc_trace_obj.fig_trace,'CurrentPoint');
+%                 posDiff = newPos - etc_trace_obj.orPos;
+%                 etc_trace_obj.orPos = newPos;
+%                 set(etc_trace_obj.dragging,'Position',get(etc_trace_obj.dragging,'Position') + [posDiff(1:2) 0 0]);
+%             end
             
             
-            
+            %dragging
+            set(gcf, 'windowbuttonmotionfcn', {@myclick,2});
+            set(gcf, 'windowbuttonupfcn', {@myclick,3});
+            set(gca, 'xlimmode','manual');
             
             out=get(gca,'CurrentPoint');
-        handles.lineObj=[findobj(gca, 'Type', 'line');findobj(gca, 'Type', 'patch')];
+            etc_trace_obj.middle_time_select_idx=round(out(1))+etc_trace_obj.time_window_begin_idx-1;
+
             set(gca,'NextPlot','replace')
-            set(gcf,'Pointer','fullcrosshair');
-        handles.macro_active=1;
-        handles.xpos0=out(1,1);%--store initial position x
-        handles.ypos0=out(1,2);%--store initial position y
-        xl=get(gca,'XLim');yl=get(gca,'YLim');
-        if ((handles.xpos0 > xl(1) & handles.xpos0 < xl(2)) & (handles.ypos0 > yl(1) & handles.ypos0 < yl(2))) %--disable if outside axes
-            [handles.currentlineObj,handles.currentlinestyle]=line_pickup(handles.lineObj,[out(1,1) out(1,2)]);%--choose the right curve via line_pickup
-            if handles.currentlineObj~=0 %--if curve foundd
-                handles.xData = get(handles.lineObj(handles.currentlineObj), 'XData');%--assign x data
-                handles.yData = get(handles.lineObj(handles.currentlineObj), 'YData');%--assign y data 
+            %set(gcf,'Pointer','fullcrosshair');
+            handles.macro_active=1;
+            handles.xpos0=out(1,1);%--store initial position x
+            handles.ypos0=out(1,2);%--store initial position y
+            xl=get(gca,'XLim');yl=get(gca,'YLim');
+            if ((handles.xpos0 > xl(1) & handles.xpos0 < xl(2)) & (handles.ypos0 > yl(1) & handles.ypos0 < yl(2))) %--disable if outside axes
+                handles.rectangle=[];
+                %handles.currentTitle=get(get(gca, 'Title'), 'String');
+                guidata(gca,handles)
+                
+                %title(['[' num2str(out(1,1)) ',' num2str(out(1,2)) ']']);
+            else
+                guidata(gca,handles)
             end
-            handles.currentTitle=get(get(gca, 'Title'), 'String');
-            guidata(gca,handles)
-            
-            title(['[' num2str(out(1,1)) ',' num2str(out(1,2)) ']']);
-        else
-            interactive_move(0);
-        end    
             
             
         end;
@@ -1208,7 +1286,7 @@ end;
 
 % if((etc_trace_obj.time_begin_idx>=1)&&(etc_trace_obj.time_end_idx<=size(etc_trace_obj.data,2)))
 %     tmp=etc_trace_obj.data(:,etc_trace_obj.time_begin_idx:etc_trace_obj.time_end_idx);
-% elseif((etc_trace_obj.time_begin_idx<1)&&(etc_trace_obj.time_end_idx<=size(etc_trace_obj.data,2)))
+% elseif((etc_trace_obj.time_begin_idx<1)&&(etc_trace_obj.time_end_idx<=size(etc_trace_obj.d'ta,2)))
 %     tmp=etc_trace_obj.data(:,1:etc_trace_obj.time_end_idx);
 % elseif((etc_trace_obj.time_begin_idx>=1)&&(etc_trace_obj.time_end_idx>size(etc_trace_obj.data,2)))
 %     tmp=etc_trace_obj.data(:,etc_trace_obj.time_begin_idx:end);
@@ -1344,6 +1422,10 @@ if(etc_trace_obj.config_trace_flag)
 end;
 
 %highlight selected trace
+obj=findobj('Tag','edit_local_trigger_ch');
+if(~isempty(obj))
+    set(obj,'String','');
+end;
 if(isfield(etc_trace_obj,'trace_selected_idx'))
     if(~isempty(etc_trace_obj.trace_selected_idx))
         
@@ -1383,6 +1465,11 @@ if(isfield(etc_trace_obj,'trace_selected_idx'))
                 obj=findobj('Tag','listbox_channel');
                 if(~isempty(obj))
                     set(obj,'Value', etc_trace_obj.trace_selected_idx);
+                end;
+
+                obj=findobj('Tag','edit_local_trigger_ch');
+                if(~isempty(obj))
+                    set(obj,'String', etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names{etc_trace_obj.trace_selected_idx});
                 end;
             case 'image'
                 set(hh(etc_trace_obj.trace_selected_idx),'linewidth',2,'edgecolor','c','visible','on');
@@ -1573,7 +1660,339 @@ redraw;
 
 etc_trace_handle('bd');
 
-return;
+
+
+function myclick(h,event,type)
+global etc_trace_obj;
+
+%handles=guidata(gca);
+handles=guidata(get(etc_trace_obj.fig_trace,'CurrentAxes'));
+switch type
+    case 1 %---Button down
+        out=get(gca,'CurrentPoint');
+        %handles.lineObj=[findobj(gca, 'Type', 'line');findobj(gca, 'Type', 'patch')];
+        set(gca,'NextPlot','replace')
+        %set(gcf,'Pointer','fullcrosshair');
+        handles.macro_active=1;
+        handles.xpos0=out(1,1);%--store initial position x
+        handles.ypos0=out(1,2);%--store initial position y
+
+        xl=get(gca,'XLim');yl=get(gca,'YLim');
+        if ((handles.xpos0 > xl(1) & handles.xpos0 < xl(2)) & (handles.ypos0 > yl(1) & handles.ypos0 < yl(2))) %--disable if outside axes
+            
+            handles.currentTitle=get(get(gca, 'Title'), 'String');
+            guidata(gca,handles)
+
+            title(['[' num2str(out(1,1)) ',' num2str(out(1,2)) ']']);
+        else
+            %interactive_move(0);
+        end
 
 
 
+
+        if(isempty(time_idx))
+            xx=get(gca,'currentpoint');
+            xx=xx(1);
+            etc_trace_obj.time_select_idx=round(xx)+etc_trace_obj.time_window_begin_idx-1;
+        else
+            etc_trace_obj.time_select_idx=time_idx;
+        end;
+        fprintf('selected time <%3.3f> (s) [index [%d] (sample)]\n',(etc_trace_obj.time_select_idx-1)/etc_trace_obj.fs+etc_trace_obj.time_begin, etc_trace_obj.time_select_idx);
+
+
+
+    case 2%---Button Move
+        if handles.macro_active
+            out=get(gca,'CurrentPoint');
+            %set(gcf,'Pointer','fullcrosshair');
+            %title(['[' num2str(out(1,1)) ',' num2str(out(1,2)) ']']);
+            %fprintf('[ %s , %s ]\r ',num2str(out(1,1)), num2str(out(1,2)));
+            
+            if(isfield(etc_trace_obj,'middle_time_select_idx'))
+                if(~isempty(etc_trace_obj.middle_time_select_idx))
+
+                    if(etc_trace_obj.middle_time_select_idx>out(1))
+                        time_idx_start=round(out(1));
+                        time_idx_end=etc_trace_obj.middle_time_select_idx;
+                    else
+                        time_idx_end=round(out(1));
+                        time_idx_start=etc_trace_obj.middle_time_select_idx;
+                    end;
+                    fprintf('[ %d , %d ] (sample) || [%1.3f , %1.3f ] (s) \r ',time_idx_start+etc_trace_obj.time_window_begin_idx-1,time_idx_end+etc_trace_obj.time_window_begin_idx-1, (time_idx_start-1)/etc_trace_obj.fs+etc_trace_obj.time_begin, (time_idx_end-1)/etc_trace_obj.fs+etc_trace_obj.time_begin);
+
+                    obj=findobj('tag','edit_local_trigger_duration');
+                    if(~isempty(obj))
+                        set(obj,'String',sprintf('%1.3f', (time_idx_end-time_idx_start)/etc_trace_obj.fs+etc_trace_obj.time_begin));
+                    end;
+
+                    obj=findobj('tag','edit_local_trigger_time_idx');
+                    if(~isempty(obj))
+                        set(obj,'String',sprintf('%d',time_idx_start));
+                    end;
+
+                    obj=findobj('tag','edit_local_trigger_time');
+                    if(~isempty(obj))
+                        set(obj,'String',sprintf('%1.2f',(time_idx_start-1)/etc_trace_obj.fs+etc_trace_obj.time_begin));
+                    end;
+                end;
+            end;
+
+            if(~isempty(handles.rectangle))
+                delete(handles.rectangle);
+            end;
+            
+            %handles.xpos0=out(1,1);%--store initial position x
+            %handles.ypos0=out(1,2);%--store initial position y
+            ylim=get(gca,'ylim');
+            
+            
+            x1=min([handles.xpos0 out(1,1)]);
+            x2=max([handles.xpos0 out(1,1)]);
+            %y1=min([handles.ypos0 out(1,2)]);
+            %y2=max([handles.ypos0 out(1,2)]);
+            y1=min(ylim);
+            y2=max(ylim);
+            
+            %set(handles.rectangle,'edgecolor','none','facecolor',[0.8500 0.3250 0.0980]);
+            handles.rectangle = patch('vertices', [x1 y1; x2 y1; x2 y2; x1 y2], ...
+                'faces', [1, 2, 3, 4], ...
+                'FaceColor', [0.8500 0.3250 0.0980], ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', 0.05);
+            
+            global hh;
+            hh=handles.rectangle;
+            
+            guidata(gca,handles)
+            
+            
+            %update trigger GUI
+            hObject=findobj('tag','edit_local_interval_on_time_idx');
+            set(hObject,'String',num2str(round(x1)));
+            hObject=findobj('tag','edit_local_interval_off_time_idx');
+            set(hObject,'String',num2str(round(x2)));
+            hObject=findobj('tag','edit_local_interval_on_time');
+            set(hObject,'String',num2str((round(x1)-1)/etc_trace_obj.fs+etc_trace_obj.time_begin));
+            hObject=findobj('tag','edit_local_interval_off_time');
+            set(hObject,'String',num2str((round(x2)-1)/etc_trace_obj.fs+etc_trace_obj.time_begin));
+            %hObject=findobj('tag','edit_local_interval_on_time');
+            %set(hObject,'String',(etc_trace_obj.time_select_idx-1)/etc_trace_obj.fs+etc_trace_obj.time_begin);
+%             if(isfield(etc_trace_obj,'trigger_now'))
+%                 if(~isempty(etc_trace_obj.trigger_now))
+%                     hObject=findobj('tag','edit_local_trigger_class');
+%                     set(hObject,'String',num2str(etc_trace_obj.trigger_now));
+%                 else
+%                     fprintf('now the trigger is set for "def_0" (default trigger name)!\n');
+%                     etc_trace_obj.trigger_now='def_0'; %default event name
+%                     hObject=findobj('tag','edit_local_trigger_class');
+%                     set(hObject,'String',num2str(etc_trace_obj.trigger_now));
+%                 end;
+%             end;
+            
+        end
+        
+    case 3 %----Button up (cleanup some variable)
+        set(gcf,'Pointer','arrow');
+        set(gca,'NextPlot','add')
+        %if handles.currentlineObj~=0,set(handles.lineObj(handles.currentlineObj),'LineStyle',handles.currentlinestyle),end
+        handles.macro_active=0;
+        handles.key='';
+        %title(handles.currentTitle);
+        guidata(gca,handles)
+
+        etc_trace_obj.middle_time_select_idx=[];
+        fprintf('up!!\n')
+        if(~isempty(handles.rectangle))
+                delete(handles.rectangle);
+         end;
+
+        obj=findobj('tag','edit_local_trigger_time_idx');
+        if(~isempty(obj))
+            etc_trace_obj.time_select_idx=str2num(get(obj,'String'));
+        end;
+        
+
+        add_trigger;
+
+        
+
+    case 4 %----Button press
+        handles.key=get(gcf,'CurrentCharacter');
+        guidata(gca,handles)
+end;
+
+
+
+function add_trigger()
+global etc_trace_obj;
+
+% right mouse clicked!!
+
+flag_ask=1;
+
+if(isfield(etc_trace_obj,'trigger_add_rightclick'))
+    if(etc_trace_obj.trigger_add_rightclick)
+        flag_ask=0;
+    end;
+end;
+if(flag_ask)
+    add_trigger=etc_trace_trigger_add_question_gui;
+    switch add_trigger
+        case 'No'
+            etc_trace_obj.trigger_add_rightclick=0;
+            obj=findobj('Tag','checkbox_trigger_rightclick');
+            if(~isempty(obj))
+                set(obj,'Value',0);
+            end;
+        case 'Yes'
+            etc_trace_obj.trigger_add_rightclick=1;
+            obj=findobj('Tag','checkbox_trigger_rightclick');
+            if(~isempty(obj))
+                set(obj,'Value',1);
+            end;
+    end;
+    if(strcmp(add_trigger,'No')) return; end;
+end;
+
+time_idx_now=etc_trace_obj.time_select_idx;
+class_now=etc_trace_obj.trigger_now;
+
+obj=findobj('tag','edit_local_trigger_duration');
+if(~isempty(obj))
+    duration_now=str2num(get(obj,'String'));
+else
+    duration_now=nan;
+end;
+
+
+if(~isempty(etc_trace_obj.trace_selected_idx))
+    ch_now=etc_trace_obj.ch_names{etc_trace_obj.trace_selected_idx};
+else
+    ch_now='';
+end;
+
+
+if(isempty(class_now)) return; end;
+
+all_time_idx=[];
+all_class=[];
+if(~isempty(etc_trace_obj.trigger))
+    all_time_idx=etc_trace_obj.trigger.time;
+    all_class=etc_trace_obj.trigger.event;
+end;
+
+
+
+idx=find(all_time_idx==time_idx_now);
+found=0;
+if(~isempty(idx))
+    if(strcmp(all_class{idx(1)},class_now))
+        found=1;
+    end;
+end;
+
+if(~found)
+    fprintf('adding [%d] (sample) in class {%s}...\n',time_idx_now,class_now);
+
+    if(isempty(etc_trace_obj.trigger))
+        etc_trace_obj.trigger.time=time_idx_now;
+        etc_trace_obj.trigger.event{1}=class_now;
+        etc_trace_obj.trigger.duration(1)=nan;
+        if(~isempty(etc_trace_obj.trace_selected_idx))
+            etc_trace_obj.trigger.ch{1}=etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names{etc_trace_obj.trace_selected_idx};
+        else
+            etc_trace_obj.trigger.ch{1}='';
+        end;
+    else
+        etc_trace_obj.trigger.time=cat(1,time_idx_now, etc_trace_obj.trigger.time(:));
+        for i=1:length(etc_trace_obj.trigger.event)
+            tmp{i+1}=etc_trace_obj.trigger.event{i};
+        end;
+        tmp{1}=class_now;
+        etc_trace_obj.trigger.event=tmp;
+
+        tmp=[];;
+        for i=1:length(etc_trace_obj.trigger.duration)
+            tmp(i+1)=etc_trace_obj.trigger.duration(i);
+        end;
+        tmp(1)=duration_now;
+        etc_trace_obj.trigger.duration=tmp;
+
+        tmp=[];;
+        for i=1:length(etc_trace_obj.trigger.ch)
+            tmp{i+1}=etc_trace_obj.trigger.ch{i};
+        end;
+        tmp{1}=ch_now;
+        etc_trace_obj.trigger.ch=tmp;
+    end;
+
+    %update event list boxes
+    obj_time=findobj('tag','listbox_time');
+    obj_time_idx=findobj('tag','listbox_time_idx');
+    obj_class=findobj('tag','listbox_class');
+    obj_duration=findobj('tag','listbox_duration');
+    obj_ch=findobj('tag','listbox_ch');
+
+
+    str=[];
+    for i=1:length(etc_trace_obj.trigger.time)
+        str{i}=sprintf('%d',etc_trace_obj.trigger.time(i));
+    end;
+    set(obj_time_idx,'string',str);
+    str=[];
+    for i=1:length(etc_trace_obj.trigger.time)
+        str{i}=sprintf('%1.3f',(etc_trace_obj.trigger.time(i)-1)./etc_trace_obj.fs+etc_trace_obj.time_begin);
+    end;
+    set(obj_time,'string',str);
+    set(obj_class,'string',etc_trace_obj.trigger.event);
+
+    str={};
+    for i=1:length(etc_trace_obj.trigger.duration)
+        str{i}=sprintf('%1.3f',etc_trace_obj.trigger.duration(i));
+    end;
+    set(obj_duration,'string',str);
+
+    str={};
+    for i=1:length(etc_trace_obj.trigger.ch)
+        str{i}=etc_trace_obj.trigger.ch{i};
+    end;
+    set(obj_ch,'string',str);
+
+
+    %update event edits
+    hObject=findobj('tag','edit_local_trigger_time_idx');
+    set(hObject,'string',sprintf('%d',time_idx_now));
+    set(hObject,'Value',1);
+    hObject=findobj('tag','edit_local_trigger_time');
+    set(hObject,'string',sprintf('%1.3f',(time_idx_now-1)/etc_trace_obj.fs+etc_trace_obj.time_begin));
+    set(hObject,'Value',1);
+    hObject=findobj('tag','edit_local_trigger_class');
+    set(hObject,'string',sprintf('%s',class_now));
+    set(hObject,'Value',1);
+    hObject=findobj('tag','edit_local_trigger_duration');
+    set(hObject,'string',sprintf('%1.3f',etc_trace_obj.trigger.duration(1)));
+    set(hObject,'Value',1);
+    hObject=findobj('tag','edit_local_trigger_ch');
+    set(hObject,'string',etc_trace_obj.trigger.ch{1});
+    set(hObject,'Value',1);
+
+    %update trace trigger
+    hObject=findobj('tag','listbox_trigger');
+    set(hObject,'string',unique(etc_trace_obj.trigger.event(:)));
+    IndexC = strcmp(unique(etc_trace_obj.trigger.event(:)),etc_trace_obj.trigger_now);
+    tmp=find(IndexC);
+    set(hObject,'Value',tmp(1));
+    hObject=findobj('tag','edit_trigger_time');
+    set(hObject,'string',sprintf('%1.3f',(time_idx_now-1)/etc_trace_obj.fs+etc_trace_obj.time_begin));
+    hObject=findobj('tag','edit_trigger_time_idx');
+    set(hObject,'string',sprintf('%d',time_idx_now));
+
+
+else
+    fprintf('duplicated [%d] (sample) in class {%s}...\n',all_time_idx(idx),class_now);
+
+    obj_time.Value=idx;
+    obj_class.Value=idx;
+end;
+            

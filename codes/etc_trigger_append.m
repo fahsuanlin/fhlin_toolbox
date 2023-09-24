@@ -76,14 +76,29 @@ for i=1:length(varargin)
     idx1=find(idx==1); %old 
     idx2=find(idx==2); %new
     
-    buffer_time(idx1)=trigger_out.time;
-    buffer_time(idx2)=varargin{i}.time;
-    buffer_event(idx1)=trigger_out.event;
-    buffer_event(idx2)=varargin{i}.event;
+%     buffer_time(idx1)=trigger_out.time;
+%     buffer_time(idx2)=varargin{i}.time;
+%     buffer_event(idx1)=trigger_out.event;
+%     buffer_event(idx2)=varargin{i}.event;
 
-    %update the 'trigger_out'
-    trigger_out.time=buffer_time;
-    trigger_out.event=buffer_event;
+    
+    fields=fieldnames(varargin{i});
+    
+    for field_idx=1:length(fields)
+        cmd=sprintf('buffer_%s(idx1)=trigger_out.%s;',fields{field_idx},fields{field_idx});
+        eval(cmd);
+        cmd=sprintf('buffer_%s(idx2)=varargin{%d}.%s;',fields{field_idx},i,fields{field_idx});
+        eval(cmd);
+        cmd=sprintf('trigger_out.%s=buffer_%s;',fields{field_idx},fields{field_idx});
+        eval(cmd);
+    end;
+    
+    for field_idx=1:length(fields)
+        cmd=sprintf('clear buffer_%s;',fields{field_idx});
+    end;
+%     %update the 'trigger_out'
+%     trigger_out.time=buffer_time;
+%     trigger_out.event=buffer_event;
    
 end;
 

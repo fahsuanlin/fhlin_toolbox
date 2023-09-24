@@ -1,4 +1,4 @@
-function [p, r2, beta]=etc_regression(x,y,varargin)
+function [p, r2, beta,h]=etc_regression(x,y,varargin)
 %
 % etc_regression     linear regression 
 %
@@ -69,23 +69,24 @@ SS_error=res'*res;
 F=(SS_regression./1)/(SS_error/(length(y(:))-2));
 p=1-fcdf(F,1,(length(y(:))-2));
 
+h=[];
 if(flag_display)
     if(isempty(color))
         color='k';
     end;
     
     if(flag_display_data)
-        plot(x(:),y(:),'.'); hold on;
+        h(end+1)=plot(x(:),y(:),'.'); hold on;
     end;
     reg_x=[min(x) max(x)]';
     reg_y=beta(1)+beta(2).*reg_x; 
 
     if(flag_display_regline)
-        h=line(reg_x,reg_y); set(h,'color',color,'linewidth',2);
+        h(end+1)=line(reg_x,reg_y); set(h,'color',color,'linewidth',2);
     end;
     if(flag_display_regline_text)
-        h=text((max(x)+min(x))/2,min(y)+(max(y)+min(y))/4,sprintf('Y=%2.2f+%2.2f X',beta(1),beta(2))); set(h,'fontname','helvetica','fontsize',14);
-        h=text((max(x)+min(x))/2,min(y)+(max(y)+min(y))/4*0.9.*label_sep,sprintf('(R^2=%1.2f; p=%4.3f)',r2,p)); set(h,'fontname','helvetica','fontsize',14);
+        h(end+1)=text((max(x)+min(x))/2,min(y)+(max(y)+min(y))/4,sprintf('Y=%2.2f+%2.2f X',beta(1),beta(2))); set(h(end),'fontname','helvetica','fontsize',14);
+        h(end+1)=text((max(x)+min(x))/2,min(y)+(max(y)+min(y))/4*0.9.*label_sep,sprintf('(R^2=%1.2f; p=%4.3f)',r2,p)); set(h(end),'fontname','helvetica','fontsize',14);
         set(gca,'fontname','helvetica','fontsize',14);
     end;
 %    set(gca,'xlim',[0.050 0.500],'ylim',[4 6])

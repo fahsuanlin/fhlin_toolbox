@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_sensors(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_sensors
 
-% Last Modified by GUIDE v2.5 11-Jun-2019 05:07:43
+% Last Modified by GUIDE v2.5 16-Aug-2023 23:44:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -121,7 +121,7 @@ global etc_render_fsbrain
 
 etc_render_fsbrain.aux_point_idx=get(hObject,'Value');
 tmp=cellstr(get(hObject,'String'));
-fprintf('sensor [%s] selectred.\n',tmp{etc_render_fsbrain.aux_point_idx});
+fprintf('sensor [%s] selected.\n',tmp{etc_render_fsbrain.aux_point_idx});
 
 
 surface_coord=etc_render_fsbrain.aux_point_coords(etc_render_fsbrain.aux_point_idx,:);
@@ -195,8 +195,8 @@ if(etc_render_fsbrain.sensor_add_gui_ok)
         etc_render_fsbrain.aux_point_name={};
         delete(etc_render_fsbrain.aux_point_name_h);
         etc_render_fsbrain.aux_point_name_h=[];
-        etc_render_fsbrain.aux_point_color=[1 0 0];
-        etc_render_fsbrain.aux_point_size=0.005;
+        etc_render_fsbrain.aux_point_color=[0 0 0.5];
+        etc_render_fsbrain.aux_point_size=50;
         etc_render_fsbrain.aux_point_label_flag=1;
     end;
     
@@ -209,8 +209,9 @@ if(etc_render_fsbrain.sensor_add_gui_ok)
     end;
     
     etc_render_fsbrain.aux_point_name{end+1}=etc_render_fsbrain.new_sensor.name;
-    etc_render_fsbrain.aux_point_coords(end+1,:)=[0 0 0];
-    
+    etc_render_fsbrain.aux_point_coords(end+1,:)=etc_render_fsbrain.click_coord(:).';
+
+
     %the first electrode
     if(length(etc_render_fsbrain.aux_point_name)==1)
         etc_render_fsbrain.aux_point_idx=1;
@@ -225,6 +226,8 @@ if(etc_render_fsbrain.sensor_add_gui_ok)
     set(handles.listbox_sensor,'string',str);
     set(handles.listbox_sensor,'value',etc_render_fsbrain.aux_point_idx);
     
+    etc_render_fsbrain_handle('redraw');
+
     guidata(hObject, handles);
 end;
 
@@ -492,4 +495,34 @@ dist=sqrt(sum((vv-repmat([etc_render_fsbrain.click_coord(1),etc_render_fsbrain.c
 [min_dist,min_dist_idx]=min(dist);
 etc_render_fsbrain.click_vertex=min_dist_idx;
 
+
 etc_render_fsbrain_handle('redraw');
+
+
+% --- Executes on button press in button_name.
+function button_name_Callback(hObject, eventdata, handles)
+% hObject    handle to button_name (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global etc_render_fsbrain;
+
+
+prompt = {'name:'};
+dlgtitle = 'name';
+dims = [1 35];
+definput = {etc_render_fsbrain.aux_point_name{etc_render_fsbrain.aux_point_idx}};
+answer = inputdlg(prompt,dlgtitle,dims,definput)
+
+
+if(~isempty(answer))
+    etc_render_fsbrain.aux_point_name{etc_render_fsbrain.aux_point_idx}=answer{1}
+
+    str={};
+    for e_idx=1:length(etc_render_fsbrain.aux_point_name)
+        str{e_idx}=etc_render_fsbrain.aux_point_name{e_idx};
+    end;
+    set(handles.listbox_sensor,'string',str);
+    set(handles.listbox_sensor,'value',etc_render_fsbrain.aux_point_idx);
+
+end;

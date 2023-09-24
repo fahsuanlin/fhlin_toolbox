@@ -70,7 +70,11 @@ while ischar(tmp)
     
     switch(type_id)
         case 1
-            chname{count-1}=dd{2};
+            if(iscell(dd{2}))
+                chname{count-1}=dd{2}{1};
+            else
+                chname{count-1}=dd{2};
+            end;
             x(count-1)=dd{3};
             y(count-1)=dd{4};
             z(count-1)=dd{5};
@@ -80,7 +84,11 @@ while ischar(tmp)
             y(count-1)=dd{3};
             z(count-1)=dd{4};
         case 3
-            chname{count-1}=dd{1};
+            if(iscell(dd{1}))
+                chname{count-1}=dd{1}{1};
+            else
+                chname{count-1}=dd{1};
+            end;
             x(count-1)=dd{2};
             y(count-1)=dd{3};
             z(count-1)=dd{4};
