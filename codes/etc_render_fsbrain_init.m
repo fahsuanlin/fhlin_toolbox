@@ -393,7 +393,11 @@ end
 if(tmp_set_vol<0.5)
     vol=[];
     try
-        vol=MRIread(sprintf('%s/%s/mri/orig.mgz',subjects_dir,subject));
+        if(ispc)
+            vol=MRIread(sprintf('%s\\%s\\mri\\orig.mgz',subjects_dir,subject));
+        else
+            vol=MRIread(sprintf('%s/%s/mri/orig.mgz',subjects_dir,subject));
+        end;
     catch ME
     end;
     
@@ -404,7 +408,11 @@ if(tmp_set_vol<0.5)
     ribbon_idx{1}=[];
     ribbon_idx{2}=[];
     try
-        vol_ribbon=MRIread(sprintf('%s/%s/mri/ribbon.mgz',subjects_dir,subject));
+        if(ispc)
+            vol_ribbon=MRIread(sprintf('%s\\%s\\mri\\ribbon.mgz',subjects_dir,subject));
+        else
+            vol_ribbon=MRIread(sprintf('%s/%s/mri/ribbon.mgz',subjects_dir,subject));
+        end;
         
         for hemi_idx=1:2
             switch hemi_idx
