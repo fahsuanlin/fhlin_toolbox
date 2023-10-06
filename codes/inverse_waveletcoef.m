@@ -12,12 +12,19 @@ function Y = inverse_waveletcoef(f,s,Fs,width,varargin)
 
 flag_normalize=0;
 
+flag_causal=0; %only data *before* the current measurement
+flag_anticausal=0; %only data *after* the current measurement
+
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
     switch lower(option)
         case 'flag_normalize'
             flag_normalize=option_value;
+        case 'flag_causal'
+            flag_causal=option_value;
+        case 'flag_anticausal'
+            flag_anticausal=option_value;
         otherwise
             fprintf('unknown option [%s].\n',option);
             return;
@@ -31,6 +38,14 @@ for i=1:length(f)
     st = 1/(2*pi*sf);
     
     t=-3.5*st:dt:3.5*st;
+
+    if(flag_causal)
+        t=t(find(t<0));
+    end;
+    if(flag_anticausal)
+        t=t(find(t>0));
+    end;
+    
     [m, amp] = morlet(f(i),t,width);
     if(flag_normalize)
         m=m./abs(amp);
