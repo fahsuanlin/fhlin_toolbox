@@ -2,16 +2,22 @@ function [tsnr]=etc_tsnr(varargin)
 
 file_nii={};
 
+stc=[];
+
 img=[];
 
 TR=2.0; %second
 
-exclude_time=[1:2];
+exclude_time=[];
 %exclude_time=[];
 
 confound_polynomial_order=2;
 
 %output_stem='tsnr_epi_60deg';
+
+nx=[];
+ny=[];
+nz=[];
 
 flag_display=0;
 
@@ -19,6 +25,8 @@ for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
     switch(lower(option))
+        case 'stc'
+            stc=option_value;
         case 'img'
             img=option_value;
         case 'file_nii'
@@ -42,52 +50,59 @@ end;
 %
 % construct contrast matrix using legendres to model the effects
 %
-stc=[];
+if(isempty(stc))
+    if(isempty(img))
+        if(flag_display)
+            fprintf('loading data...\n');
+        end;
+        stc=[];
+        exclude_time_all=[];
+        for f_idx=1:length(file_nii)
+            d=load_untouch_nii(file_nii{f_idx});
+            sz=size(d.img);
 
-if(isempty(img))
-    if(flag_display)
-        fprintf('loading data...\n');
-    end;
-    stc=[];
-    exclude_time_all=[];
-    for f_idx=1:length(file_nii)
-        d=load_untouch_nii(file_nii{f_idx});
-        sz=size(d.img);
-        
-        stc=reshape(double(d.img),[prod(sz(1:end-1)),sz(end)]);
+            stc=reshape(double(d.img),[prod(sz(1:end-1)),sz(end)]);
+            timepoints(f_idx)=size(stc,2);
+            %stc(:,exclude_time)=[];
+
+            ss=sz(1:end-1);
+            ny=ss(1);
+            nx=ss(2);
+            nz=ss(3);
+
+            if(~isempty(exclude_time))
+                exclude_time_all=cat(1,exclude_time_all,exclude_time(:)+(timepoints(f_idx)).*(f_idx-1));
+            end;
+
+
+        end;
+    else
+        f_idx=1;
+
+        sz=size(img);
+        stc=reshape(img,[prod(sz(1:end-1)),sz(end)]);
         timepoints(f_idx)=size(stc,2);
         %stc(:,exclude_time)=[];
-        
+
         ss=sz(1:end-1);
         ny=ss(1);
         nx=ss(2);
         nz=ss(3);
-        
+
+
+        exclude_time_all=[];
         if(~isempty(exclude_time))
             exclude_time_all=cat(1,exclude_time_all,exclude_time(:)+(timepoints(f_idx)).*(f_idx-1));
         end;
-        
-        
+
     end;
 else
     f_idx=1;
-    
-    sz=size(img);
-    stc=reshape(img,[prod(sz(1:end-1)),sz(end)]);
-    timepoints(f_idx)=size(stc,2);
-    %stc(:,exclude_time)=[];
-    
-    ss=sz(1:end-1);
-    ny=ss(1);
-    nx=ss(2);
-    nz=ss(3);
-
-    
+    timepoints(1)=size(stc,2);
     exclude_time_all=[];
     if(~isempty(exclude_time))
-        exclude_time_all=cat(1,exclude_time_all,exclude_time(:)+(timepoints(f_idx)).*(f_idx-1));
+        exclude_time_all=exclude_time(:);
     end;
-    
 end;
 
 if(isempty(stc))
@@ -169,7 +184,9 @@ rr=std(res,0,1);
 
 %fprintf('tsnr=%2.0f +/- %2.0f\n',mean(tsnr(idx)),std(tsnr(idx)));
 
-tsnr=reshape(tsnr,[ny nx nz]);
+if(~isempty(nx))
+    tsnr=reshape(tsnr,[ny nx nz]);
+end;
 
 %fprintf('\tarchiving results...\n');
 %save(sprintf('%s.mat',output_stem),'tsnr');

@@ -122,7 +122,7 @@ if(flag_wavelet_ecg)
 
     wav=fmri_scale(abs(tfr(200,:))./10,200,-200); wav=wav-mean(wav);
 
-    %[dummy,pks_tmp]=findpeaks(wav,'MinPeakDistance',20,'MinPeakProminence',40); %6Hz; assuming ECG has been decimated by 10x (60 Hz in threory).
+    [dummy,pks_tmp]=findpeaks(wav,'MinPeakDistance',20,'MinPeakProminence',40); %6Hz; assuming ECG has been decimated by 10x (60 Hz in threory).
     [dummy,read_inside_eeg_cccm]=findpeaks(wav,'MinPeakDistance',20,'MinPeakProminence',20,'Annotate','extents'); %6Hz; assuming ECG has been decimated by 10x (60 Hz in threory).
 %     for p_idx=1:length(pks_tmp)+1
 %         if(p_idx==1)
