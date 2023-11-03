@@ -390,7 +390,15 @@ if(tmp_set_vol<0.5)
     vol=[];
     try
         if(ispc)
-            vol=MRIread(sprintf('%s\\%s\\mri\\orig.mgz',subjects_dir,subject));
+            if(exist(sprintf('%s\\%s\\mri\\orig.mgh',subjects_dir,subject)))
+                vol=MRIread(sprintf('%s\\%s\\mri\\orig.mgh',subjects_dir,subject));
+            else
+                if(exist(sprintf('%s\\%s\\mri\\orig.mgz',subjects_dir,subject)))
+                    fprintf('ERROR: At Windows, please decompress [orig.mgz] to [orig.mgh]!\n');
+                else
+                    fprintf('ERROR: cannot find [orig.mgz]\n');
+                end;
+            end;
         else
             vol=MRIread(sprintf('%s/%s/mri/orig.mgz',subjects_dir,subject));
         end;
@@ -405,7 +413,15 @@ if(tmp_set_vol<0.5)
     ribbon_idx{2}=[];
     try
         if(ispc)
-            vol_ribbon=MRIread(sprintf('%s\\%s\\mri\\ribbon.mgz',subjects_dir,subject));
+            if(exist(sprintf('%s\\%s\\mri\\orig.mgh',subjects_dir,subject)))
+                vol_ribbon=MRIread(sprintf('%s\\%s\\mri\\ribbon.mgh',subjects_dir,subject));
+            else
+                if(exist(sprintf('%s\\%s\\mri\\orig.mgz',subjects_dir,subject)))
+                    fprintf('ERROR: At Windows, please decompress [ribbon.mgz] to [ribbon.mgh]!\n');
+                else
+                    fprintf('ERROR: cannot find [ribbon.mgz]!\n');
+                end;
+            end;
         else
             vol_ribbon=MRIread(sprintf('%s/%s/mri/ribbon.mgz',subjects_dir,subject));
         end;
