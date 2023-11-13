@@ -3265,7 +3265,9 @@ if(~isempty(etc_render_fsbrain.overlay_stc))
                         if(~isempty(etc_render_fsbrain.overlay_vol))
                             mask_idx=find(etc_render_fsbrain.overlay_vol_mask.vol(:)==etc_render_fsbrain.lut.number(idx(ii)));
                             tmp=reshape(etc_render_fsbrain.overlay_vol.vol,[size(etc_render_fsbrain.overlay_vol.vol,1)*size(etc_render_fsbrain.overlay_vol.vol,2)*size(etc_render_fsbrain.overlay_vol.vol,3),size(etc_render_fsbrain.overlay_vol.vol,4)]);
-                            buffer(1,:,ii)=mean(tmp(mask_idx,:),1);
+                            if(length(etc_render_fsbrain.overlay_stc_timeVec)==size(tmp,2))
+                                buffer(1,:,ii)=mean(tmp(mask_idx,:),1);
+                            end;
                         end;
                     end;
                 end;

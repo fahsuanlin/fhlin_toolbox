@@ -51,18 +51,22 @@ if(isempty(figure_handel))
 end;
 
 if(isempty(axis_handel))
-    axis_handel=gca;
+    axis_handel=get(figure_handel,'child');
 end;
 
 set(figure_handel,'color',figure_color);
 
-set(axis_handel,'color',axis_color,'fontname',fontname,'fontsize',fontsize);
-
-h=get(axis_handel,'child');
-for i=1:length(h)
-    if(isprop(h(i),'MarkerSize'))
-        set(h(i),'MarkerSize',MarkerSize);
-    end;
+for ax_idx=length(axis_handel):-1:1
+%    set(axis_handel(ax_idx),'color',axis_color,'fontname',fontname,'fontsize',fontsize);
+    set(axis_handel(ax_idx),'fontname',fontname,'fontsize',fontsize);
 end;
 
+for ax_idx=length(axis_handel):-1:1
+    h=get(axis_handel(ax_idx),'child');
+    for i=1:length(h)
+        if(isprop(h(i),'MarkerSize'))
+            set(h(i),'MarkerSize',MarkerSize);
+        end;
+    end;
+end;
 return;

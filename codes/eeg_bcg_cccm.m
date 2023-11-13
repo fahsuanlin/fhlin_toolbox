@@ -122,8 +122,8 @@ if(flag_wavelet_ecg)
 
     wav=fmri_scale(abs(tfr(200,:))./10,200,-200); wav=wav-mean(wav);
 
-    [dummy,pks_tmp]=findpeaks(wav,'MinPeakDistance',20,'MinPeakProminence',40); %6Hz; assuming ECG has been decimated by 10x (60 Hz in threory).
-    [dummy,read_inside_eeg_cccm]=findpeaks(wav,'MinPeakDistance',20,'MinPeakProminence',20,'Annotate','extents'); %6Hz; assuming ECG has been decimated by 10x (60 Hz in threory).
+    %[dummy,pks_tmp]=findpeaks(wav,'MinPeakDistance',20,'MinPeakProminence',40); %6Hz; assuming ECG has been decimated by 10x (60 Hz in threory).
+    [dummy,pks_tmp]=findpeaks(wav,'MinPeakDistance',20,'MinPeakProminence',20,'Annotate','extents'); %6Hz; assuming ECG has been decimated by 10x (60 Hz in threory).
 %     for p_idx=1:length(pks_tmp)+1
 %         if(p_idx==1)
 %             pks_start=1;
@@ -211,8 +211,8 @@ end;
 check.ecg_onset_idx=ecg_onset_idx;
 check.ecg_offset_idx=ecg_offset_idx;
 
-qrs_phase_limit=5; %+/-5% of the QRS peak in an ECG cycle
-qrs_phase_idx=find((angle(exp(sqrt(-1).*(ecg_phase_percent)./100.*2.*pi))*100/2/pi<=qrs_phase_limit)&(angle(exp(sqrt(-1).*(ecg_phase_percent)./100.*2.*pi))*100/2/pi>=-qrs_phase_limit));
+%qrs_phase_limit=5; %+/-5% of the QRS peak in an ECG cycle
+%qrs_phase_idx=find((angle(exp(sqrt(-1).*(ecg_phase_percent)./100.*2.*pi))*100/2/pi<=qrs_phase_limit)&(angle(exp(sqrt(-1).*(ecg_phase_percent)./100.*2.*pi))*100/2/pi>=-qrs_phase_limit));
 
 ll=ecg_offset_idx-ecg_onset_idx;
 ll([1 end-1 end])=[]; %remove the first and last ECG; potentially incomplete.
@@ -230,8 +230,8 @@ tmp=[1-tau.*(E):tau:tau.*(2*E)-1];
 
 for ch_idx=1:length(non_ecg_channel)
 
-    dd=eeg(non_ecg_channel(ch_idx),:);
-    dd_buffer=zeros(max(max(ecg_idx))-2,round(median(ll)));
+    dd=eeg(non_ecg_channel(ch_idx),:); %
+    dd_buffer=zeros(max(max(ecg_idx))-2,round(median(ll))); % (N_ecg x L_ecg) EEG data at each ECG cycle
     try
         for ii=2:max(ecg_idx)-1
             dd_buffer(ii-1,:)=dd(ecg_onset_idx(ii):ecg_onset_idx(ii)+median(ll)-1);

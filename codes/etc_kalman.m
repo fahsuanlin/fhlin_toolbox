@@ -1,42 +1,57 @@
-%close all; clear all;
-
-function [y_kf]=etc_kalman(y,p)
+function [y_kf, r_kf]=etc_kalman(y,d,varargin)
 
 % etc_kalman    Filtering auto-regressive signal with Kalman filter
 %
-% [y_kf]=etc_kalman(y,p)
+% [y_kf, r_kf]=etc_kalman(y,d)
 %
-% y: one-dimensional signal to be filtered
-% p: auto-regressive model order
+% y: n_y x n_t signals to be filtered
+% d: n_x * n_t signals as the regressors
 %
 % y_kf: filtered signal
+% r_kf: filtered residual
 %
 % option:
-%   'a0': the diagnal value for the state vector transition matrix (a pxp
-%   diagonal matrix). default: a0=0.8;
-%   'q0': the noise level for the state vector (a pxp diagonal
-%   matrix). default: q0=0.9;
-%   'r0': the noise level parameter for the observation (a scalar). The noise level for the ovservation variable 'y' is assumed to be r0*std(y). default: r0=1.5;
+%   'Q': state covariance matrix 
+%   'R': observation covariance matrix
 %
-% fhlin@May 19 2022
+% fhlin@Oct 28 2023
 %
+
+flag_dyn_H=1;
+
+buffer_sample=1000; %default with a 1000-sample window
+
+x_init=[];
+P_init=[];
 
 y_kf=[];
+r_kf=[];
 
-a0=0.8;
-q0=0.9;
-r0=1.5;
+Q=[];
+R=[];
+F=[];
+H=[];
 
 for i=1:length(varargin)
     option=varargin{i*2-1};
     option_value=varargin{i*2};
     switch lower(option)
-        case 'a0'
-            a0=option_value;
-        case 'q0'
-            q0=option_value;
-        case 'r0'
-            r0=option_value;
+        case 'buffer_sample'
+            buffer_sample=option_value;
+        case 'flag_dyn_h'
+            flag_dyn_H=option_value;
+        case 'x_init'
+            x_init=option_value;
+        case 'p_init'
+            P_init=option_value;
+        case 'q'
+            Q=option_value;
+        case 'r'
+            R=option_value;
+        case 'f'
+            F=option_value;
+        case 'h'
+            H=option_value;
         otherwise
             fprintf('unknown option [%s]. error!\n',option);
             return;
@@ -45,51 +60,67 @@ end;
 
 
 
-%load temp.mat; %'ecg' and 'fs'
-%y=ecg(:);
-%p=20% AR order
-
-
-
-
-
-
-
-Y=toeplitz(y(1:p+1),y');
-
-%state transition matrix
-A=eye(p).*a0;
-
-%noise covariance
-Q=eye(p).*q0; %for state vector
-R=std(y).*r0; %for measurement
-
-%inital state
-P_apriori=zeros(p,p); %covariance for the state vector
-s_apriori=zeros(p,1); %state vector
-
-
-for t_idx=1:length(y)
-    y(t_idx)=Y(1,t_idx);
-    %if(t_idx>p)
-    %    C=y_kf(t_idx-p:t_idx-1)';
-    %else
-        C=Y(2:end,t_idx)';
-    %end;
-    
-    %predict (extrapolation)
-    P_posteriori=A*squeeze(P_apriori)*A'+Q;
-    s_posteriori=A*s_apriori; %+input
-    y_kf(t_idx,:)=C*s_posteriori;
-    
-    %update
-    K=squeeze(P_apriori)*C'*inv(R+C*P_apriori*C');
-    P_apriori=(eye(size(K,1))-K*C)*P_posteriori*((eye(size(K,1))-K*C))'+K*R*K';
-    %P_apriori=(eye(size(K,1))-K*C)*P_posteriori;
-    s_apriori=s_posteriori+K*(y(t_idx)-C*s_posteriori);    
-    
+%Q: covariance matrix for the state vector
+if(isempty(Q))
+    x_mne=inv(d*d.')*d*y.';
+    Q=diag(diag(cov(x_mne*x_mne')));
+    Q(end+1,end+1)=1;
 end;
 
-plot(y)
-hold on
-plot(y_kf)
+%R: covariance matrix for the observation vector
+if(isempty(R))
+    R=diag(diag(cov(y.')));
+end;
+
+%F: state transition matrix
+if(isempty(F))
+    F=eye(size(d,1)+1); %no state transition.
+end;
+%F=eye(size(P_init,1)).*0.1; %state transition matrix
+
+%H: gain matrix
+
+%x: state vector
+%y: obervation vector
+
+if(isempty(x_init))
+   x_init=zeros(size(d,1)+1,1);
+end;
+
+if(isempty(P_init))
+    P_init=eye(size(d,1)+1);
+end;
+
+
+%predict (with inputs of x, F, P, Q)
+x=x_init;
+P=P_init;
+for t_idx=buffer_sample:size(y,2)
+    %fprintf('[%03d]...(%03d)\r',t_idx,size(y,2))
+    x_apriori(:,t_idx)=F*x; %apriori state estimates
+    P=F*P*F'+Q; %apriori state covariance matrix estimate
+
+    %update (with inputs y, H, and R)
+    if(flag_dyn_H)
+        %H=d(:,t_idx-buffer_sample+1:t_idx).';
+        H=d(:,t_idx).';
+        H(end+1)=1;
+    end;
+
+    %r=y(:,t_idx-buffer_sample+1:t_idx).'-H*x; %innovation; pre-fit residual
+    r=y(:,t_idx).'-H*x; %innovation; pre-fit residual
+    
+    S=H*P*H'+R; %innvoation covariance
+    K=P*H'*inv(S); %Kalman gain
+
+    %update
+    x_aposteriori(:,t_idx)=x_apriori(:,t_idx)+K*r; %aposteriori state estaimtes
+    P=(eye(size(K,1))-K*H)*P; %aposteriori state covariance matrix estimate
+    tmp=H*x_aposteriori(:,t_idx);
+    y_kf(:,t_idx)=tmp(end);
+    r_kf(:,t_idx)=y(:,t_idx)-H*x_aposteriori(:,t_idx); %post-fit residual
+end;
+
+
+
+
