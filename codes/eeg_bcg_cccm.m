@@ -113,37 +113,12 @@ if(flag_wavelet_ecg)
     
     tfr=tfr2;
 
-%     wav1=fmri_scale(-abs(tfr(26,:))./10,200,-200); wav1=wav1-mean(wav1);
-%     wav2=fmri_scale(-abs(tfr(31,:))./10,200,-200); wav2=wav2-mean(wav2);
-%     wav3=fmri_scale(-abs(tfr(36,:))./10,200,-200); wav3=wav3-mean(wav3);
-%     wav4=fmri_scale(-abs(tfr(41,:))./10,200,-200); wav3=wav3-mean(wav3);
-%     wav5=fmri_scale(-abs(tfr(46,:))./10,200,-200); wav4=wav4-mean(wav4);
-%     wav6=fmri_scale(-abs(tfr(51,:))./10,200,-200); wav5=wav5-mean(wav5);
 
-    wav=fmri_scale(abs(tfr(200,:))./10,200,-200); wav=wav-mean(wav);
+    wav=fmri_scale(abs(tfr(230,:))./10,200,-200); wav=wav-mean(wav);
 
-    %[dummy,pks_tmp]=findpeaks(wav,'MinPeakDistance',20,'MinPeakProminence',40); %6Hz; assuming ECG has been decimated by 10x (60 Hz in threory).
-    [dummy,pks_tmp]=findpeaks(wav,'MinPeakDistance',20,'MinPeakProminence',20,'Annotate','extents'); %6Hz; assuming ECG has been decimated by 10x (60 Hz in threory).
-%     for p_idx=1:length(pks_tmp)+1
-%         if(p_idx==1)
-%             pks_start=1;
-%         else
-%             pks_start=pks_tmp(p_idx-1);
-%         end;
-%         if(p_idx==length(pks_tmp)+1)
-%             pks_end=length(ecg);
-%         else
-%             pks_end=pks_tmp(p_idx);
-%         end;
-        %[dummy,qrs_i_raw_tmp]=max(ecg(pks_start:pks_end));
-%         [dummy,qrs_i_raw_tmp]=max(wav(pks_start:pks_end));
-%         interv(p_idx)=pks_end-pks_start;
-%         qrs_i_raw(p_idx)=qrs_i_raw_tmp+pks_start; %<<--------!!!!!
-%         if(p_idx>2)
-%         if(qrs_i_raw(p_idx)-qrs_i_raw(p_idx-1)<5) keyboard; end;
-%         end;
+    %[dummy,pks_tmp]=findpeaks(wav,'MinPeakDistance',20,'MinPeakProminence',40); %6Hz; assuming ECG has been decimated by 100x (50 Hz in threory).
+    [dummy,pks_tmp]=findpeaks(wav,'MinPeakDistance',30,'MinPeakProminence',10,'Annotate','extents'); %6Hz; assuming ECG has been decimated by 100x (50 Hz in threory).
         qrs_i_raw=pks_tmp;
-%    end;
 elseif(flag_eegsvd_ecg)
     [uu,ss,vv]=svd(eeg,'econ');
     v1=vv(:,1)';
@@ -170,12 +145,16 @@ check.qrs_i_raw=qrs_i_raw;
 % etc_trace([fmri_scale(v1,-100,100); eeg(11,:);t;ecg./5],'fs',fs);
 % keyboard;
 
+qrs_i_raw=etc_onset_adjust(ecg,qrs_i_raw, 'flag_display',flag_display,'flag_signal_abs',0);
+
+
 %     tt=[1:length(ecg)]./fs;
 %     figure; plot(tt,ecg); hold on;
 %     line(repmat(tt(qrs_i_raw),[2 1]),repmat([min(ecg-mean(ecg))/2; max(ecg-mean(ecg))/2],size(qrs_i_raw)),'LineWidth',2.5,'LineStyle','-.','Color','r');
 
-    
+
 eeg_bcg_pred=zeros(size(eeg));
+eeg_bcg_pred_orig=zeros(size(eeg));
 non_ecg_channel=[1:size(eeg,1)];
 
 
@@ -214,7 +193,7 @@ check.ecg_offset_idx=ecg_offset_idx;
 %qrs_phase_limit=5; %+/-5% of the QRS peak in an ECG cycle
 %qrs_phase_idx=find((angle(exp(sqrt(-1).*(ecg_phase_percent)./100.*2.*pi))*100/2/pi<=qrs_phase_limit)&(angle(exp(sqrt(-1).*(ecg_phase_percent)./100.*2.*pi))*100/2/pi>=-qrs_phase_limit));
 
-ll=ecg_offset_idx-ecg_onset_idx;
+ll=ecg_offset_idx-ecg_onset_idx+1;
 ll([1 end-1 end])=[]; %remove the first and last ECG; potentially incomplete.
 mll=min(ll);
 % if(tau.*(E-1)<=(mll-1))
@@ -232,6 +211,8 @@ for ch_idx=1:length(non_ecg_channel)
 
     dd=eeg(non_ecg_channel(ch_idx),:); %
     dd_buffer=zeros(max(max(ecg_idx))-2,round(median(ll))); % (N_ecg x L_ecg) EEG data at each ECG cycle
+    %dd_buffer=zeros(max(max(ecg_idx))-2,round(max(ll))); % (N_ecg x L_ecg) EEG data at each ECG cycle
+
     try
         for ii=2:max(ecg_idx)-1
             dd_buffer(ii-1,:)=dd(ecg_onset_idx(ii):ecg_onset_idx(ii)+median(ll)-1);
@@ -240,8 +221,12 @@ for ch_idx=1:length(non_ecg_channel)
     catch
     end;
     [dummy, peak_idx]=sort(mean(abs(dd_buffer),1));
-    peak_idx=peak_idx(end-E:end); %<--- only the most significant 2*E time points are chosen as features.
-    peak_idx=[0:median(ll)-1]; %<---all time points are chosen as features.
+    
+    %peak_idx=peak_idx(end-E:end); %<--- only the most significant 2*E time points are chosen as features.
+    
+    %peak_idx=[0:median(ll)-1]; %<---all time points are chosen as features.
+    peak_idx=[0:max(ll)-1]; %<---all time points are chosen as features. length is the longest one!!
+    %peak_idx=[-max(ll):max(ll)-1]; %<---all time points are chosen as features. length is the longest one!!
 
     check.peak_idx(:,ch_idx)=peak_idx(:);
 
@@ -277,14 +262,26 @@ for ch_idx=1:length(non_ecg_channel)
         %[IDX,D] = knnsearch(ecg(ecg_ccm_idx(2:end-1,:)),ecg(ecg_ccm_idx(2:end-1,:)),'K',nn+1);
         %[IDX,D] = knnsearch(ecg(ecg_ccm_idx(not_nan,:)),ecg(ecg_ccm_idx(not_nan,:)),'K',nn+1);
         dd=eeg(non_ecg_channel(ch_idx),:);
-        [IDX,D] = knnsearch(dd(ecg_ccm_idx(not_nan,:)),dd(ecg_ccm_idx(not_nan,:)),'K',nn+1);
+        tmp=dd(ecg_ccm_idx(not_nan,:));
+        for trial_idx=1:size(tmp,1)
+            tmp(trial_idx,:)=detrend(tmp(trial_idx,:));
+        end;
+
+        %[IDX,D] = knnsearch(dd(ecg_ccm_idx(not_nan,:)),dd(ecg_ccm_idx(not_nan,:)),'K',nn+1);
+        [IDX,D] = knnsearch(tmp,tmp,'K',nn+1);
         
     else
         [uu,ss,vv]=svd(eeg,'econ');
         v1=vv(:,1)';
         %[IDX,D] = knnsearch(v1(ecg_ccm_idx(2:end-1,:)),v1(ecg_ccm_idx(2:end-1,:)),'K',nn+1);
         %[IDX,D] = knnsearch(v1(ecg_ccm_idx(not_nan,:)),v1(ecg_ccm_idx(not_nan,:)),'K',nn+1);
-        [IDX,D] = knnsearch(v1(non_ecg_channel(ch_idx), ecg_ccm_idx(not_nan,:)),v1(non_ecg_channel(ch_idx), ecg_ccm_idx(not_nan,:)),'K',nn+1);
+
+        tmp=v1(non_ecg_channel(ch_idx), ecg_ccm_idx(not_nan,:));
+        for trial_idx=1:size(tmp,2)
+            tmp(:,trial_idx)=detrend(tmp(:,trial_idx));
+        end;
+        %[IDX,D] = knnsearch(v1(non_ecg_channel(ch_idx), ecg_ccm_idx(not_nan,:)),v1(non_ecg_channel(ch_idx), ecg_ccm_idx(not_nan,:)),'K',nn+1);
+        [IDX,D] = knnsearch(tmp,tmp,'K',nn+1);
     end;
     eeg_ch_now=eeg(non_ecg_channel(ch_idx),:);
     check.eeg_dyn(:,:,ch_idx)=eeg_ch_now(ecg_ccm_idx(not_nan,:));
@@ -328,7 +325,7 @@ for ch_idx=1:length(non_ecg_channel)
             %ccm_IDX(ecg_onset_idx(ii):ecg_offset_idx(ii),:)=repmat(IDX(ii,:),[ecg_offset_idx(ii)-ecg_onset_idx(ii)+1,1]);
             ccm_D(ecg_onset_idx(ii):ecg_offset_idx(ii),:)=repmat(D(ii,:),[ecg_offset_idx(ii)-ecg_onset_idx(ii)+1,1]);
 
-            eeg_ch_now();
+            %eeg_ch_now();
 
         catch ME
             fprintf('incorrect ccm_IDX for cycle [%d]!\n',ii)
@@ -366,7 +363,6 @@ for t_idx=1:size(eeg,2)
         
         debug_ch=1;
         for ch_idx=1:length(non_ecg_channel)
-        %for ch_idx=1:1
 
             dyn_idx=cccm_IDX(t_idx,:,ch_idx);
             dd=eeg(non_ecg_channel(ch_idx),:);
@@ -446,13 +442,57 @@ for t_idx=1:size(eeg,2)
                 nan_idx=find(isnan(cccm_IDX_now));
                 data_now=eeg(non_ecg_channel(ch_idx),cccm_IDX(t_idx,not_nan_idx,ch_idx));
                 W_now(nan_idx)=[];
-                eeg_bcg_pred(non_ecg_channel(ch_idx),t_idx)=data_now*W_now';
+
+                data_now_detrend=nan(1,nn);
+                for ii=1:size(cccm_IDX,2)
+                    if(~isnan(cccm_IDX(t_idx,ii,ch_idx)))
+                        data_now_segment_prev{ii}=eeg(non_ecg_channel(ch_idx),ecg_onset_idx(ecg_idx(cccm_IDX(t_idx,ii,ch_idx)-1)):ecg_offset_idx(ecg_idx(cccm_IDX(t_idx,ii,ch_idx))));
+                        data_now_segment_prev_detrend{ii}=detrend(data_now_segment_prev{ii});
+                        
+                        data_now_segment{ii}=eeg(non_ecg_channel(ch_idx),ecg_onset_idx(ecg_idx(cccm_IDX(t_idx,ii,ch_idx))):ecg_offset_idx(ecg_idx(cccm_IDX(t_idx,ii,ch_idx))));
+                        data_now_segment_detrend{ii}=detrend(data_now_segment{ii});
+                        data_now_detrend(ii)=data_now_segment_detrend{ii}(cccm_IDX(t_idx,ii,ch_idx)-ecg_onset_idx(ecg_idx(cccm_IDX(t_idx,ii,ch_idx)))+1);
+                    end;
+                end;
+                data_now_detrend(nan_idx)=[];
+
+
+                target_now_segment=eeg(non_ecg_channel(ch_idx),ecg_onset_idx(ecg_idx(t_idx)):ecg_offset_idx(ecg_idx(t_idx))).';
+
+                target_D=[ones(length(target_now_segment),1) [0:length(target_now_segment)-1].'./length(target_now_segment)];
+                beta=inv(target_D'*target_D)*target_D'*target_now_segment;
+                eeg_bcg_pred(non_ecg_channel(ch_idx),t_idx)=data_now_detrend*W_now'+target_D(t_idx-ecg_onset_idx(ecg_idx(t_idx))+1,:)*beta;
+                %eeg_bcg_pred(non_ecg_channel(ch_idx),t_idx)=data_now_detrend*W_now';
+                
+
+                eeg_bcg_pred_orig(non_ecg_channel(ch_idx),t_idx)=data_now*W_now';
+
+
+                %if(flag_display&&mod(t_idx,1000)==0&&t_idx==1000&&ch_idx==debug_ch)
+%                  if((t_idx>70)&&ch_idx==1)
+%                     subplot(211); 
+%                     plot(eeg(non_ecg_channel(ch_idx),t_idx-70:t_idx)); hold on;
+% 
+%                     plot(eeg_bcg_pred(non_ecg_channel(ch_idx),t_idx-70:t_idx)); hold off; 
+%                     set(gca,'ylim',[-200 200])
+% 
+%                     %plot(eeg_bcg_pred_orig(non_ecg_channel(ch_idx),t_idx-50:t_idx)); hold on;
+%                     subplot(212); 
+% 
+%                     plot(eeg(non_ecg_channel(ch_idx),t_idx-70:t_idx)-eeg_bcg_pred(non_ecg_channel(ch_idx),t_idx-70:t_idx));
+%                     set(gca,'ylim',[-50 50])
+%                     drawnow;
+%                     pause(0.05);
+%                  end;
 
 
             catch ME
                 fprintf('Error in BCG CCM prediction!\n');
                 fprintf('t_idx=%d\n',t_idx);
+                keyboard;
             end;
+
+
             if(flag_display&&mod(t_idx,1000)==0&&ch_idx==debug_ch)
                 figure(1);
                 subplot(121);
@@ -478,6 +518,8 @@ for t_idx=1:size(eeg,2)
                 h2=plot(xx(1),eeg(non_ecg_channel(ch_idx),xx(1)),'.'); set(h2,'markersize',40,'color',[ 0.4660    0.6740    0.1880]);
                 set(gcf,'pos',[100        1000        2100         300]);
                 
+                drawnow;
+
                 figure(2);
                 subplot(121)
                 h=plot(eeg_bcg_pred(non_ecg_channel(ch_idx),1:t_idx),'r');
@@ -495,7 +537,10 @@ for t_idx=1:size(eeg,2)
                 set(gca,'xlim',[1500 2500]);
                 etc_plotstyle;
                 
-                set(gcf,'pos',[100        1000        2100           300]);
+                set(gcf,'pos',[100        620        2100           300]);
+
+                drawnow;
+                
                 
 %                 figure(3); clf; hold on;
 %                 dd=ecg(ecg_ccm_idx(2:end-1,:));
@@ -512,9 +557,9 @@ for t_idx=1:size(eeg,2)
 %                 ylabel('EKG(t+\tau) (a.u.)');
 %                 etc_plotstyle;
 
-                if(t_idx==2000) keyboard; end;
-                   
-                pause(0.01);
+%                 if(t_idx==2000) keyboard; end;
+%                    
+%                 pause(0.01);
             end;
         end;
     end;

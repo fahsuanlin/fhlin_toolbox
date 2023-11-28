@@ -1052,7 +1052,7 @@ switch lower(param)
                             
                             update_label;
 
-                            etc_render_fsbrain.fig_loabel_gui=etc_render_fsbrain_label_gui;
+                            etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
                             set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
                             pos=get(etc_render_fsbrain.fig_label_gui,'pos');
                             pos_brain=get(etc_render_fsbrain.fig_brain,'pos');

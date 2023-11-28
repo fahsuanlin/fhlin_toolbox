@@ -127,7 +127,9 @@ ytick_full=diff(sort(ylim)).*[0:(size(data,1)-1)-1];
 ytick_select=[1:ytick_dec:length(ytick_full)];
 ytick_names=[];
 for y_idx=1:length(ytick_select)
-    ytick_names{y_idx}=names{ytick_select(y_idx)}(1:ytick_char);
+    names_split=strsplit(names{ytick_select(y_idx)},'_');
+    ytick_names{y_idx}=names_split{1};
+%    ytick_names{y_idx}=names{ytick_select(y_idx)}(1:ytick_char);
 end;
 
 if(isempty(ytick_names))

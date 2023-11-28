@@ -421,7 +421,11 @@ for ch_idx=1:length(non_ecg_channel)
                     else
                         bcg_bases=vv(:,1:bcg_nsvd);
                     end;
+
+%                    bcg_bases(:,end+1)=1; % confound
+%                    bcg_bases(:,end+1)=[1:size(bcg_bases,1)]'./size(bcg_bases,1); % confound
                     
+
                     bcg_bnd_bases=zeros(size(bcg_bases,1),2);
                     bcg_bnd_bases(:,1)=1; % confound
                     bcg_bnd_bases(:,2)=[1:size(bcg_bases,1)]'./size(bcg_bases,1); % confound
@@ -432,8 +436,12 @@ for ch_idx=1:length(non_ecg_channel)
                     bnd0=[y(1) y(end)];
                     if(size(ss,1)<bcg_nsvd)
                         y=y-bcg_bases*beta;
+
+%                        y=y+bcg_bases(:,end-1:end)*beta(end-1:end);
                     else
                         y=y-bcg_bases(:,1:bcg_nsvd)*beta(1:bcg_nsvd);
+
+%                        y=y+bcg_bases(:,end-1:end)*beta(end-1:end);
                     end;
                     bnd1=[y(1) y(end)];
                     
