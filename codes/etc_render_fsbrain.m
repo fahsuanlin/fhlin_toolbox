@@ -423,7 +423,12 @@ if(tmp_set_vol<0.5)
                 end;
             end;
         else
-            vol_ribbon=MRIread(sprintf('%s/%s/mri/ribbon.mgz',subjects_dir,subject));
+            try
+                vol_ribbon=MRIread(sprintf('%s/%s/mri/ribbon.mgz',subjects_dir,subject));
+            catch
+                vol_ribbon=[];
+                fprintf('error in reading the ribbon volume [%s]...\n',sprintf('%s/%s/mri/ribbon.mgz',subjects_dir,subject));
+            end;
         end;
         for hemi_idx=1:2
             switch hemi_idx
@@ -1236,7 +1241,7 @@ etc_render_fsbrain.h_colorbar_vol_pos=[];
 etc_render_fsbrain.h_colorbar_vol_neg=[];
 etc_render_fsbrain.brain_axis_pos=[];
 
-
+etc_render_fsbrain.h_label_boundary={};
 
 %ROI label
 if(~isempty(cort_label_filename))
