@@ -46,7 +46,7 @@ template=[];
 for t_idx=1:length(onsets_orig)-1
 %    tmp=signal(onsets_orig(t_idx):onsets_orig(t_idx)+duration_min-1);
     tmp_idx=onsets_orig(t_idx)-round(duration_median/2):onsets_orig(t_idx)+round(duration_median/2);
-    if(isempty(find(tmp_idx<0))&&isempty(find(tmp_idx>length(signal))))
+    if(isempty(find(tmp_idx<1))&&isempty(find(tmp_idx>length(signal))))
        tmp=signal(tmp_idx);
        template(:,t_counter)=tmp(:);
        t_counter=t_counter+1;
