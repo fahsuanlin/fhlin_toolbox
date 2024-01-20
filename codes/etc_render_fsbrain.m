@@ -1243,6 +1243,9 @@ etc_render_fsbrain.brain_axis_pos=[];
 
 etc_render_fsbrain.h_label_boundary={};
 
+%enforce the mapping for vol_stc data to volume 
+etc_render_fsbrain_handle('update_overlay_vol');
+
 %ROI label
 if(~isempty(cort_label_filename))
 
@@ -1288,7 +1291,9 @@ if(~isempty(etc_render_fsbrain.overlay_stc)&~isempty(etc_render_fsbrain.overlay_
     switch(hemi)
         case 'lh'
             etc_render_fsbrain.vol_A(1).loc=etc_render_fsbrain.orig_vertex_coords(vv+1,:);
-            etc_render_fsbrain.vol_A(1).wb_loc=[];
+            if(isempty(overlay_vol_stc))
+                etc_render_fsbrain.vol_A(1).wb_loc=[];
+            end;
             etc_render_fsbrain.vol_A(1).v_idx=vv;
             etc_render_fsbrain.vol_A(1).vertex_coords=etc_render_fsbrain.orig_vertex_coords(vv+1,:);
             etc_render_fsbrain.vol_A(1).faces=etc_render_fsbrain.faces;
@@ -1306,7 +1311,6 @@ if(~isempty(etc_render_fsbrain.overlay_stc)&~isempty(etc_render_fsbrain.overlay_
             loc_vol(find(isnan(tmp)),:)=[];
             
             etc_render_fsbrain.vol_A(1).src_wb_idx=sub2ind(size(etc_render_fsbrain.vol.vol),loc_vol(:,2),loc_vol(:,1),loc_vol(:,3));
-            
             etc_render_fsbrain.vol_A(2).loc=[];
             etc_render_fsbrain.vol_A(2).wb_loc=[];
             etc_render_fsbrain.vol_A(2).v_idx=[];
@@ -1323,7 +1327,9 @@ if(~isempty(etc_render_fsbrain.overlay_stc)&~isempty(etc_render_fsbrain.overlay_
             etc_render_fsbrain.vol_A(1).src_wb_idx=[];
             
             etc_render_fsbrain.vol_A(2).loc=etc_render_fsbrain.orig_vertex_coords(vv+1,:);
-            etc_render_fsbrain.vol_A(2).wb_loc=[];
+            if(isempty(overlay_vol_stc))
+                etc_render_fsbrain.vol_A(2).wb_loc=[];
+            end;
             etc_render_fsbrain.vol_A(2).v_idx=vv;
             etc_render_fsbrain.vol_A(2).vertex_coords=etc_render_fsbrain.orig_vertex_coords(vv+1,:);
             etc_render_fsbrain.vol_A(2).faces=etc_render_fsbrain.faces;
@@ -1340,7 +1346,9 @@ if(~isempty(etc_render_fsbrain.overlay_stc)&~isempty(etc_render_fsbrain.overlay_
             
             etc_render_fsbrain.vol_A(2).src_wb_idx=sub2ind(size(etc_render_fsbrain.vol.vol),loc_vol(:,2),loc_vol(:,1),loc_vol(:,3));
     end;
-    etc_render_fsbrain.overlay_vol_stc=etc_render_fsbrain.overlay_stc;
+    if(isempty(etc_render_fsbrain.overlay_vol_stc))
+        etc_render_fsbrain.overlay_vol_stc=etc_render_fsbrain.overlay_stc;
+    end;
 end;
 
 %%%%%%%%%%%%%%%%%%%%%%%%
