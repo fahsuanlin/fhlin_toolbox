@@ -31,10 +31,23 @@ for i=1:length(varargin)/2
     end;
 end;
 
+% if(isempty(cc))
+%     %cc=get(gcf,'currentchar');
+%     cc=get(gcbf,'currentchar');
+% end;
+
+
 if(isempty(cc))
-    %cc=get(gcf,'currentchar');
-    cc=get(gcbf,'currentchar');
+    %fprintf('key=%s\n',get(gcf,'currentkey'));
+    modifier=get(gcf,'currentmod');
+    if(~isempty(modifier))
+        %fprintf('modifier=%s\n',modifier{1});
+    else
+        modifier{1}='none';
+    end;
+    cc=get(gcf,'currentchar');
 end;
+
 
 switch lower(param)
     case 'draw_pointer'
@@ -735,6 +748,42 @@ switch lower(param)
 
                 set(etc_render_fsbrain.fig_gui,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
                 set(etc_render_fsbrain.fig_gui,'KeyPressFcn','etc_render_fsbrain_handle(''kb'')');
+
+            case 'x'
+                %fprintf('\nregistering 3D objects...\n');
+
+                if(isfield(etc_render_fsbrain,'object'))
+                    if(isempty(etc_render_fsbrain.object))
+                        %load the object handle
+
+                        v = evalin('base', 'whos');
+                        fn={v.name};
+
+                        fprintf('load a variable for data...\n');
+
+                        [indx,tf] = listdlg('PromptString','Select the variable for a 3D object...',...
+                            'SelectionMode','single',...
+                            'ListString',fn);
+                        if(indx)
+                            try
+                                var=fn{indx};
+                                evalin('base',sprintf('global etc_trace_obj;'));
+                                fprintf('Trying to load variable [%s] as the 3D object...',var);
+                                
+                                evalin('base',sprintf('global etc_render_fsbrain; etc_render_fsbrain.object=%s; ',var));
+                                evalin('base',sprintf('global etc_render_fsbrain; etc_render_fsbrain.object_Vertices_orig=etc_render_fsbrain.object.Vertices;'));
+
+                            catch
+                                etc_render_fsbrain.object=[];
+                            end;
+                        end;
+                    end;
+                end;
+                app=etc_render_fsbrain_register_object;
+                pos=app.Move3DobjectUIFigure.Position;
+                pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                app.Move3DobjectUIFigure.Position=[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)];
+                etc_render_fsbrain.fig_register=app.Move3DobjectUIFigure;
 
             case 'k'
                 %fprintf('\nregister points...\n');
@@ -1493,6 +1542,106 @@ switch lower(param)
                         
                     end;
                 end;
+
+            case 'downarrow'
+                global etc_render_fsbrain;
+
+                etc_render_fsbrain.overlay_buffer_main_idx=etc_render_fsbrain.overlay_buffer_main_idx-1;
+
+                if(etc_render_fsbrain.overlay_buffer_main_idx==0) etc_render_fsbrain.overlay_buffer_main_idx=length(etc_render_fsbrain.overlay_buffer); end;
+                set(findobj('tag','listbox_overlay_main'),'value',etc_render_fsbrain.overlay_buffer_main_idx);
+                fprintf('rendering [%s]...\n',etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).name);
+                
+                etc_render_fsbrain.overlay_stc=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).stc;
+                    etc_render_fsbrain.overlay_vertex=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).vertex;
+                    etc_render_fsbrain.overlay_stc_timeVec=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).timeVec;
+                    etc_render_fsbrain.stc_hemi=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).hemi;
+
+
+                    etc_render_fsbrain.overlay_vol_stc=etc_render_fsbrain.overlay_stc;
+
+
+                    v=[1:length(etc_render_fsbrain.overlay_buffer)];
+                    v=setdiff(v,etc_render_fsbrain.overlay_buffer_main_idx);
+
+                    etc_render_fsbrain.overlay_aux_stc=[];
+                    count=1;
+                    for v_idx=1:length(v)
+                        if(size(etc_render_fsbrain.overlay_stc)==size(etc_render_fsbrain.overlay_buffer(v(v_idx)).stc))
+                            etc_render_fsbrain.overlay_aux_stc(:,:,count)=etc_render_fsbrain.overlay_buffer(v(v_idx)).stc;
+                            count=count+1;
+                        else
+                            %fprintf('size for [%s] not compatible to the main layer [%s]. Data are not rendered until being seleted as the main layer.\n',contents{v(v_idx)},contents{etc_render_fsbrain.overlay_buffer_main_idx});
+                            fprintf('size for [%s] not compatible to the main layer [%s]. Data are not rendered until being seleted as the main layer.\n',etc_render_fsbrain.overlay_buffer(v(v_idx)).name,etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).name);
+                        end;
+                    end;
+
+
+                    etc_render_fsbrain.overlay_stc_timeVec_unit='ms';
+                    set(findobj('tag','text_timeVec_unit'),'string',etc_render_fsbrain.overlay_stc_timeVec_unit);
+
+                    [tmp,etc_render_fsbrain.overlay_stc_timeVec_idx]=max(sum(etc_render_fsbrain.overlay_stc.^2,1));
+                    etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
+                    etc_render_fsbrain.overlay_stc_hemi=etc_render_fsbrain.overlay_stc;
+
+                    etc_render_fsbrain.overlay_flag_render=1;
+                    etc_render_fsbrain.overlay_value_flag_pos=1;
+                    etc_render_fsbrain.overlay_value_flag_neg=1;
+
+                    update_overlay_vol;
+                    draw_pointer;
+                    redraw;
+                    draw_stc;
+            case 'uparrow'
+                global etc_render_fsbrain;
+
+                etc_render_fsbrain.overlay_buffer_main_idx=etc_render_fsbrain.overlay_buffer_main_idx+1;
+
+                if(etc_render_fsbrain.overlay_buffer_main_idx>length(etc_render_fsbrain.overlay_buffer)) etc_render_fsbrain.overlay_buffer_main_idx=1; end;
+                set(findobj('tag','listbox_overlay_main'),'value',etc_render_fsbrain.overlay_buffer_main_idx);
+                fprintf('rendering [%s]...\n',etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).name);
+
+                etc_render_fsbrain.overlay_stc=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).stc;
+                    etc_render_fsbrain.overlay_vertex=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).vertex;
+                    etc_render_fsbrain.overlay_stc_timeVec=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).timeVec;
+                    etc_render_fsbrain.stc_hemi=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).hemi;
+
+
+                    etc_render_fsbrain.overlay_vol_stc=etc_render_fsbrain.overlay_stc;
+
+
+                    v=[1:length(etc_render_fsbrain.overlay_buffer)];
+                    v=setdiff(v,etc_render_fsbrain.overlay_buffer_main_idx);
+
+                    etc_render_fsbrain.overlay_aux_stc=[];
+                    count=1;
+                    for v_idx=1:length(v)
+                        if(size(etc_render_fsbrain.overlay_stc)==size(etc_render_fsbrain.overlay_buffer(v(v_idx)).stc))
+                            etc_render_fsbrain.overlay_aux_stc(:,:,count)=etc_render_fsbrain.overlay_buffer(v(v_idx)).stc;
+                            count=count+1;
+                        else
+                            %fprintf('size for [%s] not compatible to the main layer [%s]. Data are not rendered until being seleted as the main layer.\n',contents{v(v_idx)},contents{etc_render_fsbrain.overlay_buffer_main_idx});
+                            fprintf('size for [%s] not compatible to the main layer [%s]. Data are not rendered until being seleted as the main layer.\n',etc_render_fsbrain.overlay_buffer(v(v_idx)).name,etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).name);
+                        end;
+                    end;
+
+
+                    etc_render_fsbrain.overlay_stc_timeVec_unit='ms';
+                    set(findobj('tag','text_timeVec_unit'),'string',etc_render_fsbrain.overlay_stc_timeVec_unit);
+
+                    [tmp,etc_render_fsbrain.overlay_stc_timeVec_idx]=max(sum(etc_render_fsbrain.overlay_stc.^2,1));
+                    etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
+                    etc_render_fsbrain.overlay_stc_hemi=etc_render_fsbrain.overlay_stc;
+
+                    etc_render_fsbrain.overlay_flag_render=1;
+                    etc_render_fsbrain.overlay_value_flag_pos=1;
+                    etc_render_fsbrain.overlay_value_flag_neg=1;
+
+                    update_overlay_vol;
+                    draw_pointer;
+                    redraw;
+                    draw_stc;
+
             otherwise
                 %fprintf('pressed [%c]!\n',cc);
         end;

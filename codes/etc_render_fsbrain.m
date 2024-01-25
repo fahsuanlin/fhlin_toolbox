@@ -131,6 +131,10 @@ selected_contact_color=[0 1 1];
 
 all_electrode_flag=1;
 
+%external object
+object=[];
+object_xfm=[];
+
 %electrode
 electrode=[];
 electrode_idx=1; %first electrode
@@ -363,6 +367,10 @@ for idx=1:length(varargin)/2
             electrode_idx=option_value;
         case 'electrode_contact_idx'
             electrode_contact_idx=option_value;
+        case 'object'
+            object=option_value;
+        case'object_xfm'
+            object_xfm=option_value;
         case 'click_point_size'
             click_point_size=option_value;
         case 'click_point_color'
@@ -1228,6 +1236,10 @@ etc_render_fsbrain.electrode=electrode;
 etc_render_fsbrain.electrode_idx=electrode_idx;
 etc_render_fsbrain.electrode_contact_idx=electrode_contact_idx;
 etc_render_fsbrain.fig_electrode_gui=[];
+
+etc_render_fsbrain.object=object;
+etc_render_fsbrain.object_xfm=object_xfm;
+
 
 etc_render_fsbrain.click_coord=[];
 etc_render_fsbrain.surface_coord=[];
