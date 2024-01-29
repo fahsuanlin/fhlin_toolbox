@@ -10,9 +10,6 @@ function h=etc_render_fsbrain(varargin)
 % fhlin@dec.25 2014
 %
 
-
-a=0; 
-
 h=[];
 
 flag_display=0;
