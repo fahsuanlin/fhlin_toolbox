@@ -768,10 +768,19 @@ switch lower(param)
                             try
                                 var=fn{indx};
                                 evalin('base',sprintf('global etc_trace_obj;'));
-                                fprintf('Trying to load variable [%s] as the 3D object...',var);
+                                fprintf('Trying to load variable [%s] as the 3D object...\n',var);
                                 
                                 evalin('base',sprintf('global etc_render_fsbrain; etc_render_fsbrain.object=%s; ',var));
                                 evalin('base',sprintf('global etc_render_fsbrain; etc_render_fsbrain.object_Vertices_orig=etc_render_fsbrain.object.Vertices;'));
+
+                                if(isfield(etc_render_fsbrain.object.UserData,'Origin'))
+                                    etc_render_fsbrain.object.UserData.Origin_orig=etc_render_fsbrain.object.UserData.Origin;
+                                end;
+                                if(isfield(etc_render_fsbrain.object.UserData,'Axis'))
+                                    etc_render_fsbrain.object.UserData.Axis_orig=etc_render_fsbrain.object.UserData.Axis;
+                                end;
+
+                                figure(etc_render_fsbrain.fig_brain); axis tight;
 
                             catch
                                 etc_render_fsbrain.object=[];
