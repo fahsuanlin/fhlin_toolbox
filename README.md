@@ -1,4 +1,5 @@
 [[https://github.com/fahsuanlin/fhlin_toolbox/blob/master/images/fs_render_dec2014.png]]
+![alt text](https://github.com/fahsuanlin/fhlin_toolbox/blob/master/fs_render_dec2014.png)
 
 # The repository of neuroimaging analysis tools
 
