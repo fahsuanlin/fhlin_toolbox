@@ -1,4 +1,6 @@
-![alt text](https://github.com/fahsuanlin/fhlin_toolbox/blob/master/images/fs_render_dec2014.png?raw=true)
+![](https://github.com/fahsuanlin/fhlin_toolbox/blob/master/images/fs_render_dec2014.png)
+![](https://github.com/fahsuanlin/fhlin_toolbox/blob/master/images/fs_render_dec2014_b.png)
+
 
 # The repository of neuroimaging analysis tools
 
@@ -16,5 +18,3 @@ These examples rely on the following packages:
 
 Please [let me know](mailto:fhlin@sri.utoronto.ca) if there is any bug.
 
-![](https://github.com/fahsuanlin/fhlin_toolbox/blob/master/images/fs_render_dec2014.png)
-![](https://github.com/fahsuanlin/fhlin_toolbox/blob/master/images/fs_render_dec2014_b.png)
