@@ -1,3 +1,7 @@
+![](https://github.com/fahsuanlin/fhlin_toolbox/blob/master/images/fs_render_dec2014.png)
+![](https://github.com/fahsuanlin/fhlin_toolbox/blob/master/images/fs_render_dec2014_b.png)
+
+
 # The repository of neuroimaging analysis tools
 
 This repository includes codes for various tools to process neuroimaging data, including magnetic resonance imaging (MRI), electroencephalography (EEG), and magnetoencephalography (MEG) of [our lab](). Goto the [wiki page](https://github.com/fahsuanlin/fhlin_toolbox/wiki) for examples of using these tools for various MRI/EEG/MEG analyses.
@@ -14,5 +18,3 @@ These examples rely on the following packages:
 
 Please [let me know](mailto:fhlin@sri.utoronto.ca) if there is any bug.
 
-![](https://github.com/fahsuanlin/fhlin_toolbox/blob/master/images/fs_render_dec2014.png)
-![](https://github.com/fahsuanlin/fhlin_toolbox/blob/master/images/fs_render_dec2014_b.png)
