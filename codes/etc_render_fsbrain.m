@@ -1238,8 +1238,23 @@ etc_render_fsbrain.electrode_contact_idx=electrode_contact_idx;
 etc_render_fsbrain.fig_electrode_gui=[];
 
 etc_render_fsbrain.object=object;
-etc_render_fsbrain.object_xfm=object_xfm;
+if(~isempty(object))
+    etc_render_fsbrain.object_Vertices_orig=etc_render_fsbrain.object.Vertices;
+    if(~isempty(object_xfm))
+        etc_render_fsbrain.object_xfm=object_xfm;
+    else
+        etc_render_fsbrain.object_xfm=eye(4);
+    end;
 
+    if(isfield(etc_render_fsbrain.object.UserData,'Origin'))
+        etc_render_fsbrain.object.UserData.Origin_orig=etc_render_fsbrain.object.UserData.Origin;
+    end;
+    if(isfield(etc_render_fsbrain.object.UserData,'Axis'))
+        etc_render_fsbrain.object.UserData.Axis_orig=etc_render_fsbrain.object.UserData.Axis;
+    end;
+else
+    etc_render_fsbrain.object_xfm=[];
+end;
 
 etc_render_fsbrain.click_coord=[];
 etc_render_fsbrain.surface_coord=[];

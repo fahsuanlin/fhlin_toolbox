@@ -771,6 +771,7 @@ switch lower(param)
                                 fprintf('Trying to load variable [%s] as the 3D object...\n',var);
                                 
                                 evalin('base',sprintf('global etc_render_fsbrain; etc_render_fsbrain.object=%s; ',var));
+                                evalin('base',sprintf('global etc_render_fsbrain; etc_render_fsbrain.object_xfm=eye(4);'));
                                 evalin('base',sprintf('global etc_render_fsbrain; etc_render_fsbrain.object_Vertices_orig=etc_render_fsbrain.object.Vertices;'));
 
                                 if(isfield(etc_render_fsbrain.object.UserData,'Origin'))
@@ -793,6 +794,53 @@ switch lower(param)
                 pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
                 app.Move3DobjectUIFigure.Position=[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)];
                 etc_render_fsbrain.fig_register=app.Move3DobjectUIFigure;
+
+            case 'n'
+                %fprintf('\n TMS coil navigation...\n');
+
+                if(isfield(etc_render_fsbrain,'object'))
+                    if(isempty(etc_render_fsbrain.object))
+                        %load the object handle
+
+                        v = evalin('base', 'whos');
+                        fn={v.name};
+
+                        fprintf('load a variable for data...\n');
+
+                        [indx,tf] = listdlg('PromptString','Select the variable for a 3D object...',...
+                            'SelectionMode','single',...
+                            'ListString',fn);
+                        if(indx)
+                            try
+                                var=fn{indx};
+                                evalin('base',sprintf('global etc_trace_obj;'));
+                                fprintf('Trying to load variable [%s] as the 3D object...\n',var);
+                                
+                                evalin('base',sprintf('global etc_render_fsbrain; etc_render_fsbrain.object=%s; ',var));
+                                evalin('base',sprintf('global etc_render_fsbrain; etc_render_fsbrain.object_xfm=eye(4);'));
+                                evalin('base',sprintf('global etc_render_fsbrain; etc_render_fsbrain.object_Vertices_orig=etc_render_fsbrain.object.Vertices;'));
+
+                                if(isfield(etc_render_fsbrain.object.UserData,'Origin'))
+                                    etc_render_fsbrain.object.UserData.Origin_orig=etc_render_fsbrain.object.UserData.Origin;
+                                end;
+                                if(isfield(etc_render_fsbrain.object.UserData,'Axis'))
+                                    etc_render_fsbrain.object.UserData.Axis_orig=etc_render_fsbrain.object.UserData.Axis;
+                                end;
+
+                                figure(etc_render_fsbrain.fig_brain); axis tight;
+
+                            catch
+                                etc_render_fsbrain.object=[];
+                            end;
+                        end;
+                    end;
+                end;
+                app=etc_render_fsbrain_tms_nav;
+                pos=app.Move3DobjectUIFigure.Position;
+                pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                app.Move3DobjectUIFigure.Position=[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)];
+                etc_render_fsbrain.fig_tms_nav=app.Move3DobjectUIFigure;
+
 
             case 'k'
                 %fprintf('\nregister points...\n');
@@ -1680,6 +1728,16 @@ switch lower(param)
         catch ME
             if(isfield(etc_render_fsbrain,'fig_register'))
                 close(etc_render_fsbrain.fig_register,'force');
+            else
+                %close(gcf,'force');
+            end;
+        end;
+        
+        try
+            delete(etc_render_fsbrain.fig_tms_nav);
+        catch ME
+            if(isfield(etc_render_fsbrain,'fig_tms_nav'))
+                close(etc_render_fsbrain.fig_tms_nav,'force');
             else
                 %close(gcf,'force');
             end;
