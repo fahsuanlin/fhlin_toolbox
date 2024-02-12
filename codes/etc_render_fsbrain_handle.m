@@ -1731,7 +1731,7 @@ switch lower(param)
             else
                 %close(gcf,'force');
             end;
-        end;
+        end; 
         
         try
             delete(etc_render_fsbrain.fig_tms_nav);
