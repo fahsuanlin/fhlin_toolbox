@@ -2661,7 +2661,7 @@ set(handles.pushbotton_cort_label_boundary_color,'BackgroundColor',etc_render_fs
 if(isfield(etc_render_fsbrain,'label_register'))
     %cortical labels
     for ss=1:length(etc_render_fsbrain.label_register)
-        set(etc_render_fsbrain.h_label_boundary{ss}(b_idx),'color',etc_render_fsbrain.cort_label_boundary_color); %update color
+        set(etc_render_fsbrain.h_label_boundary{ss}(:),'color',etc_render_fsbrain.cort_label_boundary_color); %update color
 
         if(~isempty(etc_render_fsbrain.label_ctab))
             label_number=etc_render_fsbrain.label_ctab.table(ss,5);
