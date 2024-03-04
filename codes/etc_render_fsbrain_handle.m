@@ -76,6 +76,7 @@ switch lower(param)
                 fprintf('f: load overlay (w/stc) file\n');
                 fprintf('l: open label/annotation GUI\n');
                 fprintf('w: open coordinates GUI\n');
+                fprintf('x: open object registration GUI\n');
                 fprintf('n: open TMS coil navigation GUI\n');
                 fprintf('S: open surface contour GUI\n');
                 fprintf('s: smooth overlay \n');
@@ -799,12 +800,26 @@ switch lower(param)
 
             case 'n'
                 %fprintf('\n TMS coil navigation...\n');
-                app=etc_render_fsbrain_tms_nav;
-                pos=app.Move3DobjectUIFigure.Position;
-                pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
-                app.Move3DobjectUIFigure.Position=[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)];
-                etc_render_fsbrain.fig_tms_nav=app.Move3DobjectUIFigure;
-
+                flag_new=0;
+                if(~isfield(etc_render_fsbrain,'fig_tms_nav'))
+                    flag_new=1;
+                else
+                    if(~isvalid(etc_render_fsbrain.fig_tms_nav))
+                        flag_new=1;
+                    end;
+                end;
+                if(flag_new)
+                    app=etc_render_fsbrain_tms_nav;
+                    pos=app.TMSNavFigure.Position;
+                    pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                    app.TMSNavFigure.Position=[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)];
+                    etc_render_fsbrain.fig_tms_nav=app.TMSNavFigure;
+                    etc_render_fsbrain.app_tms_nav=app;
+                else
+                    pos=etc_render_fsbrain.fig_tms_nav.Position;
+                    pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                    etc_render_fsbrain.fig_tms_nav.Position=[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)];
+                end;
             case 'S'
                 %fprintf('\n surface contours...\n');
                 app=etc_render_fsbrain_surf_contour;
@@ -3097,6 +3112,16 @@ try
         h=findobj('tag','slider_orthogonal_slice_z');
         set(h,'Enable','On');
         set(h,'Value',etc_render_fsbrain.click_vertex_vox_round(3));
+
+        %coordinate update for TMS navigation
+        if(isfield(etc_render_fsbrain,'app_tms_nav'))
+            if(isvalid(etc_render_fsbrain.app_tms_nav))
+                        etc_render_fsbrain_tms_nav_notify(etc_render_fsbrain.app_tms_nav,struct('Source', etc_render_fsbrain.app_tms_nav.vertexindexEditField),min_dist_idx);
+                        etc_render_fsbrain_tms_nav_notify(etc_render_fsbrain.app_tms_nav,struct('Source', etc_render_fsbrain.app_tms_nav.XYZEditField),etc_render_fsbrain.click_coord_round);
+                        etc_render_fsbrain_tms_nav_notify(etc_render_fsbrain.app_tms_nav,struct('Source', etc_render_fsbrain.app_tms_nav.CRSEditField),etc_render_fsbrain.click_vertex_vox_round);
+                        etc_render_fsbrain_tms_nav_notify(etc_render_fsbrain.app_tms_nav,struct('Source', etc_render_fsbrain.app_tms_nav.MNIEditField),etc_render_fsbrain.click_vertex_point_round_tal);
+            end;
+        end;
 
         
         if(etc_render_fsbrain.flag_orthogonal_slice_cor)
