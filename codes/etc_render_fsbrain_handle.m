@@ -796,7 +796,7 @@ switch lower(param)
                 pos=app.Move3DobjectUIFigure.Position;
                 pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
                 app.Move3DobjectUIFigure.Position=[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)];
-                etc_render_fsbrain.fig_register=app.Move3DobjectUIFigure;
+                etc_render_fsbrain.fig_obj_register=app.Move3DobjectUIFigure;
 
             case 'n'
                 %fprintf('\n TMS coil navigation...\n');
@@ -1586,7 +1586,7 @@ switch lower(param)
                     end;
                 end;
 
-            case 'downarrow'
+            case {'downarrow',31}
                 global etc_render_fsbrain;
 
                 etc_render_fsbrain.overlay_buffer_main_idx=etc_render_fsbrain.overlay_buffer_main_idx-1;
@@ -1635,7 +1635,7 @@ switch lower(param)
                     draw_pointer;
                     redraw;
                     draw_stc;
-            case 'uparrow'
+            case {'uparrow',30}
                 global etc_render_fsbrain;
 
                 etc_render_fsbrain.overlay_buffer_main_idx=etc_render_fsbrain.overlay_buffer_main_idx+1;
@@ -1709,6 +1709,17 @@ switch lower(param)
             end;
         end;
         
+        
+        try
+            delete(etc_render_fsbrain.fig_obj_register);
+        catch ME
+            if(isfield(etc_render_fsbrain,'fig_obj_register'))
+                close(etc_render_fsbrain.fig_obj_register,'force');
+            else
+                %close(gcf,'force');
+            end;
+        end; 
+ 
         try
             delete(etc_render_fsbrain.fig_register);
         catch ME
