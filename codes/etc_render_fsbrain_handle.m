@@ -181,15 +181,28 @@ switch lower(param)
 
             case 'i'
                 fprintf('\nload overlay volume...\n');
+
+                answer = questdlg('Use identity matrix as the registration matrix?','registration matrix')
                 
-                [filename, pathname, filterindex] = uigetfile({'*.dat','registration matrix'}, 'Pick a registration matrix file');
-                if(filename==0) return; end;
+                if(strcmp(answer,'No'))
+                    [filename, pathname, filterindex] = uigetfile({'*.dat','registration matrix'}, 'Pick a registration matrix file');
+                    if(filename==0) return; end;
+                elseif(strcmp(answer,'Yes'))
+                    filename='';
+                else
+                    return;
+                end;
+
                 %[filename1, pathname1, filterindex1] = uigetfile({'*.mgz','overlay volume (MGZ)'; '*.mgh','overlay volume (MGH)'; '*.nii','overlay volume (nii)'}, 'Pick an overlay volume');
                 [filename1, pathname1, filterindex1] = uigetfile({'*.*','overlay volume (*.mgz, *.mgh, *.nii)'}, 'Pick an overlay volume');
                 if(filename1==0) return; end;
                 
                 try
-                    xfm=etc_read_xfm('file_xfm',sprintf('%s/%s',pathname,filename));
+                    if(isempty(filename))
+                        xfm=eye(4);
+                    else
+                        xfm=etc_read_xfm('file_xfm',sprintf('%s/%s',pathname,filename));
+                    end;
                     
                     [dumm, fstem,fext]=fileparts(filename1);
                     switch(fext)

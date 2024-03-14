@@ -164,7 +164,7 @@ end;
         fprintf('normalized threshold between the top [%1.1f%% %1.1f%%] values.\n',min(threshold).*100,max(threshold).*100); 
     else
         overlay_threshold=threshold;
-        fprintf('threshold between the [%1.1f %1.1f].\n',min(threshold),max(threshold)); 
+        fprintf('threshold between [%1.1f %1.1f].\n',min(threshold),max(threshold)); 
     end;
     
     view_count=1;
