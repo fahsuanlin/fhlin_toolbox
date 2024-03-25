@@ -829,6 +829,7 @@ switch lower(param)
                     etc_render_fsbrain.fig_tms_nav=app.TMSNavFigure;
                     etc_render_fsbrain.app_tms_nav=app;
                 else
+                    figure(etc_render_fsbrain.fig_tms_nav)
                     pos=etc_render_fsbrain.fig_tms_nav.Position;
                     pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
                     etc_render_fsbrain.fig_tms_nav.Position=[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)];
@@ -840,7 +841,13 @@ switch lower(param)
                 pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
                 app.UIFigure.Position=[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)];
                 etc_render_fsbrain.fig_surf_contour=app.UIFigure;
-
+            case 'T'
+                %fprintf('\n Tissue definition...\n');
+                app=etc_render_fsbrain_tms_tissue;
+                pos=app.UIFigure.Position;
+                pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                app.UIFigure.Position=[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)];
+                etc_render_fsbrain.fig_tms_tissue=app.UIFigure;
             case 'k'
                 %fprintf('\nregister points...\n');
                 if(isfield(etc_render_fsbrain,'fig_register'))
@@ -1748,6 +1755,16 @@ switch lower(param)
         catch ME
             if(isfield(etc_render_fsbrain,'fig_tms_nav'))
                 close(etc_render_fsbrain.fig_tms_nav,'force');
+            else
+                %close(gcf,'force');
+            end;
+        end;
+
+        try
+            delete(etc_render_fsbrain.fig_tms_tissue);
+        catch ME
+            if(isfield(etc_render_fsbrain,'fig_tms_tissue'))
+                close(etc_render_fsbrain.fig_tms_tissue,'force');
             else
                 %close(gcf,'force');
             end;

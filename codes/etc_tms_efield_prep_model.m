@@ -1,4 +1,4 @@
-function [status, t, P, normals, Cener, Area, Indicator, name, tissue, cond, enclosingTissueIdx, condin, condout, contrast, tneighbor, RnumberE, ineighborE, EC] =etc_tms_efield_prep_model(varargin)
+function [status, t, P, normals, Center, Area, Indicator, name, tissue, cond, enclosingTissueIdx, condin, condout, contrast, tneighbor, RnumberE, ineighborE, EC, file_mesh, file_meshp] =etc_tms_efield_prep_model(file_tissue_index, varargin)
 
 
 % etc_tms_efield_prep_model a wrapper for calculating the e-field geneated by a
@@ -14,9 +14,9 @@ function [status, t, P, normals, Cener, Area, Indicator, name, tissue, cond, enc
 
 
 
-t=[];
-P=[];
-normals=[];
+% t=[];
+% P=[];
+% normals=[];
 Center=[];
 Area=[];
 Indicator=[];
@@ -37,7 +37,7 @@ EC=[];
 status=0;
 
 flag_display=1;
-file_tissue_index='tissue_index.txt';
+flag_save=1;
 file_mesh = 'CombinedMesh.mat';
 file_meshp  = 'CombinedMeshP.mat';
 
@@ -46,10 +46,10 @@ for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
     switch lower(option)
-        case 'file_tissue_index'
-            file_tissue_index=option_value;
         case 'flag_display'
             flag_display=option_value;
+        case 'flag_save'
+            flag_save=option_value;
         case 'file_mesh'
             file_mesh=option_value;
         case 'file_meshp'
@@ -168,5 +168,20 @@ if(flag_save)
     save(file_meshp, 'tneighbor',  'RnumberE',   'ineighborE', 'EC', '-v7.3');
 end;
 SaveBigDataTime = toc;
+
+
+try
+    global etc_render_fsbrain;
+
+    if(isfield(etc_render_fsbrain,'tissue_def_file'))
+        fn=etc_render_fsbrain.tissue_def_file;
+    else
+        fn='';
+    end;
+
+    etc_render_fsbrain_tms_nav_notify(etc_render_fsbrain.app_tms_nav,struct('Source', etc_render_fsbrain.app_tms_nav.PrepModelLamp),'g',fn);
+    etc_render_fsbrain_tms_nav_notify(etc_render_fsbrain.app_tms_nav,struct('Source', etc_render_fsbrain.app_tms_nav.EfieldCalclLamp),'r');
+catch
+end;
 
 status=1;

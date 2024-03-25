@@ -77,7 +77,18 @@ function etc_render_fsbrain_tms_nav_notify(app, event,varargin)
             
             app.MNIEditField.Value=num2str(varargin{1}(:)','%1.0f ');
 
+        case app.DefModelLamp; % Execution code related to DefModelLamp
+            app.DefModelLamp.Color=varargin{1};
+            app.PrepModelLamp.Color=varargin{2};
 
+        case app.PrepModelLamp; % Execution code related to PrepModelLamp
+            app.PrepModelLamp.Color=varargin{1};
+
+            app.file_tissue_index=varargin{2};
+
+        case app.EfieldCalclLamp; % Execution code related to EfieldCalclLamp
+            app.EfieldCalclLamp.Color=varargin{1};
+        
         case app.SurfaceDropDown; % Execution code related to SurfaceDropDown
             app.SurfaceDropDown.Items={};
             for idx=1:length(etc_render_fsbrain.surf_obj)
