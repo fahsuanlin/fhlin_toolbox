@@ -573,6 +573,8 @@ switch lower(param)
                                     etc_render_fsbrain.overlay_aux_stc(:,:,end+1)=etc_render_fsbrain.overlay_buffer(end).stc;
                                 end;
                             end;
+
+                            etc_render_fsbrain.overlay_source=3;
                             
                             update_overlay_vol;
                             draw_pointer;
@@ -591,7 +593,11 @@ switch lower(param)
                         etc_render_fsbrain.overlay_flag_render=1;
                         etc_render_fsbrain.overlay_value_flag_pos=1;
                         etc_render_fsbrain.overlay_value_flag_neg=1;
-                        
+
+                        etc_render_fsbrain.overlay_source=1;
+
+                        update_overlay_vol;
+                        draw_pointer;
                     end;
                     etc_render_fsbrain.overlay_Ds=[];
                     redraw;
