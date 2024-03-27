@@ -215,6 +215,7 @@ if(flag_save)
     save(sprintf('%s_output_field_solution.mat',output_stem),'-append','Etotal_interp');
 end;
 
+
 try
     global etc_render_fsbrain;
 
