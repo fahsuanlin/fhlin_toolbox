@@ -3,7 +3,7 @@ function y = fft_conv2(x,h,varargin)
 %
 
 % $Id: fft_conv2.m,v 1.4 2001/08/21 18:30:48 yrchen Exp yrchen $
-
+x0=x;
 [L1 L2] = size(x);
 [P1 P2] = size(h);
 
@@ -16,8 +16,12 @@ if nargin > 2
     for k=1:length(varargin)
         if strcmp(lower(varargin{k}), 'same'), type = 'same'; end
         if strcmp(lower(varargin{k}), 'symm'), ext = 'symm'; end
+        if strcmp(lower(varargin{k}), 'symm2'), ext = 'symm2'; end
 		if strcmp(lower(varargin{k}), 'conv'), fil = 'conv'; end
 		if strcmp(lower(varargin{k}), 'fft'), fil = 'fft'; end
+        if strcmp(lower(varargin{k}), 'circ_ext'), ext = 'circ_ext'; end
+        if strcmp(lower(varargin{k}), 'zero'), ext = 'zero'; end
+        if strcmp(lower(varargin{k}), 'pad_havg'), ext = 'pad_havg'; end
     end
 end
 
@@ -29,6 +33,32 @@ if strcmp(lower(ext), 'symm')
     x = [ x(P1:-1:2,P2:-1:2)             x(P1:-1:2,:)              x(P1:-1:2, end-1:-1:(end-P2+1))
               x(:, P2:-1:2)                  x                         x(:, end-1:-1:(end-P2+1))
               x(end-1:-1:(end-P1+1),P2:-1:2) x(end-1:-1:(end-P1+1),:)  x(end-1:-1:(end-P1+1),end-1:-1:(end-P2+1))];
+end
+if strcmp(lower(ext), 'symm2')
+    % let's extend the input x
+    x = [ x(P1:-1:2,2*P2:-1:2)             x(P1:-1:2,:)              x(P1:-1:2, end-1:-1:(end-2*P2+1))
+              x(:, 2*P2:-1:2)                  x                         x(:, end-1:-1:(end-2*P2+1))
+              x(end-1:-1:(end-P1+1),2*P2:-1:2) x(end-1:-1:(end-P1+1),:)  x(end-1:-1:(end-P1+1),end-1:-1:(end-2*P2+1))];
+end
+if strcmp(lower(ext), 'zero')
+    % let's extend the input x
+    x = [ zeros(size(x(P1:-1:2,P2:-1:2)))             zeros(size(x(P1:-1:2,:)))              zeros(size(x(P1:-1:2, end-1:-1:(end-P2+1))))
+              zeros(size(x(:, P2:-1:2)))                  x                         zeros(size(x(:, end-1:-1:(end-P2+1))))
+              zeros(size(x(end-1:-1:(end-P1+1),P2:-1:2))) zeros(size(x(end-1:-1:(end-P1+1),:)))  zeros(size(x(end-1:-1:(end-P1+1),end-1:-1:(end-P2+1))))];
+end
+if strcmp(lower(ext), 'pad_havg')
+    % let's extend the input x
+    havg=-mean(h(:));
+    havg=0;
+    x = [ ones(size(x(P1:-1:2,P2:-1:2))).*havg             ones(size(x(P1:-1:2,:))).*havg              ones(size(x(P1:-1:2, end-1:-1:(end-P2+1)))).*havg
+              ones(size(x(:, P2:-1:2))).*havg                  x                         ones(size(x(:, end-1:-1:(end-P2+1)))).*havg
+              ones(size(x(end-1:-1:(end-P1+1),P2:-1:2))).*havg ones(size(x(end-1:-1:(end-P1+1),:))).*havg  ones(size(x(end-1:-1:(end-P1+1),end-1:-1:(end-P2+1)))).*havg];
+end
+if strcmp(lower(ext), 'circ_ext')
+    % let's extend the input x
+    x = [ x(end-P1+1:end-1,end-P2+1:end-1)             x(end-P1+1:end-1,:)              x(end-P1+1:end-1, 1:P2-1)
+        x(:, end-P2+1:end-1)                  x                         x(:, 1:P2-1)
+              x(1:P1-1, end-P2+1:end-1) x(1:P1-1,:)  x(1:P1-1,1:P2-1)];
 end
 
 
@@ -85,11 +115,26 @@ end;
 % cutting out the center part of y if necessary...
 if(strcmp(lower(type),'same'))
 	if(strcmp(lower(fil),'conv'))
-		y=y(round(P1/2):round(P1/2)+L1_ext-1,round(P2/2):round(P2/2)+L2_ext-1);
+%		y=y(round(P1/2):round(P1/2)+L1_ext-1,round(P2/2):round(P2/2)+L2_ext-1);
 		if(strcmp(lower(ext),'symm'))
 			y=y(P1:P1+L1-1,P2:P2+L2-1);			
 		else
 			%do nothing
+            if(strcmp(lower(ext),'circ_ext'))
+			    y=y(P1:P1+L1-1,P2:P2+L2-1);		
+            else
+                if(strcmp(lower(ext),'zero'))
+			        y=y(P1:P1+L1-1,P2:P2+L2-1);	
+                else
+                    if(strcmp(lower(ext),'symm2'))
+			            y=y(P1:P1+L1-1,2*P2:2*P2+L2-1);	
+                    else
+                        if(strcmp(lower(ext),'pad_havg'))
+                            y=y(P1:P1+L1-1,P2:P2+L2-1);	
+                        end;
+                    end;
+                end;
+            end;
 		end;
 	else
 		if(strcmp(lower(ext),'symm'))

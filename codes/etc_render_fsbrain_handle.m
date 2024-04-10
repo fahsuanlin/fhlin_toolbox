@@ -850,10 +850,10 @@ switch lower(param)
             case 'T'
                 %fprintf('\n Tissue definition...\n');
                 app=etc_render_fsbrain_tms_tissue;
-                pos=app.UIFigure.Position;
+                pos=app.TMSheadmodeltissuesetupUIFigure.Position;
                 pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
-                app.UIFigure.Position=[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)];
-                etc_render_fsbrain.fig_tms_tissue=app.UIFigure;
+                app.TMSheadmodeltissuesetupUIFigure.Position=[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)];
+                etc_render_fsbrain.fig_tms_tissue=app.TMSheadmodeltissuesetupUIFigure;
             case 'k'
                 %fprintf('\nregister points...\n');
                 if(isfield(etc_render_fsbrain,'fig_register'))
@@ -1649,7 +1649,9 @@ switch lower(param)
                     etc_render_fsbrain.overlay_stc_timeVec_unit='ms';
                     set(findobj('tag','text_timeVec_unit'),'string',etc_render_fsbrain.overlay_stc_timeVec_unit);
 
-                    [tmp,etc_render_fsbrain.overlay_stc_timeVec_idx]=max(sum(etc_render_fsbrain.overlay_stc.^2,1));
+                    if(isempty(etc_render_fsbrain.overlay_stc_timeVec_idx))
+                        [tmp,etc_render_fsbrain.overlay_stc_timeVec_idx]=max(sum(etc_render_fsbrain.overlay_stc.^2,1));
+                    end;
                     etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
                     etc_render_fsbrain.overlay_stc_hemi=etc_render_fsbrain.overlay_stc;
 
@@ -1698,7 +1700,9 @@ switch lower(param)
                     etc_render_fsbrain.overlay_stc_timeVec_unit='ms';
                     set(findobj('tag','text_timeVec_unit'),'string',etc_render_fsbrain.overlay_stc_timeVec_unit);
 
-                    [tmp,etc_render_fsbrain.overlay_stc_timeVec_idx]=max(sum(etc_render_fsbrain.overlay_stc.^2,1));
+                    if(isempty(etc_render_fsbrain.overlay_stc_timeVec_idx))
+                        [tmp,etc_render_fsbrain.overlay_stc_timeVec_idx]=max(sum(etc_render_fsbrain.overlay_stc.^2,1));
+                    end;
                     etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
                     etc_render_fsbrain.overlay_stc_hemi=etc_render_fsbrain.overlay_stc;
 
@@ -2383,9 +2387,13 @@ try
             etc_render_fsbrain.click_vertex_vox_round=round(etc_render_fsbrain.vol_vox(min_dist_idx,:));
         else
             %fprintf('------[%s]-----\n',mat2str(round(etc_render_fsbrain.click_vertex_vox)));
-            etc_render_fsbrain.click_vertex_vox=click_vertex_vox;
-            etc_render_fsbrain.click_vertex_vox_round=round(click_vertex_vox);
+            etc_render_fsbrain.click_vertex_vox=click_vertex_vox(:)';
+            etc_render_fsbrain.click_vertex_vox_round=round(click_vertex_vox(:)');
         end;
+
+        tmp=etc_render_fsbrain.vol.vox2ras*[etc_render_fsbrain.click_vertex_vox 1]';
+        fprintf('scanner coordinate of the clicked point: %s \n',mat2str(tmp(1:3),4));
+        
         fprintf('voxel for the clicked surface point [C, R, S] = [%1.1f %1.1f %1.1f]\n',etc_render_fsbrain.click_vertex_vox(1),etc_render_fsbrain.click_vertex_vox(2),etc_render_fsbrain.click_vertex_vox(3));
         fprintf('the rounded voxel for the clicked surface point [C, R, S] = [%d %d %d]\n',etc_render_fsbrain.click_vertex_vox_round(1),etc_render_fsbrain.click_vertex_vox_round(2),etc_render_fsbrain.click_vertex_vox_round(3));
         if(~isempty(etc_render_fsbrain.overlay_vol))
@@ -2398,10 +2406,10 @@ try
         if(~isempty(etc_render_fsbrain.talxfm))
             etc_render_fsbrain.click_vertex_point_tal=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*[etc_render_fsbrain.click_vertex_vox 1].';
             etc_render_fsbrain.click_vertex_point_tal=etc_render_fsbrain.click_vertex_point_tal(1:3)';
-            fprintf('MNI305 coordinate for the clicked point (x, y, z) = (%1.0f %1.0f %1.0f)\n',etc_render_fsbrain.click_vertex_point_tal(1),etc_render_fsbrain.click_vertex_point_tal(2),etc_render_fsbrain.click_vertex_point_tal(3));
+            fprintf('MNI305 coordinate for the clicked point (x, y, z) = (%1.2f %1.2f %1.2f)\n',etc_render_fsbrain.click_vertex_point_tal(1),etc_render_fsbrain.click_vertex_point_tal(2),etc_render_fsbrain.click_vertex_point_tal(3));
             etc_render_fsbrain.click_vertex_point_round_tal=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*[etc_render_fsbrain.click_vertex_vox_round 1].';
             etc_render_fsbrain.click_vertex_point_round_tal=etc_render_fsbrain.click_vertex_point_round_tal(1:3)';
-            fprintf('MNI305 coordinate for the surface location closest to the clicked point (x, y, ,z) = (%1.0f %1.0f %1.0f)\n',etc_render_fsbrain.click_vertex_point_round_tal(1),etc_render_fsbrain.click_vertex_point_round_tal(2),etc_render_fsbrain.click_vertex_point_round_tal(3));
+            fprintf('MNI305 coordinate for the surface location closest to the clicked point (x, y, ,z) = (%1.2f %1.2f %1.2f)\n',etc_render_fsbrain.click_vertex_point_round_tal(1),etc_render_fsbrain.click_vertex_point_round_tal(2),etc_render_fsbrain.click_vertex_point_round_tal(3));
         end;
         
         if(~isempty(etc_render_fsbrain.overlay_vol_mask))
@@ -3129,18 +3137,18 @@ try
         end;
 
         h=findobj('tag','edit_mni_x');
-        set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_tal(1),'%1.0f'));
+        set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_tal(1),'%1.2f'));
         h=findobj('tag','edit_mni_y');
-        set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_tal(2),'%1.0f'));
+        set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_tal(2),'%1.2f'));
         h=findobj('tag','edit_mni_z');
-        set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_tal(3),'%1.0f'));
+        set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_tal(3),'%1.2f'));
         
         h=findobj('tag','edit_mni_x_round');
-        set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_round_tal(1),'%1.0f'));
+        set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_round_tal(1),'%1.2f'));
         h=findobj('tag','edit_mni_y_round');
-        set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_round_tal(2),'%1.0f'));
+        set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_round_tal(2),'%1.2f'));
         h=findobj('tag','edit_mni_z_round');
-        set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_round_tal(3),'%1.0f'));
+        set(h,'String',num2str(etc_render_fsbrain.click_vertex_point_round_tal(3),'%1.2f'));
         
         
         %orthogonal slice view
@@ -3167,6 +3175,9 @@ try
                         etc_render_fsbrain_tms_nav_notify(etc_render_fsbrain.app_tms_nav,struct('Source', etc_render_fsbrain.app_tms_nav.XYZEditField),etc_render_fsbrain.click_coord_round);
                         etc_render_fsbrain_tms_nav_notify(etc_render_fsbrain.app_tms_nav,struct('Source', etc_render_fsbrain.app_tms_nav.CRSEditField),etc_render_fsbrain.click_vertex_vox_round);
                         etc_render_fsbrain_tms_nav_notify(etc_render_fsbrain.app_tms_nav,struct('Source', etc_render_fsbrain.app_tms_nav.MNIEditField),etc_render_fsbrain.click_vertex_point_round_tal);
+
+                        tmp=etc_render_fsbrain.vol.vox2ras*[etc_render_fsbrain.click_vertex_vox 1]';
+                        etc_render_fsbrain_tms_nav_notify(etc_render_fsbrain.app_tms_nav,struct('Source', etc_render_fsbrain.app_tms_nav.ScannerEditField),tmp(1:3));
             end;
         end;
 

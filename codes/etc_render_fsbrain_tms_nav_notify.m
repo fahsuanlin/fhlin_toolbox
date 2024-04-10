@@ -77,6 +77,9 @@ function etc_render_fsbrain_tms_nav_notify(app, event,varargin)
             
             app.MNIEditField.Value=num2str(varargin{1}(:)','%1.0f ');
 
+        case app.ScannerEditField; % Execution code related to MNIEditField
+            
+            app.ScannerEditField.Value=num2str(varargin{1}(:)','%1.0f ');
         case app.DefModelLamp; % Execution code related to DefModelLamp
             app.DefModelLamp.Color=varargin{1};
             app.PrepModelLamp.Color=varargin{2};

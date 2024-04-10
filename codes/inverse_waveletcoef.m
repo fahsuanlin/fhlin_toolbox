@@ -62,6 +62,11 @@ for i=1:length(f)
 
 
 	y=fft_conv2(s,m,'symm','same','conv');
+%	y=fft_conv2(s,m,'symm2','same','conv');
+%	y=fft_conv2(s,m,'pad_havg','same','conv');
+%	y=fft_conv2(s,m,'circ_ext','same','conv');
+%	y=fft_conv2(s,m,'zero','same','conv');
+%	y=fft_conv2(s,m,'zero','same','fft');
     %plot(s,'r'); hold on;
     %plot(abs(y),'b'); hold on;
     %keyboard;
