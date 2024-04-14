@@ -1546,6 +1546,9 @@ switch lower(param)
                         draw_stc;
                     end;
                 end;
+            case 'F' %fit brain axis
+                axis(etc_render_fsbrain.brain_axis,'vis3d','tight');
+                
             case 's' %change overlay smoothing steps
                 if(gcf==etc_render_fsbrain.fig_brain)
                     fprintf('change smoothing steps...\n');
