@@ -92,10 +92,12 @@ end;
 
 
 if(flag_display)
+    if(~isempty(P)&~isempty(Q))
     figure;
     [NP,BINP] = histc(P,edge_P);
     [NQ,BINQ] = histc(Q,edge_Q);
     bar(edge_P,[NP(:),NQ(:)],'histc');
+    end;
 end;
 
 %KL divergence

@@ -51,7 +51,8 @@ if(isempty(amp_tfr)&&isempty(phase_tfr))
     phase_tfr=angle(tfr);
 end;
 
-pac=zeros(n_bin+1,length(freqVec),length(freqVec));
+%pac=zeros(n_bin+1,length(freqVec),length(freqVec));
+pac=zeros(n_bin,length(freqVec),length(freqVec));
 for phase_freq_idx=1:length(freqVec)
     if(flag_display)
         fprintf('PAC at [%2.2f] Hz...\r',freqVec(phase_freq_idx));
