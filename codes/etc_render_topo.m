@@ -37,6 +37,7 @@ brain_axis=[];
 brain_fig=[];
 
 %overlay
+overlay_source=[]; %1: value; 2: stc; 3: vol_stc; 4: vol
 topo_value=[];
 topo_stc=[];
 topo_aux_stc=[];
@@ -194,6 +195,7 @@ for idx=1:length(varargin)/2
             topo_flag_render=option_value;
         case 'topo_value'
             topo_value=option_value;
+            overlay_source=1;
         case 'topo_value_hemi'
             topo_value_hemi=option_value;
         case 'topo_smooth'
@@ -220,6 +222,7 @@ for idx=1:length(varargin)/2
             topo_include_fstem=option_value;
         case 'topo_stc'
             topo_stc=option_value;
+            overlay_source=2;
         case 'topo_aux_stc'
             topo_aux_stc=option_value;
         case 'topo_stc_lim'
@@ -646,6 +649,7 @@ etc_render_fsbrain.vol_vox=[];
 etc_render_fsbrain.vol=vol;
 etc_render_fsbrain.vol_reg=vol_reg;
 
+etc_render_fsbrain.overlay_source=overlay_source;
 etc_render_fsbrain.overlay_vol=[];
 etc_render_fsbrain.overlay_vol_stc=[];
 etc_render_fsbrain.overlay_aux_vol=[];
