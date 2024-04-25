@@ -37,6 +37,7 @@ brain_axis=[];
 brain_fig=[];
 
 %overlay
+
 overlay_source=[]; %1: value; 2: stc; 3: vol_stc; 4: vol
 topo_value=[];
 topo_stc=[];
