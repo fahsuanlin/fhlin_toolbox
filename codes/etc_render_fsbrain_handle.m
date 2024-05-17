@@ -78,6 +78,7 @@ switch lower(param)
                 fprintf('w: open coordinates GUI\n');
                 fprintf('x: open object registration GUI\n');
                 fprintf('n: open TMS coil navigation GUI\n');
+                fprintf('V: zoom to fit all objects in the brain figure\n');
                 fprintf('S: open surface contour GUI\n');
                 fprintf('s: smooth overlay \n');
                 fprintf('o: create an ROI\n');
@@ -631,7 +632,45 @@ switch lower(param)
                         end;
                         
                         try
-                            mean_point=mean(etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.collect_vertex_boundary,:),1);
+                            ButtonName = questdlg('Auto ROI flooding seed?', ...
+                                'Seed', ...
+                                'Auto', 'Manual','Auto');
+                            switch ButtonName
+                                case 'Auto'
+                                    flag_auto=1;
+                                case 'Manual'
+                                    flag_auto=0;
+                            end % switch
+
+                            if(~flag_auto)
+                                %get seed coord by clicking
+                                pt_last=inverse_select3d(etc_render_fsbrain.h);
+                                figure(etc_render_fsbrain.fig_brain);
+
+                                flag_wait=1;
+                                while(flag_wait)
+                                    pause(0.1);
+                                    pt=inverse_select3d(etc_render_fsbrain.h);
+                                    if(norm(pt-pt_last)>eps)
+                                        flag_wait=0;
+                                    end;
+                                end;
+
+                                
+                                pt=inverse_select3d(etc_render_fsbrain.h);
+                                if(isempty(pt))
+                                    return;
+                                end
+
+                                vv=etc_render_fsbrain.vertex_coords;
+                                dist=sqrt(sum((vv-repmat([pt(1),pt(2),pt(3)],[size(vv,1),1])).^2,2));
+                                [min_dist,min_dist_idx]=min(dist);
+                                fprintf('the nearest vertex on the surface: IDX=[%d] @ {%2.2f %2.2f %2.2f} \n',min_dist_idx,vv(min_dist_idx,1),vv(min_dist_idx,2),vv(min_dist_idx,3));
+                                mean_point=vv(min_dist_idx,:);
+                            else
+                                mean_point=mean(etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.collect_vertex_boundary,:),1);
+                            end;
+
                             dist=sum((etc_render_fsbrain.vertex_coords_hemi-repmat(mean_point,[size(etc_render_fsbrain.vertex_coords_hemi,1),1])).^2,2);
                             [dummy,min_dist]=min(dist);
                             roi_idx=etc_patchflood(etc_render_fsbrain.faces_hemi+1,min_dist,etc_render_fsbrain.collect_vertex_boundary);
@@ -1476,6 +1515,8 @@ switch lower(param)
                 end;
             case 'y' %cluster
                 
+            case 'V' %tight axis for brain figure
+                axis(etc_render_fsbrain.brain_axis,'tight');
                 
             case 'u' %show cluster labeling from files
                 if(isfield(etc_render_fsbrain,'h_cluster'))
@@ -1891,7 +1932,7 @@ switch lower(param)
                 end;
                 
                 etc_render_fsbrain.flag_overlay_stc_surf=1;
-                etc_render_fsbrain.flag_overlay_stc_vol=0;
+                etc_render_fsbrain.flag_overlay_stc_vol=0;''
                 
                 if(etc_render_fsbrain.overlay_flag_paint_on_cortex)
                     update_overlay_vol;
