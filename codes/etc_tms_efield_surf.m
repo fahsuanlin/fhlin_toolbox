@@ -1,4 +1,4 @@
-function [status, efield]=etc_tms_efield_surf(t, P, normals, Cener, Area, Indicator, name, tissue, cond, enclosingTissueIdx, condin, condout, contrast, tneighbor, RnumberE, ineighborE, EC, coords, varargin)
+function [status, efield]=etc_tms_efield_surf(t, P, normals, Center, Area, Indicator, name, tissue, cond, enclosingTissueIdx, condin, condout, contrast, tneighbor, RnumberE, ineighborE, EC, coords, varargin)
 % etc_tms_efield_surfr  a wrapper for calculating the e-field geneated by a
 % TMS coil
 %
@@ -6,6 +6,7 @@ function [status, efield]=etc_tms_efield_surf(t, P, normals, Cener, Area, Indica
 %
 
 efield=[];
+strcoil=[];
 
 status=0;
 
@@ -13,7 +14,7 @@ output_stem='tms_efield';
 
 flag_save=0;
 
-tissue={};
+%tissue={};
 tissue_to_plot='';
 
 for i=1:length(varargin)/2
@@ -24,19 +25,31 @@ for i=1:length(varargin)/2
             output_stem=option_value;
         case 'flag_save'
             flag_save=option_value;
-        case 'tissue'
-            tissue=option;
+%        case 'tissue'
+%            tissue=option;
         case 'tissue_to_plot'
             tissue_to_plot=option_value;
+        case 'strcoil'
+            strcoil=option_value;
         otherwise
             fprintf('unknown option [%s]\n',option)
             return;
     end;
 end;
 
-    load CombinedMesh;
-    load CombinedMeshP;
-    strcoil = evalin('base', 'strcoil');
+%loading BEM...
+%load CombinedMesh;
+%load CombinedMeshP;
+
+if(isempty(strcoil))
+    fprintf('loading ''strcoil'' from the workspace...\n');
+    try
+        strcoil = evalin('base', 'strcoil');
+    catch
+        fprintf('error in loading ''strcoil'' from the workspace!\n');
+        reurn;
+    end;
+end;
 
 if(isempty(tissue))
     fprintf('no tissue string cells!\n');

@@ -79,6 +79,7 @@ switch lower(param)
                 fprintf('x: open object registration GUI\n');
                 fprintf('n: open TMS coil navigation GUI\n');
                 fprintf('V: zoom to fit all objects in the brain figure\n');
+                fprintf('E: overlay export GUI\n')
                 fprintf('S: open surface contour GUI\n');
                 fprintf('s: smooth overlay \n');
                 fprintf('o: create an ROI\n');
@@ -878,6 +879,28 @@ switch lower(param)
                     pos=etc_render_fsbrain.fig_tms_nav.Position;
                     pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
                     etc_render_fsbrain.fig_tms_nav.Position=[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)];
+                end;
+            case 'E'
+                flag_new=0;
+                if(~isfield(etc_render_fsbrain,'fig_overlay_export'))
+                    flag_new=1;
+                else
+                    if(~isvalid(etc_render_fsbrain.fig_overlay_export))
+                        flag_new=1;
+                    end;
+                end;
+                if(flag_new)                %fprintf('\n Overlay export...\n');
+                    app=etc_render_fsbrain_overlay_export;
+                    pos=app.ExportoverlayUIFigure.Position;
+                    pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                    app.ExportoverlayUIFigure.Position=[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)];
+                    etc_render_fsbrain.fig_overlay_export=app.ExportoverlayUIFigure;
+                    etc_render_fsbrain.app_overlay_export=app;
+                else
+                    figure(etc_render_fsbrain.fig_overlay_export)
+                    pos=etc_render_fsbrain.fig_overlay_export.Position;
+                    pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                    etc_render_fsbrain.fig_overlay_export.Position=[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)];
                 end;
             case 'S'
                 %fprintf('\n surface contours...\n');
@@ -1834,6 +1857,15 @@ switch lower(param)
             end;
         end;
 
+        try
+            delete(etc_render_fsbrain.fig_overlay_export);
+        catch ME
+            if(isfield(etc_render_fsbrain,'fig_overlay_export'))
+                close(etc_render_fsbrain.fig_overlay_export,'force');
+            else
+                %close(gcf,'force');
+            end;
+        end; 
 
         try
             delete(etc_render_fsbrain.fig_stc);
@@ -1932,7 +1964,7 @@ switch lower(param)
                 end;
                 
                 etc_render_fsbrain.flag_overlay_stc_surf=1;
-                etc_render_fsbrain.flag_overlay_stc_vol=0;''
+                etc_render_fsbrain.flag_overlay_stc_vol=0;
                 
                 if(etc_render_fsbrain.overlay_flag_paint_on_cortex)
                     update_overlay_vol;
