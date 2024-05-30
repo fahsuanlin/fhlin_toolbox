@@ -9,6 +9,7 @@ function [tms_coil_xfm, tms_coil_xfm_mm]=etc_tms_target_xfm_goto(target, head_su
 % tms_coil_origin: TMS coil origin vector.  
 % tms_coil_axis: TMS coil axis vector.
 % tms_coil_up: TMS coil up directional vector.
+%
 % tms_coil_xfm: a [4x4] TMS coil transformation matrix;
 % option:
 %     tms_coil_xfm_mm: a [4x4] TMS coil transformation matrix (in mm);
@@ -105,6 +106,18 @@ else
     tms_coil_xfm_mm=R_trans_mm*R_tx_now_mm*inv(R_rot)*inv(R_tx_now_mm)*tms_coil_xfm_mm;
 end;
 
+
+%transform data
+tmp=(R_trans_mm*R_tx_now_mm*inv(R_rot)*inv(R_tx_now_mm)*[tms_coil_origin(:)' 1]')';
+tms_coil_origin=tmp(1:3);
+fprintf('after moving: coil origin: %s \n',mat2str(tms_coil_origin(:).',3));
+
+tmp=(inv(R_rot)*[tms_coil_axis(:)' 1]')';
+tms_coil_axis=tmp(1:3);
+
+
+tmp=(inv(R_rot)*[tms_coil_up(:)' 1]')';
+tms_coil_up=tmp(1:3);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
