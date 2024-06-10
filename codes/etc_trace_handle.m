@@ -134,6 +134,7 @@ switch lower(param)
                 fprintf('f: show display configuration\n');
                 fprintf('c: show control panel\n');
                 fprintf('l: list all time series\n');
+                fprintf('s: spectrum estimation\n')
                 fprintf('m: list montages\n');                
                 fprintf('d: change scale\n');                
                 fprintf('r: force redrawing \n');
@@ -175,13 +176,18 @@ switch lower(param)
                 pp1=get(etc_trace_obj.fig_trace,'outerpos');
                 set(etc_trace_obj.fig_analyze,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
             case 'k'
-            case 's' %mark triggers/events
-                %if(etc_trace_obj.flag_mark)
-                %    fprintf('start making triggers/events...\n');
-                %else
-                %    fprintf('stop making triggers/events...\n');
-                %end;
-                %etc_trace_obj.flag_mark=~etc_trace_obj.flag_mark;
+            case 's' %spectrum
+                flag_old=0;
+                if(isfield(etc_trace_obj,'fig_spectrum'))
+                    if(isvalid(etc_trace_obj.fig_spectrum))
+                        flag_old=1;
+                    end;
+                end;
+                if(flag_old)
+                    etc_trace_obj.fig_spectrum=etc_trace_spectrum('fig_spectrum',etc_trace_obj.fig_spectrum);
+                else
+                    etc_trace_obj.fig_spectrum=etc_trace_spectrum;
+                end;
             case 'v'
                 fprintf('show triggers/events....\n');
                 if(isfield(etc_trace_obj,'fig_trigger'))
