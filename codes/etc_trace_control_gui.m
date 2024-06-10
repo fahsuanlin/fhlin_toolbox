@@ -22,7 +22,7 @@ function varargout = etc_trace_control_gui(varargin)
 
 % Edit the above text to modify the response to help etc_trace_control_gui
 
-% Last Modified by GUIDE v2.5 02-Jun-2022 14:20:06
+% Last Modified by GUIDE v2.5 09-Jun-2024 22:49:22
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -184,6 +184,7 @@ end;
 if(isfield(etc_trace_obj,'trigger_add_rightclick'))
     set(handles.checkbox_trigger_rightclick,'Value',etc_trace_obj.trigger_add_rightclick);    
 else
+    etc_trace_obj.trigger_add_rightclick=0;
     set(handles.checkbox_trigger_rightclick,'Value',0);
 end;
 %guidata(hObject, handles);
@@ -203,10 +204,18 @@ if(isfield(etc_trace_obj,'trigger_time_idx'))
     set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
     hObject=findobj('tag','edit_trigger_time');
     set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+%     hObject=findobj('tag','edit_trigger_duration');
+%     set(hObject,'String','');
+%     hObject=findobj('tag','edit_trigger_ch');
+%     set(hObject,'String','');
 else
     hObject=findobj('tag','edit_trigger_time_idx');
     set(hObject,'String','');
     hObject=findobj('tag','edit_trigger_time');
+    set(hObject,'String','');
+    hObject=findobj('tag','edit_trigger_duration');
+    set(hObject,'String','');
+    hObject=findobj('tag','edit_trigger_ch');
     set(hObject,'String','');
 end;
 
@@ -409,7 +418,7 @@ end;
 IndexC = strcmp(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
 trigger_match_idx = find(IndexC);
 trigger_match_time_idx=etc_trace_obj.trigger.time(trigger_match_idx);
-trigger_match_time_idx=sort(trigger_match_time_idx);
+[trigger_match_time_idx, sort_idx]=sort(trigger_match_time_idx);
 fprintf('[%d] trigger {%s} found at time index [%s].\n',length(trigger_match_idx),etc_trace_obj.trigger_now,mat2str(trigger_match_time_idx));
 
 %find the nearest one
@@ -423,12 +432,19 @@ set(hObject,'String',sprintf('%1.3f',trigger_match_time_idx(idx)./etc_trace_obj.
 hObject=findobj('tag','edit_trigger_time_idx');
 set(hObject,'String',sprintf('%d',trigger_match_time_idx(idx)));
 
+%additional fields of trigger....
+hObject=findobj('tag','etit_trigger_duration');
+%set(hObject,'String',sprintf('%1.3f',trigger_match_time_idx(idx)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger.duration(trigger_match_idx(sort_idx(idx)))./etc_trace_obj.fs));
+
 
 %update even/trigger window
 hObject=findobj('tag','edit_local_trigger_time');
 set(hObject,'String',sprintf('%1.3f',trigger_match_time_idx(idx)./etc_trace_obj.fs+etc_trace_obj.time_begin));
 hObject=findobj('tag','edit_local_trigger_time_idx');
 set(hObject,'String',sprintf('%d',trigger_match_time_idx(idx)));
+hObject=findobj('tag','edit_local_trigger_duration');
+%set(hObject,'String',sprintf('%d',trigger_match_time_idx(idx)));
 
 if(~isempty(idx))
     for ii=1:length(etc_trace_obj.trigger.time)
@@ -656,7 +672,7 @@ if(isempty(etc_trace_obj.trigger)) return; end;
 IndexC = strcmp(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
 trigger_match_idx = find(IndexC);
 trigger_match_time_idx=etc_trace_obj.trigger.time(trigger_match_idx);
-trigger_match_time_idx=sort(trigger_match_time_idx);
+[trigger_match_time_idx, sort_idx]=sort(trigger_match_time_idx);
 fprintf('[%d] trigger {%s} found at time index [%s].\n',length(trigger_match_idx),etc_trace_obj.trigger_now,mat2str(trigger_match_time_idx));
 
 if(isempty(find(trigger_match_time_idx==etc_trace_obj.time_select_idx))) %current time point is NOT inside trigger events
@@ -682,6 +698,11 @@ hObject=findobj('tag','edit_trigger_time');
 set(hObject,'String',sprintf('%1.3f',trigger_match_time_idx(idx)./etc_trace_obj.fs+etc_trace_obj.time_begin));
 hObject=findobj('tag','edit_trigger_time_idx');
 set(hObject,'String',sprintf('%d',trigger_match_time_idx(idx)));
+
+%additional fields of trigger....
+hObject=findobj('tag','etit_trigger_duration');
+%set(hObject,'String',sprintf('%1.3f',trigger_match_time_idx(idx)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger.duration(trigger_match_idx(sort_idx(idx)))./etc_trace_obj.fs));
 
 %update even/trigger window
 hObject=findobj('tag','listbox_time_idx');
@@ -733,7 +754,7 @@ if(isempty(etc_trace_obj.trigger)) return; end;
 IndexC = strcmp(etc_trace_obj.trigger.event,etc_trace_obj.trigger_now);
 trigger_match_idx = find(IndexC);
 trigger_match_time_idx=etc_trace_obj.trigger.time(trigger_match_idx);
-trigger_match_time_idx=sort(trigger_match_time_idx);
+[trigger_match_time_idx,sort_idx]=sort(trigger_match_time_idx);
 fprintf('[%d] trigger {%s} found at time index %s.\n',length(trigger_match_idx),etc_trace_obj.trigger_now,mat2str(trigger_match_time_idx));
 
 if(isempty(find(trigger_match_time_idx==etc_trace_obj.time_select_idx))) %current time point is NOT inside trigger events
@@ -762,6 +783,11 @@ hObject=findobj('tag','edit_trigger_time');
 set(hObject,'String',sprintf('%1.3f',trigger_match_time_idx(idx)./etc_trace_obj.fs+etc_trace_obj.time_begin));
 hObject=findobj('tag','edit_trigger_time_idx');
 set(hObject,'String',sprintf('%d',trigger_match_time_idx(idx)));
+
+%additional fields of trigger....
+hObject=findobj('tag','etit_trigger_duration');
+%set(hObject,'String',sprintf('%1.3f',trigger_match_time_idx(idx)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger.duration(trigger_match_idx(sort_idx(idx)))./etc_trace_obj.fs));
 
 %update even/trigger window
 hObject=findobj('tag','listbox_time_idx');
@@ -1191,7 +1217,11 @@ else %restore the original un-averaged trace.
     set(hObject,'Enable','on');
     hObject=findobj('tag','edit_trigger_time');
     set(hObject,'Enable','on');
-    
+    hObject=findobj('tag','etit_trigger_duration');
+    set(hObject,'Enable','on');
+    hObject=findobj('tag','edit_trigger_ch');
+    set(hObject,'Enable','on');
+
     hObject=findobj('tag','edit_threshold');
     set(hObject,'String',num2str(mean(abs(etc_trace_obj.ylim))));
     
@@ -1881,6 +1911,10 @@ switch answer
             
             set(findobj('Tag','edit_local_trigger_time'),'string','');
             
+            set(findobj('Tag','edit_local_trigger_time_duration'),'string','');
+
+            set(findobj('Tag','edit_local_trigger_ch'),'string','');
+
             set(findobj('Tag','edit_local_trigger_class'),'string','');
         
         catch ME
@@ -2139,3 +2173,95 @@ if(isfield(etc_trace_obj,'topo_component'));
         etc_trace_obj.flag_topo_component=get(hObject,'Value');
     end;
 end;
+
+
+
+function edit_trigger_ch_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_trigger_ch (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_trigger_ch as text
+%        str2double(get(hObject,'String')) returns contents of edit_trigger_ch as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_trigger_ch_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_trigger_ch (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function etit_trigger_duration_Callback(hObject, eventdata, handles)
+% hObject    handle to etit_trigger_duration (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of etit_trigger_duration as text
+%        str2double(get(hObject,'String')) returns contents of etit_trigger_duration as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function etit_trigger_duration_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to etit_trigger_duration (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_trigger_duration_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_trigger_duration (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_trigger_duration as text
+%        str2double(get(hObject,'String')) returns contents of edit_trigger_duration as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_trigger_duration_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_trigger_duration (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% 
+% function edit_trigger_ch_Callback(hObject, eventdata, handles)
+% % hObject    handle to edit_trigger_ch (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    structure with handles and user data (see GUIDATA)
+% 
+% % Hints: get(hObject,'String') returns contents of edit_trigger_ch as text
+% %        str2double(get(hObject,'String')) returns contents of edit_trigger_ch as a double
+% 
+% 
+% % --- Executes during object creation, after setting all properties.
+% function edit_trigger_ch_CreateFcn(hObject, eventdata, handles)
+% % hObject    handle to edit_trigger_ch (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    empty - handles not created until after all CreateFcns called
+% 
+% % Hint: edit controls usually have a white background on Windows.
+% %       See ISPC and COMPUTER.
+% if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+%     set(hObject,'BackgroundColor','white');
+% end

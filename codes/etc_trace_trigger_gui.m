@@ -66,7 +66,7 @@ set(handles.edit_local_trigger_time_idx,'string','');
 set(handles.edit_local_trigger_time,'string','');
 set(handles.edit_local_trigger_class,'string','');
 set(handles.edit_local_trigger_duration,'string','');
-set(handles.edit_local_trigger_ch,'string','');
+set(handles.edit_local_trigger_ch,'string','unspecified');
 
 set(handles.listbox_time_idx,'string','');
 set(handles.listbox_time,'string','');
@@ -182,14 +182,16 @@ if(~isempty(etc_trace_obj.trigger.time))
             set(handles.edit_local_trigger_class,'String',etc_trace_obj.trigger_now);
 
             if(isfield(etc_trace_obj.trigger,'duration'))
-                set(handles.edit_local_trigger_duration,'String',sprintf('%1.3f',(etc_trace_obj.trigger.duration(idx(1)))));
+                %set(handles.edit_local_trigger_duration,'String',sprintf('%1.3f',etc_trace_obj.trigger.duration(idx(1))));
+                set(handles.edit_local_trigger_duration,'String','NaN');
             else
-                set(handles.edit_local_trigger_duration,'String','');
+                set(handles.edit_local_trigger_duration,'String','NaN');
             end;
             if(isfield(etc_trace_obj.trigger,'ch'))
-                set(handles.edit_local_trigger_ch,'String',sprintf('%s',etc_trace_obj.trigger.ch{idx(1)}));
+%                set(handles.edit_local_trigger_ch,'String',sprintf('%s',etc_trace_obj.trigger.ch{idx(1)}));
+                set(handles.edit_local_trigger_ch,'String','unspecified');
             else
-                set(handles.edit_local_trigger_ch,'String','');
+                set(handles.edit_local_trigger_ch,'String','unspecified');
             end;
         end;
     end;
@@ -272,6 +274,8 @@ if(~isempty(selected_value))
     set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger.duration(selected_value)));
     hObject=findobj('tag','edit_local_trigger_ch');
     set(hObject,'String',sprintf('%s',etc_trace_obj.trigger.ch{selected_value}));
+    IndexC = strcmp(etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names, etc_trace_obj.trigger.ch{selected_value});
+    etc_trace_obj.trace_selected_idx = find(IndexC);
 
     %update trigger info in the trace window
     % trigger list box
@@ -287,6 +291,10 @@ if(~isempty(selected_value))
     set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
     hObject=findobj('tag','edit_trigger_time');
     set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+    hObject=findobj('tag','edit_trigger_duration');
+    set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger.duration(selected_value)));
+    hObject=findobj('tag','edit_trigger_ch');
+    set(hObject,'String',sprintf('%s',etc_trace_obj.trigger.ch{selected_value}));
     
     etc_trcae_gui_update_time;
     
@@ -359,6 +367,8 @@ if(~isempty(selected_value))
     set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger.duration(selected_value)));
     hObject=findobj('tag','edit_local_trigger_ch');
     set(hObject,'String',sprintf('%s',etc_trace_obj.trigger.ch{selected_value}));
+    IndexC = strcmp(etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names, etc_trace_obj.trigger.ch{selected_value});
+    etc_trace_obj.trace_selected_idx = find(IndexC);
 
     %update trigger info in the trace window
     % trigger list box
@@ -374,6 +384,10 @@ if(~isempty(selected_value))
     set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
     hObject=findobj('tag','edit_trigger_time');
     set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+    hObject=findobj('tag','edit_trigger_duration');
+    set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger.duration(selected_value)));
+    hObject=findobj('tag','edit_trigger_ch');
+    set(hObject,'String',sprintf('%s',etc_trace_obj.trigger.ch{selected_value}));
     
     
     etc_trcae_gui_update_time;
@@ -770,6 +784,10 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
                 set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
                 hObject=findobj('tag','edit_trigger_time');
                 set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+                hObject=findobj('tag','edit_trigger_duration');
+                set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger.duration(selected_value)));
+                hObject=findobj('tag','edit_trigger_ch');
+                set(hObject,'String',sprintf('%s',etc_trace_obj.trigger.ch{selected_value}));
                 
             else
                 set(handles.edit_local_trigger_time_idx,'String','');
@@ -966,7 +984,11 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
                 set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
                 hObject=findobj('tag','edit_trigger_time');
                 set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
-                
+                hObject=findobj('tag','edit_trigger_duration');
+                set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger.duration(selected_value)));
+                hObject=findobj('tag','edit_trigger_ch');
+                set(hObject,'String',sprintf('%s',etc_trace_obj.trigger.ch{selected_value}));
+
             else
                 set(handles.edit_local_trigger_time_idx,'String','');
                 set(handles.edit_local_trigger_time,'String','');
@@ -1034,7 +1056,7 @@ if(indx)
             %evalin('base',sprintf('global etc_render_fsbrain; etc_render_fsbrain.aux_point_name=%s;',var));
             %evalin('base',sprintf('etc_trace_obj.trigger.time=%s.time; etc_trace_obj.trigger.event=%s.event;',var,var));
             eval(sprintf('etc_trace_obj.trigger.time=%s.time; etc_trace_obj.trigger.event=%s.event;',var,var));
-
+            eval(sprintf('etc_trace_obj.trigger.duration=%s.duration; etc_trace_obj.trigger.ch=%s.ch;',var,var));
             fprintf('Done!\n');
         else
             fprintf('Rejected!\n');
@@ -1155,6 +1177,8 @@ if(~isempty(selected_value))
     set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger.duration(selected_value)));
     hObject=findobj('tag','edit_local_trigger_ch');
     set(hObject,'String',sprintf('%s',etc_trace_obj.trigger.ch{selected_value}));
+    IndexC = strcmp(etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names, etc_trace_obj.trigger.ch{selected_value});
+    etc_trace_obj.trace_selected_idx = find(IndexC);
 
     %update trigger info in the trace window
     % trigger list box
@@ -1169,8 +1193,11 @@ if(~isempty(selected_value))
     hObject=findobj('tag','edit_trigger_time_idx');
     set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
     hObject=findobj('tag','edit_trigger_time');
-    set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
-    
+    set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));   
+    hObject=findobj('tag','edit_trigger_duration');
+    set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger.duration(selected_value)));
+    hObject=findobj('tag','edit_trigger_ch');
+    set(hObject,'String',sprintf('%s',etc_trace_obj.trigger.ch{selected_value}));
     
     etc_trcae_gui_update_time;
     
@@ -1399,6 +1426,10 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
                 set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
                 hObject=findobj('tag','edit_trigger_time');
                 set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+                hObject=findobj('tag','edit_trigger_duration');
+                set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger.duration(selected_value)));
+                hObject=findobj('tag','edit_trigger_ch');
+                set(hObject,'String',sprintf('%s',etc_trace_obj.trigger.ch{selected_value}));
                 
             else
                 set(handles.edit_local_trigger_time_idx,'String','');
@@ -2034,6 +2065,8 @@ if(~isempty(selected_value))
     set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger.duration(selected_value)));
     hObject=findobj('tag','edit_local_trigger_ch');
     set(hObject,'String',sprintf('%s',etc_trace_obj.trigger.ch{selected_value}));
+    IndexC = strcmp(etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names, etc_trace_obj.trigger.ch{selected_value});
+    etc_trace_obj.trace_selected_idx = find(IndexC);
 
     %update trigger info in the trace window
     % trigger list box
@@ -2049,6 +2082,10 @@ if(~isempty(selected_value))
     set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
     hObject=findobj('tag','edit_trigger_time');
     set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+    hObject=findobj('tag','edit_trigger_duration');
+    set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger.duration(selected_value)));
+    hObject=findobj('tag','edit_trigger_ch');
+    set(hObject,'String',sprintf('%s',etc_trace_obj.trigger.ch{selected_value}));
     
     etc_trcae_gui_update_time;
     
@@ -2115,6 +2152,9 @@ if(~isempty(selected_value))
     set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger.duration(selected_value)));
     hObject=findobj('tag','edit_local_trigger_ch');
     set(hObject,'String',sprintf('%s',etc_trace_obj.trigger.ch{selected_value}));
+    IndexC = strcmp(etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names, etc_trace_obj.trigger.ch{selected_value});
+    etc_trace_obj.trace_selected_idx = find(IndexC);
+   
 
     %update trigger info in the trace window
     % trigger list box
@@ -2130,7 +2170,12 @@ if(~isempty(selected_value))
     set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
     hObject=findobj('tag','edit_trigger_time');
     set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
-    
+    hObject=findobj('tag','edit_trigger_duration');
+    set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger.duration(selected_value)));
+    hObject=findobj('tag','edit_trigger_ch');
+    set(hObject,'String',sprintf('%s',etc_trace_obj.trigger.ch{selected_value}));
+
+
     etc_trcae_gui_update_time;
     
     figure(etc_trace_obj.fig_trigger);
@@ -2311,6 +2356,10 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
                 set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
                 hObject=findobj('tag','edit_trigger_time');
                 set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+                hObject=findobj('tag','edit_trigger_duration');
+                set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger.duration(selected_value)));
+                hObject=findobj('tag','edit_trigger_ch');
+                set(hObject,'String',sprintf('%s',etc_trace_obj.trigger.ch{selected_value}));
                 
             else
                 set(handles.edit_local_trigger_time_idx,'String','');
@@ -2506,6 +2555,10 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
                 set(hObject,'String',sprintf('%d',etc_trace_obj.trigger_time_idx));
                 hObject=findobj('tag','edit_trigger_time');
                 set(hObject,'String',sprintf('%1.3f',(etc_trace_obj.trigger_time_idx-1)./etc_trace_obj.fs+etc_trace_obj.time_begin));
+                hObject=findobj('tag','edit_trigger_duration');
+                set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger.duration(selected_value)));
+                hObject=findobj('tag','edit_trigger_ch');
+                set(hObject,'String',sprintf('%s',etc_trace_obj.trigger.ch{selected_value}));
                 
             else
                 set(handles.edit_local_trigger_time_idx,'String','');
