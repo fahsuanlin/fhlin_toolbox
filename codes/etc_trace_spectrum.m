@@ -3,6 +3,8 @@ function fig_spectrum=etc_trace_spectrum(varargin)
 fig_spectrum=[];
 spec_scale=1e3; %a scaling factor for spectrum estimates
 
+f_max=100; %Hz
+f_min=[]; %Hz
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
@@ -11,6 +13,10 @@ for i=1:length(varargin)/2
             spec_scale=option_value;
         case 'fig_spectrum'
            fig_spectrum=option_value;
+        case 'f_max'
+            f_max=option_value;
+        case 'f_min'
+            f_min=option_value;
         otherwise
             fprintf('unknown option [%s]!\nerror!\n',option);
             return;
@@ -45,6 +51,8 @@ if((etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1)<=size
 else
     tmp=etc_trace_obj.data;
 end;
+if(isempty(tmp)) return; end; %no data at all!
+
 tmp=cat(1,tmp,ones(1,size(tmp,2)));
 
 %select channels;
@@ -73,7 +81,20 @@ Pxx=[];
 for ch_idx=1:size(tmp,1)-1
     [Pxx(:,ch_idx),F] = pwelch(tmp(ch_idx,:),[],[],[],etc_trace_obj.fs);
 end;
-Pxx=Pxx.'.*spec_scale;
+
+if(isempty(f_min))
+    f_min=min(F);
+end;
+if(isempty(f_max))
+    f_max=max(F);
+end;
+f_idx=find(F>=f_min&F<=f_max);
+F=F(f_idx);
+Pxx=Pxx(f_idx,:);
+
+mmax=max(abs(etc_trace_obj.ylim));
+Pxx=log(Pxx); %power spectrum in log scale.
+Pxx=-fmri_scale(Pxx.',1,0).*mmax; %scaling automatically. all channels will be shown in reverse in y-direction. So take a negative sign first.
 Pxx(end+1,:)=1;
 
 %tmp=S*tmp;
@@ -117,7 +138,7 @@ tmp=tmp';
                 etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names{idx}=ss;
                 set(hh(idx),'tag',ss);
             end;
-            set(hh,'ButtonDownFcn',@etc_trace_callback);
+            set(hh,'ButtonDownFcn',@etc_trace_spectrum_callback);
     end;
 
 %highlight selected trace
@@ -186,3 +207,59 @@ set(etc_trace_obj.fig_trace,'color','w')
 set(axis_spec,'Clipping','off');
 
 return;
+
+
+function etc_trace_spectrum_callback(src,~)
+
+global etc_trace_obj;
+
+fprintf('[%s] was selected\n',src.Tag);
+%drag-drop
+%set(src,'ButtonDownFcn',@dragObject);
+etc_trace_obj.dragging = src;
+etc_trace_obj.orPos = get(etc_trace_obj.fig_trace,'CurrentPoint');
+
+%Index = find(strcmp(etc_trace_obj.ch_names,src.Tag));
+Index = find(strcmp(etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names, src.Tag));
+
+if(isfield(etc_trace_obj,'trace_selected_idx'))
+    if(~isempty(etc_trace_obj.trace_selected_idx))
+        if(Index==etc_trace_obj.trace_selected_idx)
+            etc_trace_obj.trace_selected_idx=[];
+        else
+            etc_trace_obj.trace_selected_idx=Index;
+        end;
+    else
+        etc_trace_obj.trace_selected_idx=Index;
+    end;
+else
+    etc_trace_obj.trace_selected_idx=Index;
+end;
+
+global etc_render_fsbrain;
+
+%fprintf('----\n');
+%etc_render_fsbrain.click_overlay_vertex
+
+etc_trace_handle('redraw');
+if(isfield(etc_trace_obj,'fig_spectrum'))
+    if(isvalid(etc_trace_obj.fig_spectrum))
+        etc_trace_obj.fig_spectrum=etc_trace_spectrum('fig_spectrum',etc_trace_obj.fig_spectrum);
+    end;
+end;
+
+if(isfield(etc_render_fsbrain,'overlay_stc'))
+    if(~isempty(etc_render_fsbrain.overlay_stc))
+        etc_render_fsbrain.flag_overlay_stc_surf=1;
+        etc_render_fsbrain.flag_overlay_stc_vol=0;
+        etc_render_fsbrain_handle('draw_stc');
+    end;
+end;
+figure(etc_trace_obj.fig_trace);
+%etc_render_fsbrain.click_overlay_vertex
+%fprintf('----\n');
+
+return;
+
+
+

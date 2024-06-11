@@ -1714,6 +1714,10 @@ switch answer
         fig_control=etc_trace_obj.fig_control;
         flag_trigger_avg=etc_trace_obj.flag_trigger_avg;
         
+        %spectrum
+        if(isfield(etc_trace_obj,'fig_spectrum'))
+            close(etc_trace_obj.fig_spectrum);
+        end;
         clear global etc_trace_obj;
         
         global etc_trace_obj;
@@ -1848,8 +1852,7 @@ switch answer
         str={'[none]'};
         set(handles.listbox_trigger,'string',str);
         set(handles.listbox_trigger,'Value',1);
-         
-        
+
         
         %info 
         obj=findobj('tag','text_info_datasize');

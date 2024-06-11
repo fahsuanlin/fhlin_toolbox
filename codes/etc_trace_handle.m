@@ -95,7 +95,17 @@ switch lower(param)
             else
                 close(gcf,'force');
             end;
-        end;         
+        end;   
+
+        try
+            delete(etc_trace_obj.fig_spectrum);
+        catch ME
+            if(isfield(etc_trace_obj,'fig_spectrum'))
+                close(etc_trace_obj.fig_spectrum,'force');
+            else
+                close(gcf,'force');
+            end;
+        end;           
 %         try
 %             delete(etc_trace_obj.fig_load);
 %         catch ME
@@ -288,12 +298,18 @@ switch lower(param)
                             global etc_render_fsbrain;
                             
                             if(isempty(etc_trace_obj.topo)) %no topo field, the first time loading the topology
+                                fprintf('Load an MAT file with the following entries:\n');
+                                fprintf('\t- face: n_fx3 matrix of (1-based) n_f faces for the topology model\n');
+                                fprintf('\t- vertex: n_vx3 matrix of n_v vertices for the topology model\n');
+                                fprintf('\t- electrode_name: n_e string cells of electrode/sensor names\n');
+                                fprintf('\t- electrode_idx: n_e vector of vertex indices for electrodes/sensors\n');
+                                
                                 [filename, pathname, filterindex] = uigetfile({'*.mat','topology Matlab file'}, 'Pick a topology definition file');
                                 if(filename>0)
                                     try
-                                        load(sprintf('%s/%s',pathname,filename));
-                                        etc_trace_obj.topo.vertex=vertex;
-                                        etc_trace_obj.topo.face=face;
+                                        tmp=load(sprintf('%s/%s',pathname,filename));
+                                        etc_trace_obj.topo.vertex=tmp.vertex;
+                                        etc_trace_obj.topo.face=tmp.face;
                                         
                                         
                                         
@@ -311,8 +327,22 @@ switch lower(param)
                                             topo_ch=etc_trace_obj.ch_names; % time-domain topology
                                         end;
                                         
-                                        
-                                        
+                                        electrode_name=[];
+                                        if(isfield(etc_render_fsbrain,'electrode_name'))
+                                            electrode_name=etc_render_fsbrain.electrode_name;
+                                        else
+                                            if(isfield(tmp,'electrode_name')) %from loaded data
+                                                electrode_name=tmp.electrode_name;
+                                            end;
+                                        end;
+                                        if(isempty(electrode_name)) 
+                                            fprintf('error! no ''electrode_name'' was defined!\n');
+                                            return;
+                                        end;
+
+                                        electrode_idx=[];
+                                        electrode_idx=tmp.electrode_idx; %index to electrodes for the loaded vertex/face
+
                                         %Index=find(contains(electrode_name,etc_trace_obj.ch_names));
                                         Index=find(contains(electrode_name,topo_ch));
                                         if(length(Index)<=length(topo_ch)) %all electrodes were found on topology
@@ -1644,6 +1674,12 @@ if(isfield(etc_trace_obj,'trace_selected_idx'))
     end;
 else
     etc_trace_obj.trace_selected_idx=Index;
+end;
+
+if(isfield(etc_trace_obj,'fig_spectrum'))
+    if(isvalid(etc_trace_obj.fig_spectrum))
+        etc_trace_obj.fig_spectrum=etc_trace_spectrum('fig_spectrum',etc_trace_obj.fig_spectrum);
+    end;
 end;
 
 global etc_render_fsbrain;
