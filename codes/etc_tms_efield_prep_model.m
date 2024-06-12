@@ -1,6 +1,6 @@
 function [status, t, P, normals, Center, Area, Indicator, name, tissue, cond, enclosingTissueIdx, condin, condout, contrast, tneighbor, RnumberE, ineighborE, EC, file_mesh, file_meshp] =etc_tms_efield_prep_model(file_tissue_index, varargin)
-
-
+%
+%
 % etc_tms_efield_prep_model a wrapper for calculating the e-field geneated by a
 % TMS coil; This is only for preparing TMS coil and head models.
 %

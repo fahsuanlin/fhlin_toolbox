@@ -17,6 +17,16 @@ function results = etc_tms_target_xfm_apply(app, coil_center, coil_orientation, 
 % fhlin@May 30 2024
 %
 
+
+app
+
+coil_center
+
+coil_orientation
+
+coil_up
+
+
 results=0;
 
 %resettting tuning parameters
