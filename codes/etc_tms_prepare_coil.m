@@ -1,6 +1,6 @@
-function [status, strcoil, P, t, tind]=etc_efm_prepare_coil(tms_coil_name, varargin)
+function [status, strcoil, P, t, tind]=etc_tms_prepare_coil(tms_coil_name, varargin)
 %
-% etc_efm_prepare_coil: prepare an TMS coil for TMS
+% etc_tms_prepare_coil: prepare an TMS coil for TMS
 % e-field modeling
 %
 % tms_coil_name: the name of TMS coil. The following options are available:
