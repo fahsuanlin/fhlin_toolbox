@@ -24,6 +24,7 @@ file_bem='';
 status=0;
 
 flag_display=0;
+flag_ask=0;
 
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
@@ -32,6 +33,8 @@ for i=1:length(varargin)/2
     switch lower(option)
         case 'flag_display'
             flag_display=option_value;
+        case 'flag_ask'
+            flag_ask=option_value;
         otherwise
             fprintf('unknown option [%s]!\nerror!\n',option);
             return;
@@ -143,9 +146,13 @@ end;
 %%%%%%%%%%%%%%%%%%%%%
 
 try
-    [file,path,indx] = uiputfile(file_bem);
-    fn=sprintf('%s%s',path,file);
-    if(file==0) return; end;
+    if(flag_ask)
+        [file,path,indx] = uiputfile(file_bem);
+        fn=sprintf('%s%s',path,file);
+        if(file==0) return; end;
+    else
+        fn=file_bem;
+    end;
 
     fp=fopen(fn,'w');
 
