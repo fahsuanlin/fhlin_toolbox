@@ -1,13 +1,14 @@
-function [tms_coil_xfm]=etc_tms_target_xfm_tune(target, head_surf, tms_coil_origin, tms_coil_axis, tms_coil_up, tms_coil_xfm, tune_index, tune_value,varargin)
+function [object_xfm]=etc_tms_target_xfm_tune(target, head_surf, tms_coil_origin, tms_coil_axis, tms_coil_up, object_xfm, tune_index, tune_value,varargin)
 % etc_tms_target_xfm_tune Tune the transformation matrix of a TMS coil
 %
-% [tms_coil_xfm]=etc_tms_target_xfm_tune(target, head_surf, tms_coil_origin, tms_coil_axis, tms_coil_xfm, [option, option_value,...]);
+% [tms_coil_xfm]=etc_tms_target_xfm_tune(target, head_surf, tms_coil_origin, tms_coil_axis, [option, option_value,...]);
 %
 % target: (x,y,z) of TMS target in surface coordinate
 % head_surf: head (scalp) surface structure. It includes 'surf_norm' and 'surf_center' fields.
 % tms_coil_origin: TMS coil origin vector.
 % tms_coil_axis: TMS coil axis vector.
 % tms_coil_up: TMS coil up directional vector.
+% object_xfm: a 4x4 transformation matrix to be updated.
 % tune_index:
 %   1: vertical rotation
 %   2: horizontal rotation
@@ -16,7 +17,6 @@ function [tms_coil_xfm]=etc_tms_target_xfm_tune(target, head_surf, tms_coil_orig
 %
 % tune_value: rotation (degree) or translation (mm)
 %
-% tms_coil_xfm: a [4x4] TMS coil transformation matrix;
 %
 % fhlin@May 30 2024
 %
@@ -176,7 +176,7 @@ switch(tune_index)
         y=tmp(2);
         z=tmp(3);
 
-        vtop=tms_coil_up_orig(:);
+        vtop=tms_coil_up(:); %% important! always refer to the rotation with respect to the "untued" orientation
         vtop_perp=vtop(:)-sum(vtop(:).*tmp(:)).*tmp(:);
 
         vup=tms_coil_up(:);
@@ -184,7 +184,7 @@ switch(tune_index)
 
         %determine the rotation between two vectors;
         xx = cross(vtop_perp,vup);
-        c = sign(dot(xx,tms_coil_axis_orig)) * norm(xx);
+        c = sign(dot(xx,tms_coil_axis)) * norm(xx);
         deg = atan2d(c,dot(vtop_perp,vup)).*pi./180;
         theta=(deg-tune_value./180*pi);
 

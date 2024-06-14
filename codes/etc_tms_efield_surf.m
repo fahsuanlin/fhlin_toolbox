@@ -95,11 +95,11 @@ weight       = 1/2;             %    Weight of the charge conservation law to be
 
 %%  Right-hand side b of the matrix equation Zc = b. Compute pointwise
 %   Surface charge density is normalized by eps0: real charge density is eps0*c
-tic
+%tic
 EincP    = bemf3_inc_field_electric(strcoil, P, dIdt, mu0);             %   Incident coil field
 Einc     = 1/3*(EincP(t(:, 1), :) + EincP(t(:, 2), :) + EincP(t(:, 3), :));
 b        = 2*(contrast.*sum(normals.*Einc, 2));                         %   Right-hand side of the matrix equation
-IncFieldTime = toc
+%IncFieldTime = toc
 
 %%  GMRES iterative solution (native MATLAB GMRES is used)
 h           = waitbar(0.5, 'Please wait - Running MATLAB GMRES');  
@@ -136,20 +136,22 @@ c = (c.*Area + sum(c(tneighbor).*Area(tneighbor), 2))./(Area + sum(Area(tneighbo
 Eninside     = condout./(condin-condout).*c;    %   since c is normalized by eps0
 Enoutside    = condin./(condin-condout).*c;     %   since c is normalized by eps0
 
-tic
+%tic
 h    = waitbar(0.5, 'Please wait - computing accurate surface electric field'); 
 [Pot, Eadd] = bemf4_surface_field_electric_subdiv(c, P, t, Area, 'barycentric', 3);
 close(h);
-Esurface_field_time = toc
+%Esurface_field_time = toc
 
-tic
+%tic
 h    = waitbar(0.5, 'Please wait - computing coil magnetic field'); 
 Binc = bemf3_inc_field_magnetic(strcoil, Center, I0, mu0);
 close(h);
-BincFieldTime = toc
+%BincFieldTime = toc
 
 %tic
-save(sprintf('%s_output_field_solution.mat',output_stem), 'Eninside', 'Enoutside', 'Eadd', 'Pot', 'Binc');
+if(flag_save)
+    save(sprintf('%s_output_field_solution.mat',output_stem), 'Eninside', 'Enoutside', 'Eadd', 'Pot', 'Binc');
+end;
 %save_E_solution_time = toc
 
 

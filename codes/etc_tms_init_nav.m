@@ -5,6 +5,7 @@ tms_coil_axis=[];
 tms_coil_up=[];
 tms_coil_xfm=[];
 
+subject='';
 
 status=0;
 
@@ -28,6 +29,8 @@ for i=1:length(varargin)/2
             flag_display=option_value;
         case 'flag_save'
             flag_display=option_value;
+        case 'subject'
+            subject=option_value;
         otherwise
             fprintf('unknown option [%s]!\nerror!\n',option);
             return;
@@ -36,9 +39,19 @@ end;
 
 global etc_render_fsbrain;
 
+if(isempty(app))
+    if(~isempty(subject)) %initialize etc_render_fsbrain window
+        etc_render_fsbrain_init('subject',subject); 
+        etc_render_fsbrain_handle('kb','cc','n');
+
+        app=etc_render_fsbrain.app_tms_nav;
+    else
+        fprintf('Error! No etc_render_fsbrain enabled for this subject!\n');
+        return;
+    end;
+end;
 
 %initiating coil for visualization
-
 try
     %if(isfield(Coil,'P')&isfield(Coil,'t')) app.CoilLamp.Color='g'; else return; end;
     if(~isempty(P)&~isempty(t)) app.CoilLamp.Color='g'; else return; end;
