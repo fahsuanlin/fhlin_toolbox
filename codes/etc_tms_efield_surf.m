@@ -121,6 +121,8 @@ conservation_law_error = sum(c.*Area)/sum(abs(c).*Area)
 %%  Check the residual of the integral equation
 solution_error = resvec(end)/resvec(1)
 
+keyboard;
+
 %%   Topological low-pass solution filtering (repeat if necessary)
 c = (c.*Area + sum(c(tneighbor).*Area(tneighbor), 2))./(Area + sum(Area(tneighbor), 2));
 
