@@ -57,7 +57,34 @@ function etc_render_fsbrain_tms_nav_notify(app, event,varargin)
             set(app.up_obj,'visible','off');
         end;
 
-    
+        %automatically update strcoil
+        if(app.StrcoilAutoCheckBox.Value)
+            try
+                tmp=app.strcoil_obj.Vertices;
+                tmp(:,end+1)=1;
+                tmp=tmp';
+                xfm=etc_render_fsbrain.object_xfm;
+                xfm(1:3,4)=xfm(1:3,4).*1e3; %into mm
+                xfm_tmp=app.strcoil_obj_xfm;
+                xfm_tmp(1:3,4)=xfm_tmp(1:3,4)*1e3; %into mm
+                tmp=xfm*inv(xfm_tmp)*tmp;
+
+                app.strcoil_obj.Vertices=tmp(1:3,:)'; %update
+                app.strcoil_obj_xfm=etc_render_fsbrain.object_xfm;
+
+                tmp=app.strcoil_obj.Vertices./1e3;
+                assignin('base','tmp',tmp);
+                evalin('base','strcoil.Pwire=tmp;');
+                fprintf('variable [strcoil] update at the workspace.\n');
+                app.TextArea.Value{end+1}='variable [strcoil] updated at the workspace.';
+                app.StrcoilLamp.Color='g';
+                app.StrcoilShowCheckBox.Value=1;
+            catch
+                fprintf('Error in updating strcoil!\n');
+                app.TextArea.Value{end+1}='Error in updating strcoil!\n';
+            end;
+        end;
+
         return;
     end;
 
