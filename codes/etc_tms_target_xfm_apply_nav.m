@@ -16,7 +16,6 @@ function results = etc_tms_target_xfm_apply_nav(app, coil_center, coil_orientati
 % fhlin@May 30 2024
 %
 
-
 results=0;
 
 %resettting tuning parameters
@@ -56,7 +55,7 @@ RU = @(A,B) eye(3) + ssc(cross(A,B)) + ssc(cross(A,B))^2*(1-dot(A,B))/(norm(cros
 %etc_render_fsbrain.object.UserData.Axis(:).'
 
 coil_shift=-etc_render_fsbrain.object.UserData.Origin(:)+coil_center(:);
-n=norm(etc_render_fsbrain.object.UserData.Axis(:)'-coil_orientation);
+n=norm(etc_render_fsbrain.object.UserData.Axis(:)'-coil_orientation(:)');
 if(n>eps)
     RR=RU(etc_render_fsbrain.object.UserData.Axis(:)',coil_orientation(:)');
 else
@@ -85,11 +84,14 @@ R=eye(4);
 R(1:3,4)=coil_shift(:); %in mm
 R_trans_mm=R;
 
-if(isempty(etc_render_fsbrain.object_xfm))
-    etc_render_fsbrain.object_xfm=R_trans*R_tx_now*inv(R_rot)*inv(R_tx_now);
-else
-    etc_render_fsbrain.object_xfm=R_trans*R_tx_now*inv(R_rot)*inv(R_tx_now)*etc_render_fsbrain.object_xfm;
-end;
+%if(isempty(etc_render_fsbrain.object_xfm))
+%    etc_render_fsbrain.object_xfm=R_trans*R_tx_now*inv(R_rot)*inv(R_tx_now);
+%else
+%    etc_render_fsbrain.object_xfm=R_trans*R_tx_now*inv(R_rot)*inv(R_tx_now)*etc_render_fsbrain.object_xfm;
+%end;
+
+etc_render_fsbrain.object_xfm=R_trans*R_tx_now*inv(R_rot)*inv(R_tx_now)*etc_render_fsbrain.object_xfm;
+
 %transform object in visualiation
 vv=etc_render_fsbrain.object.Vertices;
 vv(:,4)=1;
