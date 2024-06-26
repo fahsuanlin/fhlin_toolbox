@@ -410,7 +410,8 @@ switch lower(param)
                 
             case 'f'
                 fprintf('\nload overlay...\n');
-                [filename, pathname, filterindex] = uigetfile({'*.stc','STC file (space x time)';'*.w','w file (space x 1)'}, 'Pick an overlay file');
+                %[filename, pathname, filterindex] = uigetfile({'*.stc','STC file (space x time)';'*.w','w file (space x 1)'}, 'Pick an overlay file');
+                [filename, pathname, filterindex] = uigetfile({'*.stc; *.w'}, 'Pick an overlay file');
                 if(filename~=0) %not 'cancel'
                     if(findstr(filename,'.stc')) %stc file
                         [stc,vv,d0,d1,timeVec]=inverse_read_stc(sprintf('%s/%s',pathname,filename));
