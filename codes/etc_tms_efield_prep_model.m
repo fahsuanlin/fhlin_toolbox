@@ -41,6 +41,7 @@ flag_save=1;
 file_mesh = 'CombinedMesh.mat';
 file_meshp  = 'CombinedMeshP.mat';
 
+path_tissue_mesh='.';
 
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
@@ -54,6 +55,8 @@ for i=1:length(varargin)/2
             file_mesh=option_value;
         case 'file_meshp'
             file_meshp=option_value;
+        case 'path_tissue_mesh'
+            path_tissue_mesh=option_value;
         otherwise
             fprintf('unknown option [%s]\n',option)
             return;
@@ -62,8 +65,8 @@ end;
 
 
 %% Load tissue filenames and tissue display names from index file
-if(exist(file_tissue_index,'file'))
-    [name, tissue, cond, enclosingTissueIdx] = tissue_index_read(file_tissue_index);
+if(exist(sprintf('%s/%s',path_tissue_mesh,file_tissue_index),'file'))
+    [name, tissue, cond, enclosingTissueIdx] = tissue_index_read(sprintf('%s/%s',path_tissue_mesh,file_tissue_index));
 else
     fprintf('No tissue index file specified!\n');
 
@@ -139,9 +142,9 @@ tneighbor = pad_neighbor_triangles(tneighbor);
 %%   Save base data
 if(flag_save)
     if(flag_display)
-        fprintf('saving [%s]...\n',file_mesh);
+        fprintf('saving [%s]...\n',sprintf('%s/%s',path_tissue_mesh,file_mesh));
     end;
-    save(file_mesh, 'P', 't', 'normals', 'Area', 'Center', 'Indicator', 'name', 'tissue', 'cond', 'enclosingTissueIdx', 'condin', 'condout', 'contrast');
+    save(sprintf('%s/%s',path_tissue_mesh,file_mesh), 'P', 't', 'normals', 'Area', 'Center', 'Indicator', 'name', 'tissue', 'cond', 'enclosingTissueIdx', 'condin', 'condout', 'contrast');
 end;
 ProcessBaseDataTime = toc;
 
@@ -163,9 +166,9 @@ EC  = CO.*EC;
 tic
 if(flag_save)
     if(flag_display)
-        fprintf('saving [%s]...\n',file_meshp);
+        fprintf('saving [%s]...\n',sprintf('%s/%s',path_tissue_mesh,file_meshp));
     end;
-    save(file_meshp, 'tneighbor',  'RnumberE',   'ineighborE', 'EC', '-v7.3');
+    save(sprintf('%s/%s',path_tissue_mesh,file_meshp), 'tneighbor',  'RnumberE',   'ineighborE', 'EC', '-v7.3');
 end;
 SaveBigDataTime = toc;
 
