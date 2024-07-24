@@ -417,7 +417,7 @@ if(~isempty(etc_render_fsbrain.click_vertex))
         tmp=[click_vertex_vox 1]';
         mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*tmp;
         %mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.tkrvox2ras*tmp;
-        mni=min(1:3)';
+        mni=mni(1:3)';
         
         surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[click_vertex_vox(:); 1];
         surface_coord=surface_coord(1:3);
@@ -461,7 +461,7 @@ if(~isempty(etc_render_fsbrain.click_vertex))
     tmp=[click_vertex_vox 1]';
     mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*tmp;
     %mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.tkrvox2ras*tmp;
-    mni=min(1:3)';
+    mni=mni(1:3)';
     
     surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[click_vertex_vox(:); 1];
     surface_coord=surface_coord(1:3);
@@ -505,7 +505,7 @@ if(~isempty(etc_render_fsbrain.click_vertex))
         tmp=[click_vertex_vox 1]';
         mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*tmp;
         %mni=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.tkrvox2ras*tmp;
-        mni=min(1:3)';
+        mni=mni(1:3)';
         
         surface_coord=etc_render_fsbrain.vol.tkrvox2ras*[click_vertex_vox(:); 1];
         surface_coord=surface_coord(1:3);

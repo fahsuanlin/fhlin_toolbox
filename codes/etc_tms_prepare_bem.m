@@ -26,6 +26,8 @@ status=0;
 flag_display=0;
 flag_ask=0;
 
+path_bem='.';
+
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
@@ -35,6 +37,8 @@ for i=1:length(varargin)/2
             flag_display=option_value;
         case 'flag_ask'
             flag_ask=option_value;
+        case 'path_bem'
+            path_bem=option_value;
         otherwise
             fprintf('unknown option [%s]!\nerror!\n',option);
             return;
@@ -124,7 +128,7 @@ for f_idx=1:length(file_surf)
     P=bem_obj(f_idx).vertex;
     t=bem_obj(f_idx).face;
     normals=bem_obj(f_idx).surf_norm;
-    save(sprintf('%s_%s.mat',subject,output_file_surf{f_idx}),'P','t','normals');
+    save(sprintf('%s/%s_%s.mat',path_bem,subject,output_file_surf{f_idx}),'P','t','normals');
 
     bem_obj(f_idx).filemat=sprintf('%s_%s.mat',subject,output_file_surf{f_idx});
 
@@ -147,11 +151,11 @@ end;
 
 try
     if(flag_ask)
-        [file,path,indx] = uiputfile(file_bem);
+        [file,path_bem,indx] = uiputfile(file_bem);
         fn=sprintf('%s%s',path,file);
         if(file==0) return; end;
     else
-        fn=file_bem;
+        fn=sprintf('%s/%s',path_bem,file_bem);
     end;
 
     fp=fopen(fn,'w');
