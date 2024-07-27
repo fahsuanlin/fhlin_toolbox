@@ -13,6 +13,7 @@ status=0;
 output_stem='tms_efield';
 
 flag_save=0;
+flag_waitbar=0;
 
 %tissue={};
 tissue_to_plot='';
@@ -21,6 +22,8 @@ for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
     switch lower(option)
+        case 'flag_waitbar'
+            flag_waitbar=option_value;
         case 'output_stem'
             output_stem=option_value;
         case 'flag_save'
@@ -102,11 +105,15 @@ b        = 2*(contrast.*sum(normals.*Einc, 2));                         %   Righ
 %IncFieldTime = toc
 
 %%  GMRES iterative solution (native MATLAB GMRES is used)
-h           = waitbar(0.5, 'Please wait - Running MATLAB GMRES');  
+if(flag_waitbar)
+    h           = waitbar(0.5, 'Please wait - Running MATLAB GMRES');  
+end;
 %   MATVEC is the user-defined function of c equal to the left-hand side of the matrix equation LHS(c) = b
 MATVEC = @(c) bemf4_surface_field_lhs(c, Center, Area, contrast, normals, weight, EC);     
 [c, flag, rres, its, resvec] = gmres(MATVEC, b, [], relres, iter, [], [], 8*b); 
-close(h);
+if(flag_waitbar)
+    close(h);
+end;
 
 % %%  Plot convergence history
 % figure; 
@@ -116,10 +123,10 @@ close(h);
 % ylabel('Relative residual');
 
 %%  Check charge conservation law (optional)
-conservation_law_error = sum(c.*Area)/sum(abs(c).*Area)
+conservation_law_error = sum(c.*Area)/sum(abs(c).*Area);
 
 %%  Check the residual of the integral equation
-solution_error = resvec(end)/resvec(1)
+solution_error = resvec(end)/resvec(1);
 
 %%   Topological low-pass solution filtering (repeat if necessary)
 c = (c.*Area + sum(c(tneighbor).*Area(tneighbor), 2))./(Area + sum(Area(tneighbor), 2));
@@ -137,9 +144,13 @@ Eninside     = condout./(condin-condout).*c;    %   since c is normalized by eps
 Enoutside    = condin./(condin-condout).*c;     %   since c is normalized by eps0
 
 %tic
-h    = waitbar(0.5, 'Please wait - computing accurate surface electric field'); 
+if(flag_waitbar)
+    h    = waitbar(0.5, 'Please wait - computing accurate surface electric field'); 
+end;
 [Pot, Eadd] = bemf4_surface_field_electric_subdiv(c, P, t, Area, 'barycentric', 3);
-close(h);
+if(flag_waitbar)
+    close(h);
+end;
 %Esurface_field_time = toc
 
 %tic

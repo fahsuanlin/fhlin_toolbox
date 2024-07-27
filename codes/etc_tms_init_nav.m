@@ -7,6 +7,8 @@ tms_coil_xfm=[];
 
 subject='';
 
+target_coord=[]; %tms target in the surface coordinate system
+
 status=0;
 
 flag_display=1;
@@ -31,6 +33,8 @@ for i=1:length(varargin)/2
             flag_display=option_value;
         case 'subject'
             subject=option_value;
+        case 'target_coord'
+            target_coord=option_value;
         otherwise
             fprintf('unknown option [%s]!\nerror!\n',option);
             return;
@@ -237,4 +241,53 @@ catch
     fprintf('Error in initiating TMS navigation (strcoil part)!\n');
 
     app.TextArea.Value{end+1}=sprintf('Error in initiating TMS navigation (strcoil part)!\n');
+end;
+
+
+
+%initiating target coordinate edit boxes
+try
+    if(~isempty(target_coord))
+        etc_render_fsbrain.click_coord=target_coord;
+
+        vv=etc_render_fsbrain.vertex_coords;
+        dist=sqrt(sum((vv-repmat([etc_render_fsbrain.click_coord(1),etc_render_fsbrain.click_coord(2),etc_render_fsbrain.click_coord(3)],[size(vv,1),1])).^2,2));
+        [min_dist,min_dist_idx]=min(dist);
+
+        app.vertexindexEditField.Value=num2str(min_dist_idx,'%1.0f ');
+
+        app.XYZEditField.Value=num2str(etc_render_fsbrain.click_coord(:)','%1.1f ');
+
+        try
+            surface_coord=etc_render_fsbrain.click_coord;
+            tmp=[surface_coord 1]';
+            click_vertex_vox=inv(etc_render_fsbrain.vol.tkrvox2ras)*tmp;
+            click_vertex_vox=click_vertex_vox(1:3)';
+
+            etc_render_fsbrain.click_vertex_vox=click_vertex_vox;
+
+            vv=etc_render_fsbrain.orig_vertex_coords;
+            dist=sqrt(sum((vv-repmat([surface_coord(1),surface_coord(2),surface_coord(3)],[size(vv,1),1])).^2,2));
+            [min_dist,min_dist_idx]=min(dist);
+            %surface_coord=etc_render_fsbrain.vertex_coords(min_dist_idx,:)';
+
+            if(~isempty(etc_render_fsbrain.talxfm))
+                etc_render_fsbrain.click_vertex_point_tal=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*[etc_render_fsbrain.click_vertex_vox 1].';
+            end;
+        catch ME
+        end;
+
+        app.CRSEditField.Value=num2str(etc_render_fsbrain.click_vertex_vox(:)','%1.0f ');
+
+        app.MNIEditField.Value=num2str(etc_render_fsbrain.click_vertex_point_tal(:)','%1.0f ');
+
+        tmp=etc_render_fsbrain.vol.vox2ras*[etc_render_fsbrain.click_vertex_vox(:)' 1]';
+
+        app.ScannerEditField.Value=num2str(tmp(1:3)','%1.0f ');
+    end;
+
+catch
+    fprintf('Error in initiating target coordinate edit boxes!\n');
+
+    app.TextArea.Value{end+1}=sprintf('Error in initiating target coordinate edit boxes!\n');
 end;

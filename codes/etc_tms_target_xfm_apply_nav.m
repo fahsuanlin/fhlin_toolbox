@@ -56,7 +56,7 @@ RU = @(A,B) eye(3) + ssc(cross(A,B)) + ssc(cross(A,B))^2*(1-dot(A,B))/(norm(cros
 
 coil_shift=-etc_render_fsbrain.object.UserData.Origin(:)+coil_center(:);
 n=norm(etc_render_fsbrain.object.UserData.Axis(:)'-coil_orientation(:)');
-if(n>eps)
+if(n>100.*eps)
     RR=RU(etc_render_fsbrain.object.UserData.Axis(:)',coil_orientation(:)');
 else
     RR=eye(3);
