@@ -2564,7 +2564,8 @@ try
                 if(isfield(etc_render_fsbrain,'surf_obj'))
                     %X-Y plane (axial)
                     for surf_idx=1:length(etc_render_fsbrain.surf_obj)
-                        [Pi, ti, polymask, flag] = meshplaneintXY(etc_render_fsbrain.surf_obj(surf_idx).vertex,...
+                        try
+                            [Pi, ti, polymask, flag] = meshplaneintXY(etc_render_fsbrain.surf_obj(surf_idx).vertex,...
                             etc_render_fsbrain.surf_obj(surf_idx).TR,...
                             etc_render_fsbrain.surf_obj(surf_idx).eS,...
                             etc_render_fsbrain.surf_obj(surf_idx).TriPS,...
@@ -2585,10 +2586,13 @@ try
                             etc_render_fsbrain.surf_obj(surf_idx).contourXY.vertices=points;
                             %etc_render_fsbrain.surf_contour_XY(surf_idx)=patch('Faces', edges, 'Vertices', points, 'EdgeColor', 'r', 'LineWidth', 2.0,'Visible','off');    %   this is contour plot
                         end
+                        catch
+                        end;
                     end;
                     %X-Z plane (coronal)
                     for surf_idx=1:length(etc_render_fsbrain.surf_obj)
-                        [Pi, ti, polymask, flag] = meshplaneintXZ(etc_render_fsbrain.surf_obj(surf_idx).vertex,...
+                        try
+                            [Pi, ti, polymask, flag] = meshplaneintXZ(etc_render_fsbrain.surf_obj(surf_idx).vertex,...
                             etc_render_fsbrain.surf_obj(surf_idx).TR,...
                             etc_render_fsbrain.surf_obj(surf_idx).eS,...
                             etc_render_fsbrain.surf_obj(surf_idx).TriPS,...
@@ -2609,9 +2613,12 @@ try
                             etc_render_fsbrain.surf_obj(surf_idx).contourXZ.vertices=points;
                             %etc_render_fsbrain.surf_contour_XZ(surf_idx)=patch('Faces', edges, 'Vertices', points, 'EdgeColor', 'r', 'LineWidth', 2.0,'Visible','off');    %   this is contour plot
                         end
+                        catch
+                        end;
                     end;
                     %Y-Z plane (sagittal)
                     for surf_idx=1:length(etc_render_fsbrain.surf_obj)
+                        try
                         [Pi, ti, polymask, flag] = meshplaneintYZ(etc_render_fsbrain.surf_obj(surf_idx).vertex,...
                             etc_render_fsbrain.surf_obj(surf_idx).TR,...
                             etc_render_fsbrain.surf_obj(surf_idx).eS,...
@@ -2632,6 +2639,8 @@ try
                             etc_render_fsbrain.surf_obj(surf_idx).contourYZ.faces=edges;
                             etc_render_fsbrain.surf_obj(surf_idx).contourYZ.vertices=points;
                             %etc_render_fsbrain.surf_contour_YZ(surf_idx)=patch('Faces', edges, 'Vertices', points, 'EdgeColor', 'r', 'LineWidth', 2.0,'Visible','off');    %   this is contour plot
+                        end;
+                        catch
                         end;
                     end;
                 end;

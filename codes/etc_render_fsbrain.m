@@ -398,7 +398,7 @@ for idx=1:length(varargin)/2
     end;
 end
 
-
+%read orig MRI volume and cortical ribbon volume
 if(tmp_set_vol<0.5)
     vol=[];
     try
@@ -454,14 +454,19 @@ if(tmp_set_vol<0.5)
             [rr,cc,ss]=meshgrid([1:size(vol_ribbon.vol,1)],[1:size(vol_ribbon.vol,2)],[1:size(vol_ribbon.vol,3)]);
             
             X=cat(2,rr(:),cc(:),ss(:));
-            
-            Xcort=X(etc_render_fsbrain.loc_vol_idx{hemi_idx},:);
-            
-            ribbon_idx{hemi_idx}=find(vol_ribbon.vol(:)==ribbon_value);
-            
-            Xribbon=X(ribbon_idx{hemi_idx},:);
-            
-            cort_ribbon_idx{hemi_idx}=knnsearch(Xcort,Xribbon);
+
+            global etc_render_fsbrain
+            if(isfield(etc_render_fsbrain,'loc_vol_idx'))
+                Xcort=X(etc_render_fsbrain.loc_vol_idx{hemi_idx},:);
+
+                ribbon_idx{hemi_idx}=find(vol_ribbon.vol(:)==ribbon_value);
+
+                Xribbon=X(ribbon_idx{hemi_idx},:);
+
+                cort_ribbon_idx{hemi_idx}=knnsearch(Xcort,Xribbon);
+            end;
+            clear global etc_render_fsbrain;
+
         end;
     catch ME
     end;

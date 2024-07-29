@@ -154,9 +154,13 @@ end;
 %Esurface_field_time = toc
 
 %tic
-h    = waitbar(0.5, 'Please wait - computing coil magnetic field'); 
+if(flag_waitbar)
+    h    = waitbar(0.5, 'Please wait - computing coil magnetic field'); 
+end;
 Binc = bemf3_inc_field_magnetic(strcoil, Center, I0, mu0);
-close(h);
+if(flag_waitbar)
+    close(h);
+end;
 %BincFieldTime = toc
 
 %tic

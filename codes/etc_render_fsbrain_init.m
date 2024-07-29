@@ -46,6 +46,7 @@ overlay_cmap_neg=winter(80); %overlay colormap;
 overlay_cmap_neg(:,3)=1;
 
 %overlay
+overlay_source=[]; %1: value; 2: stc; 3: vol_stc; 4: vol
 overlay_vol=[];
 overlay_aux_vol=[];
 overlay_vol_stc=[];
@@ -223,16 +224,20 @@ for idx=1:length(varargin)/2
             overlay_aux_vol=option_value;
         case 'overlay_vol'
             overlay_vol=option_value;
+            overlay_source=4;
         case 'overlay_vol_stc'
             overlay_vol_stc=option_value;
+            overlay_source=3;
         case 'overlay_flag_render'
             overlay_flag_render=option_value;
         case 'overlay_vol_flag_render'
             overlay_vol_flag_render=option_value;
         case 'overlay_value'
             overlay_value=option_value;
+            overlay_source=1;
         case 'overlay_stc'
             overlay_stc=option_value;
+            overlay_source=2;
         case 'overlay_aux_stc'
             overlay_aux_stc=option_value;
         case 'overlay_exclude'
@@ -1097,6 +1102,7 @@ etc_render_fsbrain.show_all_contacts_mri_flag=show_all_contacts_mri_flag;
 etc_render_fsbrain.show_all_contacts_mri_depth=show_all_contacts_mri_depth;
 etc_render_fsbrain.show_all_contacts_brain_surface_flag=show_all_contacts_brain_surface_flag;
 
+etc_render_fsbrain.overlay_source=overlay_source;
 etc_render_fsbrain.overlay_vol=overlay_vol;
 etc_render_fsbrain.overlay_vol_stc=overlay_vol_stc;
 etc_render_fsbrain.overlay_aux_vol=overlay_aux_vol;
