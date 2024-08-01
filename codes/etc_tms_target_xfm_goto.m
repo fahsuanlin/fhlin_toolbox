@@ -17,7 +17,12 @@ function [tms_coil_xfm, tms_coil_xfm_mm]=etc_tms_target_xfm_goto(target, head_su
 % fhlin@May 30 2024
 %
 
+move_v=[]; %move along "Up" direction in meter
+move_h=[]; %move along "horizontal" direction (cross-product of coil axis and "Up") in meter
+
 tms_coil_xfm_mm=[];
+
+flag_display=1;
 
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
@@ -25,6 +30,12 @@ for i=1:length(varargin)/2
     switch(lower(option))
         case 'tms_coil_xfm_mm'
             tms_coil_xfm_mm=option_value;
+        case 'move_v'
+            move_v=option_value;
+        case 'move_h'
+            move_h=option_value;
+        case 'flag_display'
+            flag_display=option_value;
         otherwise
             fprintf('unknown [%s] option! error!\n',option)
             return;
@@ -48,7 +59,9 @@ dist=sqrt(sum(bsxfun(@minus,surf_center,target).^2,2));
 
 coil_center=surf_center(min_idx,:); % in mm
 coil_orientation=target-coil_center;
-fprintf('distance between the target and coil center = %2.2f (mm)\n',norm(coil_orientation));
+if(flag_display)    
+    fprintf('distance between the target and coil center = %2.2f (mm)\n',norm(coil_orientation));
+end;
 
 coil_orientation=coil_orientation./norm(coil_orientation);
 scalp_orientation=surf_norm(min_idx,:);
@@ -110,7 +123,9 @@ end;
 %transform data
 tmp=(R_trans_mm*R_tx_now_mm*inv(R_rot)*inv(R_tx_now_mm)*[tms_coil_origin(:)' 1]')';
 tms_coil_origin=tmp(1:3);
-fprintf('after moving: coil origin: %s \n',mat2str(tms_coil_origin(:).',3));
+if(flag_display)
+    fprintf('after moving: coil origin: %s \n',mat2str(tms_coil_origin(:).',3));
+end;
 
 tmp=(inv(R_rot)*[tms_coil_axis(:)' 1]')';
 tms_coil_axis=tmp(1:3);
@@ -167,5 +182,21 @@ R_rotz(1:3,1:3)=r_rotz;
 tms_coil_xfm=inv(R_c)*inv(R_rotz)*(R_c)*tms_coil_xfm;
 tms_coil_xfm_mm=inv(R_c_mm)*inv(R_rotz)*(R_c_mm)*tms_coil_xfm_mm;
 
+if(~isempty(move_v))
+    displacement=tms_coil_up./norm(tms_coil_up).*(-move_v);
+    displacement_mm=tms_coil_up./norm(tms_coil_up).*(-move_v).*1e3;
+    
+    tms_coil_xfm(1:3,4)=    tms_coil_xfm(1:3,4)+displacement(:);
+    tms_coil_xfm_mm(1:3,4)=    tms_coil_xfm_mm(1:3,4)+displacement_mm(:);
+end;
+
+if(~isempty(move_h))
+    h_axis=cross(tms_coil_axis,tms_coil_up);
+    displacement=h_axis./norm(h_axis).*move_h;
+    displacement_mm=h_axis./norm(h_axis).*move_h.*1e3;
+    
+    tms_coil_xfm(1:3,4)=    tms_coil_xfm(1:3,4)+displacement(:);
+    tms_coil_xfm_mm(1:3,4)=    tms_coil_xfm_mm(1:3,4)+displacement_mm(:);
+end;
 
 return;

@@ -2,7 +2,7 @@ function [strcoil, strcoil_xfm] = etc_tms_target_xfm_apply(strcoil, coil_center,
 % etc_tms_target_xfm_apply apply the transformation matrix to TMS coil
 % objects
 %
-% [strcoil strcoil_xfm] = etc_tms_target_xfm_apply(strcoil, coil_center, coil_orientation, coil_up)
+% [strcoil strcoil_xfm] = etc_tms_target_xfm_apply(strcoil, coil_center, coil_orientation, coil_up, tms_coil_xfm_before, tms_coil_xfm_after)
 %
 % strcoil: a TMS object to be modeled with 'Pwire', 'Ewire','Swire' fields. 
 % strcoil_xfm: 4x4 transformation matrix for strcoil *after* applying the specified transformation
