@@ -19,6 +19,7 @@ function [status, bem_obj]=etc_efm_prepare_bem(subject,file_surf,output_file_sur
 % 
 % fhlin@June 11 2024
 
+surf_category={};
 
 file_bem='';
 status=0;
@@ -33,6 +34,8 @@ for i=1:length(varargin)/2
     option_value=varargin{i*2};
 
     switch lower(option)
+        case 'surf_category'
+            surf_category=option_value;
         case 'flag_display'
             flag_display=option_value;
         case 'flag_ask'
@@ -131,6 +134,10 @@ for f_idx=1:length(file_surf)
     save(sprintf('%s/%s_%s.mat',path_bem,subject,output_file_surf{f_idx}),'P','t','normals');
 
     bem_obj(f_idx).filemat=sprintf('%s_%s.mat',subject,output_file_surf{f_idx});
+
+    if(~isempty(surf_category))
+        bem_obj(f_idx).category=surf_category{f_idx};
+    end;
 
     if(flag_display)
         hold on;

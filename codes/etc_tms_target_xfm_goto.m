@@ -1,4 +1,4 @@
-function [tms_coil_xfm, tms_coil_xfm_mm]=etc_tms_target_xfm_goto(target, head_surf, tms_coil_origin, tms_coil_axis, tms_coil_up, tms_coil_xfm,varargin)
+function [tms_coil_xfm, tms_coil_xfm_mm, coil_center, coil_orientation]=etc_tms_target_xfm_goto(target, head_surf, tms_coil_origin, tms_coil_axis, tms_coil_up, tms_coil_xfm,varargin)
 % etc_tms_target_xfm_goto update the transformation matrix of a TMS coil 
 %
 % [tms_coil_xfm,
@@ -22,6 +22,9 @@ move_h=[]; %move along "horizontal" direction (cross-product of coil axis and "U
 
 tms_coil_xfm_mm=[];
 
+coil_center=[];
+coil_orientation=[];
+
 flag_display=1;
 
 for i=1:length(varargin)/2
@@ -34,6 +37,8 @@ for i=1:length(varargin)/2
             move_v=option_value;
         case 'move_h'
             move_h=option_value;
+        case 'coil_center'
+            coil_center=option_value;
         case 'flag_display'
             flag_display=option_value;
         otherwise
@@ -49,16 +54,27 @@ end;
 surf_center=head_surf.surf_center;
 surf_norm=head_surf.surf_norm;
 
-%calculate target-coil distance
-dist=sqrt(sum(bsxfun(@minus,surf_center,target).^2,2));
-[min_dist,min_idx]=min(dist);
-
 %show coil position with the minimal distance
 %cc=get(gca,'colororder');
 %hq=quiver3(surf_center(min_idx,1),surf_center(min_idx,2),surf_center(min_idx,3),surf_norm(min_idx,1),surf_norm(min_idx,2),surf_norm(min_idx,3),15,'color','r');
 
-coil_center=surf_center(min_idx,:); % in mm
-coil_orientation=target-coil_center;
+if(isempty(coil_center))
+    if(~isempty(target))
+        %calculate target-coil distance
+        dist=sqrt(sum(bsxfun(@minus,surf_center,target).^2,2));
+        [min_dist,min_idx]=min(dist);
+        coil_center=surf_center(min_idx,:); % in mm
+        coil_orientation=target-coil_center;
+    else
+        error('no target coordinate!!\n');
+        return;
+    end;
+else
+    dist=sqrt(sum(bsxfun(@minus,surf_center,coil_center).^2,2));
+    [min_dist,min_idx]=min(dist);
+    coil_orientation=surf_norm(min_idx,:);
+end;
+
 if(flag_display)    
     fprintf('distance between the target and coil center = %2.2f (mm)\n',norm(coil_orientation));
 end;
