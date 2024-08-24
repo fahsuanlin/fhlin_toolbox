@@ -35,7 +35,7 @@ for i=1:length(varargin)/2
         case 'flag_display'
             flag_display=option_value;
         case 'flag_save'
-            flag_display=option_value;
+            flag_save=option_value;
         otherwise
             fprintf('unknown option [%s]!\nerror!\n',option);
             return;
