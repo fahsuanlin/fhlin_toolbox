@@ -962,6 +962,9 @@ if(~isempty(overlay_value))
         ov(overlay_vertex+1)=overlay_value;
         
         if(~isempty(overlay_smooth))
+            if(iscell(overlay_include)) overlay_include=[]; end;
+            if(iscell(overlay_exclude)) overlay_exclude=[]; end;
+            
             [ovs,dd0,dd1,overlay_Ds]=inverse_smooth('','vertex',vertex_coords','face',faces','value_idx',overlay_vertex+1,'value',ov,'step',overlay_smooth,'flag_fixval',overlay_fixval_flag,'exc_vertex',overlay_exclude,'inc_vertex',overlay_include,'flag_regrid',overlay_regrid_flag,'flag_regrid_zero',overlay_regrid_zero_flag,'Ds',overlay_Ds,'n_ratio',length(ov)/length(overlay_value));
         else
             ovs=ov;
