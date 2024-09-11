@@ -819,7 +819,7 @@ switch lower(param)
         if(strcmp(clickType,'alt'))
             % right mouse clicked!!
 
-            %dragging: diable
+            %dragging: disable
             set(gcf, 'windowbuttonmotionfcn', '');
             set(gcf, 'windowbuttonupfcn', '');
 
@@ -990,7 +990,7 @@ switch lower(param)
         elseif(strcmp(clickType,'normal')|strcmp(clickType,'open'))%left mouse click
 
 
-            %dragging: diable
+            %dragging: disable
             set(gcf, 'windowbuttonmotionfcn', '');
             set(gcf, 'windowbuttonupfcn', '');
 
@@ -1170,12 +1170,16 @@ switch lower(param)
             if ((handles.xpos0 > xl(1) & handles.xpos0 < xl(2)) & (handles.ypos0 > yl(1) & handles.ypos0 < yl(2))) %--disable if outside axes
                 handles.rectangle=[];
                 %handles.currentTitle=get(get(gca, 'Title'), 'String');
-                guidata(gca,handles)
                 
                 %title(['[' num2str(out(1,1)) ',' num2str(out(1,2)) ']']);
             else
-                guidata(gca,handles)
             end
+            handles_orig=guidata(get(etc_trace_obj.fig_trace,'CurrentAxes'))
+
+            if(isfield(handles_orig,'prev_rectangle'))
+                handles.prev_rectangle=handles_orig.prev_rectangle;
+            end;
+            guidata(gca,handles)
             
             
         end;
@@ -1597,10 +1601,38 @@ try
     %all triggers
     idx=find((etc_trace_obj.trigger.time>=etc_trace_obj.time_window_begin_idx)&(etc_trace_obj.trigger.time<=(etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx)));
     
-    if(etc_trace_obj.config_current_trigger_flag)
-        h=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.trigger.time(idx)-etc_trace_obj.time_window_begin_idx+1,[1 2])',repmat(get(etc_trace_obj.axis_trace,'ylim')',[1 length(idx)]),'LineWidth',2,'LineStyle',':','Color',etc_trace_obj.config_current_trigger_color);
+    duration=etc_trace_obj.trigger.duration(idx);
+
+    nan_duration_idx=find(isnan(duration));
+    if(~isempty(nan_duration_idx))
+        if(etc_trace_obj.config_current_trigger_flag)
+            h=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.trigger.time(idx(nan_duration_idx))-etc_trace_obj.time_window_begin_idx+1,[1 2])',repmat(get(etc_trace_obj.axis_trace,'ylim')',[1 length(idx)]),'LineWidth',2,'LineStyle',':','Color',etc_trace_obj.config_current_trigger_color);
+        end;
     end;
-    
+    notnan_duration_idx=find(~isnan(duration));
+    if(~isempty(notnan_duration_idx))
+        if(etc_trace_obj.config_current_trigger_flag)
+            %h=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.trigger.time(idx(nan_duration_idx))-etc_trace_obj.time_window_begin_idx+1,[1 2])',repmat(get(etc_trace_obj.axis_trace,'ylim')',[1 length(idx)]),'LineWidth',2,'LineStyle',':','Color',etc_trace_obj.config_current_trigger_color);
+            handles=guidata(get(etc_trace_obj.fig_trace,'CurrentAxes'));
+            ylim=get(etc_trace_obj.axis_trace,'ylim');
+            
+
+            for ii=1:length(notnan_duration_idx)
+                x1=etc_trace_obj.trigger.time(idx(notnan_duration_idx(ii)))-etc_trace_obj.time_window_begin_idx+1;
+                x2=etc_trace_obj.trigger.time(idx(notnan_duration_idx(ii)))-etc_trace_obj.time_window_begin_idx+round(etc_trace_obj.trigger.duration(idx(notnan_duration_idx(ii))).*etc_trace_obj.fs);
+                y1=min(ylim);
+                y2=max(ylim);
+
+                handles.rectangle = patch('vertices', [x1 y1; x2 y1; x2 y2; x1 y2], ...
+                    'faces', [1, 2, 3, 4], ...
+                    'FaceColor', [0.8500 0.3250 0.0980], ...
+                    'EdgeColor', 'none', ...
+                    'FaceAlpha', 0.05);
+                guidata(etc_trace_obj.axis_trace,handles);
+            end;
+        end;
+    end;
+
     %current selected trigger
     if(isfield(etc_trace_obj,'trigger_now'))
         if(~isempty(etc_trace_obj.trigger_now))
@@ -1609,9 +1641,15 @@ try
             trigger_idx=find(not(cellfun('isempty',IndexC)));
             trigger_time_idx=etc_trace_obj.trigger.time(trigger_idx);
             idx=find((etc_trace_obj.trigger.time(trigger_idx)>=etc_trace_obj.time_window_begin_idx)&(etc_trace_obj.trigger.time(trigger_idx)<=(etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx)));
-        
-            if(etc_trace_obj.config_current_trigger_flag)
-                h=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.trigger.time(trigger_idx(idx))-etc_trace_obj.time_window_begin_idx+1,[1 2])',repmat(get(etc_trace_obj.axis_trace,'ylim')',[1 length(idx)]),'LineWidth',2,'LineStyle','--','Color',etc_trace_obj.config_current_trigger_color);
+
+            duration=etc_trace_obj.trigger.duration(idx);
+
+            nan_duration_idx=find(isnan(duration));
+            if(~isempty(nan_duration_idx))
+
+                if(etc_trace_obj.config_current_trigger_flag)
+                    h=line(etc_trace_obj.axis_trace, repmat(etc_trace_obj.trigger.time(trigger_idx(idx(nan_duration_idx)))-etc_trace_obj.time_window_begin_idx+1,[1 2])',repmat(get(etc_trace_obj.axis_trace,'ylim')',[1 length(idx)]),'LineWidth',2,'LineStyle','--','Color',etc_trace_obj.config_current_trigger_color);
+                end;
             end;
         end;
     end;
@@ -1726,7 +1764,8 @@ function myclick(h,event,type)
 global etc_trace_obj;
 
 %handles=guidata(gca);
-handles=guidata(get(etc_trace_obj.fig_trace,'CurrentAxes'));
+handles=guidata(get(etc_trace_obj.fig_trace,'CurrentAxes'))
+
 switch type
     case 1 %---Button down
         out=get(gca,'CurrentPoint');
@@ -1768,7 +1807,16 @@ switch type
             %set(gcf,'Pointer','fullcrosshair');
             %title(['[' num2str(out(1,1)) ',' num2str(out(1,2)) ']']);
             %fprintf('[ %s , %s ]\r ',num2str(out(1,1)), num2str(out(1,2)));
-            
+
+            try
+                if(isfield(handles,'prev_rectangle'))
+                    if(isvalid(handles.prev_rectangle))
+                        delete(handles.prev_rectangle);
+                    end;
+                end;
+            catch
+            end;
+
             if(isfield(etc_trace_obj,'middle_time_select_idx'))
                 if(~isempty(etc_trace_obj.middle_time_select_idx))
 
@@ -1799,8 +1847,10 @@ switch type
             end;
 
             try
-                if(~isempty(handles.rectangle))
-                    delete(handles.rectangle);
+                if(isfield(handles,'rectangle'))
+                    if(isvalid(handles.rectangle))
+                        delete(handles.rectangle);
+                    end;
                 end;
             catch
             end;
@@ -1823,11 +1873,8 @@ switch type
                 'FaceColor', [0.8500 0.3250 0.0980], ...
                 'EdgeColor', 'none', ...
                 'FaceAlpha', 0.05);
-            
-            global hh;
-            hh=handles.rectangle;
-            
-            guidata(gca,handles)
+                        
+            guidata(get(etc_trace_obj.fig_trace,'CurrentAxes'),handles)
             
             
             %update trigger GUI
@@ -1865,10 +1912,31 @@ switch type
         guidata(gca,handles)
 
         etc_trace_obj.middle_time_select_idx=[];
-        %fprintf('up!!\n')
-        if(~isempty(handles.rectangle))
-                delete(handles.rectangle);
-         end;
+        %         if(~isempty(handles.rectangle))
+        %                 delete(handles.rectangle);
+        %         end;
+
+%        fprintf('up!\n')
+        try
+            if(isfield(handles,'prev_rectangle'))
+                if(isvalid(handles.prev_rectangle))
+                    delete(handles.prev_rectangle);
+                end;
+            end;
+            handles.prev_rectangle = patch('vertices',handles.rectangle.Vertices, ...
+                'faces', handles.rectangle.Faces, ...
+                'FaceColor', [0.0 0.3250 0.0], ...
+                'EdgeColor', 'none', ...
+                'FaceAlpha', 0.05);
+            if(isfield(handles,'rectangle'))
+                if(isvalid(handles.rectangle))
+                    delete(handles.rectangle);
+                end;
+            end;
+                        
+            guidata(get(etc_trace_obj.fig_trace,'CurrentAxes'),handles)            
+        catch
+        end;
 
         obj=findobj('tag','edit_local_trigger_time_idx');
         if(length(obj)>1) obj=obj(1); end;
@@ -1880,8 +1948,10 @@ switch type
 
         add_trigger;
 
-        
-
+        set(gcf, 'SelectionType','normal');
+        set(gcf, 'windowbuttonmotionfcn', '');
+        set(gcf, 'windowbuttonupfcn', '');
+        handles=guidata(get(etc_trace_obj.fig_trace,'CurrentAxes'))
     case 4 %----Button press
         handles.key=get(gcf,'CurrentCharacter');
         guidata(gca,handles)

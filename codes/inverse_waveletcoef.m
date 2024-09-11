@@ -15,6 +15,8 @@ flag_normalize=0;
 flag_causal=0; %only data *before* the current measurement
 flag_anticausal=0; %only data *after* the current measurement
 
+flag_symm=1;
+
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
@@ -25,6 +27,8 @@ for i=1:length(varargin)/2
             flag_causal=option_value;
         case 'flag_anticausal'
             flag_anticausal=option_value;
+        case 'flag_symm'
+            flag_symm=option_value;
         otherwise
             fprintf('unknown option [%s].\n',option);
             return;
@@ -60,8 +64,11 @@ for i=1:length(f)
 %    %using FFT for circular convolution
 %    y=ifft(fft(s,[],2).*fft(M,[],2),[],2);
 
-
+if(flag_symm)
 	y=fft_conv2(s,m,'symm','same','conv');
+else
+	y=fft_conv2(s,m,'same','conv');
+end;
 %	y=fft_conv2(s,m,'symm2','same','conv');
 %	y=fft_conv2(s,m,'pad_havg','same','conv');
 %	y=fft_conv2(s,m,'circ_ext','same','conv');

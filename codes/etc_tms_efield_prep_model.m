@@ -40,6 +40,7 @@ flag_display=1;
 flag_save=1;
 file_mesh = 'CombinedMesh.mat';
 file_meshp  = 'CombinedMeshP.mat';
+flag_par =1;
 
 path_tissue_mesh='.';
 
@@ -57,6 +58,8 @@ for i=1:length(varargin)/2
             file_meshp=option_value;
         case 'path_tissue_mesh'
             path_tissue_mesh=option_value;
+        case 'flag_par'
+            flag_par=option_value;
         otherwise
             fprintf('unknown option [%s]\n',option)
             return;
@@ -154,8 +157,12 @@ numThreads = 4;        %   number of cores to be used
 RnumberE        = 4;    %   number of neighbor triangles for analytical integration (fixed, optimized)
 ineighborE      = knnsearch(Center, Center, 'k', RnumberE);   % [1:N, 1:Rnumber]
 ineighborE      = ineighborE';           %   do transpose    
-EC         = meshneighborints_2(P, t, normals, Area, Center, RnumberE, ineighborE, numThreads);
 
+if(flag_par)
+    EC         = meshneighborints_2(P, t, normals, Area, Center, RnumberE, ineighborE, numThreads);
+else
+    EC         = meshneighborints_2_nopar(P, t, normals, Area, Center, RnumberE, ineighborE);
+end;
 %%   Normalize sparse matrix EC by variable contrast (for speed up)
 N   = size(Center, 1);
 ii  = ineighborE;
