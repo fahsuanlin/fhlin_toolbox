@@ -1547,13 +1547,20 @@ switch lower(param)
                         etc_render_fsbrain.opt_cluster='surf';
                         [w] = inverse_write_wfile(sprintf('test-%s.w',etc_render_fsbrain.hemi), etc_render_fsbrain.ovs, [0:length(etc_render_fsbrain.ovs)-1]);
                         eval(sprintf('!mri_surf2surf  --sfmt w --srcsubject %s --trgsubject %s --hemi %s --sval  test-%s.w --tval tmp.mgh --tfmt mgh', etc_render_fsbrain.subject, etc_render_fsbrain.subject, etc_render_fsbrain.hemi, etc_render_fsbrain.hemi));
-                        eval(sprintf('!mri_surfcluster --in tmp.mgh --hemi %s --surf orig  --sum test-%s.sum --subject %s  --thmin %f --thmax inf  --sign pos --no-adjust', etc_render_fsbrain.hemi, etc_render_fsbrain.hemi,etc_render_fsbrain.subject, min(etc_render_fsbrain.overlay_threshold)));
-
+                        [file,location] = uiputfile('*','cluster file');
+                        if(file~=0)
+                            eval(sprintf('!mri_surfcluster --in tmp.mgh --hemi %s --surf orig  --sum %s%s --subject %s  --thmin %f --thmax inf  --sign pos --no-adjust', etc_render_fsbrain.hemi, location, file, etc_render_fsbrain.subject, min(etc_render_fsbrain.overlay_threshold)));
+                        end;
+                        eval('!rm tmp.mgh');
                     case 'vol'
                         %vol overlay
                         etc_render_fsbrain.opt_cluster='vol';
                         MRIwrite(etc_render_fsbrain.overlay_vol,'tmp_vol.mgh');
-                        eval(sprintf('!mri_volcluster --in tmp_vol.mgh --sum test_vol.sum  --thmin %f --thmax inf  --sign pos --no-adjust', min(etc_render_fsbrain.overlay_threshold)));
+                        [file,location] = uiputfile('*','cluster file');
+                        if(file~=0)
+                            eval(sprintf('!mri_volcluster --in tmp_vol.mgh --sum %s%s  --thmin %f --thmax inf  --sign pos --no-adjust',location, file, min(etc_render_fsbrain.overlay_threshold)));
+                        end;
+                        eval('!rm tmp_vol.mgh');
                 end;
 
             case 'V' %tight axis for brain figure
