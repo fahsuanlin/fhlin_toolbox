@@ -18,6 +18,7 @@ flag_regrid=1;
 flag_regrid_zero=0;
 
 overlay_exclude_fstem='';
+overlay_exclude=[];
 
 for i=1:length(varargin)/2
     option=varargin{i*2-1};

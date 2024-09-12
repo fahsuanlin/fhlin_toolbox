@@ -1538,24 +1538,79 @@ switch lower(param)
                     end;
                 end;
             case 'y' %cluster
-                
+
+                answer = questdlg('cluster for surface or vol. overlay?','','surf','vol','cancel','surf');
+
+                switch(answer)
+                    case 'surf'
+                        %surface overlay
+                        etc_render_fsbrain.opt_cluster='surf';
+                        [w] = inverse_write_wfile(sprintf('test-%s.w',etc_render_fsbrain.hemi), etc_render_fsbrain.ovs, [0:length(etc_render_fsbrain.ovs)-1]);
+                        eval(sprintf('!mri_surf2surf  --sfmt w --srcsubject %s --trgsubject %s --hemi %s --sval  test-%s.w --tval tmp.mgh --tfmt mgh', etc_render_fsbrain.subject, etc_render_fsbrain.subject, etc_render_fsbrain.hemi, etc_render_fsbrain.hemi));
+                        eval(sprintf('!mri_surfcluster --in tmp.mgh --hemi %s --surf orig  --sum test-%s.sum --subject %s  --thmin %f --thmax inf  --sign pos --no-adjust', etc_render_fsbrain.hemi, etc_render_fsbrain.hemi,etc_render_fsbrain.subject, min(etc_render_fsbrain.overlay_threshold)));
+
+                    case 'vol'
+                        %vol overlay
+                        etc_render_fsbrain.opt_cluster='vol';
+                        MRIwrite(etc_render_fsbrain.overlay_vol,'tmp_vol.mgh');
+                        eval(sprintf('!mri_volcluster --in tmp_vol.mgh --sum test_vol.sum  --thmin %f --thmax inf  --sign pos --no-adjust', min(etc_render_fsbrain.overlay_threshold)));
+                end;
+
             case 'V' %tight axis for brain figure
+                f=gcf;
                 axis(etc_render_fsbrain.brain_axis,'tight');
-                
+                figure(etc_render_fsbrain.fig_stc)
+                axis(gca,'tight');
+                etc_render_fsbrain.overlay_stc_lim=get(gca,'ylim');
+                figure(f);
+
             case 'u' %show cluster labeling from files
+                answer = questdlg('reset cluster file?');
+                if(strcmp(answer,'Yes'))
+                    try
+                        if(isfield(etc_render_fsbrain,'h_cluster'))
+                            delete(etc_render_fsbrain.h_cluster);
+                            etc_render_fsbrain=rmfield(etc_render_fsbrain,'h_cluster');
+                        end;
+                        etc_render_fsbrain.cluster_file={};
+                    catch
+                    end;
+                end;
                 if(isfield(etc_render_fsbrain,'h_cluster'))
                     if(isempty(etc_render_fsbrain.h_cluster))
                         l_idx_offset=0;
                         for f_idx=1:length(etc_render_fsbrain.cluster_file)
                             fprintf('\nlabeling clusters from file [%s]...\n',etc_render_fsbrain.cluster_file{f_idx});
-                            [x1 x2 x3 x4 x5 x6 x7 x8 x9 x10] = textread(etc_render_fsbrain.cluster_file{f_idx},'%d%f%d%f%f%f%f%f%d%s','commentstyle','shell');
+                            if(strcmp(etc_render_fsbrain.opt_cluster,'surf'))
+                              [x1 x2 x3 x4 x5 x6 x7 x8 x9 x10] = textread(etc_render_fsbrain.cluster_file{f_idx},'%d%f%d%f%f%f%f%f%d%s','commentstyle','shell');
+                            end;
+                            if(strcmp(etc_render_fsbrain.opt_cluster,'vol'))
+                                [x1 x2 x3 x4 x5 x6 x7] = textread(etc_render_fsbrain.cluster_file{f_idx},'%d%d%f%f%f%f%f','commentstyle','shell');
+                                click_vertex_vox=[x4 x5 x6].';
+                                click_vertex_vox(end+1,:)=1;
+                                surface_coord=etc_render_fsbrain.vol.tkrvox2ras*click_vertex_vox;
+                                surface_coord=surface_coord(1:3,:);
+
+                                vv=etc_render_fsbrain.orig_vertex_coords;
+                                for ll=1:size(surface_coord,2)
+                                    dist=sqrt(sum((vv-repmat([surface_coord(1,ll),surface_coord(2,ll),surface_coord(3,ll)],[size(vv,1),1])).^2,2));
+                                    [min_dist,x3(ll)]=min(dist);
+                                end;
+                            end;
+
+
                             axes(etc_render_fsbrain.brain_axis);
                             
                             for l_idx=1:length(x3)
                                 ss=sprintf('%d',l_idx+l_idx_offset);
-                                etc_render_fsbrain.h_cluster(l_idx+l_idx_offset)=text(etc_render_fsbrain.vertex_coords(x3(l_idx)+1,1).*1.1,etc_render_fsbrain.vertex_coords(x3(l_idx)+1,2).*1.1, etc_render_fsbrain.vertex_coords(x3(l_idx)+1,3).*1.1,ss);
+                                if(strcmp(etc_render_fsbrain.opt_cluster,'surf'))
+                                    etc_render_fsbrain.h_cluster(l_idx+l_idx_offset)=text(etc_render_fsbrain.vertex_coords(x3(l_idx)+1,1).*1.1,etc_render_fsbrain.vertex_coords(x3(l_idx)+1,2).*1.1, etc_render_fsbrain.vertex_coords(x3(l_idx)+1,3).*1.1,ss);
+                                    fprintf('cluster [%03d]: value=%2.2f area=%1.0f (mm^2) x=%2.2f (mm) y=%2.2f (mm) z=%2.2f (mm)  <<%s>>\n',l_idx+l_idx_offset,x2(l_idx),x4(l_idx),x5(l_idx),x6(l_idx),x7(l_idx),x10{l_idx});
+                                end;
+                                if(strcmp(etc_render_fsbrain.opt_cluster,'vol'))
+                                    etc_render_fsbrain.h_cluster(l_idx+l_idx_offset)=text(etc_render_fsbrain.vertex_coords(x3(l_idx)+1,1).*1.1,etc_render_fsbrain.vertex_coords(x3(l_idx)+1,2).*1.1, etc_render_fsbrain.vertex_coords(x3(l_idx)+1,3).*1.1,ss);
+                                end;
                                 set(etc_render_fsbrain.h_cluster(l_idx+l_idx_offset),'color','k','fontname','helvetica','fontsize',18,'fontweight','bold','HorizontalAlignment','center');
-                                fprintf('cluster [%03d]: value=%2.2f area=%1.0f (mm^2) x=%2.2f (mm) y=%2.2f (mm) z=%2.2f (mm)  <<%s>>\n',l_idx+l_idx_offset,x2(l_idx),x4(l_idx),x5(l_idx),x6(l_idx),x7(l_idx),x10{l_idx});
                             end;
                             l_idx_offset=l_idx_offset+l_idx;
                         end;
@@ -1565,16 +1620,41 @@ switch lower(param)
                     end;
                 else
                     l_idx_offset=0;
+                    if(isempty(etc_render_fsbrain.cluster_file))
+                        [etc_render_fsbrain.cluster_file{1}, pathname, filterindex] = uigetfile({'*.sum','cluster summary'}, 'Pick a cluster summery file');
+                        if(etc_render_fsbrain.cluster_file{1}==0) return; end;
+                    end;
                     for f_idx=1:length(etc_render_fsbrain.cluster_file)
                         fprintf('\nlabeling clusters from file [%s]...\n',etc_render_fsbrain.cluster_file{f_idx});
-                        [x1 x2 x3 x4 x5 x6 x7 x8 x9 x10] = textread(etc_render_fsbrain.cluster_file{f_idx},'%d%f%d%f%f%f%f%f%d%s','commentstyle','shell');
+                        if(strcmp(etc_render_fsbrain.opt_cluster,'surf'))
+                            [x1 x2 x3 x4 x5 x6 x7 x8 x9 x10] = textread(etc_render_fsbrain.cluster_file{f_idx},'%d%f%d%f%f%f%f%f%d%s','commentstyle','shell');
+                        end;
+                        if(strcmp(etc_render_fsbrain.opt_cluster,'vol'))
+                            [x1 x2 x3 x4 x5 x6 x7] = textread(etc_render_fsbrain.cluster_file{f_idx},'%d%d%f%f%f%f%f','commentstyle','shell');
+                            click_vertex_vox=[x4 x5 x6].';
+                            click_vertex_vox(end+1,:)=1;
+                            surface_coord=etc_render_fsbrain.vol.tkrvox2ras*click_vertex_vox;
+                            surface_coord=surface_coord(1:3,:);
+
+                            vv=etc_render_fsbrain.orig_vertex_coords;
+                            for ll=1:size(surface_coord,2)
+                                dist=sqrt(sum((vv-repmat([surface_coord(1,ll),surface_coord(2,ll),surface_coord(3,ll)],[size(vv,1),1])).^2,2));
+                                [min_dist,x3(ll)]=min(dist);
+                            end;
+                        end;
+
                         axes(etc_render_fsbrain.brain_axis);
                         
                         for l_idx=1:length(x3)
                             ss=sprintf('%d',l_idx+l_idx_offset);
-                            etc_render_fsbrain.h_cluster(l_idx+l_idx_offset)=text(etc_render_fsbrain.vertex_coords(x3(l_idx)+1,1).*1.1,etc_render_fsbrain.vertex_coords(x3(l_idx)+1,2).*1.1, etc_render_fsbrain.vertex_coords(x3(l_idx)+1,3).*1.1,ss);
+                            if(strcmp(etc_render_fsbrain.opt_cluster,'surf'))
+                                etc_render_fsbrain.h_cluster(l_idx+l_idx_offset)=text(etc_render_fsbrain.vertex_coords(x3(l_idx)+1,1).*1.1,etc_render_fsbrain.vertex_coords(x3(l_idx)+1,2).*1.1, etc_render_fsbrain.vertex_coords(x3(l_idx)+1,3).*1.1,ss);
+                                fprintf('cluster [%03d]: value=%2.2f area=%1.0f (mm^2) x=%2.2f (mm) y=%2.2f (mm) z=%2.2f (mm)  <<%s>>\n',l_idx+l_idx_offset,x2(l_idx),x4(l_idx),x5(l_idx),x6(l_idx),x7(l_idx),x10{l_idx});
+                            end;
+                            if(strcmp(etc_render_fsbrain.opt_cluster,'vol'))
+                                etc_render_fsbrain.h_cluster(l_idx+l_idx_offset)=text(etc_render_fsbrain.vertex_coords(x3(l_idx)+1,1).*1.1,etc_render_fsbrain.vertex_coords(x3(l_idx)+1,2).*1.1, etc_render_fsbrain.vertex_coords(x3(l_idx)+1,3).*1.1,ss);
+                            end;
                             set(etc_render_fsbrain.h_cluster(l_idx+l_idx_offset),'color','k','fontname','helvetica','fontsize',18,'fontweight','bold','HorizontalAlignment','center');
-                            fprintf('cluster [%03d]: value=%2.2f area=%1.0f (mm^2) x=%2.2f (mm) y=%2.2f (mm) z=%2.2f (mm)  <<%s>>\n',l_idx+l_idx_offset,x2(l_idx),x4(l_idx),x5(l_idx),x6(l_idx),x7(l_idx),x10{l_idx});
                         end;
                         l_idx_offset=l_idx_offset+l_idx;
                     end;
@@ -4396,7 +4476,6 @@ if(etc_render_fsbrain.overlay_source~=4) %not overlay_vol as the source
                 end;
                 %assemble smoothed source at cortical locations and sources at sub-cortical locations
                 X_wb{hemi_idx}=cat(1,ovs(:),X_hemi_subcort(:));
-
                 flag_cal_loc_vol_idx=1;
                 if(isfield(etc_render_fsbrain,'loc_vol_idx'))
                     if(length(etc_render_fsbrain.loc_vol_idx)==2)
