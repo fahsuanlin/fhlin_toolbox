@@ -1558,7 +1558,7 @@ switch lower(param)
                         MRIwrite(etc_render_fsbrain.overlay_vol,'tmp_vol.mgh');
                         [file,location] = uiputfile('*','cluster file');
                         if(file~=0)
-                            eval(sprintf('!mri_volcluster --in tmp_vol.mgh --sum %s%s  --thmin %f --thmax inf  --sign pos --no-adjust',location, file, min(etc_render_fsbrain.overlay_threshold)));
+                            eval(sprintf('!mri_volcluster --in tmp_vol.mgh --sum %s%s  --thmin %f --thmax inf  --sign pos --no-adjust --minsizevox 27',location, file, min(etc_render_fsbrain.overlay_threshold)));
                         end;
                         eval('!rm tmp_vol.mgh');
                 end;
@@ -1628,7 +1628,7 @@ switch lower(param)
                 else
                     l_idx_offset=0;
                     if(isempty(etc_render_fsbrain.cluster_file))
-                        [etc_render_fsbrain.cluster_file{1}, pathname, filterindex] = uigetfile({'*.sum','cluster summary'}, 'Pick a cluster summery file');
+                        [etc_render_fsbrain.cluster_file{1}, pathname, filterindex] = uigetfile({'*.*','cluster summary'}, 'Pick a cluster summery file');
                         if(etc_render_fsbrain.cluster_file{1}==0) return; end;
                     end;
                     for f_idx=1:length(etc_render_fsbrain.cluster_file)
