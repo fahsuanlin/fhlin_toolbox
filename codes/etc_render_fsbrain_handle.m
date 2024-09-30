@@ -86,7 +86,8 @@ switch lower(param)
                 fprintf('m: create an ROI at the selected location with a radius\n');
                 fprintf('d: interactive overlay threshold change\n');
                 fprintf('c: switch on/off a colorbar\n');
-                fprintf('u: show cluster labels from a file\n');
+                fprintf('y: cluster overlay into a file\n');
+                fprintf('u: show clustering results from a file\n');
                 fprintf('d: change threshold\n');
                 fprintf('q: exit\n');
                 fprintf('\n\n fhlin@dec 25, 2014\n');
@@ -637,6 +638,17 @@ switch lower(param)
                             ButtonName = questdlg('Auto ROI flooding seed?', ...
                                 'Seed', ...
                                 'Auto', 'Manual','Auto');
+                            if(isempty(ButtonName))
+                                %clear boundary points and vertices
+                                delete(etc_render_fsbrain.collect_vertex_boundary_point(:));
+                                etc_render_fsbrain.collect_vertex_boundary_point=[];
+                                etc_render_fsbrain.collect_vertex_boundary=[];
+
+                                etc_render_fsbrain.collect_vertex=[];
+                                delete(etc_render_fsbrain.collect_vertex_point(:));
+                                etc_render_fsbrain.collect_vertex_point=[];
+                                return;
+                            end;
                             switch ButtonName
                                 case 'Auto'
                                     flag_auto=1;
@@ -653,8 +665,11 @@ switch lower(param)
                                 while(flag_wait)
                                     pause(0.1);
                                     pt=inverse_select3d(etc_render_fsbrain.h);
-                                    if(norm(pt-pt_last)>eps)
-                                        flag_wait=0;
+                                    if(isempty(pt_last)&~isempty(pt)) flag_wait=0; end;
+                                    if(~isempty(pt_last)&~isempty(pt))
+                                        if(norm(pt-pt_last)>eps)
+                                            flag_wait=0;
+                                        end;
                                     end;
                                 end;
 
@@ -1537,7 +1552,7 @@ switch lower(param)
                         %set(etc_render_fsbrain.brain_axis,'pos',etc_render_fsbrain.brain_axis_pos);
                     end;
                 end;
-            case 'y' %cluster
+            case 'y' %cluster overlay
 
                 answer = questdlg('cluster for surface or vol. overlay?','','surf','vol','cancel','surf');
 
@@ -1552,6 +1567,7 @@ switch lower(param)
                             eval(sprintf('!mri_surfcluster --in tmp.mgh --hemi %s --surf orig  --sum %s%s --subject %s  --thmin %f --thmax inf  --sign pos --no-adjust', etc_render_fsbrain.hemi, location, file, etc_render_fsbrain.subject, min(etc_render_fsbrain.overlay_threshold)));
                         end;
                         eval('!rm tmp.mgh');
+                        eval(sprintf('!rm test-%s.w',etc_render_fsbrain.hemi));
                     case 'vol'
                         %vol overlay
                         etc_render_fsbrain.opt_cluster='vol';
@@ -1566,9 +1582,13 @@ switch lower(param)
             case 'V' %tight axis for brain figure
                 f=gcf;
                 axis(etc_render_fsbrain.brain_axis,'tight');
-                figure(etc_render_fsbrain.fig_stc)
-                axis(gca,'tight');
-                etc_render_fsbrain.overlay_stc_lim=get(gca,'ylim');
+                if(isfield(etc_render_fsbrain,'fig_stc'))
+                    if(~isempty(etc_render_fsbrain.fig_stc))
+                        figure(etc_render_fsbrain.fig_stc)
+                        axis(gca,'tight');
+                        etc_render_fsbrain.overlay_stc_lim=get(gca,'ylim');
+                    end;
+                end;
                 figure(f);
 
             case 'u' %show cluster labeling from files
@@ -1717,6 +1737,31 @@ switch lower(param)
                     if(ishandle(etc_render_fsbrain.fig_gui))
                         set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_smooth'),'string',sprintf('%1.0f',etc_render_fsbrain.overlay_smooth));
                     end;
+                elseif(gcf==etc_render_fsbrain.fig_vol)
+                    fprintf('change smoothing kernel (vol.)...\n');
+                    if(isfield(etc_render_fsbrain,'overlay_vol_smooth'))
+                        if(isempty(etc_render_fsbrain.overlay_vol_smooth))
+                            etc_render_fsbrain.overlay_vol_smooth=4; %default FWHM=4 mm;
+                        end;
+                    else
+                        etc_render_fsbrain.overlay_vol_smooth=4; %default FWHM=4 mm;
+                    end;
+
+                    fprintf('current smoothing FWHM = %1.0f (mm)\n',mat2str(etc_render_fsbrain.overlay_vol_smooth));
+                    
+                    def={num2str(etc_render_fsbrain.overlay_vol_smooth)};
+                    answer=inputdlg('change smoothing FWHM',sprintf('current smoothing FWHM = %1.0f',mat2str(etc_render_fsbrain.overlay_vol_smooth)),1,def);
+                    if(~isempty(answer))
+                        etc_render_fsbrain.overlay_vol_smooth=str2num(answer{1});
+                        fprintf('updated smoothing FWHM = %1.0\n',mat2str(etc_render_fsbrain.overlay_vol_smooth));
+                        update_overlay_vol;
+                        draw_pointer;
+                        %redraw;
+                    end
+                    
+%                     if(ishandle(etc_render_fsbrain.fig_gui))
+%                         set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_smooth'),'string',sprintf('%1.0f',etc_render_fsbrain.overlay_smooth));
+%                     end;
                 end;
                 
             case 'm' %create a surface patch based on the clicked location and a specified radius
@@ -1771,6 +1816,7 @@ switch lower(param)
                 global etc_render_fsbrain;
 
                 etc_render_fsbrain.overlay_buffer_main_idx=etc_render_fsbrain.overlay_buffer_main_idx-1;
+                if(isempty(etc_render_fsbrain.overlay_buffer_main_idx)) return; end;
 
                 if(etc_render_fsbrain.overlay_buffer_main_idx==0) etc_render_fsbrain.overlay_buffer_main_idx=length(etc_render_fsbrain.overlay_buffer); end;
                 set(findobj('tag','listbox_overlay_main'),'value',etc_render_fsbrain.overlay_buffer_main_idx);
@@ -1822,6 +1868,7 @@ switch lower(param)
                 global etc_render_fsbrain;
 
                 etc_render_fsbrain.overlay_buffer_main_idx=etc_render_fsbrain.overlay_buffer_main_idx+1;
+                if(isempty(etc_render_fsbrain.overlay_buffer_main_idx)) return; end;
 
                 if(etc_render_fsbrain.overlay_buffer_main_idx>length(etc_render_fsbrain.overlay_buffer)) etc_render_fsbrain.overlay_buffer_main_idx=1; end;
                 set(findobj('tag','listbox_overlay_main'),'value',etc_render_fsbrain.overlay_buffer_main_idx);
@@ -4424,7 +4471,18 @@ if(etc_render_fsbrain.overlay_source~=4) %not overlay_vol as the source
                         else
                             mn=[];
                         end;
-                        fwhm=4; %<size of smoothing kernel; fwhm in mm.
+
+                        if(isfield(etc_render_fsbrain,'overlay_vol_smooth'))
+                            if(isempty(etc_render_fsbrain.overlay_vol_smooth))
+                                etc_render_fsbrain.overlay_vol_smooth=4; %default FWHM=4 mm;
+                            end;
+                        else
+                            etc_render_fsbrain.overlay_vol_smooth=4; %default FWHM=4 mm;
+                        end;
+
+
+                        %fwhm=4; %<size of smoothing kernel; fwhm in mm.
+                        fwhm=etc_render_fsbrain.overlay_vol_smooth; 
                         [vs,kernel]=fmri_smooth(v,fwhm,'vox',[etc_render_fsbrain.vol.xsize,etc_render_fsbrain.vol.ysize,etc_render_fsbrain.vol.zsize]);
                         if(~isempty(pos_idx))
                             pos_idx=find(vs(:)>10.*eps);

@@ -22,6 +22,7 @@ r2=[];
 beta=[];
 w=[];
 color=[];
+linecolor=[];
 
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
@@ -38,6 +39,8 @@ for i=1:length(varargin)/2
             flag_display_regline_text=option_value;
         case 'color'
             color=option_value;
+        case 'linecolor'
+            linecolor=option_value;
         case 'w'
             w=option_value;
         case 'label_sep'
@@ -75,14 +78,29 @@ if(flag_display)
         color='k';
     end;
     
+
+    % Normally distributed sample points:
+    % Bin the data:
+%     pts_x = linspace(min(x), max(x), 31);
+%     pts_y = linspace(min(y), max(y), 31);
+%     N = histcounts2(y(:), x(:), pts_y, pts_x);
+%     %h=pcolor(pts_x(1)+cumsum(diff(pts_x)),pts_y(1)+cumsum(diff(pts_y)), N);
+%     hp=pcolor(pts_x(1:end-1), pts_y(1:end-1), N); hold on;
+%     set(hp,'edgecolor','none','facealpha',0.3)
+
     if(flag_display_data)
         h(end+1)=plot(x(:),y(:),'.'); hold on;
+        set(h(end),'color',color);
     end;
+
     reg_x=[min(x) max(x)]';
     reg_y=beta(1)+beta(2).*reg_x; 
 
     if(flag_display_regline)
-        h(end+1)=line(reg_x,reg_y); set(h,'color',color,'linewidth',2);
+        if(isempty(linecolor))
+            linecolor='k';
+        end;
+        h(end+1)=line(reg_x,reg_y); set(h(end),'color',linecolor,'linewidth',2);
     end;
     if(flag_display_regline_text)
         h(end+1)=text((max(x)+min(x))/2,min(y)+(max(y)+min(y))/4,sprintf('Y=%2.2f+%2.2f X',beta(1),beta(2))); set(h(end),'fontname','helvetica','fontsize',14);
