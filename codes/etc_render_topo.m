@@ -648,6 +648,7 @@ etc_render_fsbrain.show_all_contacts_brain_surface_flag=show_all_contacts_brain_
 
 etc_render_fsbrain.vol_vox=[];
 etc_render_fsbrain.vol=vol;
+etc_render_fsbrain.vol_A=[];
 etc_render_fsbrain.vol_reg=vol_reg;
 
 etc_render_fsbrain.overlay_source=overlay_source;

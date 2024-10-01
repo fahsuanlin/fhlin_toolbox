@@ -1564,6 +1564,13 @@ switch lower(param)
                         eval(sprintf('!mri_surf2surf  --sfmt w --srcsubject %s --trgsubject %s --hemi %s --sval  test-%s.w --tval tmp.mgh --tfmt mgh', etc_render_fsbrain.subject, etc_render_fsbrain.subject, etc_render_fsbrain.hemi, etc_render_fsbrain.hemi));
                         [file,location] = uiputfile('*','cluster file');
                         if(file~=0)
+%                             prompt = {'minimum cluster size (mm^2)'};
+%                             dlgtitle = 'Input';
+%                             fieldsize = [1 45];
+%                             definput = {'0'};
+%                             answer = inputdlg(prompt,dlgtitle,fieldsize,definput);
+%                             minarea=str2num(answer{1});
+                            %eval(sprintf('!mri_surfcluster --in tmp.mgh --hemi %s --surf orig  --sum %s%s --subject %s  --thmin %f --thmax inf  --sign pos --no-adjust --minarea %f', etc_render_fsbrain.hemi, location, file, etc_render_fsbrain.subject, min(etc_render_fsbrain.overlay_threshold, minarea)));
                             eval(sprintf('!mri_surfcluster --in tmp.mgh --hemi %s --surf orig  --sum %s%s --subject %s  --thmin %f --thmax inf  --sign pos --no-adjust', etc_render_fsbrain.hemi, location, file, etc_render_fsbrain.subject, min(etc_render_fsbrain.overlay_threshold)));
                         end;
                         eval('!rm tmp.mgh');
@@ -4415,6 +4422,7 @@ function update_overlay_vol()
 
 global etc_render_fsbrain;
 
+if(isempty(etc_render_fsbrain.vol_A)) return; end;
 
 if(etc_render_fsbrain.overlay_source~=4) %not overlay_vol as the source
     try
