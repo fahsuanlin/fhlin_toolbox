@@ -105,18 +105,22 @@ function listbox_label_Callback(hObject, eventdata, handles)
 global etc_render_fsbrain;
 try
     if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
-        contents = cellstr(get(hObject,'String'));
+        %contents = cellstr(get(hObject,'String'));
+        contents=etc_render_fsbrain.label_ctab.struct_names;
         select_idx=get(hObject,'Value');
         
         
         etc_render_fsbrain.label_register(select_idx)=1-etc_render_fsbrain.label_register(select_idx);
-        set(hObject,'Value',find(etc_render_fsbrain.label_register));
-        
+
         if( etc_render_fsbrain.label_register(select_idx))
             fprintf('label <<%s>> selected\n',contents{get(hObject,'Value')})
         else
             fprintf('label <<%s>> un-selected\n',contents{get(hObject,'Value')})
         end;
+        
+        set(hObject,'Value',find(etc_render_fsbrain.label_register));
+        
+
         
         try
             for ss=1:length(etc_render_fsbrain.label_register)    
@@ -133,6 +137,42 @@ try
                         set(etc_render_fsbrain.h_label_boundary{ss}(:),'visible','on');
                     else
                         set(etc_render_fsbrain.h_label_boundary{ss}(:),'visible','off');
+                    end;
+
+                    face_in_label_counter=sum(ismember(etc_render_fsbrain.faces,vidx-1),2);
+                    face_in_label_idx=find(face_in_label_counter==3); %mesh triangulation indices for all three vertices included by a label
+                    v1=etc_render_fsbrain.faces(face_in_label_idx,1);
+                    v2=etc_render_fsbrain.faces(face_in_label_idx,2);
+                    v3=etc_render_fsbrain.faces(face_in_label_idx,3);
+
+                    P1=etc_render_fsbrain.orig_vertex_coords(v1+1,:);
+                    P2=etc_render_fsbrain.orig_vertex_coords(v2+1,:);
+                    P3=etc_render_fsbrain.orig_vertex_coords(v3+1,:);
+                    area_within_label=.5*sum(sqrt(sum(cross(P2-P1,P3-P1).^2,2)));
+
+                    fprintf('label area =%2.1f (mm^2)\n',area_within_label);
+
+                    %overlay
+                    if(~isempty(etc_render_fsbrain.ovs))
+                        fprintf('[%s] overlay = %2.2f +/- %2.2f \n',etc_render_fsbrain.label_ctab.struct_names{ss}, mean(etc_render_fsbrain.ovs(vidx)),std(etc_render_fsbrain.ovs(vidx)));
+
+                       
+                        
+                        %overlay center-of-mass
+                        ww=etc_render_fsbrain.ovs(vidx);
+                        vv=etc_render_fsbrain.vertex_coords(vidx,:);
+                        com_surf=sum(vv.*repmat(ww,[1 3]),1)./sum(ww);
+                        
+                        ww=etc_render_fsbrain.ovs(vidx);
+                        vv=etc_render_fsbrain.orig_vertex_coords(vidx,:);
+                        com_orig_surf=sum(vv.*repmat(ww,[1 3]),1)./sum(ww);
+
+                        click_vertex_vox=inv(etc_render_fsbrain.vol.tkrvox2ras)*[com_orig_surf(:); 1];
+
+                        com_surf_tal=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*click_vertex_vox;
+                        com_surf_tal=com_surf_tal(1:3)';
+                        fprintf('center of mass coordinates: surface: %; orig. surface: %s; MNI: %s\n',mat2surf(com_surf), mat2surf(com_orig_surf), mat2surf(com_surf_tal));
+
                     end;
                 else
                     etc_render_fsbrain.h.FaceVertexCData(vidx,:)=etc_render_fsbrain.fvdata(vidx,:);

@@ -1183,10 +1183,44 @@ switch lower(param)
             case 'l' %annotation/labels GUI
                 %fprintf('\nannotation/labels GUI...\n');
                 global etc_render_fsbrain;
-                
+
+                filename='';
+                if(isempty(get(etc_render_fsbrain.fig_brain,'WindowButtonDownFcn'))) %try default annot file during initialization
+                    if(isfield(etc_render_fsbrain,'label_file_annot'))
+                        if(~isempty(etc_render_fsbrain.label_file_annot))
+                            [pathname,ff,ee]=fileparts(etc_render_fsbrain.label_file_annot);
+                            filename=sprintf('%s%s',ff,ee);
+                        end;
+                    end;
+                else
+                    flag_show_fig_label=0;
+                    if(~isfield(etc_render_fsbrain,'fig_label_gui'))
+                        flag_show_fig_label=1;
+                    else
+                        %if(~isvalid(etc_render_fsbrain.fig_label_gui))
+                            flag_show_fig_label=1;
+                        %eend;
+                    end;
+
+                    if(flag_show_fig_label)
+                        etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
+                        set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
+                        pos=get(etc_render_fsbrain.fig_label_gui,'pos');
+                        pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                        set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
+                    end;
+                end;
+
+
                 %[filename, pathname, filterindex] = uigetfile({'*.annot','FreeSufer annotation';'*.label','FreeSufer label'}, 'Pick a file', 'lh.aparc.a2009s.annot');
                 %[filename, pathname, filterindex] = uigetfile({'*.annot','FreeSufer annotation'; '*.mgz','FreeSufer annotation';'*.label','FreeSufer label';  }, 'Pick a file', 'lh.aparc.a2009s.annot');
-                [filename, pathname, filterindex] = uigetfile(fullfile(pwd,'*.mgz;*.mgh;*.annot;*.label;*.nii'),'select an annotation/label file');
+                if(isempty(filename))
+                    [filename, pathname, filterindex] = uigetfile(fullfile(pwd,'*.mgz;*.mgh;*.annot;*.label;*.nii'),'select an annotation/label file');
+                end;
+                if(isempty(filename))
+                    return;
+                end
+
                 try
                     [dummy,fstem,ext]=fileparts(filename);
                     switch lower(ext)
@@ -1347,13 +1381,17 @@ switch lower(param)
                                             etc_render_fsbrain.label_register=zeros(1,length(etc_render_fsbrain.label_ctab.struct_names));
                                         end;
                                     else
-                                        etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
-                                        set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
-                                        pos=get(etc_render_fsbrain.fig_label_gui,'pos');
-                                        pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
-                                        set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
-                                        
-                                        if(~isfield(etc_render_fsbrain,'label_register'))
+                                        if(~isempty(get(etc_render_fsbrain.fig_brain,'WindowButtonDownFcn'))) %don't show label window during initialization
+                                            etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
+                                            set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
+                                            pos=get(etc_render_fsbrain.fig_label_gui,'pos');
+                                            pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                                            set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
+
+                                            if(~isfield(etc_render_fsbrain,'label_register'))
+                                                etc_render_fsbrain.label_register=zeros(1,length(etc_render_fsbrain.label_ctab.struct_names));
+                                            end;
+                                        else
                                             etc_render_fsbrain.label_register=zeros(1,length(etc_render_fsbrain.label_ctab.struct_names));
                                         end;
                                     end;

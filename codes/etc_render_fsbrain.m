@@ -145,7 +145,7 @@ electrode_contact_idx=1; %first contact
 label_vertex=[];
 label_value=[];
 label_ctab=[];
-file_annot='';
+label_file_annot='';
 
 %ROI label
 cort_label_filename='';
@@ -364,8 +364,8 @@ for idx=1:length(varargin)/2
             flag_show_cort_label=option_value;
         case 'flag_show_cort_label_boundary'
             flag_show_cort_label_boundary=option_value;
-        case 'file_annot'
-            file_annot=option_value;
+        case 'label_file_annot'
+            label_file_annot=option_value;
         case 'electrode'
             electrode=option_value;
         case 'electrode_idx'
@@ -1088,10 +1088,12 @@ end;
 
 
 %label annotation
-if(~isempty(file_annot))
-    [label_vertex label_value label_ctab] = read_annotation(file_annot);
-    fprintf('annotated label loaded from [%s]...\n',file_annot);
-
+if(~isempty(label_file_annot))
+    [label_vertex label_value label_ctab] = read_annotation(label_file_annot);
+    fprintf('annotated label loaded from [%s]...\n',label_file_annot);
+else
+    %try loading annot automatically
+    label_file_annot=sprintf('%s/%s/label/%s.aparc.annot',subjects_dir,subject,hemi);
 end;
 if(~isempty(label_vertex)&&~isempty(label_value)&&~isempty(label_ctab))
     fprintf('annotated label loaded...\n');
@@ -1228,6 +1230,7 @@ etc_render_fsbrain.overlay_vol_mask=overlay_vol_mask;
 etc_render_fsbrain.overlay_flag_vol_mask=overlay_flag_vol_mask;
 etc_render_fsbrain.lut=lut;
 
+etc_render_fsbrain.label_file_annot=label_file_annot;
 etc_render_fsbrain.label_vertex=label_vertex;
 etc_render_fsbrain.label_value=label_value;
 etc_render_fsbrain.label_ctab=label_ctab;
@@ -1336,6 +1339,10 @@ etc_render_fsbrain.brain_axis_pos=[];
 etc_render_fsbrain.h_label_boundary={};
 
 
+%label annotation
+if(~isempty(etc_render_fsbrain.label_file_annot))
+        etc_render_fsbrain_handle('kb','cc','l');
+end;
 
 %ROI label
 if(~isempty(cort_label_filename))
