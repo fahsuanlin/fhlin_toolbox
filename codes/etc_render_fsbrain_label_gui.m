@@ -171,7 +171,7 @@ try
 
                         com_surf_tal=etc_render_fsbrain.talxfm*etc_render_fsbrain.vol_pre_xfm*etc_render_fsbrain.vol.vox2ras*click_vertex_vox;
                         com_surf_tal=com_surf_tal(1:3)';
-                        fprintf('center of mass coordinates: surface: %; orig. surface: %s; MNI: %s\n',mat2surf(com_surf), mat2surf(com_orig_surf), mat2surf(com_surf_tal));
+                        fprintf('center of mass coordinates: surface: %s; orig. surface: %s; MNI: %s\n',mat2str(com_surf, 2), mat2str(com_orig_surf, 2), mat2str(com_surf_tal, 2));
 
                     end;
                 else

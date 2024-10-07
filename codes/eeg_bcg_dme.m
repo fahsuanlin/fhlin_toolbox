@@ -1,4 +1,4 @@
-function [eeg_bcg, qrs_i_raw, eeg_bcg_pred, cccm_D, cccm_IDX, check]=eeg_bcg_dmh_042224(eeg,ecg,fs,varargin)
+function [eeg_bcg, qrs_i_raw, eeg_bcg_pred, cccm_D, cccm_IDX, check]=eeg_bcg_dme(eeg,ecg,fs,varargin)
 
 %defaults
 flag_eeg_dyn=0;
@@ -192,7 +192,7 @@ non_ecg_channel=[1:size(eeg,1)];
 
                     %dd=ecg;
                     %1-s for dynamics
-                    for delay_idx=1:fs
+                    for delay_idx=1:round(fs/2)
                         tmp0(delay_idx,:)=etc_circshift(dd,-delay_idx+1);
                     end;
 
@@ -335,7 +335,9 @@ non_ecg_channel=[1:size(eeg,1)];
 
                 for t_idx=1:size(eeg,2)
                     dyn=eeg(non_ecg_channel(ch_idx),IDX(t_idx,:));
-                    U=exp(-D(t_idx,:)./D(t_idx,:));
+                    dyn_rss=sqrt(sum(abs(dyn).^2));
+                    U=exp(-D(t_idx,:)./dyn_rss);
+                    %U=exp(-D(t_idx,:)./D(t_idx,:));
                     W=U./sum(U);
 
                     eeg_bcg_pred(non_ecg_channel(ch_idx),t_idx)=dyn*W';
