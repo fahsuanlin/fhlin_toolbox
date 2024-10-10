@@ -91,6 +91,11 @@ if(flag_display)
     if(flag_display_data)
         h(end+1)=plot(x(:),y(:),'.'); hold on;
         set(h(end),'color',color);
+
+        hh=scatplot(x(:),y(:)); hold on; %scattered plot with density!! 
+        colorbar off;
+        %densityScatterChart(x(:),y(:), 'UseColor', true, 'UseAlpha', true);
+        %h(end+1)=gca;
     end;
 
     reg_x=[min(x) max(x)]';
@@ -107,8 +112,5 @@ if(flag_display)
         h(end+1)=text((max(x)+min(x))/2,min(y)+(max(y)+min(y))/4*0.9.*label_sep,sprintf('(R^2=%1.2f; p=%4.3f)',r2,p)); set(h(end),'fontname','helvetica','fontsize',14);
         set(gca,'fontname','helvetica','fontsize',14);
     end;
-%    set(gca,'xlim',[0.050 0.500],'ylim',[4 6])
-%    h=xlabel('MEG TTP (s)'); set(h,'fontname','helvetica','fontsize',14);
-%    h=ylabel('fMRI TTP (s)'); set(h,'fontname','helvetica','fontsize',14);
 
 end;

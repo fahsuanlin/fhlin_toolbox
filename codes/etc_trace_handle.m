@@ -1174,7 +1174,7 @@ switch lower(param)
                 %title(['[' num2str(out(1,1)) ',' num2str(out(1,2)) ']']);
             else
             end
-            handles_orig=guidata(get(etc_trace_obj.fig_trace,'CurrentAxes'))
+            handles_orig=guidata(get(etc_trace_obj.fig_trace,'CurrentAxes'));
 
             if(isfield(handles_orig,'prev_rectangle'))
                 handles.prev_rectangle=handles_orig.prev_rectangle;
@@ -1764,7 +1764,7 @@ function myclick(h,event,type)
 global etc_trace_obj;
 
 %handles=guidata(gca);
-handles=guidata(get(etc_trace_obj.fig_trace,'CurrentAxes'))
+handles=guidata(get(etc_trace_obj.fig_trace,'CurrentAxes'));
 
 switch type
     case 1 %---Button down
@@ -1780,7 +1780,7 @@ switch type
         if ((handles.xpos0 > xl(1) & handles.xpos0 < xl(2)) & (handles.ypos0 > yl(1) & handles.ypos0 < yl(2))) %--disable if outside axes
             
             handles.currentTitle=get(get(gca, 'Title'), 'String');
-            guidata(gca,handles)
+            guidata(gca,handles);
 
             title(['[' num2str(out(1,1)) ',' num2str(out(1,2)) ']']);
         else
@@ -1909,7 +1909,7 @@ switch type
         handles.macro_active=0;
         handles.key='';
         %title(handles.currentTitle);
-        guidata(gca,handles)
+        guidata(gca,handles);
 
         etc_trace_obj.middle_time_select_idx=[];
         %         if(~isempty(handles.rectangle))
@@ -1951,7 +1951,7 @@ switch type
         set(gcf, 'SelectionType','normal');
         set(gcf, 'windowbuttonmotionfcn', '');
         set(gcf, 'windowbuttonupfcn', '');
-        handles=guidata(get(etc_trace_obj.fig_trace,'CurrentAxes'))
+        handles=guidata(get(etc_trace_obj.fig_trace,'CurrentAxes'));
     case 4 %----Button press
         handles.key=get(gcf,'CurrentCharacter');
         guidata(gca,handles)

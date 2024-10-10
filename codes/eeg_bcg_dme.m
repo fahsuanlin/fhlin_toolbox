@@ -1,4 +1,4 @@
-function [eeg_bcg, qrs_i_raw, eeg_bcg_pred, cccm_D, cccm_IDX, check]=eeg_bcg_dme(eeg,ecg,fs,varargin)
+function [eeg_bcg, qrs_i_raw, eeg_bcg_pred, D, IDX, check]=eeg_bcg_dme(eeg,ecg,fs,varargin)
 
 %defaults
 flag_eeg_dyn=0;
