@@ -75,50 +75,51 @@ if(~isempty(mk))
 end;
 
 %find unique trigger event
-all_events=unique(trigger.event_str);
-fprintf('[%d] event(s) found!\n',length(all_events));
-for e_idx=1:length(all_events)
-    if((~isempty(all_events{e_idx})))
-        if(strcmp(lower(all_events{e_idx}),'r128'))
-            fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_R128);
-        elseif(strcmp(lower(all_events{e_idx}),'sync'))
-            fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_SYNC);
-        elseif(strcmp(lower(all_events{e_idx}),'ecg'))
-            fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_ECG);
-        elseif(strcmp(lower(all_events{e_idx}),'ekg'))
-            fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_EKG);
-        elseif(strcmp(lower(all_events{e_idx}),'sync on'))
-            fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_Sync_On);
-        elseif(strcmp(lower(all_events{e_idx}),'scan start'))
-            fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_Scan_Start);
-        elseif(strcmp(lower(all_events{e_idx}),'volume start'))
-            fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_Volume_Start);
-	else
-            fprintf('event {%s} --> [%d]\n',all_events{e_idx},e_idx);
-        end;
-    else
-        fprintf('event {''''} --> [%d]\n',event_code_empty);
-    end;
-end;
-
-if(flag_auto_event)
-    fprintf('automatic assigning event number...\n');
-    for trigger_idx=1:length(trigger.time)
-        if(~isempty(trigger.event_str{trigger_idx}))
-            if(strcmp(lower(trigger.event_str{trigger_idx}),'r128'))
-                trigger.event(trigger_idx)=token_R128;
-            elseif(strcmp(lower(trigger.event_str{trigger_idx}),'sync'))
-                trigger.event(trigger_idx)=token_SYNC;
-            elseif(strcmp(lower(trigger.event_str{trigger_idx}),'ECG'))
-                trigger.event(trigger_idx)=token_ECG;
-            elseif(strcmp(lower(trigger.event_str{trigger_idx}),'EKG'))
-                trigger.event(trigger_idx)=token_EKG;
-            else
-                trigger.event(trigger_idx)=find(cellfun(@(s) ~isempty(strfind(trigger.event_str{trigger_idx}, s)), all_events));
+if(~isempty(trigger))
+    all_events=unique(trigger.event_str);
+    fprintf('[%d] event(s) found!\n',length(all_events));
+    for e_idx=1:length(all_events)
+        if((~isempty(all_events{e_idx})))
+            if(strcmp(lower(all_events{e_idx}),'r128'))
+                fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_R128);
+            elseif(strcmp(lower(all_events{e_idx}),'sync'))
+                fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_SYNC);
+            elseif(strcmp(lower(all_events{e_idx}),'ecg'))
+                fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_ECG);
+            elseif(strcmp(lower(all_events{e_idx}),'ekg'))
+                fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_EKG);
+            elseif(strcmp(lower(all_events{e_idx}),'sync on'))
+                fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_Sync_On);
+            elseif(strcmp(lower(all_events{e_idx}),'scan start'))
+                fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_Scan_Start);
+            elseif(strcmp(lower(all_events{e_idx}),'volume start'))
+                fprintf('event {%s} --> [%d]\n',all_events{e_idx},token_Volume_Start);
+        	else
+                fprintf('event {%s} --> [%d]\n',all_events{e_idx},e_idx);
             end;
         else
-            trigger.event(trigger_idx)=event_code_empty;
+            fprintf('event {''''} --> [%d]\n',event_code_empty);
+        end;
+    end;
+
+    if(flag_auto_event)
+        fprintf('automatic assigning event number...\n');
+        for trigger_idx=1:length(trigger.time)
+            if(~isempty(trigger.event_str{trigger_idx}))
+                if(strcmp(lower(trigger.event_str{trigger_idx}),'r128'))
+                    trigger.event(trigger_idx)=token_R128;
+                elseif(strcmp(lower(trigger.event_str{trigger_idx}),'sync'))
+                    trigger.event(trigger_idx)=token_SYNC;
+                elseif(strcmp(lower(trigger.event_str{trigger_idx}),'ECG'))
+                    trigger.event(trigger_idx)=token_ECG;
+                elseif(strcmp(lower(trigger.event_str{trigger_idx}),'EKG'))
+                    trigger.event(trigger_idx)=token_EKG;
+                else
+                    trigger.event(trigger_idx)=find(cellfun(@(s) ~isempty(strfind(trigger.event_str{trigger_idx}, s)), all_events));
+                end;
+            else
+                trigger.event(trigger_idx)=event_code_empty;
+            end;
         end;
     end;
 end;
-

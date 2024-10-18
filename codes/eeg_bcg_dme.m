@@ -6,25 +6,19 @@ flag_eeg_dyn_svd=0;
 flag_ecg_dyn=1;
 flag_auto_hp=0;
 flag_display=0;
+flag_avoid_extreme=0;
 nn=[];
-delay_time=0; %s
-delay=round(fs.*(delay_time));
 n_ecg=[]; %search the nearest -n_ecg:+n_ecg; 10 is a good number; consider how this interacts with 'nn'
+dyn_duration_idx=round(fs/2); %duration (in samples; # samples in 0.5 s by default) of dyanmics to be examined; this will be the temporal range in feature definition
 
 flag_reg=0;
-
-flag_pan_tompkin2=0;
-flag_wavelet_ecg=0;
-flag_wavelet_eeg=0;
-flag_eegsvd_ecg=0;
 
 eeg_bcg=[];
 eeg_bcg_pred=[];
 
 qrs_i_raw=[];
 check=[];
-cccm_D=[];
-cccm_IDX=[];
+n_svd=3;
 
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
@@ -36,30 +30,22 @@ for i=1:length(varargin)/2
             flag_reg=option_value;
         case 'flag_auto_hp'
             flag_auto_hp=option_value;
+        case 'flag_avoid_extreme'
+            flag_avoid_extreme=option_value;
         case 'flag_eeg_dyn'
             flag_eeg_dyn=option_value;
         case 'flag_eeg_dyn_svd'
             flag_eeg_dyn_svd=option_value;
         case 'flag_ecg_dyn'
             flag_ecg_dyn=option_value;
+        case 'dyn_duration_idx'
+            dyn_duration_idx=option_value;
         case 'nn'
             nn=option_value;
-        case 'delay_time'
-            delay_time=option_value;
-        case 'tau'
-            tau=option_value;
-        case 'e'
-            E=option_value;
         case 'n_ecg'
             n_ecg=option_value;
-        case 'flag_pan_tompkin2'
-            flag_pan_tompkin2=option_value;
-        case 'flag_wavelet_ecg'
-            flag_wavelet_ecg=option_value;
-        case 'flag_wavelet_eeg'
-            flag_wavelet_eeg=option_value;
-        case 'flag_eegsvd_ecg'
-            flag_eegsvd_ecg=option_value;
+        case 'n_svd'
+            n_svd=option_value;
         otherwise
             fprintf('unknown option [%s]...\n',option);
             fprintf('error!\n');
@@ -115,12 +101,6 @@ ecg=ecg_now;
 %get reference time course
 [uu,ss,vv]=svd(eeg,'econ');
 ref=vv(:,1)';
-
-
-%     tt=[1:length(ecg)]./fs;
-%     figure; plot(tt,ecg); hold on;
-%     line(repmat(tt(qrs_i_raw),[2 1]),repmat([min(ecg-mean(ecg))/2; max(ecg-mean(ecg))/2],size(qrs_i_raw)),'LineWidth',2.5,'LineStyle','-.','Color','r');
-%keyboard;
 
 
 eeg_bcg_pred=zeros(size(eeg));
@@ -183,16 +163,29 @@ non_ecg_channel=[1:size(eeg,1)];
 
         else % EEG SVD;
 %            if( ch_idx==1)
-                [uu,ss,vv]=svd(eeg,'econ');
+                [dummy,s_idx]=sort(sum(abs(eeg),1));
+
+                if(flag_avoid_extreme)
+                    [uu,ss,vv]=svd(eeg(:,s_idx(1:round(length(s_idx)*0.9))),'econ');
+                else
+                    [uu,ss,vv]=svd(eeg,'econ');
+                end;
                 tmp=[];
-                for svd_idx=1:3
+                if(isempty(n_svd)) n_svd=3; end;
+
+                for svd_idx=1:n_svd
                     v1=vv(:,svd_idx)';
                     dd=v1.*ss(svd_idx,svd_idx);
 
 
                     %dd=ecg;
                     %1-s for dynamics
-                    for delay_idx=1:round(fs/2)
+                    if(isempty(dyn_duration_idx))
+                        dyn_duration_idx=round(fs/2);
+                    end;
+                    
+
+                    for delay_idx=1:dyn_duration_idx
                         tmp0(delay_idx,:)=etc_circshift(dd,-delay_idx+1);
                     end;
 
@@ -351,10 +344,6 @@ non_ecg_channel=[1:size(eeg,1)];
                 h=plot(ecg);
                 set(h,'color',[ 0    0.4470    0.7410],'linewidth',2);
                 ylim=get(gca,'ylim');
-%                 for ii=1:length(qrs_i_raw)
-%                     h=line([qrs_i_raw(ii) qrs_i_raw(ii)],ylim);
-%                     set(h,'color',[0.8500    0.3250    0.0980],'linewidth',1);
-%                 end;
                 h=plot(ecg);
                 set(h,'color',[ 0    0.4470    0.7410],'linewidth',2);
                 
@@ -362,10 +351,6 @@ non_ecg_channel=[1:size(eeg,1)];
                 plot(eeg(non_ecg_channel(ch_idx),:));
                 set(h,'color',[ 0    0.4470    0.7410],'linewidth',2);
                 ylim=get(gca,'ylim');
-%                 for ii=1:length(qrs_i_raw)
-%                     h=line([qrs_i_raw(ii) qrs_i_raw(ii)],ylim);
-%                     set(h,'color',[0.8500    0.3250    0.0980],'linewidth',1);
-%                 end;
                 h=plot(eeg(non_ecg_channel(ch_idx),:));
                 set(h,'color',[ 0    0.4470    0.7410],'linewidth',2);
                 
@@ -373,10 +358,6 @@ non_ecg_channel=[1:size(eeg,1)];
                 h=plot(eeg(non_ecg_channel(ch_idx),:));
                 set(h,'color',[ 0    0.4470    0.7410],'linewidth',2);
                 ylim=get(gca,'ylim');
-%                 for ii=1:length(qrs_i_raw)
-%                     h=line([qrs_i_raw(ii) qrs_i_raw(ii)],ylim);
-%                     set(h,'color',[0.8500    0.3250    0.0980],'linewidth',1);
-%                 end;
                 h=plot(eeg(non_ecg_channel(ch_idx),:));
                 set(h,'color',[ 0    0.4470    0.7410],'linewidth',1);
                 
@@ -384,10 +365,6 @@ non_ecg_channel=[1:size(eeg,1)];
                 h=plot(eeg(non_ecg_channel(ch_idx),:));
                 set(h,'color',[ 0    0.4470    0.7410],'linewidth',2);
                 ylim=get(gca,'ylim');
-%                 for ii=1:length(qrs_i_raw)
-%                     h=line([qrs_i_raw(ii) qrs_i_raw(ii)],ylim);
-%                     set(h,'color',[0.8500    0.3250    0.0980],'linewidth',1);
-%                 end;
                 h=plot(eeg(non_ecg_channel(ch_idx),:));
                 set(h,'color',[ 0    0.4470    0.7410],'linewidth',1);
                 
@@ -407,18 +384,18 @@ non_ecg_channel=[1:size(eeg,1)];
                 
                 xlabel('time (sample)');
                 ylabel('EKG signal (a.u.)');
-                set(gca,'xlim',[1 length(ecg)]);
-                etc_plotstyle;
-                ha=plot(xx,ecg(xx),'r.'); set(ha,'markersize',40);
-                h1=plot(xx(1),ecg(xx(1)),'.'); set(h1,'markersize',40,'color',[ 0.4660    0.6740    0.1880]);
+                set(gca,'xlim',[1 size(eeg,2)]);
+                %etc_plotstyle;
+                %ha=plot(xx,ecg(xx),'r.'); set(ha,'markersize',40);
+                %h1=plot(xx(1),ecg(xx(1)),'.'); set(h1,'markersize',40,'color',[ 0.4660    0.6740    0.1880]);
                 
                 subplot(222);
                 if(~isempty(hb)) delete(hb); end;
                 if(~isempty(h2)) delete(h2); end;
                 xlabel('time (sample)');
                 ylabel('EEG signal (a.u.)');
-                set(gca,'xlim',[1 length(ecg)]);
-                etc_plotstyle;
+                set(gca,'xlim',[1 size(eeg,2)]);
+                %etc_plotstyle;
                 hb=plot(xx,eeg(non_ecg_channel(ch_idx),xx),'r.'); set(hb,'markersize',40);
                 h2=plot(xx(1),eeg(non_ecg_channel(ch_idx),xx(1)),'.'); set(h2,'markersize',40,'color',[ 0.4660    0.6740    0.1880]);
                 
@@ -427,9 +404,9 @@ non_ecg_channel=[1:size(eeg,1)];
                 set(h,'linewidth',2);
                 xlabel('time (sample)');
                 ylabel('EEG signal (a.u.)');
-                set(gca,'xlim',[1 length(ecg)]);
+                set(gca,'xlim',[1 size(eeg,2)]);
                 ylim=get(gca,'ylim');
-                etc_plotstyle;
+                %etc_plotstyle;
                 
                 subplot(224)
                 h=plot(eeg_bcg_pred(non_ecg_channel(ch_idx),1:t_idx),'r');
@@ -437,7 +414,7 @@ non_ecg_channel=[1:size(eeg,1)];
                 xlabel('time (sample)');
                 ylabel('EEG signal (a.u.)');
                 set(gca,'xlim',[t_idx-500 t_idx+500],'ylim',ylim);
-                etc_plotstyle;
+                %etc_plotstyle;
                 
                 set(gcf,'pos',[100        1000        2100           900]);
                 

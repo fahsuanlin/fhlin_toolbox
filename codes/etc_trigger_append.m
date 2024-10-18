@@ -17,6 +17,11 @@ function trigger_out=etc_trigger_append(trigger_orig,varargin)
 % fhlin@sep. 7 2019
 %
 
+if(isempty(trigger_orig))
+    trigger_out=trigger_orig;
+    return; 
+end;
+
 if(~iscell(trigger_orig.event))
     str={};
     for idx=1:length(trigger_orig.event)

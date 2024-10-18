@@ -10,6 +10,8 @@ function [p, r2, beta,h]=etc_regression(x,y,varargin)
 % fhlin@jan 3 2020
 %
 
+flag_scattered_density=0;
+
 flag_display=1;
 flag_display_data=1;
 flag_display_regline=1;
@@ -29,6 +31,8 @@ for i=1:length(varargin)/2
     option_value=varargin{i*2};
     
     switch lower(option)
+        case 'flag_scattered_density'
+            flag_scattered_density=option_value;
         case 'flag_display'
             flag_display=option_value;
         case 'flag_display_data'
@@ -92,8 +96,10 @@ if(flag_display)
         h(end+1)=plot(x(:),y(:),'.'); hold on;
         set(h(end),'color',color);
 
-        hh=scatplot(x(:),y(:)); hold on; %scattered plot with density!! 
-        colorbar off;
+        if(flag_scattered_density) 
+            hh=scatplot(x(:),y(:)); hold on; %scattered plot with density!! 
+            colorbar off;
+        end;
         %densityScatterChart(x(:),y(:), 'UseColor', true, 'UseAlpha', true);
         %h(end+1)=gca;
     end;
