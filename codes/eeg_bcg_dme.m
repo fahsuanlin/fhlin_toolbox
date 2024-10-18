@@ -174,8 +174,9 @@ non_ecg_channel=[1:size(eeg,1)];
                 if(isempty(n_svd)) n_svd=3; end;
 
                 for svd_idx=1:n_svd
-                    v1=vv(:,svd_idx)';
-                    dd=v1.*ss(svd_idx,svd_idx);
+                    %v1=vv(:,svd_idx)';
+                    %dd=v1.*ss(svd_idx,svd_idx);
+                    dd=uu(:,svd_idx)'*eeg;
 
 
                     %dd=ecg;
