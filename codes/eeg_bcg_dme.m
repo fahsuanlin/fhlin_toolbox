@@ -135,7 +135,7 @@ if(flag_eeg_dyn) %EEG; dynamics
             if(~flag_avoid_extreme)
                 n_svd=3; %more bases for extreme signals
             else
-                n_svd=1; %extreme signals have been avoided
+                n_svd=3; %extreme signals have been avoided
             end;
         end;
 
