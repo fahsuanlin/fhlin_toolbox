@@ -4157,9 +4157,12 @@ try
         end;
         
         if(~isempty(etc_render_fsbrain.aux_point_coords))
-            [sx,sy,sz] = sphere(8);
-            %sr=0.005;
-            sr=etc_render_fsbrain.aux_point_size;
+            if(size(etc_render_fsbrain.aux_point_coords,1)<=100)
+                [sx,sy,sz] = sphere(8);
+                sr=etc_render_fsbrain.aux_point_size;
+            else
+                sx=0; sy=0; sz=0; sr=1;
+            end;
             xx=[]; yy=[]; zz=[];
             for idx=1:size(etc_render_fsbrain.aux_point_coords,1)
                 if(strcmp(etc_render_fsbrain.aux_point_name{idx},'.'))
@@ -4188,9 +4191,15 @@ try
                     end;
                 end;
             end;
-            etc_render_fsbrain.aux_point_coords_h(1)=surf(xx,yy,zz);
+
+            if(size(etc_render_fsbrain.aux_point_coords,1)<=100)
+                etc_render_fsbrain.aux_point_coords_h(1)=surf(xx,yy,zz);
+                set(etc_render_fsbrain.aux_point_coords_h(1),'facecolor',etc_render_fsbrain.aux_point_color,'edgecolor','none');
+            else
+                etc_render_fsbrain.aux_point_coords_h(1)=plot3(xx,yy,zz,'.');
+                set(etc_render_fsbrain.aux_point_coords_h(1),'Color', etc_render_fsbrain.aux_point_color);
+            end;
             %set(etc_render_fsbrain.aux_point_coords_h(1),'facecolor','r','edgecolor','none');
-            set(etc_render_fsbrain.aux_point_coords_h(1),'facecolor',etc_render_fsbrain.aux_point_color,'edgecolor','none');
         end;
     end;
     
