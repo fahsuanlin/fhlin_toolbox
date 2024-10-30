@@ -531,6 +531,7 @@ end;
 
 hold on;
 
+if(~isempty(topo_aux_point_coords))
 [sx,sy,sz] = sphere(8);
 sr=topo_aux_point_size;
 sx=0; sy=0; sz=0; sr=1;
@@ -563,9 +564,10 @@ end;
 %topo_aux_point_coords_h(1)=surf(xx,yy,zz);
 %set(topo_aux_point_coords_h(1),'facecolor',topo_aux_point_color,'edgecolor','none');
 topo_aux_point_coords_h(1)=plot3(xx,yy,zz,'.');
-
+end;
     
 
+if(~isempty(topo_aux2_point_coords))
 xx=[]; yy=[]; zz=[];
 for idx=1:size(topo_aux2_point_coords,1)
     xx=cat(1,xx,topo_aux2_point_coords(idx,1));
@@ -577,6 +579,7 @@ for idx=1:size(topo_aux2_point_coords,1)
 end;
 topo_aux2_point_coords_h=plot3(xx,yy,zz,'r.');
 set(topo_aux2_point_coords_h,'color',topo_aux2_point_color,'markersize',topo_aux2_point_size);
+end;
 
 % for idx=1:size(topo_aux_point_coords,1)
 %     topo_aux_point_coords_h(idx)=plot3(topo_aux_point_coords(idx,1),topo_aux_point_coords(idx,2),topo_aux_point_coords(idx,3));

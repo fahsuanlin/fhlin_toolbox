@@ -81,6 +81,7 @@ switch lower(param)
                 fprintf('V: zoom to fit all objects in the brain figure\n');
                 fprintf('E: overlay export GUI\n')
                 fprintf('S: open surface contour GUI\n');
+                fprintf('C: open montage view GUI\n');
                 fprintf('s: smooth overlay \n');
                 fprintf('o: create an ROI\n');
                 fprintf('m: create an ROI at the selected location with a radius\n');
@@ -1478,6 +1479,29 @@ switch lower(param)
                 
                 update_label;
                 
+            case 'C' %
+                %make_montage;
+                flag_new=0;
+                if(~isfield(etc_render_fsbrain,'fig_montage'))
+                    flag_new=1;
+                else
+                    if(~isvalid(etc_render_fsbrain.fig_montage))
+                        flag_new=1;
+                    end;
+                end;
+                if(flag_new)                %fprintf('\n Overlay export...\n');
+                    app=etc_render_fsbrain_montage;
+                    pos=app.MontageUIFigure.Position;
+                    pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                    app.MontageUIFigure.Position=[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)];
+                    etc_render_fsbrain.fig_montage=app.MontageUIFigure;
+                    etc_render_fsbrain.app_montage=app;
+                else
+                    figure(etc_render_fsbrain.fig_montage)
+                    pos=etc_render_fsbrain.fig_montage.Position;
+                    pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                    etc_render_fsbrain.fig_montage.Position=[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)];
+                end;
             case 'c' %colorbar on/off by key press
                 etc_render_fsbrain.flag_colorbar=~etc_render_fsbrain.flag_colorbar;
                 etc_render_fsbrain.flag_colorbar_vol=~etc_render_fsbrain.flag_colorbar_vol;
@@ -2082,6 +2106,16 @@ switch lower(param)
         catch ME
             if(isfield(etc_render_fsbrain,'fig_electrode_gui'))
                 close(etc_render_fsbrain.fig_electrode_gui,'force');
+            else
+                %close(gcf,'force');
+            end;
+        end;
+        
+        try
+            delete(etc_render_fsbrain.fig_montage);
+        catch ME
+            if(isfield(etc_render_fsbrain,'fig_montage'))
+                close(etc_render_fsbrain.fig_montage,'force');
             else
                 %close(gcf,'force');
             end;
@@ -4371,6 +4405,13 @@ try
 catch ME
 end;
 
+
+try
+    %etc_render_fsbrain.app_montage.make_montage(etc_render_fsbrain.app_montage);
+    etc_render_fsbrain.app_montage.make_montage;
+
+catch
+end
 return;
 
 
@@ -4667,6 +4708,7 @@ if(etc_render_fsbrain.overlay_source~=4) %not overlay_vol as the source
         fprintf('\nerror in update_overlay_vol!\n')
     end;
 end;
+
 
 
 function aux2_point_click(src,~)
