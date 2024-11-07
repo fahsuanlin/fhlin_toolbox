@@ -111,7 +111,16 @@ if(flag_display)
         if(isempty(linecolor))
             linecolor='k';
         end;
-        h(end+1)=line(reg_x,reg_y); set(h(end),'color',linecolor,'linewidth',2);
+        if(p<=0.05) 
+            linecolor=[0 0 0]; 
+            linecolor=[204, 0, 0]./256;
+            ls='-'; 
+        else 
+            linecolor=[1 1 1].*0.4; 
+            linecolor=[153, 51, 51]./256;
+            ls=':';
+        end;
+        h(end+1)=line(reg_x,reg_y); set(h(end),'color',linecolor,'linewidth',2,'linestyle',ls);
     end;
     if(flag_display_regline_text)
         h(end+1)=text((max(x)+min(x))/2,min(y)+(max(y)+min(y))/4,sprintf('Y=%2.2f+%2.2f X',beta(1),beta(2))); set(h(end),'fontname','helvetica','fontsize',14);
