@@ -1347,7 +1347,8 @@ end;
 %ROI label
 if(~isempty(cort_label_filename))
 
-    file_label=sprintf('%s/%s','.',cort_label_filename);
+    %file_label=sprintf('%s/%s','.',cort_label_filename);
+    file_label=cort_label_filename;
     [ii,d0,d1,d2, vv] = inverse_read_label(file_label);
 
 
@@ -1507,6 +1508,7 @@ if(isempty(etc_render_fsbrain.overlay_vol_stc))
                 end;
             end;
             if(~isempty(etc_render_fsbrain.overlay_value))
+                if(isempty(etc_render_fsbrain.overlay_vol_stc))
                 if(~iscell(etc_render_fsbrain.overlay_value))
                     etc_render_fsbrain.overlay_vol_stc=etc_render_fsbrain.overlay_value(:);
                 else
@@ -1516,6 +1518,7 @@ if(isempty(etc_render_fsbrain.overlay_vol_stc))
 
                         etc_render_fsbrain.overlay_vol_stc=cat(1,etc_render_fsbrain.overlay_vol_stc,etc_render_fsbrain.overlay_value{hemi_idx}(:));
                     end;
+                end;
                 end;
             end;
         end;
