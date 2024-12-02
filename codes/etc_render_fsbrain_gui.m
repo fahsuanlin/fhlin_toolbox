@@ -343,6 +343,10 @@ if(~isempty(etc_render_fsbrain.aux2_point_coords))
     set(handles.checkbox_selected_electrode,'value',etc_render_fsbrain.selected_electrode_flag);
     set(handles.pushbutton_selected_electrode_color,'BackgroundColor',etc_render_fsbrain.selected_electrode_color);
     set(handles.edit_selected_electrode_size,'string',sprintf('%d',etc_render_fsbrain.selected_electrode_size));
+
+    tmp=etc_render_fsbrain.show_all_contacts_mri_depth;
+    set(handles.slider_contacts_mri_depth,'value',sqrt(tmp/8));
+
 else
     set(handles.pushbutton_aux2_point_color,'enable','off');
     set(handles.edit_aux2_point_size,'enable','off');
@@ -355,6 +359,9 @@ else
     set(handles.checkbox_selected_electrode,'enable','off');
     set(handles.pushbutton_selected_electrode_color,'enable','off');
     set(handles.edit_selected_electrode_size,'enable','off');
+
+    set(handles.slider_contacts_mri_depth,'enable','off');
+
 end;
 
 
@@ -875,6 +882,7 @@ global etc_render_fsbrain;
 
 etc_render_fsbrain.aux2_point_size=str2double(get(hObject,'String'));
 etc_render_fsbrain_handle('redraw');
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord);
 
 % --- Executes during object creation, after setting all properties.
 function edit_aux2_point_size_CreateFcn(hObject, eventdata, handles)
@@ -912,6 +920,8 @@ global etc_render_fsbrain;
 
 c = uisetcolor(etc_render_fsbrain.aux2_point_color,'Select a color');
 etc_render_fsbrain.aux2_point_color=c;
+etc_render_fsbrain.aux2_point_individual_color=repmat(c,[size(etc_render_fsbrain.aux2_point_individual_color,1),1]);
+
 set(handles.pushbutton_aux2_point_color,'BackgroundColor',etc_render_fsbrain.aux2_point_color);
 etc_render_fsbrain_handle('redraw');
 etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord,'min_dist_idx',[],'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);    
@@ -2693,3 +2703,31 @@ set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
 pos=get(etc_render_fsbrain.fig_label_gui,'pos');
 pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
 set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
+
+
+% --- Executes on slider movement.
+function slider_contacts_mri_depth_Callback(hObject, eventdata, handles)
+% hObject    handle to slider_contacts_mri_depth (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+global etc_render_fsbrain;
+
+tmp=get(hObject,'Value');
+
+etc_render_fsbrain.show_all_contacts_mri_depth=8*tmp*tmp;
+etc_render_fsbrain_handle('draw_pointer','surface_coord',etc_render_fsbrain.click_coord);
+
+
+% --- Executes during object creation, after setting all properties.
+function slider_contacts_mri_depth_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to slider_contacts_mri_depth (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end

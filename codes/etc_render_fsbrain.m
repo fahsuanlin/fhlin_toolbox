@@ -1341,7 +1341,7 @@ etc_render_fsbrain.h_label_boundary={};
 
 %label annotation
 if(~isempty(etc_render_fsbrain.label_file_annot))
-        etc_render_fsbrain_handle('kb','cc','l');
+        etc_render_fsbrain_handle('kb','cc','l','cc_param','init');
 end;
 
 %ROI label

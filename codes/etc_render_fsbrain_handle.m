@@ -3,6 +3,7 @@ function etc_render_fsbrain_handle(param,varargin)
 global etc_render_fsbrain;
 
 cc=[];
+cc_param=[];
 surface_coord=[];
 min_dist_idx=[];
 click_vertex_vox=[];
@@ -20,6 +21,8 @@ for i=1:length(varargin)/2
             cc='cv';
         case 'cc'
             cc=option;
+        case 'cc_param'
+            cc_param=option;
         case 'surface_coord'
             surface_coord=option;
         case 'min_dist_idx'
@@ -81,7 +84,7 @@ switch lower(param)
                 fprintf('V: zoom to fit all objects in the brain figure\n');
                 fprintf('E: overlay export GUI\n')
                 fprintf('S: open surface contour GUI\n');
-                fprintf('C: open montage view GUI\n');
+                fprintf('M: open montage view GUI\n');
                 fprintf('s: smooth overlay \n');
                 fprintf('o: create an ROI\n');
                 fprintf('m: create an ROI at the selected location with a radius\n');
@@ -229,9 +232,6 @@ switch lower(param)
                     %prepare overlay surface
                     etc_render_fsbrain.overlay_stc = etc_MRIvol2surf(mov,etc_render_fsbrain.surf,xfm,'subject',etc_render_fsbrain.subject,'hemi',etc_render_fsbrain.hemi,'flag_display',1);
                     
-
-
-
                     if(~isempty(etc_render_fsbrain.overlay_vol))
     
                         fprintf('preparing overlay volume...');
@@ -1186,7 +1186,9 @@ switch lower(param)
                 global etc_render_fsbrain;
 
                 filename='';
-                if(isempty(get(etc_render_fsbrain.fig_brain,'WindowButtonDownFcn'))) %try default annot file during initialization
+                %if(isempty(get(etc_render_fsbrain.fig_brain,'WindowButtonDownFcn'))) %try default annot file during initialization
+                if(~isempty(cc_param))
+                    %get(etc_render_fsbrain.fig_brain,'WindowButtonDownFcn'))) %try default annot file during initialization
                     if(isfield(etc_render_fsbrain,'label_file_annot'))
                         if(~isempty(etc_render_fsbrain.label_file_annot))
                             [pathname,ff,ee]=fileparts(etc_render_fsbrain.label_file_annot);
@@ -1479,7 +1481,7 @@ switch lower(param)
                 
                 update_label;
                 
-            case 'C' %
+            case 'M' %
                 %make_montage;
                 flag_new=0;
                 if(~isfield(etc_render_fsbrain,'fig_montage'))
@@ -3254,6 +3256,7 @@ try
                     click_vertex_vox=round(v(1:3))';
                     
                     point_size=1e3;
+                    point_size=etc_render_fsbrain.aux2_point_size.^2;
                     
                     %D=2; %a constant controlling the visibility of contacts
                     D=etc_render_fsbrain.show_all_contacts_mri_depth; %a constant controlling the visibility of contacts
@@ -3277,7 +3280,6 @@ try
                             else
                                 if(etc_render_fsbrain.all_electrode_flag)
                                     etc_render_fsbrain.aux2_point_mri_cor_h(count)=scatter(etc_render_fsbrain.img_cor_padx+click_vertex_vox(1), etc_render_fsbrain.img_cor_pady+click_vertex_vox(2),point_size,[0.8500 0.3250 0.0980],'.');
-                                    
                                     electrode_idx=min(find((v_idx>n_e_cumsum)<eps));
                                     if(isfield(etc_render_fsbrain.electrode(electrode_idx),'color'))
                                         if(~isempty(etc_render_fsbrain.electrode(electrode_idx).color))
@@ -4296,6 +4298,7 @@ try
                     
                     for idx=1:size(etc_render_fsbrain.aux2_point_coords,1)
                         etc_render_fsbrain.aux2_point_coords_h(idx)=plot3(xx(idx),yy(idx),zz(idx),'.');
+                        set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_color);
 
                         if(isempty(etc_render_fsbrain.aux2_point_name_h))
                             UserData.name=sprintf('%04d',idx);
