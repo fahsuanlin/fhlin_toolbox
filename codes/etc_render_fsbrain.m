@@ -1092,8 +1092,10 @@ if(~isempty(label_file_annot))
     [label_vertex label_value label_ctab] = read_annotation(label_file_annot);
     fprintf('annotated label loaded from [%s]...\n',label_file_annot);
 else
-    %try loading annot automatically
-    label_file_annot=sprintf('%s/%s/label/%s.aparc.annot',subjects_dir,subject,hemi);
+    if(~iscell(hemi))
+        %try loading annot automatically
+        label_file_annot=sprintf('%s/%s/label/%s.aparc.annot',subjects_dir,subject,hemi);
+    end;
 end;
 if(~isempty(label_vertex)&&~isempty(label_value)&&~isempty(label_ctab))
     fprintf('annotated label loaded...\n');
