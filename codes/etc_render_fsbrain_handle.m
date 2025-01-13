@@ -374,12 +374,26 @@ switch lower(param)
 
 
 
-                        etc_render_fsbrain.overlay_buffer=[];
-                        etc_render_fsbrain.overlay_buffer_main_idx=1;
-                        etc_render_fsbrain.overlay_buffer_idx=1;
-
+                        if(~isfield(etc_render_fsbrain,'overlay_buffer'))
+                            etc_render_fsbrain.overlay_buffer=[];
+                        end;
+                        if(~isfield(etc_render_fsbrain,'overlay_buffer_main_idx'))
+                            etc_render_fsbrain.overlay_buffer_main_idx=1;
+                        else
+                            if(isempty(etc_render_fsbrain.overlay_buffer_main_idx))
+                                etc_render_fsbrain.overlay_buffer_main_idx=1;
+                            end;
+                        end;
+                        if(~isfield(etc_render_fsbrain,'overlay_buffer_idx'))
+                            etc_render_fsbrain.overlay_buffer_idx=1;
+                        else
+                            if(isempty(etc_render_fsbrain.overlay_buffer_idx))
+                                etc_render_fsbrain.overlay_buffer_idx=1;
+                            end;
+                        end;
+                        
                         etc_render_fsbrain.overlay_buffer(end+1).stc=etc_render_fsbrain.overlay_stc;
-                        etc_render_fsbrain.overlay_buffer(end).name='overlay_vol';
+                        etc_render_fsbrain.overlay_buffer(end).name=sprintf('overlay_vol%02d',length(etc_render_fsbrain.overlay_buffer));
                         if(strcmp(etc_render_fsbrain.hemi,'lh'))
                             etc_render_fsbrain.overlay_buffer(end).vertex=etc_render_fsbrain.vol_A(1).v_idx;
                         else
