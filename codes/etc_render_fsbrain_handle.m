@@ -63,6 +63,8 @@ switch lower(param)
         update_label;
     case 'update_overlay_vol'
         update_overlay_vol;
+    case 'update_tms_render'
+        update_tms_render;
     case 'kb'
         switch(cc)
             case 'h'
@@ -4725,6 +4727,89 @@ if(etc_render_fsbrain.overlay_source~=4) %not overlay_vol as the source
         fprintf('\nerror in update_overlay_vol!\n')
     end;
 end;
+
+
+function update_tms_render
+global etc_render_fsbrain;
+if(~isfield(etc_render_fsbrain,'app_tms_nav')) return; end;
+if(isempty(etc_render_fsbrain.app_tms_nav)) return; end;
+
+%update tms coil object
+try
+    value = etc_render_fsbrain.app_tms_nav.TMSCoilSizeDropDown.Value;
+
+    size_orig=etc_render_fsbrain.app_tms_nav.tmscoilsize;
+    switch value
+        case '100%'
+            etc_render_fsbrain.app_tms_nav.tmscoilsize=1;
+        case '50%'
+            etc_render_fsbrain.app_tms_nav.tmscoilsize=.5;
+        case '20%'
+            etc_render_fsbrain.app_tms_nav.tmscoilsize=.2;
+        case '10%'
+            etc_render_fsbrain.app_tms_nav.tmscoilsize=.1;
+    end;
+
+    if(isfield(etc_render_fsbrain,'object'))
+        Vtmp=etc_render_fsbrain.object.Vertices;
+        Vtmp=Vtmp-repmat(etc_render_fsbrain.object.UserData.Origin,[size(Vtmp,1),1]);
+        Vtmp=Vtmp./size_orig.*etc_render_fsbrain.app_tms_nav.tmscoilsize;
+        Vtmp=Vtmp+repmat(etc_render_fsbrain.object.UserData.Origin,[size(Vtmp,1),1]);
+
+        etc_render_fsbrain.object.Vertices=Vtmp;
+
+    end;
+catch
+    error('something is wrong in setting the TMS coil object scale....\n');
+    return;
+end;
+
+%set visibility for 'coil'
+try
+    value = etc_render_fsbrain.app_tms_nav.CoilShowCheckBox.Value;
+            
+            if(~value)
+                if(isfield(etc_render_fsbrain,'object'))
+                    etc_render_fsbrain.object.Visible='off';
+                end;
+
+
+                strcoil_value = etc_render_fsbrain.app_tms_nav.StrcoilShowCheckBox.Value;
+
+
+                if(strcoil_value)
+                    etc_render_fsbrain.app_tms_nav.StrcoilShowCheckBox.Value=false;
+                    if(~isempty(etc_render_fsbrain.app_tms_nav.strcoil_obj))
+                        etc_render_fsbrain.app_tms_nav.strcoil_obj.Visible='off';
+                    end;
+                end;
+
+            else
+                if(isfield(etc_render_fsbrain,'object'))
+                    etc_render_fsbrain.object.Visible='on';
+                end;                
+            end;
+catch
+
+end;
+%set visibility for 'strcoil'
+try
+    value = etc_render_fsbrain.app_tms_nav.StrcoilShowCheckBox.Value;
+
+    if(~value)
+        if(~isempty(etc_render_fsbrain.app_tms_nav.strcoil_obj))
+            etc_render_fsbrain.app_tms_nav.strcoil_obj.Visible='off';
+        end;
+    else
+        if(~isempty(etc_render_fsbrain.app_tms_nav.strcoil_obj))
+            etc_render_fsbrain.app_tms_nav.strcoil_obj.Visible='on';
+        end;
+    end;
+catch
+
+end;
+
+
 
 
 
