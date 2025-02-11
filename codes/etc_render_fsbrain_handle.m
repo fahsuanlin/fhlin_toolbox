@@ -54,6 +54,7 @@ end;
 
 switch lower(param)
     case 'draw_pointer'
+        if(isempty(surface_coord)) surface_coord=etc_render_fsbrain.click_coord; end;
         draw_pointer('pt',surface_coord,'min_dist_idx',min_dist_idx,'click_vertex_vox',click_vertex_vox);
     case 'redraw'
         redraw;
@@ -191,7 +192,7 @@ switch lower(param)
             case 'i'
                 fprintf('\nload overlay volume...\n');
 
-                answer = questdlg('Use identity matrix as the registration matrix?','registration matrix')
+                answer = questdlg('Use identity matrix as the registration matrix?','registration matrix');
                 
                 if(strcmp(answer,'No'))
                     [filename, pathname, filterindex] = uigetfile({'*.dat','registration matrix'}, 'Pick a registration matrix file');
@@ -210,10 +211,13 @@ switch lower(param)
                     if(isempty(filename))
                         xfm=eye(4);
                     else
+                        fprintf('reading registration matrix: [%s]....\n',sprintf('%s/%s',pathname,filename));
                         xfm=etc_read_xfm('file_xfm',sprintf('%s/%s',pathname,filename));
                     end;
                     
                     [dumm, fstem,fext]=fileparts(filename1);
+                    fprintf('reading data [%s]...\n',sprintf('%s/%s',pathname1,filename1));
+
                     switch(fext)
                         case '.mgh'
                             mov=MRIread(sprintf('%s/%s',pathname1,filename1));
@@ -221,6 +225,16 @@ switch lower(param)
                             mov=MRIread(sprintf('%s/%s',pathname1,filename1));
                         case '.nii'
                             mov=MRIread(sprintf('%s/%s',pathname1,filename1));
+                        case '.gz'
+                            mov=MRIread(sprintf('%s/%s',pathname1,filename1));
+                        otherwise
+                            fprintf('cannot read!\n');
+                            return;
+                    end;
+
+                    if(mov.nframes>1) %only the first time point
+                        mov.vol=mov.vol(:,:,:,1);
+                        mov.nframes=1;
                     end;
                     
                     Tt = etc_render_fsbrain.vol.tkrvox2ras;
