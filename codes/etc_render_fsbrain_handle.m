@@ -653,7 +653,8 @@ switch lower(param)
                             
                             %dijkstra search finds vertices on the shortest path between
                             %the last two selected vertices
-                            D=dijkstra(etc_render_fsbrain.dijk_A,etc_render_fsbrain.collect_vertex(end));
+                            %D=dijkstra(etc_render_fsbrain.dijk_A,etc_render_fsbrain.collect_vertex(end));
+                            D=distances(etc_render_fsbrain.dijk_A,etc_render_fsbrain.collect_vertex(end-1));
                             paths=etc_distance2path(etc_render_fsbrain.collect_vertex(1),D,etc_render_fsbrain.faces_hemi+1);
                             paths=flipud(paths);
                             
@@ -1806,11 +1807,15 @@ switch lower(param)
                     end;
                 elseif(gcf==etc_render_fsbrain.fig_stc)
                     fprintf('change time course limits...\n');
+%                     if(isempty(etc_render_fsbrain.overlay_stc_lim))
+%                         etc_render_fsbrain.overlay_stc_lim=get(gca,'ylim');
+%                     end;
                     if(isempty(etc_render_fsbrain.overlay_stc_lim))
-                        etc_render_fsbrain.overlay_stc_lim=get(gca,'ylim');
+                        fprintf('current limits = %s\n',mat2str(etc_render_fsbrain.overlay_stc_lim));
+                        def={num2str(etc_render_fsbrain.overlay_stc_lim)};
+                    else
+                        def='';
                     end;
-                    fprintf('current limits = %s\n',mat2str(etc_render_fsbrain.overlay_stc_lim));
-                    def={num2str(etc_render_fsbrain.overlay_stc_lim)};
                     answer=inputdlg('change limits',sprintf('current threshold = %s',mat2str(etc_render_fsbrain.overlay_stc_lim)),1,def);
                     if(~isempty(answer))
                         etc_render_fsbrain.overlay_stc_lim=str2num(answer{1});
@@ -1884,15 +1889,18 @@ switch lower(param)
                             d1=[connection(1,:);connection(2,:);ones(1,size(connection,2))]';
                             d2=[connection(2,:);connection(1,:);ones(1,size(connection,2))]';
                             d3=[connection(1,:);connection(3,:);ones(1,size(connection,2))]';
-                            d4=[connection(3,:);connection(1,:);ones(1,size(connection,2))]';
-                            d5=[connection(2,:);connection(3,:);ones(1,size(connection,2))]';
-                            d6=[connection(3,:);connection(2,:);ones(1,size(connection,2))]';
-                            dd=[d1;d2;d3;d4;d5;d6];
-                            dd=unique(dd,'rows');
-                            etc_render_fsbrain.dijk_A=spones(spconvert(dd));
+                            %                     d4=[connection(3,:);connection(1,:);ones(1,size(connection,2))]';
+                            %                     d5=[connection(2,:);connection(3,:);ones(1,size(connection,2))]';
+                            %                     d6=[connection(3,:);connection(2,:);ones(1,size(connection,2))]';
+                            %                     dd=[d1;d2;d3;d4;d5;d6];
+                            %                     dd=unique(dd,'rows');
+                            %                     etc_render_fsbrain.dijk_A=spones(spconvert(dd));
+
+                            etc_render_fsbrain.dijk_A = digraph([d1(:,1) d2(:,1) d3(:,1)],[d1(:,2) d2(:,2) d3(:,2)]);
                         end;
                         
-                        D=dijkstra(etc_render_fsbrain.dijk_A,etc_render_fsbrain.click_vertex);
+                        %D=dijkstra(etc_render_fsbrain.dijk_A,etc_render_fsbrain.click_vertex);
+                        D=distances(etc_render_fsbrain.dijk_A,etc_render_fsbrain.click_vertex);
                         roi_idx=find(D<=etc_render_fsbrain.roi_radius);
                         etc_render_fsbrain.label_idx=roi_idx;
                         etc_render_fsbrain.label_h=plot3(etc_render_fsbrain.vertex_coords_hemi(roi_idx,1),etc_render_fsbrain.vertex_coords_hemi(roi_idx,2), etc_render_fsbrain.vertex_coords_hemi(roi_idx,3),'r.');
@@ -2614,17 +2622,21 @@ try
                     d1=[connection(1,:);connection(2,:);ones(1,size(connection,2))]';
                     d2=[connection(2,:);connection(1,:);ones(1,size(connection,2))]';
                     d3=[connection(1,:);connection(3,:);ones(1,size(connection,2))]';
-                    d4=[connection(3,:);connection(1,:);ones(1,size(connection,2))]';
-                    d5=[connection(2,:);connection(3,:);ones(1,size(connection,2))]';
-                    d6=[connection(3,:);connection(2,:);ones(1,size(connection,2))]';
-                    dd=[d1;d2;d3;d4;d5;d6];
-                    dd=unique(dd,'rows');
-                    etc_render_fsbrain.dijk_A=spones(spconvert(dd));
+%                     d4=[connection(3,:);connection(1,:);ones(1,size(connection,2))]';
+%                     d5=[connection(2,:);connection(3,:);ones(1,size(connection,2))]';
+%                     d6=[connection(3,:);connection(2,:);ones(1,size(connection,2))]';
+%                     dd=[d1;d2;d3;d4;d5;d6];
+%                     dd=unique(dd,'rows');
+%                     etc_render_fsbrain.dijk_A=spones(spconvert(dd));
+
+                    etc_render_fsbrain.dijk_A = digraph([d1(:,1) d2(:,1) d3(:,1)],[d1(:,2) d2(:,2) d3(:,2)]);
+
                 end;
                 
                 %dijkstra search finds vertices on the shortest path between
                 %the last two selected vertices
-                D=dijkstra(etc_render_fsbrain.dijk_A,etc_render_fsbrain.collect_vertex(end-1));
+                %D=dijkstra(etc_render_fsbrain.dijk_A,etc_render_fsbrain.collect_vertex(end-1));
+                D=distances(etc_render_fsbrain.dijk_A,etc_render_fsbrain.collect_vertex(end-1));
                 paths=etc_distance2path(etc_render_fsbrain.collect_vertex(end),D,etc_render_fsbrain.faces_hemi+1);
                 paths=flipud(paths);
                 
