@@ -62,7 +62,8 @@ if(data_real)
     if((maxx-minn)>eps.*10)
         buffer=(data-minn).*(mmax-mmin)./(maxx-minn)+mmin;
     else
-        buffer=maxx;
+        %buffer=maxx;
+        buffer=(data-minn).*(mmax-mmin)./(maxx-minn)+mmin;
     end;
 else
     if((maxx-minn)>eps.*10)
