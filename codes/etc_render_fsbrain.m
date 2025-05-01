@@ -149,6 +149,7 @@ label_file_annot='';
 
 %ROI label
 cort_label_filename='';
+cort_label_colororder=[];
 flag_show_cort_label=1; %show solid labels
 flag_show_cort_label_boundary=1; %show label boundary
 cort_label_boundary_color=[0 0 1]; %label boundary color
@@ -358,6 +359,8 @@ for idx=1:length(varargin)/2
             label_ctab=option_value;
         case 'cort_label_filename'
             cort_label_filename=option_value;
+        case 'cort_label_colororder'
+            cort_label_colororder=option_value;
         case 'cort_label_boundary_color'
             cort_label_boundary_color=option_value;
         case 'flag_show_cort_label';
@@ -1373,8 +1376,11 @@ if(~isempty(cort_label_filename))
     s.struct_names=cort_label_filename_all;
     cc=colororder;
     for c_idx=1:length(cort_label_filename_all)
-        %s.table(c_idx,:)=[0*256   0.4470*256   0.741*256         0        c_idx];
-        s.table(c_idx,1:3)=cc(mod(c_idx-1,7)+1,:).*256;
+        if(isempty(cort_label_colororder))
+           s.table(c_idx,1:3)=cc(mod(c_idx-1,7)+1,:).*256;
+        else
+           s.table(c_idx,1:3)=cc(cort_label_colororder(c_idx),:).*255;
+        end;
         s.table(c_idx,5)=c_idx;
     end;
     

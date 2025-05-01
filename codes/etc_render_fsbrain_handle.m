@@ -1349,6 +1349,9 @@ switch lower(param)
                                 set(obj,'enable','on');
                                 
                                 draw_pointer();
+
+                                update_label;
+
                             end;
                         case '.mgh'
                             file_annot=sprintf('%s/%s',pathname,filename);
@@ -1378,6 +1381,9 @@ switch lower(param)
                                 set(obj,'enable','on');
                                 
                                 draw_pointer();
+
+                                update_label;
+                                
                             end;
                         case '.annot'
                             file_annot=sprintf('%s/%s',pathname,filename);
@@ -1503,6 +1509,9 @@ switch lower(param)
                                 fprintf('LUT error!\n');
                                 return;
                             end;
+
+                            update_label;
+
                         otherwise
                     end;
                 catch ME
@@ -1510,7 +1519,7 @@ switch lower(param)
                 
                 %if(~isempty(etc_render_fsbrain.label_vertex)&&~isempty(etc_render_fsbrain.label_value)&&~isempty(etc_render_fsbrain.label_ctab))
                 
-                update_label;
+                %update_label;
                 
             case 'M' %
                 %make_montage;

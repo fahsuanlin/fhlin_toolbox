@@ -39,7 +39,7 @@ for type_idx=1:size(Y,2)
     if(isempty(order))
         h1= fill(x_vector, [y_upper(:)',fliplr(y_lower(:)')], cc(type_idx,:));
     else
-        h1= fill(x_vector, [y_upper(:)',fliplr(y_lower(:)')], cc(order,:));    
+        h1= fill(x_vector, [y_upper(:)',fliplr(y_lower(:)')], cc(order(type_idx),:));    
     end;
     set(h1, 'edgecolor', 'none');
     set(h1, 'FaceAlpha', alpha);
@@ -48,6 +48,6 @@ for type_idx=1:size(Y,2)
     if(isempty(order))
         set(h2,'linewidth',2,'color',cc(type_idx,:),'linestyle',linestyle);
     else
-        set(h2,'linewidth',2,'color',cc(order,:),'linestyle',linestyle);
+        set(h2,'linewidth',2,'color',cc(order(type_idx),:),'linestyle',linestyle);
     end;
 end;
