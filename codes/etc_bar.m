@@ -1,10 +1,28 @@
-function [h_bar,h_errrorbar]=etc_bar(x,y,e)
+function [h_bar,h_errrorbar]=etc_bar(x,y,e,varargin)
+order=[];
+
+for i=1:length(varargin)/2
+    option=varargin{i*2-1};
+    option_value=varargin{i*2};
+    switch lower(option)        
+        case 'order'
+            order=option_value;
+        otherwise
+            fprintf('no option [%s]. error!\n',option);
+            return;
+    end;
+end;
 
 
 h_bar = bar(x, y, 'grouped');
 
 
-
+if(~isempty(order))
+    cc=colororder;
+    for b_idx=1:length(h_bar)
+        h_bar(b_idx).FaceColor=cc(order(b_idx),:);
+    end;
+end;
 
 hold on
 % Calculate the number of groups and number of bars in each group

@@ -1819,11 +1819,11 @@ switch lower(param)
 %                     if(isempty(etc_render_fsbrain.overlay_stc_lim))
 %                         etc_render_fsbrain.overlay_stc_lim=get(gca,'ylim');
 %                     end;
-                    if(isempty(etc_render_fsbrain.overlay_stc_lim))
+                    if(~isempty(etc_render_fsbrain.overlay_stc_lim))
                         fprintf('current limits = %s\n',mat2str(etc_render_fsbrain.overlay_stc_lim));
                         def={num2str(etc_render_fsbrain.overlay_stc_lim)};
                     else
-                        def='';
+                        def={''};
                     end;
                     answer=inputdlg('change limits',sprintf('current threshold = %s',mat2str(etc_render_fsbrain.overlay_stc_lim)),1,def);
                     if(~isempty(answer))
