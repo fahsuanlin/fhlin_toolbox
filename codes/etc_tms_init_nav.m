@@ -6,6 +6,7 @@ tms_coil_up=[];
 tms_coil_xfm=[];
 
 subject='';
+hemi='lh';
 
 target_coord=[]; %tms target in the surface coordinate system
 
@@ -35,6 +36,8 @@ for i=1:length(varargin)/2
             subject=option_value;
         case 'target_coord'
             target_coord=option_value;
+        case 'hemi'
+            hemi=option_value;
         otherwise
             fprintf('unknown option [%s]!\nerror!\n',option);
             return;
@@ -45,7 +48,7 @@ global etc_render_fsbrain;
 
 if(isempty(app))
     if(~isempty(subject)) %initialize etc_render_fsbrain window
-        etc_render_fsbrain_init('subject',subject); 
+        etc_render_fsbrain_init('subject',subject,'hemi',hemi); 
         etc_render_fsbrain_handle('kb','cc','n');
 
         app=etc_render_fsbrain.app_tms_nav;

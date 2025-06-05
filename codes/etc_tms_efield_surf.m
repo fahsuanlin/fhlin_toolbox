@@ -179,9 +179,29 @@ E = Einc + Eadd + par/(2)*normals.*repmat(c, 1, 3);    %   full field
 
 %tissue_to_plot = 'GM_LH';
 
-objectnumber= find(strcmp(tissue, tissue_to_plot));
-E          = E(Indicator==objectnumber, :);
-Normals     = normals(Indicator==objectnumber, :);
+if(iscell(tissue_to_plot))
+    objectnumber_union=[];
+    E_tmp=[];
+    Normals_tmp=[];
+    indicator_union=[];
+    for idx=1:length(tissue_to_plot)
+        objectnumber=find(strcmp(tissue, tissue_to_plot{idx}));
+        objectnumber_union=union(objectnumber_union, objectnumber);
+        indicator_union=union(indicator_union, find(Indicator==objectnumber));
+
+        E_tmp          = cat(1,E_tmp,E(Indicator==objectnumber, :));
+        Normals_tmp    = cat(1,Normals_tmp,normals(Indicator==objectnumber, :));
+    end;
+    E=E_tmp;
+    Normals=Normals_tmp;
+else
+    objectnumber= find(strcmp(tissue, tissue_to_plot));
+    objectnumber_union=objectnumber;
+    indicator_union=(Indicator==objectnumber);
+
+    E          = E(Indicator==objectnumber, :);
+    Normals     = normals(Indicator==objectnumber, :);
+end;
 Enormal     = sum(E.*Normals, 2); % this is a projection onto normal vector (directed outside!)
 temp        = Normals.*repmat(Enormal, 1, 3);
 Etangent    = E - temp;
@@ -193,7 +213,8 @@ e.MAXEtangent   = max(abs(Etangent));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-t0  = t(Indicator==objectnumber, :);
+%t0  = t(Indicator==objectnumber, :);
+t0  = t(indicator_union, :);
 
 clear xx yy zz
 for idx=1:3
