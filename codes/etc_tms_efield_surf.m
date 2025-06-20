@@ -110,6 +110,7 @@ if(flag_waitbar)
 end;
 %   MATVEC is the user-defined function of c equal to the left-hand side of the matrix equation LHS(c) = b
 MATVEC = @(c) bemf4_surface_field_lhs(c, Center, Area, contrast, normals, weight, EC);     
+tic;
 [c, flag, rres, its, resvec] = gmres(MATVEC, b, [], relres, iter, [], [], 8*b); 
 if(flag_waitbar)
     close(h);

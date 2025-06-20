@@ -561,8 +561,9 @@ switch lower(param)
                             
                             
                             f_option=2;
-                            if(length(etc_render_fsbrain.overlay_buffer)==1) %the first STC is taken as the main layer
-                                etc_render_fsbrain.overlay_buffer_main_idx=1;
+                            %if(length(etc_render_fsbrain.overlay_buffer)==1) %the first STC is taken as the main layer
+                                %etc_render_fsbrain.overlay_buffer_main_idx=1;
+                                etc_render_fsbrain.overlay_buffer_main_idx=length(etc_render_fsbrain.overlay_buffer);
                                 set(findobj('tag','listbox_overlay_main'),'value',etc_render_fsbrain.overlay_buffer_main_idx);
                                 
                                 etc_render_fsbrain.overlay_stc=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).stc;
@@ -581,7 +582,7 @@ switch lower(param)
                                 etc_render_fsbrain.overlay_flag_render=1;
                                 etc_render_fsbrain.overlay_value_flag_pos=1;
                                 etc_render_fsbrain.overlay_value_flag_neg=1;
-                            end;
+                            %end;
                             
                             handle = findobj(etc_render_fsbrain.fig_gui,'type','uicontrol');
                             if(~isempty(handle))
@@ -1257,6 +1258,7 @@ switch lower(param)
 
                 try
                     [dummy,fstem,ext]=fileparts(filename);
+                    fprintf('loading [%s]...\n',sprintf('%s/%s',pathname,filename));
                     switch lower(ext)
                         case '.label'
                             file_label=sprintf('%s/%s',pathname,filename);
@@ -1405,18 +1407,19 @@ switch lower(param)
                                             
                                             figure(etc_render_fsbrain.fig_label_gui);
                                         else
-                                            etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
-                                            set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
-                                            pos=get(etc_render_fsbrain.fig_label_gui,'pos');
-                                            pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
-                                            set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
-                                            
-                                            handles=guidata(etc_render_fsbrain.fig_label_gui);
-                                            set(handles.listbox_label,'string',{etc_render_fsbrain.label_ctab.struct_names{:}});
-                                            set(handles.listbox_label,'value',1);
-                                            set(handles.listbox_label,'min',0);
-                                            set(handles.listbox_label,'max',length(etc_render_fsbrain.label_ctab.struct_names));
-                                            
+                                            if(~strcmp(cc_param,'init'))
+                                                etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
+                                                set(etc_render_fsbrain.fig_label_gui,'unit','pixel');
+                                                pos=get(etc_render_fsbrain.fig_label_gui,'pos');
+                                                pos_brain=get(etc_render_fsbrain.fig_brain,'pos');
+                                                set(etc_render_fsbrain.fig_label_gui,'pos',[pos_brain(1)+pos_brain(3), pos_brain(2), pos(3), pos(4)]);
+
+                                                handles=guidata(etc_render_fsbrain.fig_label_gui);
+                                                set(handles.listbox_label,'string',{etc_render_fsbrain.label_ctab.struct_names{:}});
+                                                set(handles.listbox_label,'value',1);
+                                                set(handles.listbox_label,'min',0);
+                                                set(handles.listbox_label,'max',length(etc_render_fsbrain.label_ctab.struct_names));
+                                            end;
                                             %etc_render_fsbrain.fcvdata_orig=etc_render_fsbrain.h.FaceVertexCData;
                                             etc_render_fsbrain.label_register=zeros(1,length(etc_render_fsbrain.label_ctab.struct_names));
                                         end;
