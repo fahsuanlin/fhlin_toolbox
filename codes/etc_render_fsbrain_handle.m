@@ -1814,8 +1814,9 @@ switch lower(param)
                             set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_threshold_min'),'string',sprintf('%1.0f',min(etc_render_fsbrain.overlay_threshold)));
                             set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_threshold_max'),'string',sprintf('%1.0f',max(etc_render_fsbrain.overlay_threshold)));
                         end;
-                        draw_pointer;
+                        update_overlay_vol;
                         redraw;
+                        draw_pointer;
                     end;
                 elseif(gcf==etc_render_fsbrain.fig_stc)
                     fprintf('change time course limits...\n');
@@ -2578,7 +2579,15 @@ try
     if(ishandle(etc_render_fsbrain.h)&isempty(pt))
         pt=inverse_select3d(etc_render_fsbrain.h);
         if(isempty(pt))
-            return;
+
+            if(isfield(etc_render_fsbrain,'click_coord'))
+                pt=etc_render_fsbrain.click_coord;
+                if(isempty(pt))
+                    return;
+                end;
+            else
+                return;
+            end;
         end
     else
     end;
