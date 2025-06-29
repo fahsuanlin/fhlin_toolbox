@@ -1593,7 +1593,8 @@ global etc_trace_obj;
 contents = cellstr(get(hObject,'String'));
 if(~strcmp(contents{1},'[none]'))
     Index=get(hObject,'Value');
-    fprintf('[%s] selected in the list box\n',etc_trace_obj.ch_names{Index});
+    %fprintf('[%s] selected in the list box\n',etc_trace_obj.ch_names{Index});
+    fprintf('[%s] selected in the list box\n',contents{Index});
     etc_trace_obj.trace_selected_idx=Index;
     
     
@@ -1748,6 +1749,9 @@ switch answer
         etc_trace_obj.all_data_aux_idx=[];
         etc_trace_obj.all_data_color=[];
                     
+        etc_trace_obj.topo_component=[];
+        etc_trace_obj.data_component=[];
+        etc_trace_obj.data_component_ch_names={};
         
         
         select=eye(size(etc_trace_obj.data,1));
@@ -2188,9 +2192,9 @@ function checkbox_topo_component_Callback(hObject, eventdata, handles)
 
 global etc_trace_obj;
 
-if(isfield(etc_trace_obj,'topo_component'));
-    if(~isempty(etc_trace_obj.topo_component))
-        etc_trace_obj.flag_topo_component=get(hObject,'Value');
+if(isfield(etc_trace_obj,'data_component'));
+    if(~isempty(etc_trace_obj.data_component))
+        etc_trace_obj.flag_data_component=get(hObject,'Value');
         etc_trace_handle('redraw');
     end;
 end;

@@ -280,21 +280,15 @@ switch lower(param)
                     if(~isempty(etc_trace_obj.time_select_idx))
                         try
                             data=etc_trace_obj.data(:,etc_trace_obj.time_select_idx);
-                            
-                            if(isfield(etc_trace_obj,'flag_topo_component'))
-                                if(etc_trace_obj.flag_topo_component) %PCA/ICA type topology
-                                    if(isfield(etc_trace_obj,'topo_component_ch'))
-                                        if(~isempty(etc_trace_obj.topo_component_ch))
-                                            if(isfield(etc_trace_obj,'trace_selected_idx'))
-                                                if(~isempty(etc_trace_obj.trace_selected_idx))
-                                                    data=etc_trace_obj.topo_component(etc_trace_obj.trace_selected_idx,:);
-                                                end;
-                                            end;
-                                        end;
+
+                            if(isfield(etc_trace_obj,'topo_component'))
+                                if(etc_trace_obj.trace_selected_idx>size(etc_trace_obj.data,1)) %PCA/ICA type topology
+                                    if(~isempty(etc_trace_obj.trace_selected_idx))
+                                        data=etc_trace_obj.topo_component{etc_trace_obj.all_data_main_idx}(:,etc_trace_obj.trace_selected_idx-size(etc_trace_obj.data,1));
                                     end;
                                 end;
                             end;
-                                        
+
                             global etc_render_fsbrain;
                             
                             if(isempty(etc_trace_obj.topo)) %no topo field, the first time loading the topology
@@ -312,24 +306,24 @@ switch lower(param)
                                         etc_trace_obj.topo.face=tmp.face;
                                         
                                         
-                                        
-                                        if(isfield(etc_trace_obj,'flag_topo_component'))
-                                            if(etc_trace_obj.flag_topo_component) %PCA/ICA type topology
-                                                        if(isfield(etc_trace_obj,'topo_component_ch'))
-                                                            if(~isempty(etc_trace_obj.topo_component_ch))
-                                                                topo_ch=etc_trace_obj.topo_component_ch;
-                                                            else 
-                                                                topo_ch=etc_trace_obj.ch_names;
-                                                            end;
-                                                        else
-                                                            topo_ch=etc_trace_obj.ch_names;
-                                                        end;
-                                            else
-                                                topo_ch=etc_trace_obj.ch_names; % time-domain topology
-                                            end;
-                                        else
-                                            topo_ch=etc_trace_obj.ch_names; % time-domain topology
-                                        end;
+                                        topo_ch=etc_trace_obj.ch_names; % time-domain topology
+%                                         if(isfield(etc_trace_obj,'flag_data_component'))
+%                                             if(etc_trace_obj.flag_data_component) %PCA/ICA type topology
+%                                                         if(isfield(etc_trace_obj,'data_component_ch'))
+%                                                             if(~isempty(etc_trace_obj.data_component_ch))
+%                                                                 topo_ch=etc_trace_obj.data_component_ch;
+%                                                             else 
+%                                                                 topo_ch=etc_trace_obj.ch_names;
+%                                                             end;
+%                                                         else
+%                                                             topo_ch=etc_trace_obj.ch_names;
+%                                                         end;
+%                                             else
+%                                                 topo_ch=etc_trace_obj.ch_names; % time-domain topology
+%                                             end;
+%                                         else
+%                                             topo_ch=etc_trace_obj.ch_names; % time-domain topology
+%                                         end;
                                         
                                         electrode_name=[];
                                         if(isfield(etc_render_fsbrain,'electrode_name'))
@@ -1059,23 +1053,17 @@ switch lower(param)
             
             %update topology
             try
-                if(isfield(etc_trace_obj,'flag_topo_component'))
-                    if(etc_trace_obj.flag_topo_component) %PCA/ICA type topology
-                        if(isfield(etc_trace_obj,'trace_selected_idx'))
-                            if(~isempty(etc_trace_obj.trace_selected_idx))
-                                if(isfield(etc_trace_obj,'topo_component'))
-                                    if(~isempty(etc_trace_obj.topo_component))
-                                        data=etc_trace_obj.topo_component(etc_trace_obj.trace_selected_idx,:);
-                                    end;
-                                end;
-                            end;
+
+                data=etc_trace_obj.data(:,etc_trace_obj.time_select_idx);
+
+                if(isfield(etc_trace_obj,'topo_component'))
+                    if(etc_trace_obj.trace_selected_idx>size(etc_trace_obj.data,1)) %PCA/ICA type topology
+                        if(~isempty(etc_trace_obj.trace_selected_idx))
+                            data=etc_trace_obj.topo_component{etc_trace_obj.all_data_main_idx}(:,etc_trace_obj.trace_selected_idx-size(etc_trace_obj.data,1));
                         end;
-                    else
-                        data=etc_trace_obj.data(:,etc_trace_obj.time_select_idx); % time-domain topology
                     end;
-                else
-                    data=etc_trace_obj.data(:,etc_trace_obj.time_select_idx); % time-domain topology
                 end;
+
             catch ME
             end;
             if(isfield(etc_trace_obj,'fig_topology'))
@@ -1390,11 +1378,11 @@ tmp=tmp';
 
 %with component??
 comp_tmp=[];
-if(isfield(etc_trace_obj,'topo_component'))
+if(isfield(etc_trace_obj,'data_component'))
     try
-        if(~isempty(etc_trace_obj.topo_component{etc_trace_obj.all_data_main_idx}))
+        if(~isempty(etc_trace_obj.data_component{etc_trace_obj.all_data_main_idx}))
 
-            comp_tmp=etc_trace_obj.topo_component{etc_trace_obj.all_data_main_idx};
+            comp_tmp=etc_trace_obj.data_component{etc_trace_obj.all_data_main_idx};
 
             if((etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1)<=size(etc_trace_obj.data,2))
                 comp_tmp=comp_tmp(:,etc_trace_obj.time_window_begin_idx:etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1);
@@ -1433,9 +1421,13 @@ end;
 %append components, if any
 try
     n_data=size(tmp,2);
-    if(etc_trace_obj.flag_topo_component)
-        n_comp_data=size(comp_tmp,2);
-        tmp=cat(2,tmp,comp_tmp);
+    if(isfield(etc_trace_obj,'flag_data_component'))
+        if(etc_trace_obj.flag_data_component)
+            n_comp_data=size(comp_tmp,2);
+            tmp=cat(2,tmp,comp_tmp);
+        else
+            n_comp_data=0;
+        end;
     else
         n_comp_data=0;
     end;
@@ -1495,7 +1487,7 @@ if(etc_trace_obj.config_trace_flag)
             end;
 
             for idx=n_data+1:n_data+n_comp_data
-                set(hh(idx),'tag',etc_trace_obj.topo_component_ch_names{etc_trace_obj.all_data_main_idx}{idx-n_data});
+                set(hh(idx),'tag',etc_trace_obj.data_component_ch_names{etc_trace_obj.all_data_main_idx}{idx-n_data});
                 set(hh(idx),'color',[1 1 1].*0.3);
             end;
 
@@ -1565,7 +1557,7 @@ if(isfield(etc_trace_obj,'trace_selected_idx'))
                             if(jj~=etc_trace_obj.trace_selected_idx)
                                 set(hh_aux{ii}(jj),'linewidth',1,'color',[1 1 1].*0.7);
                             else
-                                set(hh_aux{ii}(etc_trace_obj.trace_selected_idx),'linewidth',4);
+                                set(hh_aux{ii}(etc_trace_obj.trace_selected_idx),'linewidth',2);
                             end;
                         end;
                             
@@ -1657,11 +1649,11 @@ try
             if(~isempty(etc_trace_obj.montage_ch_name))
                 %
                 %set(etc_trace_obj.axis_trace,'ButtonDownFcn',@etc_trace_callback);
-                if(isfield(etc_trace_obj,'topo_component_ch_names'))
-                    if(~isempty(etc_trace_obj.topo_component_ch_names{etc_trace_obj.all_data_main_idx}))
+                if(isfield(etc_trace_obj,'data_component_ch_names'))
+                    if(~isempty(etc_trace_obj.data_component_ch_names{etc_trace_obj.all_data_main_idx}))
                         set(etc_trace_obj.axis_trace,'ytick',diff(sort(etc_trace_obj.ylim)).*[0:(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-1)-1+n_comp_data]);
                         ch_names=etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names;
-                        ch_names(end+1:end+n_comp_data)=etc_trace_obj.topo_component_ch_names;
+                        ch_names(end+1:end+n_comp_data)=etc_trace_obj.data_component_ch_names{etc_trace_obj.all_data_main_idx};
                         set(etc_trace_obj.axis_trace,'yticklabels',ch_names);
                     else %no components
                         set(etc_trace_obj.axis_trace,'ytick',diff(sort(etc_trace_obj.ylim)).*[0:(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-1)-1]);
@@ -1786,12 +1778,12 @@ etc_trace_obj.dragging = src;
 etc_trace_obj.orPos = get(etc_trace_obj.fig_trace,'CurrentPoint');
 
 %Index = find(strcmp(etc_trace_obj.ch_names,src.Tag));
-if(isfield(etc_trace_obj,'topo_component')&etc_trace_obj.flag_topo_component)
-    if(isempty(etc_trace_obj.topo_component{etc_trace_obj.all_data_main_idx}))
+if(isfield(etc_trace_obj,'data_component')&etc_trace_obj.flag_data_component)
+    if(isempty(etc_trace_obj.data_component{etc_trace_obj.all_data_main_idx}))
         ch_names=etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names;
     else
         ch_names1=etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names;
-        ch_names2=etc_trace_obj.topo_component_ch_names{etc_trace_obj.montage_idx};
+        ch_names2=etc_trace_obj.data_component_ch_names{etc_trace_obj.montage_idx};
         ch_names=cat(1,ch_names1(:),ch_names2(:));    
     end;
 else
@@ -1813,6 +1805,99 @@ else
     etc_trace_obj.trace_selected_idx=Index;
 end;
 
+
+%update topology 
+try
+
+    data=etc_trace_obj.data(:,etc_trace_obj.time_select_idx);
+    if(~isempty(etc_trace_obj.topo))
+        etc_render_fsbrain.overlay_value=data(etc_trace_obj.topo.electrode_data_idx);
+    end;
+    if(isfield(etc_trace_obj,'topo_component'))
+        if(etc_trace_obj.trace_selected_idx>size(etc_trace_obj.data,1)) %PCA/ICA type topology
+            if(~isempty(etc_trace_obj.trace_selected_idx))
+                data=etc_trace_obj.topo_component{etc_trace_obj.all_data_main_idx}(:,etc_trace_obj.trace_selected_idx-size(etc_trace_obj.data,1));
+
+                if(isfield(etc_trace_obj,'fig_topology'))
+                    if(isvalid(etc_trace_obj.fig_topology))
+                        global etc_render_fsbrain;
+
+                        try
+                            delete(etc_render_fsbrain.click_point);
+                            delete(etc_render_fsbrain.click_vertex_point);
+                            delete(etc_render_fsbrain.click_overlay_vertex_point);
+
+                            etc_render_fsbrain.flag_camlight=0;
+
+                            etc_render_fsbrain.overlay_value=data(etc_trace_obj.topo.electrode_data_idx);
+                            etc_render_fsbrain_handle('redraw');
+
+                        catch ME
+                        end;
+
+                    else
+                        if(~isempty(etc_trace_obj.topo)) %topology data exist; create the figure;
+                            if(isfield(etc_render_fsbrain,'fig_brain'))
+                                if(isvalid(etc_render_fsbrain.fig_brain))
+                                    etc_trace_obj.fig_topology=etc_render_fsbrain.fig_brain;
+                                end;
+                            end;
+                            if(isfield(etc_trace_obj,'fig_topology'))
+                                if(isvalid(etc_trace_obj.fig_topology))
+                                    figure(etc_trace_obj.fig_topology);
+                                    etc_render_fsbrain.flag_camlight=0;
+                                else
+                                    etc_trace_obj.fig_topology=figure;
+                                    etc_render_fsbrain.fig_brain=etc_trace_obj.fig_topology;
+                                    if(isfield(etc_render_fsbrain,'fig_brain_pos'))
+                                        set(etc_render_fsbrain.fig_brain,'pos',etc_render_fsbrain.fig_brain_pos);
+                                    end;
+
+                                    set(etc_trace_obj.fig_topology,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
+                                    set(etc_trace_obj.fig_topology,'DeleteFcn','etc_render_fsbrain_handle(''del'')');
+                                    set(etc_trace_obj.fig_topology,'CloseRequestFcn','etc_render_fsbrain_handle(''del'')');
+                                    set(etc_trace_obj.fig_topology,'KeyPressFcn',@etc_render_fsbrain_kbhandle);
+                                    set(etc_trace_obj.fig_topology,'invert','off');
+                                    etc_render_fsbrain.flag_camlight=1;
+                                end;
+                            else
+                                etc_trace_obj.fig_topology=figure;
+                                etc_render_fsbrain.fig_brain=etc_trace_obj.fig_topology;
+
+                                if(isfield(etc_render_fsbrain,'fig_brain_pos'))
+                                    set(etc_render_fsbrain.fig_brain,'pos',etc_render_fsbrain.fig_brain_pos);
+                                end;
+
+                                set(etc_trace_obj.fig_topology,'WindowButtonDownFcn','etc_render_fsbrain_handle(''bd'')');
+                                set(etc_trace_obj.fig_topology,'DeleteFcn','etc_render_fsbrain_handle(''del'')');
+                                set(etc_trace_obj.fig_topology,'CloseRequestFcn','etc_render_fsbrain_handle(''del'')');
+                                set(etc_trace_obj.fig_topology,'KeyPressFcn',@etc_render_fsbrain_kbhandle);
+                                set(etc_trace_obj.fig_topology,'invert','off');
+                                etc_render_fsbrain.flag_camlight=1;
+                            end;
+
+                            if(~isempty(etc_trace_obj.topo))
+                                etc_render_fsbrain.overlay_value=data(etc_trace_obj.topo.electrode_data_idx);
+                            end;
+                        end;
+                    end;
+                end;
+
+
+                %etc_trace_handle('redraw');
+            end;
+        end;
+    end;
+
+    etc_trace_handle('redraw');
+    etc_trace_handle('bd');
+    %etc_render_fsbrain_handle('redraw');
+    
+
+catch ME
+end;
+
+
 if(isfield(etc_trace_obj,'fig_spectrum'))
     if(isvalid(etc_trace_obj.fig_spectrum))
         etc_trace_obj.fig_spectrum=etc_trace_spectrum('fig_spectrum',etc_trace_obj.fig_spectrum);
@@ -1824,7 +1909,7 @@ global etc_render_fsbrain;
 %fprintf('----\n');
 %etc_render_fsbrain.click_overlay_vertex
 
-redraw;
+%redraw;
 
 if(isfield(etc_render_fsbrain,'overlay_stc'))
     if(~isempty(etc_render_fsbrain.overlay_stc))

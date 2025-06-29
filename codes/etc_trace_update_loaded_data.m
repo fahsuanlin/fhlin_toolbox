@@ -141,8 +141,13 @@ try
     obj=findobj('Tag','listbox_channel');
     if(~isempty(obj))
         set(obj,'String',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
+        str=get(obj,'String');
+        if(isfield(etc_trace_obj,'data_component_ch_names'))
+            set(obj,'String',cat(1,str(:),etc_trace_obj.data_component_ch_names{etc_trace_obj.all_data_main_idx}(:)));
+        end;
+        %set(obj,'Value',1);
     end;
-    
+                 
     
     
     if(~isempty(select))
