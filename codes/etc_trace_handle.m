@@ -318,7 +318,11 @@ switch lower(param)
                                                         if(isfield(etc_trace_obj,'topo_component_ch'))
                                                             if(~isempty(etc_trace_obj.topo_component_ch))
                                                                 topo_ch=etc_trace_obj.topo_component_ch;
+                                                            else 
+                                                                topo_ch=etc_trace_obj.ch_names;
                                                             end;
+                                                        else
+                                                            topo_ch=etc_trace_obj.ch_names;
                                                         end;
                                             else
                                                 topo_ch=etc_trace_obj.ch_names; % time-domain topology
@@ -1382,6 +1386,65 @@ tmp=S*tmp;
 
 tmp=tmp(1:end-1,:);
 tmp=tmp';
+
+
+%with component??
+comp_tmp=[];
+if(isfield(etc_trace_obj,'topo_component'))
+    try
+        if(~isempty(etc_trace_obj.topo_component{etc_trace_obj.all_data_main_idx}))
+
+            comp_tmp=etc_trace_obj.topo_component{etc_trace_obj.all_data_main_idx};
+
+            if((etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1)<=size(etc_trace_obj.data,2))
+                comp_tmp=comp_tmp(:,etc_trace_obj.time_window_begin_idx:etc_trace_obj.time_window_begin_idx+etc_trace_obj.time_duration_idx-1);
+            else
+            end;
+
+            %scaling of components for visualization
+            comp_tmp=comp_tmp.*10;
+
+            comp_tmp=cat(1,comp_tmp,ones(1,size(comp_tmp,2)));
+
+            %scaling channels;
+            comp_tmp=eye(size(comp_tmp,1))*comp_tmp;
+
+            %vertical shift for display
+            S=eye(size(comp_tmp,1));
+            switch(etc_trace_obj.view_style)
+                case 'trace'
+                    S(1:(size(comp_tmp,1)-1),end)=(diff(sort(etc_trace_obj.ylim)).*[0:size(comp_tmp,1)-2]+(size(tmp,2)-0)*(diff(sort(etc_trace_obj.ylim))))'; %typical
+                case 'butterfly'
+                    ss=mean([min(etc_trace_obj.ylim)-0.5 max(etc_trace_obj.ylim)+0.5+(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-2)*diff(sort(etc_trace_obj.ylim))]);
+                    S(1:(size(comp_tmp,1)-1),end)=ss.*ones(size(comp_tmp,1)-1,1)'; %butterfly
+                case 'image'
+                    S(1:(size(comp_tmp,1)-1),end)=0; %image
+            end;
+            comp_tmp=S*comp_tmp;
+        end;
+        comp_tmp=comp_tmp(1:end-1,:);
+        comp_tmp=comp_tmp';
+    catch
+        fprintf('error in preparing components during redraw...\n');
+        return;
+    end;
+end;
+
+%append components, if any
+try
+    n_data=size(tmp,2);
+    if(etc_trace_obj.flag_topo_component)
+        n_comp_data=size(comp_tmp,2);
+        tmp=cat(2,tmp,comp_tmp);
+    else
+        n_comp_data=0;
+    end;
+catch
+    fprintf('error in concatenating data (%d) and component data (%d). Most likely dimension mismatch. \n',size(tmp,1),size(comp_tmp,1));
+    return;
+end;
+
+
 if(etc_trace_obj.config_trace_flag)
 
     switch(etc_trace_obj.view_style)
@@ -1405,7 +1468,7 @@ if(etc_trace_obj.config_trace_flag)
             
             %assign a tag for each trace
             etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names={};
-            for idx=1:length(hh)
+            for idx=1:length(hh(1:n_data))
                 m=etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix(idx,:);
                 %if(sum(abs(m))<eps) break; end;
                 ii=find(m>eps);
@@ -1430,6 +1493,12 @@ if(etc_trace_obj.config_trace_flag)
                 etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names{idx}=ss;
                 set(hh(idx),'tag',ss);
             end;
+
+            for idx=n_data+1:n_data+n_comp_data
+                set(hh(idx),'tag',etc_trace_obj.topo_component_ch_names{etc_trace_obj.all_data_main_idx}{idx-n_data});
+                set(hh(idx),'color',[1 1 1].*0.3);
+            end;
+
 
             set(hh,'ButtonDownFcn',@etc_trace_callback);
 
@@ -1482,10 +1551,10 @@ if(~isempty(obj))
 end;
 if(isfield(etc_trace_obj,'trace_selected_idx'))
     if(~isempty(etc_trace_obj.trace_selected_idx))
-        
+        try
         switch(etc_trace_obj.view_style)
             case {'trace','butterfly'}
-                set(hh(etc_trace_obj.trace_selected_idx),'linewidth',4,'color','b');
+                set(hh(etc_trace_obj.trace_selected_idx),'linewidth',2,'color','b');
                 
                 if(etc_trace_obj.config_aux_trace_flag)
                     for ii=1:length(etc_trace_obj.aux_data)
@@ -1536,7 +1605,11 @@ if(isfield(etc_trace_obj,'trace_selected_idx'))
                 else
                 end;                
         end;
-        
+        catch
+            fprintf('error in redrawing the selected trace. Maybe it is now excluded...\n');
+        end;
+            
+       
     else
         obj=findobj('Tag','edit_local_trigger_ch');
         if(~isempty(obj))
@@ -1561,7 +1634,11 @@ end;
 try
     switch(etc_trace_obj.view_style)
         case {'trace','butterfly'}
-            set(etc_trace_obj.axis_trace,'ylim',[min(etc_trace_obj.ylim)-0.5 max(etc_trace_obj.ylim)+0.5+(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-2)*diff(sort(etc_trace_obj.ylim))]);
+            if(n_comp_data<=0)
+                set(etc_trace_obj.axis_trace,'ylim',[min(etc_trace_obj.ylim)-0.5 max(etc_trace_obj.ylim)+0.5+(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-2)*diff(sort(etc_trace_obj.ylim))]);
+            else
+                set(etc_trace_obj.axis_trace,'ylim',[min(etc_trace_obj.ylim)-0.5 max(etc_trace_obj.ylim)+0.5+((size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-2)+(n_comp_data))*diff(sort(etc_trace_obj.ylim))]);
+            end;
         case 'image'
             set(etc_trace_obj.axis_trace,'ylim',[0.5 size(tmp,2)+0.5]);
     end;
@@ -1578,11 +1655,22 @@ try
     switch(etc_trace_obj.view_style)
         case 'trace'
             if(~isempty(etc_trace_obj.montage_ch_name))
-                set(etc_trace_obj.axis_trace,'ytick',diff(sort(etc_trace_obj.ylim)).*[0:(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-1)-1]);
-                set(etc_trace_obj.axis_trace,'yticklabels',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
                 %
                 %set(etc_trace_obj.axis_trace,'ButtonDownFcn',@etc_trace_callback);
-
+                if(isfield(etc_trace_obj,'topo_component_ch_names'))
+                    if(~isempty(etc_trace_obj.topo_component_ch_names{etc_trace_obj.all_data_main_idx}))
+                        set(etc_trace_obj.axis_trace,'ytick',diff(sort(etc_trace_obj.ylim)).*[0:(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-1)-1+n_comp_data]);
+                        ch_names=etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names;
+                        ch_names(end+1:end+n_comp_data)=etc_trace_obj.topo_component_ch_names;
+                        set(etc_trace_obj.axis_trace,'yticklabels',ch_names);
+                    else %no components
+                        set(etc_trace_obj.axis_trace,'ytick',diff(sort(etc_trace_obj.ylim)).*[0:(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-1)-1]);
+                        set(etc_trace_obj.axis_trace,'yticklabels',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
+                    end;
+                else
+                    set(etc_trace_obj.axis_trace,'ytick',diff(sort(etc_trace_obj.ylim)).*[0:(size(etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix,1)-1)-1]);
+                    set(etc_trace_obj.axis_trace,'yticklabels',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
+                end;
             end;
         case 'butterfly'
             set(etc_trace_obj.axis_trace,'ytick',(diff(sort(etc_trace_obj.ylim)).*round(size(tmp,2)/2)));
@@ -1698,7 +1786,18 @@ etc_trace_obj.dragging = src;
 etc_trace_obj.orPos = get(etc_trace_obj.fig_trace,'CurrentPoint');
 
 %Index = find(strcmp(etc_trace_obj.ch_names,src.Tag));
-Index = find(strcmp(etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names, src.Tag));
+if(isfield(etc_trace_obj,'topo_component')&etc_trace_obj.flag_topo_component)
+    if(isempty(etc_trace_obj.topo_component{etc_trace_obj.all_data_main_idx}))
+        ch_names=etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names;
+    else
+        ch_names1=etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names;
+        ch_names2=etc_trace_obj.topo_component_ch_names{etc_trace_obj.montage_idx};
+        ch_names=cat(1,ch_names1(:),ch_names2(:));    
+    end;
+else
+    ch_names=etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names;
+end;
+Index = find(strcmp(ch_names, src.Tag));
 
 if(isfield(etc_trace_obj,'trace_selected_idx'))
     if(~isempty(etc_trace_obj.trace_selected_idx))

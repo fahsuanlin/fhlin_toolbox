@@ -60,6 +60,8 @@ if(~isempty(mk))
                 trigger.status_str{trigger_idx}=mk_tmp{1}(length(trigger_str)+2:end);
                 trigger.event_str{trigger_idx}=mk_tmp{2};
                 trigger.time(trigger_idx)=str2num(mk_tmp{3});
+                trigger.duration(trigger_idx)=nan;
+                trigger.ch{trigger_idx}='';               
                 trigger_idx=trigger_idx+1;
                 
                 %update for the next trigger

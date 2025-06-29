@@ -1716,7 +1716,12 @@ switch answer
         
         %spectrum
         if(isfield(etc_trace_obj,'fig_spectrum'))
-            close(etc_trace_obj.fig_spectrum);
+            try
+                close(etc_trace_obj.fig_spectrum);
+            catch
+                delete(etc_trace_obj.fig_spectrum);
+                rmfield(etc_trace_obj,'fig_spectrum');
+            end;
         end;
         clear global etc_trace_obj;
         
@@ -1947,6 +1952,18 @@ if(isempty(etc_trace_obj.topo))
     
     if(~isempty(etc_trace_obj.topo))
         set(hObject,'Value',1);
+
+
+%         %topology
+%         hObject=findobj('tag','checkbox_topo_component');
+%         %set(hObject,'Enable','On');
+%         if(isfield(etc_trace_obj,'topo_component'));
+%             if(~isempty(etc_trace_obj.topo_component))
+%                 set(hObject,'Enable','On');
+%                 set(hObject,'Value',1);
+%             end;
+%         end;
+
     else
         set(hObject,'Value',0);
     end;
@@ -2174,6 +2191,7 @@ global etc_trace_obj;
 if(isfield(etc_trace_obj,'topo_component'));
     if(~isempty(etc_trace_obj.topo_component))
         etc_trace_obj.flag_topo_component=get(hObject,'Value');
+        etc_trace_handle('redraw');
     end;
 end;
 

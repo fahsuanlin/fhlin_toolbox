@@ -51,24 +51,28 @@ if(isempty(figure_handel))
 end;
 
 if(isempty(axis_handel))
-    axis_handel=get(figure_handel,'child');
+    %axis_handel=get(figure_handel,'child');
+    axis_handel=findall(gcf, 'type', 'axes');
 end;
 
 set(figure_handel,'color',figure_color);
 
 for ax_idx=length(axis_handel):-1:1
-%    set(axis_handel(ax_idx),'color',axis_color,'fontname',fontname,'fontsize',fontsize);
-    set(axis_handel(ax_idx),'fontname',fontname,'fontsize',fontsize);
+    %    set(axis_handel(ax_idx),'color',axis_color,'fontname',fontname,'fontsize',fontsize);
+    %if(isfield(axis_handel(ax_idx),'FontName'))
 
-    if(strcmp(axis_handel(ax_idx).Type,'axes')) %axes
-        h=axis_handel(ax_idx).Children;
+        set(axis_handel(ax_idx),'FontName',fontname,'FontSize',fontsize);
 
-        for h_idx=1:length(h)
-            if(strcmp(h(h_idx).Type,'line'))
-                set(h(h_idx),'linewidth',linewidth);
+        if(strcmp(axis_handel(ax_idx).Type,'axes')) %axes
+            h=axis_handel(ax_idx).Children;
+
+            for h_idx=1:length(h)
+                if(strcmp(h(h_idx).Type,'line'))
+                    set(h(h_idx),'linewidth',linewidth);
+                end;
             end;
         end;
-    end;
+    %end;
 end;
 
 for ax_idx=length(axis_handel):-1:1

@@ -975,26 +975,51 @@ if(indx)
             
             %if(length(etc_trace_obj.all_data)<1) %main....
                 evalin('base',sprintf('etc_trace_obj.tmp=%s; ',var));
-                if(size(etc_trace_obj.tmp,1)~=length(etc_trace_obj.ch_names))
-                    answer = questdlg('# of channel mis-match between data [%d] and channel name [%d]\nupdate channel name or abort?','Data',...
-                        'update','abort','update');
-                    % Handle response
-                    switch answer
-                        case 'update'
-                            ch_names={};
-                            for idx=1:size(etc_trace_obj.tmp,1)
-                                ch_names{idx}=sprintf('%03d',idx);
-                            end;
-                            etc_trace_obj.ch_names=ch_names;
-                            
-                            set(handles.text_load_label,'String',sprintf('[%d] channel(s)',length(etc_trace_obj.ch_names)));
-                            
-                        case 'abort'
-                            return;
-                    end
+%                 if(size(etc_trace_obj.tmp,1)~=length(etc_trace_obj.ch_names))
+%                     answer = questdlg(sprintf('# of channel mis-match between data [%d] and channel name [%d]\nupdate channel name or abort?',size(etc_trace_obj.tmp,1),length(etc_trace_obj.ch_names)),'Data',...
+%                         'replace','append','abort','update');
+%                     % Handle response
+%                     switch answer
+%                         case 'replace'
+%                             ch_names={};
+%                             for idx=1:size(etc_trace_obj.tmp,1)
+%                                 ch_names{idx}=sprintf('%03d',idx);
+%                             end;
+%                             etc_trace_obj.ch_names=ch_names;
+%                             
+%                             set(handles.text_load_label,'String',sprintf('[%d] channel(s)',length(etc_trace_obj.ch_names)));
+%                         case 'append'
+% 
+% %                             if(~etc_trace_obj.flag_trigger_avg)
+% %                                 evalin('base',sprintf('etc_trace_obj.data=cat(1,etc_trace_obj.data,%s); ',var));
+% %                             else
+% %                                 evalin('base',sprintf('etc_trace_obj.buffer.data=cat(1,etc_trace_obj.buffer.data,%s); ',var));
+% %                             end;
+% %                             evalin('base',sprintf('etc_trace_obj.all_data{etc_trace_obj.all_data_main_idx}=cat(1,etc_trace_obj.all_data{etc_trace_obj.all_data_main_idx},%s); ',var));
+% %                             etc_trace_obj.all_data_name{etc_trace_obj.all_data_main_idx}='comp';
+% % 
+%                             evalin('base',sprintf('etc_trace_obj.comp_data{etc_trace_obj.all_data_main_idx}=%s;',var));
+% 
+% 
+%                             ch_names={};
+%                             for idx=1:size(etc_trace_obj.tmp,1)
+%                                 ch_names{idx}=sprintf('comp%03d',idx);
+%                             end;
+%                             etc_trace_obj.ch_names(end+1:end+idx)=ch_names;
+% 
+%                             
+%                         case 'abort'
+%                             return;
+%                     end
+%                 end;
+
+                evalin('base',sprintf('etc_trace_obj.topo_component{etc_trace_obj.all_data_main_idx}=%s; ',var));
+                ch_names={};
+                for idx=1:size(etc_trace_obj.tmp,1)
+                    ch_names{idx}=sprintf('comp%03d',idx);
                 end;
-                
-                evalin('base',sprintf('etc_trace_obj.topo_component=%s; ',var));
+                etc_trace_obj.topo_component_ch_names{etc_trace_obj.all_data_main_idx}=ch_names;
+
 
                 obj=findobj('Tag','text_load_topo_component');
                 set(obj,'String',sprintf('%s',var));

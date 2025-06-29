@@ -12,7 +12,7 @@ for i=1:length(varargin)/2
         case 'spec_scale'
             spec_scale=option_value;
         case 'fig_spectrum'
-           fig_spectrum=option_value;
+            fig_spectrum=option_value;
         case 'f_max'
             f_max=option_value;
         case 'f_min'
@@ -104,42 +104,42 @@ tmp=S*Pxx;
 tmp=tmp(1:end-1,:);
 tmp=tmp';
 
-    switch(etc_trace_obj.view_style)
-        case {'trace','butterfly'}
-            hh=[];
-            hh=plot(F,tmp,'color',etc_trace_obj.config_trace_color);
-            set(hh,'linewidth',etc_trace_obj.config_trace_width);
-            
-           
-            %assign a tag for each trace
-            etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names={};
-            for idx=1:length(hh)
-                m=etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix(idx,:);
-                %if(sum(abs(m))<eps) break; end;
-                ii=find(m>eps);
-                if(~isempty(ii))
-                    ss=etc_trace_obj.ch_names{ii(1)};
-                    if(length(ii)>1)
-                        for ii_idx=2:length(ii)
-                            ss=sprintf('%s+%1.0fx%s',ss,m(ii(ii_idx)),etc_trace_obj.ch_names{ii(ii_idx)});
-                        end;
+switch(etc_trace_obj.view_style)
+    case {'trace','butterfly'}
+        hh=[];
+        hh=plot(F,tmp,'color',etc_trace_obj.config_trace_color);
+        set(hh,'linewidth',etc_trace_obj.config_trace_width);
+
+
+        %assign a tag for each trace
+        etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names={};
+        for idx=1:length(hh)
+            m=etc_trace_obj.montage{etc_trace_obj.montage_idx}.config_matrix(idx,:);
+            %if(sum(abs(m))<eps) break; end;
+            ii=find(m>eps);
+            if(~isempty(ii))
+                ss=etc_trace_obj.ch_names{ii(1)};
+                if(length(ii)>1)
+                    for ii_idx=2:length(ii)
+                        ss=sprintf('%s+%1.0fx%s',ss,m(ii(ii_idx)),etc_trace_obj.ch_names{ii(ii_idx)});
                     end;
                 end;
-                
-                ii=find(-m>eps);
-                if(~isempty(ii))
-                    ss=sprintf('%s%1.0fx%s',ss,m(ii(1)),etc_trace_obj.ch_names{ii(1)});
-                    if(length(ii)>1)
-                        for ii_idx=2:length(ii)
-                            ss=sprintf('%s-%1.0fx%s',ss,-m(ii(ii_idx)),etc_trace_obj.ch_names{ii(ii_idx)});
-                        end;
-                    end;
-                end;
-                etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names{idx}=ss;
-                set(hh(idx),'tag',ss);
             end;
-            set(hh,'ButtonDownFcn',@etc_trace_spectrum_callback);
-    end;
+
+            ii=find(-m>eps);
+            if(~isempty(ii))
+                ss=sprintf('%s%1.0fx%s',ss,m(ii(1)),etc_trace_obj.ch_names{ii(1)});
+                if(length(ii)>1)
+                    for ii_idx=2:length(ii)
+                        ss=sprintf('%s-%1.0fx%s',ss,-m(ii(ii_idx)),etc_trace_obj.ch_names{ii(ii_idx)});
+                    end;
+                end;
+            end;
+            etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names{idx}=ss;
+            set(hh(idx),'tag',ss);
+        end;
+        set(hh,'ButtonDownFcn',@etc_trace_spectrum_callback);
+end;
 
 %highlight selected trace
 obj=findobj('Tag','edit_local_trigger_ch');
@@ -148,12 +148,12 @@ if(~isempty(obj))
 end;
 if(isfield(etc_trace_obj,'trace_selected_idx'))
     if(~isempty(etc_trace_obj.trace_selected_idx))
-        
+
         switch(etc_trace_obj.view_style)
             case {'trace','butterfly'}
                 set(hh(etc_trace_obj.trace_selected_idx),'linewidth',4,'color','b');
         end;
-        
+
     end;
 end;
 
@@ -187,16 +187,16 @@ try
                 %set(axis_spec,'ButtonDownFcn',@etc_trace_callback);
 
             end;
-%         case 'butterfly'
-%             set(axis_spec,'ytick',(diff(sort(etc_trace_obj.ylim)).*round(size(tmp,2)/2)));
-%             set(axis_spec,'yticklabels','all');
-%         case 'image'
-%             if(~isempty(etc_trace_obj.montage_ch_name))
-%                 set(axis_spec,'ytick',[1:size(tmp,2)]);
-%                 set(axis_spec,'yticklabels',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
-%             end;
+            %         case 'butterfly'
+            %             set(axis_spec,'ytick',(diff(sort(etc_trace_obj.ylim)).*round(size(tmp,2)/2)));
+            %             set(axis_spec,'yticklabels','all');
+            %         case 'image'
+            %             if(~isempty(etc_trace_obj.montage_ch_name))
+            %                 set(axis_spec,'ytick',[1:size(tmp,2)]);
+            %                 set(axis_spec,'yticklabels',etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names);
+            %             end;
     end;
-    
+
 catch ME
 end;
 
