@@ -4748,18 +4748,28 @@ if(etc_render_fsbrain.overlay_source~=4) %not overlay_vol as the source
                             ribbon_value=42; %right hemisphere cortical ribbon value
                     end;
 
-                    [rr,cc,ss]=meshgrid([1:size(etc_render_fsbrain.vol_ribbon.vol,1)],[1:size(etc_render_fsbrain.vol_ribbon.vol,2)],[1:size(etc_render_fsbrain.vol_ribbon.vol,3)]);
+                    flag_knnsearch=2;
+                    if(isfield(etc_render_fsbrain,'cort_ribbon_idx'))
+                        if(~isempty(etc_render_fsbrain.cort_ribbon_idx{hemi_idx}))
+                            flag_knnsearch=flag_knnsearch-1;
+                        end;
+                    end;
 
-                    X=cat(2,rr(:),cc(:),ss(:));
+                    if(flag_knnsearch>0.5)
+                        [rr,cc,ss]=meshgrid([1:size(etc_render_fsbrain.vol_ribbon.vol,1)],[1:size(etc_render_fsbrain.vol_ribbon.vol,2)],[1:size(etc_render_fsbrain.vol_ribbon.vol,3)]);
 
-                    Xcort=X(etc_render_fsbrain.loc_vol_idx{hemi_idx},:);
+                        X=cat(2,rr(:),cc(:),ss(:));
 
-                    ribbon_idx{hemi_idx}=find(etc_render_fsbrain.vol_ribbon.vol(:)==ribbon_value);
+                        Xcort=X(etc_render_fsbrain.loc_vol_idx{hemi_idx},:);
 
-                    Xribbon=X(ribbon_idx{hemi_idx},:);
+                        ribbon_idx{hemi_idx}=find(etc_render_fsbrain.vol_ribbon.vol(:)==ribbon_value);
 
-                    cort_ribbon_idx{hemi_idx}=knnsearch(Xcort,Xribbon);
+                        Xribbon=X(ribbon_idx{hemi_idx},:);
 
+                        cort_ribbon_idx{hemi_idx}=knnsearch(Xcort,Xribbon);
+                    else
+                        cort_ribbon_idx{hemi_idx}=etc_render_fsbrain.cort_ribbon_idx{hemi_idx};
+                    end;
 
                     tmp(ribbon_idx{hemi_idx})=X_wb{hemi_idx}(cort_ribbon_idx{hemi_idx});
                 end;

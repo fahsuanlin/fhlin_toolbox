@@ -395,6 +395,8 @@ for idx=1:length(varargin)/2
 end
 
 
+cort_ribbon_idx{1}=[];
+cort_ribbon_idx{2}=[];
 if(tmp_set_vol<0.5)
     vol=[];
     try
@@ -1076,7 +1078,7 @@ etc_render_fsbrain.orig_vertex_coords_hemi=orig_vertex_coords_hemi;
 etc_render_fsbrain.fvdata=fvdata;
 etc_render_fsbrain.curv=curv;
 etc_render_fsbrain.ovs=ovs;
-%etc_render_fsbrain.curv_hemi=curv_hemi;
+etc_render_fsbrain.cort_ribbon_idx=cort_ribbon_idx;
 
 etc_render_fsbrain.view_angle=view_angle;
 etc_render_fsbrain.lim=lim;

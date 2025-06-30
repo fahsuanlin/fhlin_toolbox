@@ -698,6 +698,10 @@ hObject=findobj('tag','edit_trigger_time');
 set(hObject,'String',sprintf('%1.3f',trigger_match_time_idx(idx)./etc_trace_obj.fs+etc_trace_obj.time_begin));
 hObject=findobj('tag','edit_trigger_time_idx');
 set(hObject,'String',sprintf('%d',trigger_match_time_idx(idx)));
+hObject=findobj('tag','edit_trigger_duration');
+set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger.duration(sort_idx(idx))));
+hObject=findobj('tag','edit_trigger_ch');
+set(hObject,'String',sprintf('%s',etc_trace_obj.trigger.ch{sort_idx(idx)}));
 
 %additional fields of trigger....
 hObject=findobj('tag','etit_trigger_duration');
@@ -718,6 +722,10 @@ if(~isempty(hObject))
     hObject=findobj('tag','listbox_time_idx');
     set(hObject,'Value',ii);
     hObject=findobj('tag','listbox_class');
+    set(hObject,'Value',ii);
+    hObject=findobj('tag','listbox_duration');
+    set(hObject,'Value',ii);
+    hObject=findobj('tag','listbox_ch');
     set(hObject,'Value',ii);
 end;
 
@@ -783,6 +791,10 @@ hObject=findobj('tag','edit_trigger_time');
 set(hObject,'String',sprintf('%1.3f',trigger_match_time_idx(idx)./etc_trace_obj.fs+etc_trace_obj.time_begin));
 hObject=findobj('tag','edit_trigger_time_idx');
 set(hObject,'String',sprintf('%d',trigger_match_time_idx(idx)));
+hObject=findobj('tag','edit_trigger_duration');
+set(hObject,'String',sprintf('%1.3f',etc_trace_obj.trigger.duration(sort_idx(idx))));
+hObject=findobj('tag','edit_trigger_ch');
+set(hObject,'String',sprintf('%s',etc_trace_obj.trigger.ch{sort_idx(idx)}));
 
 %additional fields of trigger....
 hObject=findobj('tag','etit_trigger_duration');
@@ -803,6 +815,10 @@ if(~isempty(hObject))
     hObject=findobj('tag','listbox_time_idx');
     set(hObject,'Value',ii);
     hObject=findobj('tag','listbox_class');
+    set(hObject,'Value',ii);
+    hObject=findobj('tag','listbox_duration');
+    set(hObject,'Value',ii);
+    hObject=findobj('tag','listbox_ch');
     set(hObject,'Value',ii);
 end;
 
