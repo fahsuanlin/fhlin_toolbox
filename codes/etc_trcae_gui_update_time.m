@@ -136,4 +136,5 @@ try
         etc_trace_handle('bd','time_idx',etc_trace_obj.time_select_idx);
     end;
 catch ME
+    fprintf('error in update...\n')
 end;

@@ -154,6 +154,30 @@ switch lower(param)
                 fprintf('s: switch on/off the tigger labeling\n');
                 fprintf('q: exit\n');
                 fprintf('\n\n fhlin@dec 25, 2014\n');
+
+            case 'A'
+                flag_new=0;
+                if(~isfield(etc_trace_obj,'fig_filter'))
+                    flag_new=1;
+                else
+                    if(~isvalid(etc_trace_obj.fig_filter))
+                        flag_new=1;
+                    end;
+                end;
+                if(flag_new)
+                    app=etc_trace_analyze;
+                    pos=app.AnalyzeUIFigure.Position;
+                    pos_trace=get(etc_trace_obj.fig_trace,'pos');
+                    app.AnalyzeUIFigure.Position=[pos_trace(1)+pos_trace(3), pos_trace(2), pos(3), pos(4)];
+                    etc_trace_obj.fig_filter=app.AnalyzeUIFigure;
+                    etc_trace_obj.app_filter=app;
+                else
+                    figure(etc_trace_obj.fig_filter)
+                    pos=etc_trace_obj.fig_filter.Position;
+                    pos_trace=get(etc_trace_obj.fig_trace,'pos');
+                    etc_trace_obj.fig_filter.Position=[pos_trace(1)+pos_trace(3), pos_trace(2), pos(3), pos(4)];
+                end;
+
             case 'a'
                 fprintf('archiving...\n');
                 
@@ -166,25 +190,36 @@ switch lower(param)
                 %print(fn,'-dtiff');
             case 'q'
                 fprintf('\nclosing all figures!\n');
+
+                try
+                    delete(etc_trace_obj.fig_filter);
+                catch ME
+                    if(isfield(etc_trace_obj,'fig_filter'))
+                        close(etc_trace_obj.fig_filter,'force');
+                    else
+                        %close(gcf,'force');
+                    end;
+                end;
+
                 close(etc_trace_obj.fig_trace);
             case 'r'
                 fprintf('\nredrawing...\n');
                 redraw;
-            case 'g'
-                fprintf('analyze...\n');
-                if(isfield(etc_trace_obj,'fig_analyze'))
-                    etc_trace_obj.fig_analyze=[];
-                end;
-                etc_trace_obj.fig_analyze=etc_trace_analyze_gui;
-
-                set(etc_trace_obj.fig_analyze,'Name','analyze','Resize','off');
-
-                set(etc_trace_obj.fig_analyze,'units','pixel');
-                set(etc_trace_obj.fig_analyze,'units','pixel');
-
-                pp0=get(etc_trace_obj.fig_analyze,'outerpos');
-                pp1=get(etc_trace_obj.fig_trace,'outerpos');
-                set(etc_trace_obj.fig_analyze,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
+%             case 'g'
+%                 fprintf('analyze...\n');
+%                 if(isfield(etc_trace_obj,'fig_analyze'))
+%                     etc_trace_obj.fig_analyze=[];
+%                 end;
+%                 etc_trace_obj.fig_analyze=etc_trace_analyze_gui;
+% 
+%                 set(etc_trace_obj.fig_analyze,'Name','analyze','Resize','off');
+% 
+%                 set(etc_trace_obj.fig_analyze,'units','pixel');
+%                 set(etc_trace_obj.fig_analyze,'units','pixel');
+% 
+%                 pp0=get(etc_trace_obj.fig_analyze,'outerpos');
+%                 pp1=get(etc_trace_obj.fig_trace,'outerpos');
+%                 set(etc_trace_obj.fig_analyze,'outerpos',[pp1(1)+pp1(3), pp1(2),pp0(3), pp0(4)]);
             case 'k'
             case 's' %spectrum
                 flag_old=0;
@@ -1390,7 +1425,7 @@ if(isfield(etc_trace_obj,'data_component'))
             end;
 
             %scaling of components for visualization
-            comp_tmp=comp_tmp.*10;
+            comp_tmp=comp_tmp;
 
             comp_tmp=cat(1,comp_tmp,ones(1,size(comp_tmp,2)));
 
@@ -1398,7 +1433,8 @@ if(isfield(etc_trace_obj,'data_component'))
             comp_tmp=eye(size(comp_tmp,1))*comp_tmp;
 
             %vertical shift for display
-            S=eye(size(comp_tmp,1));
+            %S=eye(size(comp_tmp,1))*diag(1./sqrt(mean(comp_tmp.^2,2))).*abs(diff(etc_trace_obj.ylim))
+            S=eye(size(comp_tmp,1)).*50;
             switch(etc_trace_obj.view_style)
                 case 'trace'
                     S(1:(size(comp_tmp,1)-1),end)=(diff(sort(etc_trace_obj.ylim)).*[0:size(comp_tmp,1)-2]+(size(tmp,2)-0)*(diff(sort(etc_trace_obj.ylim))))'; %typical

@@ -1765,10 +1765,12 @@ switch answer
         etc_trace_obj.all_data_aux_idx=[];
         etc_trace_obj.all_data_color=[];
                     
-        etc_trace_obj.topo_component=[];
-        etc_trace_obj.data_component=[];
+        etc_trace_obj.topo_component={};
+        etc_trace_obj.data_component={};
         etc_trace_obj.data_component_ch_names={};
-        
+        etc_trace_obj=rmfield(etc_trace_obj,'topo_component');
+        etc_trace_obj=rmfield(etc_trace_obj,'data_component');
+        etc_trace_obj=rmfield(etc_trace_obj,'data_component_ch_names');
         
         select=eye(size(etc_trace_obj.data,1));
         select_name='all';
@@ -1872,7 +1874,9 @@ switch answer
         set(handles.listbox_channel,'String',str);
         set(handles.listbox_channel,'Value',1);
                  
-        
+        set(handles.checkbox_topo_component,'Value',0);
+        set(handles.checkbox_topo_component,'Enable','off');
+
         %trigger listbox
         str={'[none]'};
         set(handles.listbox_trigger,'string',str);
