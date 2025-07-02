@@ -815,7 +815,7 @@ switch lower(param)
             case 56
                 %fprintf('shift...\n');
             otherwise
-                fprintf('cc=[%c]\n',cc);
+                fprintf('unknown key press::[%c]\n',cc);
         end;
         
     case 'bu'
@@ -1450,7 +1450,7 @@ if(isfield(etc_trace_obj,'data_component'))
         comp_tmp=comp_tmp';
     catch
         fprintf('error in preparing components during redraw...\n');
-        return;
+        %return;
     end;
 end;
 
@@ -1814,16 +1814,21 @@ etc_trace_obj.dragging = src;
 etc_trace_obj.orPos = get(etc_trace_obj.fig_trace,'CurrentPoint');
 
 %Index = find(strcmp(etc_trace_obj.ch_names,src.Tag));
-if(isfield(etc_trace_obj,'data_component')&etc_trace_obj.flag_data_component)
-    if(isempty(etc_trace_obj.data_component{etc_trace_obj.all_data_main_idx}))
-        ch_names=etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names;
+ch_names=etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names;
+try
+    if(isfield(etc_trace_obj,'data_component')&etc_trace_obj.flag_data_component)
+        if(isempty(etc_trace_obj.data_component{etc_trace_obj.all_data_main_idx}))
+            ch_names=etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names;
+        else
+            ch_names1=etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names;
+            ch_names2=etc_trace_obj.data_component_ch_names{etc_trace_obj.montage_idx};
+            ch_names=cat(1,ch_names1(:),ch_names2(:));
+        end;
     else
-        ch_names1=etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names;
-        ch_names2=etc_trace_obj.data_component_ch_names{etc_trace_obj.montage_idx};
-        ch_names=cat(1,ch_names1(:),ch_names2(:));    
+        ch_names=etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names;
     end;
-else
-    ch_names=etc_trace_obj.montage_ch_name{etc_trace_obj.montage_idx}.ch_names;
+catch
+
 end;
 Index = find(strcmp(ch_names, src.Tag));
 
