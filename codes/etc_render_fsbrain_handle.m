@@ -4610,8 +4610,8 @@ if(etc_render_fsbrain.overlay_source~=4) %not overlay_vol as the source
                 %smoothing over the volume
                 if(isfield(etc_render_fsbrain.vol_A(hemi_idx),'src_wb_idx'))
                     v=zeros(size(etc_render_fsbrain.vol.vol));
-                    %tmp=etc_render_fsbrain.overlay_vol_stc(offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),time_idx);
-                    tmp=etc_render_fsbrain.overlay_vol_stc(offset+1:offset+n_source(hemi_idx),time_idx);
+                    tmp=etc_render_fsbrain.overlay_vol_stc(offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),time_idx);
+                    %tmp=etc_render_fsbrain.overlay_vol_stc(offset+1:offset+n_source(hemi_idx),time_idx);
                     if(~isempty(tmp))
                         v(etc_render_fsbrain.vol_A(hemi_idx).src_wb_idx)=tmp;
                         pos_idx=find(v(:)>0);
