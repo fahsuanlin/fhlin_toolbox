@@ -154,6 +154,9 @@ flag_show_cort_label=1; %show solid labels
 flag_show_cort_label_boundary=1; %show label boundary
 cort_label_boundary_color=[0 0 1]; %label boundary color
 
+%ribbon
+cort_ribbon_idx={};
+
 %stc time course
 flag_hold_fig_stc_timecourse=0;
 
