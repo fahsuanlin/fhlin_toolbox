@@ -529,6 +529,19 @@ if(tmp_set_vol<0.5)
         end;
     catch ME
     end;
+
+    if(isempty(vol_A))
+        if(iscell(hemi))
+            %hemi={'lh','rh'};
+            for hemi_idx=1:2
+                file_surf=sprintf('%s/%s/surf/%s.%s',getenv('SUBJECTS_DIR'),subject,hemi{hemi_idx},'orig');
+                [vol_A(hemi_idx).vertex_coords, vol_A(hemi_idx).faces] = read_surf(file_surf);
+            end;
+        else
+            file_surf=sprintf('%s/%s/surf/%s.%s',getenv('SUBJECTS_DIR'),subject,hemi,'orig');
+            [vol_A.vertex_coords, vol_A.faces] = read_surf(file_surf);
+        end;
+    end;
 end;
 
 %get the surface overlay values from volumetric STC.

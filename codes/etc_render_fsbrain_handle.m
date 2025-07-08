@@ -2573,7 +2573,9 @@ try
     
     
     if(isvalid(etc_render_fsbrain.fig_brain))
+        flag_visible=get(etc_render_fsbrain.fig_brain,'visible');
         figure(etc_render_fsbrain.fig_brain);
+        set(gcf,'visible',flag_visible);
     end;
     
     if(ishandle(etc_render_fsbrain.h)&isempty(pt))
