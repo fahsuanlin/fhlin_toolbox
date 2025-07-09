@@ -1,4 +1,4 @@
-function results = etc_tms_target_xfm_apply_nav(app, coil_center, coil_orientation, coil_up)
+function results = etc_tms_target_xfm_apply_nav(app, coil_center, coil_orientation, coil_up,varargin)
 % etc_tms_target_xfm_apply_nav apply the transformation matrix to TMS coil
 % objects
 %
@@ -16,18 +16,51 @@ function results = etc_tms_target_xfm_apply_nav(app, coil_center, coil_orientati
 % fhlin@May 30 2024
 %
 
+coil_rot=0;
+coil_offset=0;
+coil_vshift=0;
+coil_hshift=0;
+
+flag_tuned=0;
+
 results=0;
 
-%resettting tuning parameters
-app.rotatedegSlider.Value=0;
-app.offsetmmSlider.Value=0;
-app.tilthorizdegSlider.Value=0;
-app.tiltvertdegSlider.Value=0;
+for i=1:length(varargin)/2
+    option=varargin{i*2-1};
+    option_value=varargin{i*2};
+    
+    switch(lower(option))
+        case 'coil_rot'
+            coil_rot=option_value;
+        case 'coil_offset'
+            coil_offset=option_value;
+        case 'coil_vshift'
+            coil_vshift=option_value;
+        case 'coil_hshift'
+            coil_hshift=option_value;
+        case 'flag_tuned'
+            flag_tuned=option_value;
+        case 'flag_display'
+            flag_display=option_value;
+        otherwise
+            fprintf('unknown option [%s]. error!\n',option)
+            return;
+    end;
+end;
 
-app.vertdegEditField.Value=0;
-app.horizdegEditField.Value=0;
-app.offsetmmEditField.Value=0;
-app.rotatedegEditField.Value=0;
+        
+if(~flag_tuned)
+    %resettting tuning parameters
+    app.rotatedegSlider.Value=0;
+    app.offsetmmSlider.Value=0;
+    app.tilthorizdegSlider.Value=0;
+    app.tiltvertdegSlider.Value=0;
+
+    app.vertdegEditField.Value=0;
+    app.horizdegEditField.Value=0;
+    app.offsetmmEditField.Value=0;
+    app.rotatedegEditField.Value=0;
+end;
 
 global etc_render_fsbrain;
 
@@ -250,10 +283,10 @@ etc_render_fsbrain.object.UserData.Up_orig=etc_render_fsbrain.object.UserData.Up
 %end of aligning UP toward coil_up
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-app.rotatedegSlider.Value=0;
-app.offsetmmSlider.Value=0;
-app.tilthorizdegSlider.Value=0;
-app.tiltvertdegSlider.Value=0;
+% app.rotatedegSlider.Value=0;
+% app.offsetmmSlider.Value=0;
+% app.tilthorizdegSlider.Value=0;
+% app.tiltvertdegSlider.Value=0;
 
 app.EfieldCalclLamp.Color='r';
 

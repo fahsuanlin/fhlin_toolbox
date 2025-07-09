@@ -21,16 +21,21 @@ function [object_xfm]=etc_tms_target_xfm_tune(target, head_surf, tms_coil_origin
 % fhlin@May 30 2024
 %
 
+app=[];
 
 for i=1:length(varargin)/2
     option=varargin{i*2-1};
     option_value=varargin{i*2};
     switch(lower(option))
+        case 'app'
+            app=option_value;
         otherwise
             fprintf('unknown [%s] option! error!\n',option)
             return;
     end;
 end;
+
+global etc_render_fsbrain;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -72,17 +77,50 @@ switch(tune_index)
 
 
         object_xfm=inv(R_c)*inv(R_rotz)*(R_c)*object_xfm;
+        etc_render_fsbrain.object_xfm=object_xfm;
+
+        try
+            %transform object in visualization
+            global etc_render_fsbrain;
+
+            vv=etc_render_fsbrain.object.Vertices;
+            vv(:,4)=1;
+            vv=(inv(R_c_mm)*inv(R_rotz)*(R_c_mm)*vv')';
+            etc_render_fsbrain.object.Vertices=vv(:,1:3);
 
 
-        %transform data
-        tmp=((inv(R_c_mm)*inv(R_rotz)*R_c_mm)*[tms_coil_origin(:)' 1]')';
-        tms_coil_origin=tmp(1:3);
+            %transform data
+            tmp=((inv(R_c_mm)*inv(R_rotz)*R_c_mm)*[tms_coil_origin(:)' 1]')';
+            etc_render_fsbrain.object.UserData.Origin=tmp(1:3);
 
-        tmp=(inv(R_rotz)*[tms_coil_axis(:)' 1]')';
-        tms_coil_axis=tmp(1:3);
+            tmp=(inv(R_rotz)*[tms_coil_axis(:)' 1]')';
+            etc_render_fsbrain.object.UserData.Axis=tmp(1:3);
 
-        tmp=(inv(R_rotz)*[tms_coil_up(:)' 1]')';
-        tms_coil_up=tmp(1:3);
+            tmp=(inv(R_rotz)*[tms_coil_up(:)' 1]')';
+            etc_render_fsbrain.object.UserData.Up=tmp(1:3);
+        catch
+        end;
+
+        %NAV tuning parameters
+        if(~isempty(app))
+            app.tiltvertdegSlider.Value=tune_value;
+            app.vertdegEditField.Value=tune_value;
+            if(~isempty(app.norm_obj))
+                tmp=[app.norm_obj.XData; app.norm_obj.YData; app.norm_obj.ZData; ones(size(app.norm_obj.XData))];
+                tmp=(R_offset_mm*tmp);
+                app.norm_obj.XData=tmp(1,:);
+                app.norm_obj.YData=tmp(2,:);
+                app.norm_obj.ZData=tmp(3,:);
+            end;
+            
+            if(~isempty(app.up_obj))
+                tmp=[app.up_obj.XData; app.up_obj.YData; app.up_obj.ZData; ones(size(app.up_obj.XData))];
+                tmp=(R_offset_mm*tmp);
+                app.up_obj.XData=tmp(1,:);
+                app.up_obj.YData=tmp(2,:);
+                app.up_obj.ZData=tmp(3,:);
+            end;
+        end;
 
     case 2 %horizontal rotation
         R_c=eye(4);
@@ -120,18 +158,51 @@ switch(tune_index)
 
 
         object_xfm=inv(R_c)*inv(R_rotz)*(R_c)*object_xfm;
+        etc_render_fsbrain.object_xfm=object_xfm;
+
+        try
+            %transform object in visualization
+            global etc_render_fsbrain;
+
+            vv=etc_render_fsbrain.object.Vertices;
+            vv(:,4)=1;
+            vv=(inv(R_c_mm)*inv(R_rotz)*(R_c_mm)*vv')';
+            etc_render_fsbrain.object.Vertices=vv(:,1:3);
 
 
-        %transform data
-        tmp=((inv(R_c_mm)*inv(R_rotz)*R_c_mm)*[tms_coil_origin(:)' 1]')';
-        tms_coil_origin=tmp(1:3);
+            %transform data
+            tmp=((inv(R_c_mm)*inv(R_rotz)*R_c_mm)*[tms_coil_origin(:)' 1]')';
+            etc_render_fsbrain.object.UserData.Origin=tmp(1:3);
 
-        tmp=(inv(R_rotz)*[tms_coil_axis(:)' 1]')';
-        tms_coil_axis=tmp(1:3);
+            tmp=(inv(R_rotz)*[tms_coil_axis(:)' 1]')';
+            etc_render_fsbrain.object.UserData.Axis=tmp(1:3);
 
-        tmp=(inv(R_rotz)*[tms_coil_up(:)' 1]')';
-        tms_coil_up=tmp(1:3);
+            tmp=(inv(R_rotz)*[tms_coil_up(:)' 1]')';
+            etc_render_fsbrain.object.UserData.Up=tmp(1:3);
+        catch
+        end;
+       
 
+        %NAV tuning parameters
+        if(~isempty(app))
+            app.tilthorizdegSlider.Value=tune_value;
+            app.horizdegEditField.Value=tune_value;
+            if(~isempty(app.norm_obj))
+                tmp=[app.norm_obj.XData; app.norm_obj.YData; app.norm_obj.ZData; ones(size(app.norm_obj.XData))];
+                tmp=(R_offset_mm*tmp);
+                app.norm_obj.XData=tmp(1,:);
+                app.norm_obj.YData=tmp(2,:);
+                app.norm_obj.ZData=tmp(3,:);
+            end;
+            
+            if(~isempty(app.up_obj))
+                tmp=[app.up_obj.XData; app.up_obj.YData; app.up_obj.ZData; ones(size(app.up_obj.XData))];
+                tmp=(R_offset_mm*tmp);
+                app.up_obj.XData=tmp(1,:);
+                app.up_obj.YData=tmp(2,:);
+                app.up_obj.ZData=tmp(3,:);
+            end;
+        end;
 
     case 3 %in/out coil plane offset
         R_c=eye(4);
@@ -153,16 +224,53 @@ switch(tune_index)
         R_offset_mm(1:3,4)=tmp(:).*1e3
 
         object_xfm=R_offset*object_xfm;
+        etc_render_fsbrain.object_xfm=object_xfm;
 
-        %transform data
-        tmp=(R_offset_mm*[tms_coil_origin(:)' 1]')';
-        tms_coil_origin=tmp(1:3);
+        try
+            %transform object in visualization
+            global etc_render_fsbrain;
 
-        tmp=(eye(4)*[tms_coil_axis(:)' 1]')';
-        tms_coil_axis=tmp(1:3);
+            vv=etc_render_fsbrain.object.Vertices;
+            vv(:,4)=1;
+            vv=(inv(R_c_mm)*inv(R_rotz)*(R_c_mm)*vv')';
+            etc_render_fsbrain.object.Vertices=vv(:,1:3);
 
-        tmp=(eye(4)*[tms_coil_up(:)' 1]')';
-        tms_coil_up=tmp(1:3);
+
+            %transform data
+            tmp=(R_offset_mm*[tms_coil_origin(:)' 1]')';
+            etc_render_fsbrain.object.UserData.Origin=tmp(1:3);
+
+            tmp=(eye(4)*[tms_coil_axis(:)' 1]')';
+            etc_render_fsbrain.object.UserData.Axis=tmp(1:3);
+
+            tmp=(eye(4)*[tms_coil_up(:)' 1]')';
+            etc_render_fsbrain.object.UserData.Up=tmp(1:3);
+        catch
+        end;
+
+
+        %NAV tuning parameters
+        if(~isempty(app))
+            app.offsetmmSlider.Value=tune_value;
+            app.offsetmmEditField.Value=tune_value;
+
+            if(~isempty(app.norm_obj))
+                tmp=[app.norm_obj.XData; app.norm_obj.YData; app.norm_obj.ZData; ones(size(app.norm_obj.XData))];
+                tmp=(R_offset_mm*tmp);
+                app.norm_obj.XData=tmp(1,:);
+                app.norm_obj.YData=tmp(2,:);
+                app.norm_obj.ZData=tmp(3,:);
+            end;
+            
+            if(~isempty(app.up_obj))
+                tmp=[app.up_obj.XData; app.up_obj.YData; app.up_obj.ZData; ones(size(app.up_obj.XData))];
+                tmp=(R_offset_mm*tmp);
+                app.up_obj.XData=tmp(1,:);
+                app.up_obj.YData=tmp(2,:);
+                app.up_obj.ZData=tmp(3,:);
+            end;
+        end;
+
     case 4 %around-axis rotation
         coil_center=tms_coil_origin(:);
         R_c_mm=eye(4);
@@ -198,17 +306,82 @@ switch(tune_index)
 
 
         object_xfm=inv(R_c)*inv(R_rotz)*(R_c)*object_xfm;
+        etc_render_fsbrain.object_xfm=object_xfm;
 
-        %transform data
-        tmp=((inv(R_c_mm)*inv(R_rotz)*R_c_mm)*[tms_coil_origin(:)' 1]')';
-        tms_coil_origin=tmp(1:3);
+        try
+            %transform object in visualization
+            global etc_render_fsbrain;
 
-        tmp=(inv(R_rotz)*[tms_coil_axis(:)' 1]')';
-        tms_coil_axis=tmp(1:3);
+            vv=etc_render_fsbrain.object.Vertices;
+            vv(:,4)=1;
+            vv=(inv(R_c_mm)*inv(R_rotz)*(R_c_mm)*vv')';
+            etc_render_fsbrain.object.Vertices=vv(:,1:3);
 
-        tmp=(inv(R_rotz)*[tms_coil_up(:)' 1]')';
-        tms_coil_up=tmp(1:3);
 
+            %transform data
+            tmp=((inv(R_c_mm)*inv(R_rotz)*R_c_mm)*[tms_coil_origin(:)' 1]')';
+            etc_render_fsbrain.object.UserData.Origin=tmp(1:3);
+
+            tmp=(inv(R_rotz)*[tms_coil_axis(:)' 1]')';
+            etc_render_fsbrain.object.UserData.Axis=tmp(1:3);
+
+            tmp=(inv(R_rotz)*[tms_coil_up(:)' 1]')';
+            etc_render_fsbrain.object.UserData.Up=tmp(1:3);
+        catch
+        end;
+
+        %NAV tuning parameters
+        if(~isempty(app))
+            app.rotatedegSlider.Value=tune_value;
+            app.rotatedegEditField.Value=tune_value;
+
+        
+            if(~isempty(app.norm_obj))
+                tmp=[app.norm_obj.XData; app.norm_obj.YData; app.norm_obj.ZData; ones(size(app.norm_obj.XData))];
+                tmp=((inv(R_c_mm)*inv(R_rotz)*R_c_mm)*tmp);
+                app.norm_obj.XData=tmp(1,:);
+                app.norm_obj.YData=tmp(2,:);
+                app.norm_obj.ZData=tmp(3,:);
+            end;
+            
+            if(~isempty(app.up_obj))
+                tmp=[app.up_obj.XData; app.up_obj.YData; app.up_obj.ZData; ones(size(app.up_obj.XData))];
+                tmp=((inv(R_c_mm)*inv(R_rotz)*R_c_mm)*tmp);
+                app.up_obj.XData=tmp(1,:);
+                app.up_obj.YData=tmp(2,:);
+                app.up_obj.ZData=tmp(3,:);
+            end;
+        
+        end;
+end;
+
+%updating strcoil
+try
+    tmp=app.strcoil_obj.Vertices;
+    tmp(:,end+1)=1;
+    tmp=tmp';
+    xfm=etc_render_fsbrain.object_xfm;
+    %xfm=object_xfm;
+    xfm(1:3,4)=xfm(1:3,4).*1e3; %into mm
+    xfm_tmp=app.strcoil_obj_xfm;
+    xfm_tmp(1:3,4)=xfm_tmp(1:3,4)*1e3; %into mm
+    tmp=xfm*inv(xfm_tmp)*tmp;
+
+    app.strcoil_obj.Vertices=tmp(1:3,:)'; %update
+    app.strcoil_obj_xfm=etc_render_fsbrain.object_xfm;
+    %app.strcoil_obj_xfm=object_xfm;
+
+    %         tmp=app.strcoil_obj.Vertices./1e3;
+    %         assignin('base','tmp',tmp);
+    %         evalin('base','strcoil.Pwire=tmp;');
+    %         fprintf('variable [strcoil] update at the workspace.\n');
+    app.TextArea.Value{end+1}='variable [strcoil] updated at the workspace.';
+    app.StrcoilLamp.Color='g';
+    app.StrcoilShowCheckBox.Value=1;
+
+catch
+    fprintf('Error in updating strcoil!\n');
+    app.TextArea.Value{end+1}='Error in updating strcoil!\n';
 end;
 return;
 
