@@ -13,21 +13,27 @@ function [fconn_grad] = etc_fconn_grad(C, k)
 %   Author: (Your Name), 2025
 
 
+[N,~]=size(C);
+Z=atanh(C);
+Z(1:N+1:end)=0; % zero self-connections
 
-% Suppose 'C' is an N-by-N connectivity matrix (e.g., correlation).
-% If you have correlation data in [-1,1], you can convert it to distance using:
-dist = sqrt(2 * (1 - C));  % NxN distance matrix
+K = corr(Z);                             % corr between columns of Z
+K(isnan(K)) = 0;     
 
-% If your matrix is already some form of distance, skip/adjust as needed.
-
-%% Step 2: Convert distance to an affinity (similarity) matrix
-% Here we use a Gaussian kernel with sigma as the median of upper-triangular distances.
-temp = dist(triu(true(size(dist)),1));  % upper triangle of dist
-temp = temp(temp > 0);  % remove zero entries if any
-sigma = median(temp);
-
-% Build the kernel (affinity) matrix
-K = exp(-dist.^2 / (2 * sigma^2));
+% % Suppose 'C' is an N-by-N connectivity matrix (e.g., correlation).
+% % If you have correlation data in [-1,1], you can convert it to distance using:
+% dist = sqrt(2 * (1 - C));  % NxN distance matrix
+% 
+% % If your matrix is already some form of distance, skip/adjust as needed.
+% 
+% %% Step 2: Convert distance to an affinity (similarity) matrix
+% % Here we use a Gaussian kernel with sigma as the median of upper-triangular distances.
+% temp = dist(triu(true(size(dist)),1));  % upper triangle of dist
+% temp = temp(temp > 0);  % remove zero entries if any
+% sigma = median(temp);
+% 
+% % Build the kernel (affinity) matrix
+% K = exp(-dist.^2 / (2 * sigma^2));
 
 %% Step 3: Markov normalization
 % Make each row sum to 1
@@ -55,3 +61,7 @@ V         = V(:, idx);
 % The principal gradient is the 2nd eigenvector (column 2 of V),
 % because the 1st eigenvector (largest eigenvalue) is often the trivial one.
 fconn_grad = V(:,2:k+1);
+
+if((~isreal(fconn_grad(:))))
+    keyboard;
+end;

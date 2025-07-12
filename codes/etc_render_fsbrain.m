@@ -1,4 +1,4 @@
-function h=etc_render_fsbrain(varargin)
+function etc_render_fsbrain=etc_render_fsbrain(varargin)
 %
 % etc_render_fsbrain    rendering the anatomy and overlay of a freesurfer brain
 %
