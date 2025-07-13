@@ -19,6 +19,8 @@ Z(1:N+1:end)=0; % zero self-connections
 
 K = corr(Z);                             % corr between columns of Z
 K(isnan(K)) = 0;     
+K = (K + 1) / 2;
+K = (K + K.')/2;        % symmetrize again
 
 % % Suppose 'C' is an N-by-N connectivity matrix (e.g., correlation).
 % % If you have correlation data in [-1,1], you can convert it to distance using:
