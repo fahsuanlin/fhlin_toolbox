@@ -159,9 +159,11 @@ end;
 %dd=zeros(size(value,2),step);
 
 %inclusive label
+if(~iscell(inc_vertex))
 if(~isempty(inc_vertex))
     tmp=setdiff([1:length(value)],inc_vertex);
     exc_vertex=union(exc_vertex,tmp);
+end;
 end;
 
 v_min=min(value(:));
