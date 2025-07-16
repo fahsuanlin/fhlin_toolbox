@@ -12,30 +12,39 @@ function [fconn_grad] = etc_fconn_grad(C, k)
 %
 %   Author: (Your Name), 2025
 
+affinity_method='diffusion';
 
-[N,~]=size(C);
-Z=atanh(C);
-Z(1:N+1:end)=0; % zero self-connections
+switch(affinity_method)
 
-K = corr(Z);                             % corr between columns of Z
-K(isnan(K)) = 0;     
-K = (K + 1) / 2;
-K = (K + K.')/2;        % symmetrize again
+    case 'pearson'
+        [N,~]=size(C);
+        Z=atanh(C);
+        Z(1:N+1:end)=0; % zero self-connections
 
-% % Suppose 'C' is an N-by-N connectivity matrix (e.g., correlation).
-% % If you have correlation data in [-1,1], you can convert it to distance using:
-% dist = sqrt(2 * (1 - C));  % NxN distance matrix
-% 
-% % If your matrix is already some form of distance, skip/adjust as needed.
-% 
-% %% Step 2: Convert distance to an affinity (similarity) matrix
-% % Here we use a Gaussian kernel with sigma as the median of upper-triangular distances.
-% temp = dist(triu(true(size(dist)),1));  % upper triangle of dist
-% temp = temp(temp > 0);  % remove zero entries if any
-% sigma = median(temp);
-% 
-% % Build the kernel (affinity) matrix
-% K = exp(-dist.^2 / (2 * sigma^2));
+        K = corr(Z);                             % corr between columns of Z
+        K(isnan(K)) = 0;
+        K = (K + 1) / 2;
+        K = (K + K.')/2;        % symmetrize again
+
+    case 'diffusion'
+
+        % % Suppose 'C' is an N-by-N connectivity matrix (e.g., correlation).
+        % % If you have correlation data in [-1,1], you can convert it to distance using:
+        dist = sqrt(2 * (1 - C));  % NxN distance matrix
+
+        % If your matrix is already some form of distance, skip/adjust as needed.
+
+        %% Step 2: Convert distance to an affinity (similarity) matrix
+        % Here we use a Gaussian kernel with sigma as the median of upper-triangular distances.
+        temp = dist(triu(true(size(dist)),1));  % upper triangle of dist
+        temp = temp(temp > 0);  % remove zero entries if any
+        sigma = median(temp);
+
+        % Build the kernel (affinity) matrix
+        K = exp(-dist.^2 / (2 * sigma^2));
+        N=size(C,1);
+        K(1:N+1:end) = 0;        % zero the diagonal of K
+end;
 
 %% Step 3: Markov normalization
 % Make each row sum to 1

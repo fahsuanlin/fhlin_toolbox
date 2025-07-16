@@ -544,6 +544,27 @@ if(tmp_set_vol<0.5)
     end;
 end;
 
+%ensure overlay values over the whole brain by zero padding.
+if(~isempty(overlay_vertex))
+    vv0=[0:10241];
+    [ic,ia,ib]=union(overlay_vertex,vv0);
+    [~, locvv] = ismember(overlay_vertex, ic);
+    [~, locvv0] = ismember(vv0, ic);
+    overlay_vertex=ic;
+    
+    if(~isempty(overlay_value))
+        overlay_value_tmp = zeros(length(ic),1);
+        overlay_value_tmp(locvv,:) = overlay_value;
+        overlay_value=overlay_value_tmp;
+    end;
+
+    if(~isempty(overlay_stc))
+        overlay_stc_tmp = zeros(length(ic),size(overlay_stc,2));
+        overlay_stc_tmp(locvv,:) = overlay_stc;
+        overlay_stc=overlay_stc_tmp;
+    end;
+end;
+
 %get the surface overlay values from volumetric STC.
 if(~isempty(overlay_vol_stc)&~isempty(vol_A))
     for hemi_idx=1:2
@@ -1499,6 +1520,7 @@ if(isempty(etc_render_fsbrain.overlay_vol_stc))
 
             if(~iscell(hemi))
                 vv=etc_render_fsbrain.overlay_vertex;
+                %[vv,IA,IB] = union([0:10241],vv);
                 switch(hemi)
                     case 'lh'
                         etc_render_fsbrain.vol_A(1).loc=etc_render_fsbrain.orig_vertex_coords(vv+1,:);
@@ -1507,6 +1529,7 @@ if(isempty(etc_render_fsbrain.overlay_vol_stc))
                         end;
                         etc_render_fsbrain.vol_A(1).v_idx=vv;
                         etc_render_fsbrain.vol_A(1).vertex_coords=etc_render_fsbrain.orig_vertex_coords(vv+1,:);
+                        %etc_render_fsbrain.vol_A(1).vertex_coords=etc_render_fsbrain.orig_vertex_coords;
                         etc_render_fsbrain.vol_A(1).faces=etc_render_fsbrain.faces;
 
                         loc_surf=[etc_render_fsbrain.orig_vertex_coords(vv+1,:) ones(length(vv),1)]';
@@ -1529,6 +1552,7 @@ if(isempty(etc_render_fsbrain.overlay_vol_stc))
                         end;
                         etc_render_fsbrain.vol_A(2).v_idx=vv;
                         etc_render_fsbrain.vol_A(2).vertex_coords=etc_render_fsbrain.orig_vertex_coords(vv+1,:);
+                        %etc_render_fsbrain.vol_A(2).vertex_coords=etc_render_fsbrain.orig_vertex_coords;
                         etc_render_fsbrain.vol_A(2).faces=etc_render_fsbrain.faces;
 
                         loc_surf=[etc_render_fsbrain.orig_vertex_coords(vv+1,:) ones(length(vv),1)]';
@@ -1559,7 +1583,8 @@ if(isempty(etc_render_fsbrain.overlay_vol_stc))
                                 etc_render_fsbrain.vol_A(1).wb_loc=[];
                             end;
                             etc_render_fsbrain.vol_A(1).v_idx=vv;
-                            etc_render_fsbrain.vol_A(1).vertex_coords=etc_render_fsbrain.orig_vertex_coords(hemi_offset+vv+1,:);
+                            %etc_render_fsbrain.vol_A(1).vertex_coords=etc_render_fsbrain.orig_vertex_coords(hemi_offset+vv+1,:);
+                            etc_render_fsbrain.vol_A(1).vertex_coords=etc_render_fsbrain.vertex_coords_hemi{1};
                             etc_render_fsbrain.vol_A(1).faces=etc_render_fsbrain.faces;
 
                             loc_surf=[etc_render_fsbrain.orig_vertex_coords(hemi_offset+vv+1,:) ones(length(vv),1)]';
@@ -1581,7 +1606,8 @@ if(isempty(etc_render_fsbrain.overlay_vol_stc))
                                 etc_render_fsbrain.vol_A(2).wb_loc=[];
                             end;
                             etc_render_fsbrain.vol_A(2).v_idx=vv;
-                            etc_render_fsbrain.vol_A(2).vertex_coords=etc_render_fsbrain.orig_vertex_coords(hemi_offset+vv+1,:);
+                            %etc_render_fsbrain.vol_A(2).vertex_coords=etc_render_fsbrain.orig_vertex_coords(hemi_offset+vv+1,:);
+                            etc_render_fsbrain.vol_A(2).vertex_coords=etc_render_fsbrain.vertex_coords_hemi{2};
                             etc_render_fsbrain.vol_A(2).faces=etc_render_fsbrain.faces;
 
                             loc_surf=[etc_render_fsbrain.orig_vertex_coords(hemi_offset+vv+1,:) ones(length(vv),1)]';

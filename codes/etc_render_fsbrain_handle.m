@@ -447,6 +447,17 @@ switch lower(param)
                 if(filename~=0) %not 'cancel'
                     if(findstr(filename,'.stc')) %stc file
                         [stc,vv,d0,d1,timeVec]=inverse_read_stc(sprintf('%s/%s',pathname,filename));
+                        vv0=[0:10241];
+                        [ic,ia,ib]=union(vv,vv0);
+                        [~, locvv] = ismember(vv, ic);
+                        [~, locvv0] = ismember(vv0, ic);
+
+                        vc = zeros(length(ic),size(stc,2));
+                        vc(locvv,:) = stc;
+                        
+                        stc=vc;
+                        vv=ic;
+                                
                         if(findstr(filename,'-lh'))
                             hemi='lh';
                         else
@@ -4612,7 +4623,11 @@ if(etc_render_fsbrain.overlay_source~=4) %not overlay_vol as the source
                 %smoothing over the volume
                 if(isfield(etc_render_fsbrain.vol_A(hemi_idx),'src_wb_idx'))
                     v=zeros(size(etc_render_fsbrain.vol.vol));
-                    tmp=etc_render_fsbrain.overlay_vol_stc(offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),time_idx);
+                    try
+                        tmp=etc_render_fsbrain.overlay_vol_stc(offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),time_idx);
+                    catch
+                        tmp=[];
+                    end;
                     %tmp=etc_render_fsbrain.overlay_vol_stc(offset+1:offset+n_source(hemi_idx),time_idx);
                     if(~isempty(tmp))
                         v(etc_render_fsbrain.vol_A(hemi_idx).src_wb_idx)=tmp;
@@ -4750,7 +4765,7 @@ if(etc_render_fsbrain.overlay_source~=4) %not overlay_vol as the source
                             ribbon_value=42; %right hemisphere cortical ribbon value
                     end;
 
-                    flag_knnsearch=2;
+                    flag_knnsearch=1;
                     if(isfield(etc_render_fsbrain,'cort_ribbon_idx'))
                         if(~isempty(etc_render_fsbrain.cort_ribbon_idx{hemi_idx}))
                             flag_knnsearch=flag_knnsearch-1;
