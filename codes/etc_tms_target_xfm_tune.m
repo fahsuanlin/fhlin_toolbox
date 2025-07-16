@@ -37,6 +37,13 @@ end;
 
 global etc_render_fsbrain;
 
+if(isempty(app))
+    try
+        app=etc_render_fsbrain.app_tms_nav;
+    catch
+    end;
+end;
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % TMS coil tuning
@@ -356,32 +363,34 @@ switch(tune_index)
 end;
 
 %updating strcoil
-try
-    tmp=app.strcoil_obj.Vertices;
-    tmp(:,end+1)=1;
-    tmp=tmp';
-    xfm=etc_render_fsbrain.object_xfm;
-    %xfm=object_xfm;
-    xfm(1:3,4)=xfm(1:3,4).*1e3; %into mm
-    xfm_tmp=app.strcoil_obj_xfm;
-    xfm_tmp(1:3,4)=xfm_tmp(1:3,4)*1e3; %into mm
-    tmp=xfm*inv(xfm_tmp)*tmp;
+if(~isempty(app))
+    try
+        tmp=app.strcoil_obj.Vertices;
+        tmp(:,end+1)=1;
+        tmp=tmp';
+        xfm=etc_render_fsbrain.object_xfm;
+        %xfm=object_xfm;
+        xfm(1:3,4)=xfm(1:3,4).*1e3; %into mm
+        xfm_tmp=app.strcoil_obj_xfm;
+        xfm_tmp(1:3,4)=xfm_tmp(1:3,4)*1e3; %into mm
+        tmp=xfm*inv(xfm_tmp)*tmp;
 
-    app.strcoil_obj.Vertices=tmp(1:3,:)'; %update
-    app.strcoil_obj_xfm=etc_render_fsbrain.object_xfm;
-    %app.strcoil_obj_xfm=object_xfm;
+        app.strcoil_obj.Vertices=tmp(1:3,:)'; %update
+        app.strcoil_obj_xfm=etc_render_fsbrain.object_xfm;
+        %app.strcoil_obj_xfm=object_xfm;
 
-    %         tmp=app.strcoil_obj.Vertices./1e3;
-    %         assignin('base','tmp',tmp);
-    %         evalin('base','strcoil.Pwire=tmp;');
-    %         fprintf('variable [strcoil] update at the workspace.\n');
-    app.TextArea.Value{end+1}='variable [strcoil] updated at the workspace.';
-    app.StrcoilLamp.Color='g';
-    app.StrcoilShowCheckBox.Value=1;
+        %         tmp=app.strcoil_obj.Vertices./1e3;
+        %         assignin('base','tmp',tmp);
+        %         evalin('base','strcoil.Pwire=tmp;');
+        %         fprintf('variable [strcoil] update at the workspace.\n');
+        app.TextArea.Value{end+1}='variable [strcoil] updated at the workspace.';
+        app.StrcoilLamp.Color='g';
+        app.StrcoilShowCheckBox.Value=1;
 
-catch
-    fprintf('Error in updating strcoil!\n');
-    app.TextArea.Value{end+1}='Error in updating strcoil!\n';
+    catch
+        fprintf('Error in updating strcoil!\n');
+        app.TextArea.Value{end+1}='Error in updating strcoil!\n';
+    end;
 end;
 return;
 
