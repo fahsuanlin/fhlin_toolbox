@@ -4785,6 +4785,8 @@ if(etc_render_fsbrain.overlay_source~=4) %not overlay_vol as the source
 
                         cort_ribbon_idx{hemi_idx}=knnsearch(Xcort,Xribbon);
                     else
+                        ribbon_idx{hemi_idx}=find(etc_render_fsbrain.vol_ribbon.vol(:)==ribbon_value);
+
                         cort_ribbon_idx{hemi_idx}=etc_render_fsbrain.cort_ribbon_idx{hemi_idx};
                     end;
 

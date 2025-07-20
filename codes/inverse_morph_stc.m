@@ -54,7 +54,7 @@ for i=1:length(varargin)/2
             n_iter=option_value;
         case 'lambda'
             lambda=option_value;
-        case flag_smooth'
+        case 'flag_smooth'
             flag_smooth=option_value;
         case 'flag_display'
             flag_display=option_value;
@@ -120,22 +120,32 @@ end;
 nearest_idx = knnsearch(vertices, vertices_targ);
 
 
-data = zeros(n_vertices, 1);
+if(flag_smooth)
+    ss=S^n_iter;
+end;
 for t_idx=1:size(stc,2)
     if(flag_display)
         fprintf('morphing time point [%04d]...\r',t_idx);
     end;
+    data = zeros(n_vertices, 1);
     data(v+1)=stc(:,t_idx);
 
     if(flag_smooth)
         % Step 5: Apply smoothing in matrix power form
         % (equivalent to repeated smoothing: S^n * data)
-        smoothed_data = S^n_iter * data;
+        
+        mmax=max(data(:));
+        mmin=min(data(:));
+        smoothed_data = fmri_scale(ss * data,mmax,mmin);
+        %smoothed_data= ss * data(:);
     else
         smoothed_data=data;
     end;
 
     % Step 6: Apply morphing
+    if(t_idx==1)
+        target_value=zeros(length(smoothed_data(nearest_idx)),size(stc,2));
+    end;
     targ_value(:,t_idx)=smoothed_data(nearest_idx);
 end;
 
@@ -146,7 +156,7 @@ if(flag_file_archive)
         fn=file_archive;
     end;
     fprintf('saving [%s]...\n',fn);
-    targ_value=targ_value(1:20482,:);
+    targ_value=targ_value(1:10242,:);
     inverse_write_stc(targ_value,[0:10241],a,b,fn);
 end;
 

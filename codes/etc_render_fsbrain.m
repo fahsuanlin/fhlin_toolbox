@@ -551,7 +551,7 @@ if(~isempty(overlay_vertex))
     [~, locvv] = ismember(overlay_vertex, ic);
     [~, locvv0] = ismember(vv0, ic);
     overlay_vertex=ic;
-    
+
     if(~isempty(overlay_value))
         overlay_value_tmp = zeros(length(ic),1);
         overlay_value_tmp(locvv,:) = overlay_value;
