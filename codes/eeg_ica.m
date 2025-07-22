@@ -79,7 +79,7 @@ dd(dd_min_idx)=max(dd)./100;
 D=diag(dd);
 whiteMat      = inv( sqrt(D) ) * E.';
 dewhiteMat    = E * sqrt(D);
-Xw            = whiteMat * Xc;                          % whitened data
+Xw            = whiteMat * Xc;                          % whitened data (with regularization)
 
 % 3) FastICA on whitened data
 
@@ -97,6 +97,7 @@ try
         case 0
             v_option='off';
     end;
+    keyboard;
     [ icasig, A, W ] = fastica( Xw, 'numOfIC', numOfIC, 'g', 'tanh' ,'verbose',v_option);
 catch
 end;
