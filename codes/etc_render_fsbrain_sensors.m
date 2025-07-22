@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_sensors(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_sensors
 
-% Last Modified by GUIDE v2.5 16-Aug-2023 23:44:55
+% Last Modified by GUIDE v2.5 21-Jul-2025 19:41:46
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -391,14 +391,21 @@ global etc_render_fsbrain
 
 sensor.name=etc_render_fsbrain.aux_point_name;
 sensor.coords=etc_render_fsbrain.aux_point_coords;
-    
+
+
+vertex=etc_render_fsbrain.vertex_coords;
+face=etc_render_fsbrain.faces+1; %1-based faces!!
+
+electrode_idx=knnsearch(etc_render_fsbrain.vertex_coords,sensor.coords);
+electrode_name=sensor.name;
+
 assignin('base','sensor',sensor);
 [filename, pathname] = uiputfile('sensor.mat', 'Save sensor as');
 if(filename)
     if(exist(filename))
-        save(filename,'-append','sensor');
+        save(filename,'-append','sensor','electrode_idx','electrode_name','vertex','face');
     else
-        save(filename,'sensor');
+        save(filename,'sensor','electrode_idx','electrode_name','vertex','face');
     end;
     fprintf('variable "sensor" exported and saved in [%s]\n',filename);
 end;
@@ -475,6 +482,7 @@ if(indx)
         
         etc_render_fsbrain_handle('redraw');
     else
+        fprintf('A variable with fields ''coords'' and ''name'' must be provided!\n');
     end;
 end;
 
@@ -526,3 +534,49 @@ if(~isempty(answer))
     set(handles.listbox_sensor,'value',etc_render_fsbrain.aux_point_idx);
 
 end;
+
+
+% --- Executes on button press in button_snap.
+function button_snap_Callback(hObject, eventdata, handles)
+% hObject    handle to button_snap (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global etc_render_fsbrain
+
+if(get(hObject,'Value'))
+    fprintf('snapped....\n');
+
+    [a,b]=knnsearch(etc_render_fsbrain.vertex_coords,etc_render_fsbrain.aux_point_coords);
+    etc_render_fsbrain.aux_point_coords=etc_render_fsbrain.vertex_coords(a,:);
+%         evalin('base',sprintf('global etc_render_fsbrain; if(isfield(%s,''coords'')&&isfield(%s,''name'')) etc_render_fsbrain.tmp=1; else etc_render_fsbrain.tmp=0; end;',var,var));
+%     if(etc_render_fsbrain.tmp)
+%         %evalin('base',sprintf('global etc_render_fsbrain; etc_render_fsbrain.aux_point_name=%s;',var));
+%         evalin('base',sprintf('etc_render_fsbrain.aux_point_name=%s.name; etc_render_fsbrain.aux_point_coords=%s.coords;',var,var));
+%         
+%         etc_render_fsbrain.aux_point_idx=1;
+%         str={};
+%         for e_idx=1:length(etc_render_fsbrain.aux_point_name)
+%             str{e_idx}=etc_render_fsbrain.aux_point_name{e_idx};
+%             %etc_render_fsbrain.aux_point_coords(e_idx,:)=[0 0 0];
+%         end;
+%         set(handles.listbox_sensor,'string',str);
+%         set(handles.listbox_sensor,'value',etc_render_fsbrain.aux_point_idx);
+%         guidata(hObject, handles);
+%         
+%         %enable all uicontrols
+%         c=struct2cell(handles);
+%         for i=1:length(c)
+%             if(strcmp(c{i}.Type,'uicontrol'))
+%                 c{i}.Enable='on';
+%             end;
+%         end;
+%         
+%         etc_render_fsbrain_handle('redraw');
+%     else
+%         fprintf('A variable with fields ''coords'' and ''name'' must be provided!\n');
+%     end;
+
+
+end;
+
+etc_render_fsbrain_handle('redraw');

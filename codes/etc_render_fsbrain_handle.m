@@ -4295,10 +4295,12 @@ try
                             etc_render_fsbrain.aux_point_name_h(idx)=text(etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3),''); hold on;
                             set(etc_render_fsbrain.aux_point_name_h(idx),'color',etc_render_fsbrain.aux_point_text_color);
                             set(etc_render_fsbrain.aux_point_name_h(idx),'fontsize',etc_render_fsbrain.aux_point_text_size);
+                            set(etc_render_fsbrain.aux_point_name_h(idx),'HorizontalAlignment','center');
                         else
                             etc_render_fsbrain.aux_point_name_h(idx)=text(etc_render_fsbrain.aux_point_coords(idx,1),etc_render_fsbrain.aux_point_coords(idx,2),etc_render_fsbrain.aux_point_coords(idx,3),etc_render_fsbrain.aux_point_name{idx}); hold on;
                             set(etc_render_fsbrain.aux_point_name_h(idx),'color',etc_render_fsbrain.aux_point_text_color);
                             set(etc_render_fsbrain.aux_point_name_h(idx),'fontsize',etc_render_fsbrain.aux_point_text_size);
+                            set(etc_render_fsbrain.aux_point_name_h(idx),'HorizontalAlignment','center');
                         end;
                     end;
                 end;

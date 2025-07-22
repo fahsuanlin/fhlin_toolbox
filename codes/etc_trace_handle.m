@@ -140,6 +140,7 @@ switch lower(param)
         switch(cc)
             case 'h'
                 fprintf('interactive rendering commands:\n\n');
+                fprintf('A: analyze EEG data (ICA, filtering, etc.)\n');
                 fprintf('a: archiving image (etc_trace_obj.tif if no specified output file name)\n');
                 fprintf('f: show display configuration\n');
                 fprintf('c: show control panel\n');
@@ -193,6 +194,7 @@ switch lower(param)
 
                 try
                     delete(etc_trace_obj.fig_filter);
+                    delete(etc_trace_obj.app_filter);
                 catch ME
                     if(isfield(etc_trace_obj,'fig_filter'))
                         close(etc_trace_obj.fig_filter,'force');
@@ -200,6 +202,7 @@ switch lower(param)
                         %close(gcf,'force');
                     end;
                 end;
+
 
                 close(etc_trace_obj.fig_trace);
             case 'r'
@@ -342,6 +345,8 @@ switch lower(param)
                                         
                                         
                                         topo_ch=etc_trace_obj.ch_names; % time-domain topology
+                                        topo_ch(ismember(lower(topo_ch),{'ecg','ekg'}))=[]; %remove EKG/ECG in topology...
+
 %                                         if(isfield(etc_trace_obj,'flag_data_component'))
 %                                             if(etc_trace_obj.flag_data_component) %PCA/ICA type topology
 %                                                         if(isfield(etc_trace_obj,'data_component_ch'))
@@ -424,7 +429,7 @@ switch lower(param)
                                         end;
                                         
                                         etc_render_topo('vol_vertex',etc_trace_obj.topo.vertex,'vol_face',etc_trace_obj.topo.face-1,'topo_vertex',etc_trace_obj.topo.electrode_idx-1,'topo_value',data(etc_trace_obj.topo.electrode_data_idx),'topo_smooth',10,'topo_threshold',[abs(diff(etc_trace_obj.ylim))/4 abs(diff(etc_trace_obj.ylim))/2 ],'flag_camlight',flag_camlight,'topo_aux_point_name',etc_trace_obj.topo.ch_names, 'topo_aux_point_coords',etc_trace_obj.topo.vertex(etc_trace_obj.topo.electrode_idx,:));
-
+ 
                                     catch ME
                                         fprintf('error in loading the topology!\n'); 
                                         etc_trace_obj.topo=[];

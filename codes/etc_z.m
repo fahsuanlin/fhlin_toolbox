@@ -37,7 +37,7 @@ end;
 if(isempty(baseline_idx))
      if(dim==2)
         baseline_idx=[1:size(a,2)];
-     else(dim==1)
+     elseif(dim==1)
         baseline_idx=[1:size(a,1)];
      end;
 end;
