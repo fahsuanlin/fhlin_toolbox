@@ -97,7 +97,7 @@ try
         case 0
             v_option='off';
     end;
-    keyboard;:
+    keyboard;
     [ icasig, A, W ] = fastica( Xw, 'numOfIC', numOfIC, 'g', 'tanh' ,'verbose',v_option);
 catch
 end;
