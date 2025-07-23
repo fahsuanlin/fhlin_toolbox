@@ -125,7 +125,7 @@ else
 
         if(mmax>=artifact_ref_ch_cc)
             if(flag_display)
-               fprintf('[%d] component (cc=2.2%f) seleccted for this aritfact suppression...\n',discard_vector_idx, mmax);
+               fprintf('[%d] component (cc=%2.2f) seleccted for this aritfact suppression...\n',discard_vector_idx, mmax);
             end;
 
             A_recon=topo_component;
