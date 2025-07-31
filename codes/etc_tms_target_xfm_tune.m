@@ -316,24 +316,42 @@ switch(tune_index)
         etc_render_fsbrain.object_xfm=object_xfm;
 
         try
-            %transform object in visualization
-            global etc_render_fsbrain;
+            if(~isempty(app))
+                %transform object in visualization
+                global etc_render_fsbrain;
 
-            vv=etc_render_fsbrain.object.Vertices;
-            vv(:,4)=1;
-            vv=(inv(R_c_mm)*inv(R_rotz)*(R_c_mm)*vv')';
-            etc_render_fsbrain.object.Vertices=vv(:,1:3);
+                vv=etc_render_fsbrain.object.Vertices;
+                vv(:,4)=1;
+                vv=(inv(R_c_mm)*inv(R_rotz)*(R_c_mm)*vv')';
+                etc_render_fsbrain.object.Vertices=vv(:,1:3);
 
 
-            %transform data
-            tmp=((inv(R_c_mm)*inv(R_rotz)*R_c_mm)*[tms_coil_origin(:)' 1]')';
-            etc_render_fsbrain.object.UserData.Origin=tmp(1:3);
+                %transform data
+                tmp=((inv(R_c_mm)*inv(R_rotz)*R_c_mm)*[tms_coil_origin(:)' 1]')';
+                etc_render_fsbrain.object.UserData.Origin=tmp(1:3);
 
-            tmp=(inv(R_rotz)*[tms_coil_axis(:)' 1]')';
-            etc_render_fsbrain.object.UserData.Axis=tmp(1:3);
+                tmp=(inv(R_rotz)*[tms_coil_axis(:)' 1]')';
+                etc_render_fsbrain.object.UserData.Axis=tmp(1:3);
 
-            tmp=(inv(R_rotz)*[tms_coil_up(:)' 1]')';
-            etc_render_fsbrain.object.UserData.Up=tmp(1:3);
+                tmp=(inv(R_rotz)*[tms_coil_up(:)' 1]')';
+                etc_render_fsbrain.object.UserData.Up=tmp(1:3);
+            else
+                fprintf('updaging ''strcoil'' variable directly...\n');
+                try
+                    strcoil_tmp = evalin('base', 'strcoil');
+                catch
+                    fprintf('error in loading ''strcoil'' from the workspace!\n');
+                    reurn;
+                end;
+
+                vv=strcoil_tmp.Pwire;
+                vv(:,4)=1;
+                vv=(inv(R_c_mm)*inv(R_rotz)*(R_c_mm)*vv')';
+                strcoil_tmp.Pwire=vv(:,1:3);
+
+                assignin('base','strcoil',strcoil_tmp);
+
+            end;
         catch
         end;
 

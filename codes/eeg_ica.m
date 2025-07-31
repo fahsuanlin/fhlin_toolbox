@@ -115,7 +115,7 @@ else
 
     if(~isempty(artifact_ref_ch_cc)&~isempty(artifact_ref_ch))
         if(flag_display)
-            fprintf('automatic artifact rejection based on the channel [%s]...\n', num2str(artifact_ref_ch));
+            fprintf('automatic artifact rejection based on the signal similairty to channel [%s]...\n', num2str(artifact_ref_ch));
         end;
     
 
@@ -125,7 +125,7 @@ else
 
         if(mmax>=artifact_ref_ch_cc)
             if(flag_display)
-               fprintf('[%d] component (cc=%2.2f) seleccted for this aritfact suppression...\n',discard_vector_idx, mmax);
+               fprintf('ICA component #[%d] (similar to reference channel(s) with cc=%2.2f) seleccted for this aritfact suppression...\n',discard_vector_idx, mmax);
             end;
 
             A_recon=topo_component;
