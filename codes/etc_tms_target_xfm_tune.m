@@ -346,7 +346,7 @@ switch(tune_index)
 
                 vv=strcoil_tmp.Pwire;
                 vv(:,4)=1;
-                vv=(inv(R_c_mm)*inv(R_rotz)*(R_c_mm)*vv')';
+                vv=(inv(R_c)*inv(R_rotz)*(R_c)*vv')';
                 strcoil_tmp.Pwire=vv(:,1:3);
 
                 assignin('base','strcoil',strcoil_tmp);
