@@ -12,8 +12,12 @@ function etc_gwas_manhattan(t)
 chrom_min=min(t.x_CHROM);
 chrom_max=max(t.x_CHROM);
 chrom_offset=0;
+
+add_idx=find(ismember(t.TEST,'ADD'));
+
 for chrom_idx=chrom_min:chrom_max
     idx=find(t.x_CHROM==chrom_idx);
+    idx=intersect(idx,add_idx);
     mmin=min(t.POS(idx));
     plot(chrom_offset-mmin+t.POS(idx), -log10(t.P(idx)),'.'); hold on;
     x_tick(chrom_idx-chrom_min+1)=chrom_offset+(max(t.POS(idx))-min(t.POS(idx)))/2;

@@ -1114,7 +1114,12 @@ if(~isempty(overlay_value))
     end;
     c_idx=find(ovs(:)>=min(overlay_threshold));
     
-    fvdata(c_idx,:)=inverse_get_color(overlay_cmap,ovs(c_idx),max(overlay_threshold),min(overlay_threshold));
+    try
+        fvdata(c_idx,:)=inverse_get_color(overlay_cmap,ovs(c_idx),max(overlay_threshold),min(overlay_threshold));
+    catch
+        fprintf('error in getting color for overlay!...threshold = [%2.2e %2.2e]\n',min(overlay_threshold),max(overlay_threshold));
+        return;
+    end;
 
     c_idx=find(ovs(:)<=-min(overlay_threshold));
     
