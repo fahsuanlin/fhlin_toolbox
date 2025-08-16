@@ -294,7 +294,7 @@ switch(tune_index)
         vtop=tms_coil_up(:); %% important! always refer to the rotation with respect to the "untued" orientation
         vtop_perp=vtop(:)-sum(vtop(:).*tmp(:)).*tmp(:);
 
-        vup=tms_coil_up(:);
+        vup=object_xfm(1:3,2);
 
 
         %determine the rotation between two vectors;
@@ -325,7 +325,6 @@ switch(tune_index)
                 vv=(inv(R_c_mm)*inv(R_rotz)*(R_c_mm)*vv')';
                 etc_render_fsbrain.object.Vertices=vv(:,1:3);
 
-
                 %transform data
                 tmp=((inv(R_c_mm)*inv(R_rotz)*R_c_mm)*[tms_coil_origin(:)' 1]')';
                 etc_render_fsbrain.object.UserData.Origin=tmp(1:3);
@@ -335,30 +334,39 @@ switch(tune_index)
 
                 tmp=(inv(R_rotz)*[tms_coil_up(:)' 1]')';
                 etc_render_fsbrain.object.UserData.Up=tmp(1:3);
-            else
-                fprintf('updaging ''strcoil'' variable directly...\n');
+
+                %updating strcoil in app
                 try
-                    strcoil_tmp = evalin('base', 'strcoil');
+                    tmp=app.strcoil_obj.Vertices;
+                    tmp(:,end+1)=1;
+                    tmp=tmp';
+                    xfm=etc_render_fsbrain.object_xfm;
+                    xfm(1:3,4)=xfm(1:3,4).*1e3; %into mm
+                    xfm_tmp=app.strcoil_obj_xfm;
+                    xfm_tmp(1:3,4)=xfm_tmp(1:3,4)*1e3; %into mm
+                    tmp=xfm*inv(xfm_tmp)*tmp;
+
+                    app.strcoil_obj_xfm=etc_render_fsbrain.object_xfm;
+
+                    app.strcoil_obj.Vertices=tmp(1:3,:)'; %update
+                    app.strcoil_obj_xfm=etc_render_fsbrain.object_xfm;
+                    app.TextArea.Value{end+1}='variable [strcoil] updated in app.';
+                    app.StrcoilLamp.Color='g';
+                    app.StrcoilShowCheckBox.Value=1;
+
                 catch
-                    fprintf('error in loading ''strcoil'' from the workspace!\n');
-                    reurn;
+                    fprintf('Error in updating strcoil!\n');
+                    app.TextArea.Value{end+1}='Error in updating strcoil in app!\n';
                 end;
-
-                vv=strcoil_tmp.Pwire;
-                vv(:,4)=1;
-                vv=(inv(R_c)*inv(R_rotz)*(R_c)*vv')';
-                strcoil_tmp.Pwire=vv(:,1:3);
-
-                assignin('base','strcoil',strcoil_tmp);
-
             end;
+
         catch
         end;
 
         %NAV tuning parameters
         if(~isempty(app))
-            app.rotatedegSlider.Value=tune_value;
-            app.rotatedegEditField.Value=tune_value;
+            app.rotatedegSlider.Value=atan2(sin(tune_value/180*pi), cos(tune_value/180*pi))*180/pi;
+            app.rotatedegEditField.Value=atan2(sin(tune_value/180*pi), cos(tune_value/180*pi))*180/pi;
 
         
             if(~isempty(app.norm_obj))
@@ -380,36 +388,28 @@ switch(tune_index)
         end;
 end;
 
-%updating strcoil
-if(~isempty(app))
-    try
-        tmp=app.strcoil_obj.Vertices;
-        tmp(:,end+1)=1;
-        tmp=tmp';
-        xfm=etc_render_fsbrain.object_xfm;
-        %xfm=object_xfm;
-        xfm(1:3,4)=xfm(1:3,4).*1e3; %into mm
-        xfm_tmp=app.strcoil_obj_xfm;
-        xfm_tmp(1:3,4)=xfm_tmp(1:3,4)*1e3; %into mm
-        tmp=xfm*inv(xfm_tmp)*tmp;
+% %updating strcoil in the base workspace
+% try
+%     fprintf('updaging ''strcoil'' variable in the workspace...\n');
+%     try
+%         strcoil_tmp = evalin('base', 'strcoil');
+%     catch
+%         fprintf('error in loading ''strcoil'' in the workspace!\n');
+%         reurn;
+%     end;
+% 
+%     vv=strcoil_tmp.Pwire;
+%     vv(:,4)=1;
+%     vv=(inv(R_c)*inv(R_rotz)*(R_c)*vv')';
+%     strcoil_tmp.Pwire=vv(:,1:3);
+% 
+%     assignin('base','strcoil',strcoil_tmp);
+% 
+% catch
+%         fprintf('Error in updating strcoil in the workspace!\n');
+% end;
+% 
 
-        app.strcoil_obj.Vertices=tmp(1:3,:)'; %update
-        app.strcoil_obj_xfm=etc_render_fsbrain.object_xfm;
-        %app.strcoil_obj_xfm=object_xfm;
-
-        %         tmp=app.strcoil_obj.Vertices./1e3;
-        %         assignin('base','tmp',tmp);
-        %         evalin('base','strcoil.Pwire=tmp;');
-        %         fprintf('variable [strcoil] update at the workspace.\n');
-        app.TextArea.Value{end+1}='variable [strcoil] updated at the workspace.';
-        app.StrcoilLamp.Color='g';
-        app.StrcoilShowCheckBox.Value=1;
-
-    catch
-        fprintf('Error in updating strcoil!\n');
-        app.TextArea.Value{end+1}='Error in updating strcoil!\n';
-    end;
-end;
 return;
 
 
