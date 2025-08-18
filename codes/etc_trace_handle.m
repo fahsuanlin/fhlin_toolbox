@@ -2049,15 +2049,19 @@ switch type
 
             if(isfield(etc_trace_obj,'middle_time_select_idx'))
                 if(~isempty(etc_trace_obj.middle_time_select_idx))
+                    %etc_trace_obj.middle_time_select_idx
+                    %round(out(1)-handles.xpos0)
 
-                    if(etc_trace_obj.middle_time_select_idx>out(1))
-                        time_idx_start=round(out(1));
-                        time_idx_end=etc_trace_obj.middle_time_select_idx;
-                    else
-                        time_idx_end=round(out(1));
+                    if(handles.xpos0<out(1))
+                        time_idx_end=round(etc_trace_obj.middle_time_select_idx-handles.xpos0+out(1)-1);
                         time_idx_start=etc_trace_obj.middle_time_select_idx;
+                    else
+                        time_idx_start=round(etc_trace_obj.middle_time_select_idx-handles.xpos0+out(1)-1);
+                        time_idx_end=etc_trace_obj.middle_time_select_idx;
                     end;
-                    fprintf('[ %d , %d ] (sample) || [%1.3f , %1.3f ] (s) \r ',time_idx_start+etc_trace_obj.time_window_begin_idx-1,time_idx_end+etc_trace_obj.time_window_begin_idx-1, (time_idx_start-1)/etc_trace_obj.fs+etc_trace_obj.time_begin, (time_idx_end-1)/etc_trace_obj.fs+etc_trace_obj.time_begin);
+                    
+                    %fprintf('>> [ %d , %d ] (sample) || [%1.3f , %1.3f ] (s) \r ',time_idx_start+etc_trace_obj.time_window_begin_idx-1,time_idx_end+etc_trace_obj.time_window_begin_idx-1, (time_idx_start-1)/etc_trace_obj.fs+etc_trace_obj.time_begin, (time_idx_end-1)/etc_trace_obj.fs+etc_trace_obj.time_begin);
+                    fprintf('>> [ %d , %d ] (sample) || [%1.3f , %1.3f ] (s) \r ',time_idx_start, time_idx_end, time_idx_start/etc_trace_obj.fs, time_idx_end/etc_trace_obj.fs);
 
                     obj=findobj('tag','edit_local_trigger_duration');
                     if(~isempty(obj))
@@ -2071,7 +2075,7 @@ switch type
 
                     obj=findobj('tag','edit_local_trigger_time');
                     if(~isempty(obj))
-                        set(obj,'String',sprintf('%1.2f',(time_idx_start-1)/etc_trace_obj.fs+etc_trace_obj.time_begin));
+                        set(obj,'String',sprintf('%1.2f',(time_idx_start-1)/etc_trace_obj.fs));
                     end;
                 end;
             end;
@@ -2146,7 +2150,7 @@ switch type
         %                 delete(handles.rectangle);
         %         end;
 
-%        fprintf('up!\n')
+        fprintf('>> drag released!\n')
         try
             if(isfield(handles,'prev_rectangle'))
                 if(isvalid(handles.prev_rectangle))
