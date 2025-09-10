@@ -48,6 +48,9 @@ for i=1:length(varargin)/2
             mont_file=option_value;
         case 'crop_rect'
             crop_rect=option_value;
+            if(~isempty(crop_rect))
+                flag_auto_crop=0;
+            end;
         case 'resize_size'
             resize_size=option_value;
         case 'text_string'
