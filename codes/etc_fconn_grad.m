@@ -1,4 +1,4 @@
-function [fconn_grad] = etc_fconn_grad(C, k)
+function [fconn_grad] = etc_fconn_grad(C, k,varargin)
 % etc_fconn_grad A simple demonstration of calculating the gradient of a
 % connectivity matrix
 %
@@ -13,6 +13,18 @@ function [fconn_grad] = etc_fconn_grad(C, k)
 %   Author: (Your Name), 2025
 
 affinity_method='diffusion';
+
+for i=1:length(varargin)/2
+    option=varargin{i*2-1};
+    option_value=varargin{i*2};
+    switch lower(option)
+        case 'affinity_method'
+            affinity_method=option_value;
+        otherwise
+            fprintf('unknown option [%s]. error!\n',option);
+            return;
+    end;
+end;
 
 switch(affinity_method)
 
@@ -44,14 +56,32 @@ switch(affinity_method)
         K = exp(-dist.^2 / (2 * sigma^2));
         N=size(C,1);
         K(1:N+1:end) = 0;        % zero the diagonal of K
+
+    case 'cosine'
+        % Fisher-z transform correlations
+        Z = atanh(C);              % Fisher z
+        Z(1:size(C,1)+1:end) = 0;  % zero diagonal
+
+        % Cosine similarity between connectivity profiles
+        normZ = sqrt(sum(Z.^2, 2));
+        sim = (Z * Z.') ./ (normZ * normZ.');
+        K = (sim + 1) / 2;         % rescale 0–1
+        K(isnan(K)) = 0;
+        K = (K + K.') / 2;         % ensure symmetry
 end;
 
 %% Step 3: Markov normalization
-% Make each row sum to 1
-rowSums = sum(K, 2);  % sum across columns
-M = K ./ rowSums;     % row-stochastic matrix
-idx=find(isnan(M(:)));
-M(idx)=randn(size(idx)).*eps;
+if(strcmp(affinity_method,'cosine'))
+    d = sum(K,2);
+    D_alpha = diag(d.^(-0.5));
+    M = D_alpha * K * D_alpha;
+else
+    % Make each row sum to 1
+    rowSums = sum(K, 2);  % sum across columns
+    M = K ./ rowSums;     % row-stochastic matrix
+    idx=find(isnan(M(:)));
+    M(idx)=randn(size(idx)).*eps;
+end;
 
 % (Note: M may not be strictly symmetric. Some pipelines symmetrize or use
 % different normalization schemes. Adjust per your chosen approach.)
