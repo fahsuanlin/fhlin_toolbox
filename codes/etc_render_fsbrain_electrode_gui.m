@@ -576,7 +576,7 @@ if(etc_render_fsbrain.electrode_add_gui_ok)
     if(length(etc_render_fsbrain.electrode)==1)
         etc_render_fsbrain.electrode_idx=1;
         etc_render_fsbrain.electrode_contact_idx=1;
-        etc_render_fsbrain.electrode_update_contact_view_flag=0;
+        %etc_render_fsbrain.electrode_update_contact_view_flag=0;
     end;
     
     %initialize new electrode and update its contact coordinates

@@ -134,12 +134,18 @@ if(~seegdb_obj.flag_RenderKeep|isempty(etc_render_fsbrain))
 
         if(flag_new_replace==1) %new plot
 
-                    clear global etc_render_fsbrain;
+            clear global etc_render_fsbrain;
 
             %etc_render_fsbrain('curv_pos_color',[1 1 1].*0.5,'curv_neg_color',[1 1 1].*0.5,'alpha',0.3,'surf',surf,'hemi',hemi,'subject',subject,'vol',mri,'talxfm',(talxfm),'topo_aux2_point_coords',aux2_point_coords,'electrode',electrode,'selected_electrode_flag',0,'selected_contact_flag',0,'aux2_point_individual_color',aux2_point_individual_color);
-            feval(@etc_render_fsbrain,'curv_pos_color',[1 1 1].*0.5,'curv_neg_color',[1 1 1].*0.5,'alpha',0.3,'surf',surf,'hemi',seegdb_obj.hemi,'subject',subject,'vol',mri,'talxfm',(talxfm),...
+            if(~strcmp(seegdb_obj.roi_file{end},'.mgz')) %surface label
+                feval(@etc_render_fsbrain,'curv_pos_color',[1 1 1].*0.5,'curv_neg_color',[1 1 1].*0.5,'alpha',0.3,'surf',surf,'hemi',seegdb_obj.hemi,'subject',subject,'vol',mri,'talxfm',(talxfm),...
                 'cort_label_filename', seegdb_obj.roi_file{end}, ...
                 'topo_aux2_point_coords',aux2_point_coords,'topo_aux2_point_name',aux2_point_name,'electrode',electrode,'selected_electrode_flag',0,'selected_contact_flag',0,'aux2_point_individual_color',aux2_point_individual_color);
+            else %volume ROI
+                feval(@etc_render_fsbrain,'curv_pos_color',[1 1 1].*0.5,'curv_neg_color',[1 1 1].*0.5,'alpha',0.3,'surf',surf,'hemi',seegdb_obj.hemi,'subject',subject,'vol',mri,'talxfm',(talxfm),...
+                'topo_aux2_point_coords',aux2_point_coords,'topo_aux2_point_name',aux2_point_name,'electrode',electrode,'selected_electrode_flag',0,'selected_contact_flag',0,'aux2_point_individual_color',aux2_point_individual_color);
+                
+            end;    
             view(90,30);
             etc_render_fsbrain_handle('redraw');
         elseif(flag_new_replace==2) %replace plot
