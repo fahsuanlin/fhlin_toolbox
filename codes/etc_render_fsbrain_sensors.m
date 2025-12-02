@@ -22,7 +22,7 @@ function varargout = etc_render_fsbrain_sensors(varargin)
 
 % Edit the above text to modify the response to help etc_render_fsbrain_sensors
 
-% Last Modified by GUIDE v2.5 21-Jul-2025 19:41:46
+% Last Modified by GUIDE v2.5 01-Dec-2025 13:19:20
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -72,7 +72,7 @@ if(~isempty(etc_render_fsbrain.aux_point_coords))
     for e_idx=1:size(etc_render_fsbrain.aux_point_coords,1)
         str{e_idx}=etc_render_fsbrain.aux_point_name{e_idx};
     end;
-    set(handles.listbox_sensor,'string',str);
+    set(handles.listbox_sensor,'String',str);
     guidata(hObject, handles);
     
     %set default sensor to the first one
@@ -535,6 +535,7 @@ if(~isempty(answer))
 
 end;
 
+etc_render_fsbrain_handle('redraw');
 
 % --- Executes on button press in button_snap.
 function button_snap_Callback(hObject, eventdata, handles)
