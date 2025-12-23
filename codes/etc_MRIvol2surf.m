@@ -14,6 +14,7 @@ subject='fsaverage';
 surf='inflated';
 hemi='lh'; %hemi={'lh','rh'}; for showing both hemispheres;
 
+mov_targ=[]; %the transformed mov to targ object.
 
 flag_display=0;
 
@@ -38,6 +39,8 @@ for i=1:length(varargin)/2
             hemi=option_value;
         case 'frames'
             frames=option_value;
+        case 'mov_targ'
+            mov_targ=option_value;
         otherwise
             fprintf('unknown option [%s]!\nerror!\n',option);
             return;
@@ -108,10 +111,18 @@ vox_ind=sub2ind([size(targ_orig_vol.vol,1),size(targ_orig_vol.vol,2),size(targ_o
 if(isempty(frames))
     frames=[1:size(mov.vol,4)];
 end;
+
+if(isempty(mov_targ))
+    mov_targ=etc_MRIvol2vol(mov,targ_orig_vol,R,'frames',frames,'flag_display',flag_display);
+end;
+
 for t_idx=1:length(frames)
     if(flag_display) fprintf('*'); end;
-    mov_tmp=etc_MRIvol2vol(mov,targ_orig_vol,R,'frames',frames(t_idx));
-    tmp=mov_tmp.vol;
+    %mov_tmp=etc_MRIvol2vol(mov,targ_orig_vol,R,'frames',frames(t_idx));
+    tmp=mov_targ.vol(:,:,:,t_idx);
+    if(t_idx==1)
+        surf_val=zeros(length(vox_ind),length(frames));
+    end;
     surf_val(:,t_idx)=tmp(round(vox_ind));
 end;
 if(flag_display) fprintf('\n'); end;

@@ -125,7 +125,11 @@ else
             fprintf('*');
         end;
         tmp_mov=mov.vol(:,:,:,frames(t_idx));
-        tmp_targ=zeros(nrt,nct,nst);
+        if(t_idx==1)
+            tmp_targ=zeros(nrt,nct,nst);
+        else
+            tmp_targ(:)=0;
+        end;
         tmp_targ(tind)=tmp_mov(mind);
         if(t_idx==1)
             vol.vol=zeros(size(tmp_targ,1),size(tmp_targ,2),size(tmp_targ,3),length(frames));

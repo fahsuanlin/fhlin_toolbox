@@ -233,8 +233,13 @@ switch lower(param)
                     end;
 
                     if(mov.nframes>1) %only the first time point
-                        mov.vol=mov.vol(:,:,:,1);
-                        mov.nframes=1;
+                        %mov.vol=mov.vol(:,:,:,1);
+                        %mov.nframes=1;
+                        tmp=squeeze(sum(sum(sum(abs(mov.vol),3),2),1));
+                        [~,max_frame_idx]=max(tmp,[],1);
+
+                        etc_render_fsbrain.overlay_stc_timeVec_idx=max_frame_idx;
+                        etc_render_fsbrain.overlay_stc_timeVec=[0:size(mov.vol,4)-1];
                     end;
                     
                     Tt = etc_render_fsbrain.vol.tkrvox2ras;
@@ -244,9 +249,11 @@ switch lower(param)
                     
                     %prepare overlay volume matched to the underlay volume
                     etc_render_fsbrain.overlay_vol = etc_MRIvol2vol(mov,etc_render_fsbrain.vol,xfm,'flag_display',1); %only the first volume
+                    %etc_render_fsbrain.overlay_vol = etc_MRIvol2vol(mov,etc_render_fsbrain.vol,xfm,'flag_display',1,'frames',max_frame_idx); %max frame
                     
                     %prepare overlay surface
-                    etc_render_fsbrain.overlay_stc = etc_MRIvol2surf(mov,etc_render_fsbrain.surf,xfm,'subject',etc_render_fsbrain.subject,'hemi',etc_render_fsbrain.hemi,'flag_display',1);
+                    %etc_render_fsbrain.overlay_stc = etc_MRIvol2surf(mov,etc_render_fsbrain.surf,xfm,'subject',etc_render_fsbrain.subject,'hemi',etc_render_fsbrain.hemi,'flag_display',1,'mov_targ',etc_render_fsbrain.overlay_vol);
+                    %etc_render_fsbrain.overlay_stc = etc_MRIvol2surf(mov,etc_render_fsbrain.surf,xfm,'subject',etc_render_fsbrain.subject,'hemi',etc_render_fsbrain.hemi,'flag_display',1,'frames',max_frame_idx,'mov_targ',etc_render_fsbrain.overlay_vol);
                     
                     if(~isempty(etc_render_fsbrain.overlay_vol))
     
@@ -254,11 +261,20 @@ switch lower(param)
 
                         etc_render_fsbrain.flag_overlay_vol2surf=1;
                         offset=0;
+
+
+                        [C,R,S] = meshgrid([1:size(etc_render_fsbrain.overlay_vol.vol,2)],[1:size(etc_render_fsbrain.overlay_vol.vol,1)],[1:size(etc_render_fsbrain.overlay_vol.vol,3)]);
+                        CRS=[C(:) R(:) S(:)];
+                        CRS=cat(2,CRS,ones(size(CRS,1),1))';
+
+                        all_coords=inv(etc_render_fsbrain.vol_reg)*etc_render_fsbrain.vol.tkrvox2ras*CRS;
+                        all_coords=all_coords(1:3,:)';
+                        
                         for hemi_idx=1:2
 
                             %choose 10,242 sources arbitrarily for cortical soruces
-                            %vol_A(hemi_idx).v_idx=[1:10242]-1;
-                            etc_render_fsbrain.vol_A(hemi_idx).v_idx=[1:1:size(etc_render_fsbrain.orig_vertex_coords,1)]-1;
+                            etc_render_fsbrain.vol_A(hemi_idx).v_idx=[1:10242]-1;
+                            %etc_render_fsbrain.vol_A(hemi_idx).v_idx=[1:1:size(etc_render_fsbrain.orig_vertex_coords,1)]-1;
 
                             etc_render_fsbrain.vol_A(hemi_idx).vertex_coords=etc_render_fsbrain.vertex_coords;
                             etc_render_fsbrain.vol_A(hemi_idx).faces=etc_render_fsbrain.faces;
@@ -272,6 +288,9 @@ switch lower(param)
                             vol_vox_tmp=(inv(etc_render_fsbrain.vol.tkrvox2ras)*(etc_render_fsbrain.vol_reg)*(SurfVertices.')).';
                             vol_vox_tmp=round(vol_vox_tmp(:,1:3));
 
+
+                            etc_render_fsbrain_prep_wb;
+
                             %separate data into "cort_idx" and "non_cort_idx" entries; the
                             %former ones are for cortical locations (defined for ONLY one selected
                             %hemisphere. the latter ones are for non-cortical locations (may
@@ -279,7 +298,7 @@ switch lower(param)
                             %hemisphere).
                             all_idx=[1:prod(etc_render_fsbrain.overlay_vol.volsize(1:3))];
                             %[cort_idx,ii]=unique(sub2ind(overlay_vol.volsize(1:3),vol_vox_tmp(:,2),vol_vox_tmp(:,1),vol_vox_tmp(:,3)));
-
+    
 
                             for ii=1:size(vol_vox_tmp,2)
                                 vol_vox_tmp(find(vol_vox_tmp(:,ii)<1),ii)=nan;
@@ -290,20 +309,19 @@ switch lower(param)
                             etc_render_fsbrain.vol_A(hemi_idx).v_idx(find(isnan(tmp)))=[];
 
                             cort_idx=sub2ind(etc_render_fsbrain.overlay_vol.volsize(1:3),vol_vox_tmp(:,2),vol_vox_tmp(:,1),vol_vox_tmp(:,3));
+                            etc_render_fsbrain.vol_A(hemi_idx).cort_idx=cort_idx;
+
+                            %overlay_tmp=reshape(etc_render_fsbrain.overlay_vol.vol,[size(etc_render_fsbrain.overlay_vol.vol,1)*size(etc_render_fsbrain.overlay_vol.vol,2)*size(etc_render_fsbrain.overlay_vol.vol,3), size(etc_render_fsbrain.overlay_vol.vol,4)]);
+                            %etc_render_fsbrain.overlay_stc=overlay_tmp(cort_idx,:);
+
                             ii=[1:length(cort_idx)];
                             etc_render_fsbrain.vol_A(hemi_idx).v_idx=etc_render_fsbrain.vol_A(hemi_idx).v_idx(ii);
-                            non_cort_idx=setdiff(all_idx,cort_idx);
+                            %non_cort_idx=setdiff(all_idx,cort_idx);
+                            non_cort_idx=etc_render_fsbrain.vol_A(hemi_idx).src_wb_idx(:);
 
                             n_source(hemi_idx)=length(non_cort_idx)+length(cort_idx);
                             n_dip(hemi_idx)=n_source(hemi_idx)*3;
 
-
-                            [C,R,S] = meshgrid([1:size(etc_render_fsbrain.overlay_vol.vol,2)],[1:size(etc_render_fsbrain.overlay_vol.vol,1)],[1:size(etc_render_fsbrain.overlay_vol.vol,3)]);
-                            CRS=[C(:) R(:) S(:)];
-                            CRS=cat(2,CRS,ones(size(CRS,1),1))';
-
-                            all_coords=inv(etc_render_fsbrain.vol_reg)*etc_render_fsbrain.vol.tkrvox2ras*CRS;
-                            all_coords=all_coords(1:3,:)';
                             etc_render_fsbrain.vol_A(hemi_idx).loc=all_coords(cort_idx,:);
                             etc_render_fsbrain.vol_A(hemi_idx).wb_loc=all_coords(non_cort_idx,:)./1e3;
 
@@ -312,6 +330,9 @@ switch lower(param)
                             etc_render_fsbrain.overlay_vol_value=reshape(tmp_value,[size(etc_render_fsbrain.overlay_vol.vol,1)*size(etc_render_fsbrain.overlay_vol.vol,2)*size(etc_render_fsbrain.overlay_vol.vol,3), size(etc_render_fsbrain.overlay_vol.vol,4)]);
 
                             midx=[cort_idx(:)' non_cort_idx(:)'];
+                            if(size(etc_render_fsbrain.overlay_vol_stc,2)~=size(etc_render_fsbrain.overlay_vol_value,2))
+                                etc_render_fsbrain.overlay_vol_stc=[];
+                            end;
                             etc_render_fsbrain.overlay_vol_stc(offset+1:offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx),:)=etc_render_fsbrain.overlay_vol_value(midx(1:length(cort_idx)),:);
                             etc_render_fsbrain.overlay_vol_stc(offset+length(etc_render_fsbrain.vol_A(hemi_idx).v_idx)+1:offset+n_source(hemi_idx),:)=etc_render_fsbrain.overlay_vol_value(midx(length(cort_idx)+1:end),:);
 
@@ -337,49 +358,57 @@ switch lower(param)
 
 
                         if(strcmp(etc_render_fsbrain.hemi,'lh'))
-                            etc_render_fsbrain.overlay_stc=X_hemi_cort{1};
+%                            etc_render_fsbrain.overlay_stc=X_hemi_cort{1};
                             etc_render_fsbrain.overlay_vertex=etc_render_fsbrain.vol_A(1).v_idx;
+
+                            overlay_tmp=reshape(etc_render_fsbrain.overlay_vol.vol,[size(etc_render_fsbrain.overlay_vol.vol,1)*size(etc_render_fsbrain.overlay_vol.vol,2)*size(etc_render_fsbrain.overlay_vol.vol,3), size(etc_render_fsbrain.overlay_vol.vol,4)]);
+                            etc_render_fsbrain.overlay_stc=overlay_tmp(etc_render_fsbrain.vol_A(1).cort_idx,:);
+
                             if(~isempty(etc_render_fsbrain.overlay_aux_vol_stc))
                                 etc_render_fsbrain.overlay_aux_stc=aux_X_hemi_cort{1};
                             end;
 
 
-                            vv=etc_render_fsbrain.overlay_vertex;
-                            loc_surf=[etc_render_fsbrain.orig_vertex_coords(vv+1,:) ones(length(vv),1)]';
-                            tmp=inv(etc_render_fsbrain.vol.tkrvox2ras)*(etc_render_fsbrain.vol_reg)*loc_surf;
-                            loc_vol=round(tmp(1:3,:))';
-
-
-                            for ii=1:size(loc_vol,2)
-                                loc_vol(find(loc_vol(:,ii)<1),ii)=nan;
-                                loc_vol(find(loc_vol(:,ii)>etc_render_fsbrain.vol.volsize(ii)),ii)=nan;
-                            end;
-                            tmp=mean(loc_vol,2);
-                            loc_vol(find(isnan(tmp)),:)=[];
-
-                            etc_render_fsbrain.vol_A(1).src_wb_idx=sub2ind(size(etc_render_fsbrain.vol.vol),loc_vol(:,2),loc_vol(:,1),loc_vol(:,3));
-                            etc_render_fsbrain.vol_A(2).src_wb_idx=[];
+%                             vv=etc_render_fsbrain.overlay_vertex;
+%                             loc_surf=[etc_render_fsbrain.orig_vertex_coords(vv+1,:) ones(length(vv),1)]';
+%                             tmp=inv(etc_render_fsbrain.vol.tkrvox2ras)*(etc_render_fsbrain.vol_reg)*loc_surf;
+%                             loc_vol=round(tmp(1:3,:))';
+% 
+% 
+%                             for ii=1:size(loc_vol,2)
+%                                 loc_vol(find(loc_vol(:,ii)<1),ii)=nan;
+%                                 loc_vol(find(loc_vol(:,ii)>etc_render_fsbrain.vol.volsize(ii)),ii)=nan;
+%                             end;
+%                             tmp=mean(loc_vol,2);
+%                             loc_vol(find(isnan(tmp)),:)=[];
+% 
+%                             etc_render_fsbrain.vol_A(1).src_wb_idx=sub2ind(size(etc_render_fsbrain.vol.vol),loc_vol(:,2),loc_vol(:,1),loc_vol(:,3));
+%                             etc_render_fsbrain.vol_A(2).src_wb_idx=[];
 
                         else
-                            etc_render_fsbrain.overlay_stc=X_hemi_cort{2};
+%                            etc_render_fsbrain.overlay_stc=X_hemi_cort{2};
                             etc_render_fsbrain.overlay_vertex=etc_render_fsbrain.vol_A(2).v_idx;
+
+                            overlay_tmp=reshape(etc_render_fsbrain.overlay_vol.vol,[size(etc_render_fsbrain.overlay_vol.vol,1)*size(etc_render_fsbrain.overlay_vol.vol,2)*size(etc_render_fsbrain.overlay_vol.vol,3), size(etc_render_fsbrain.overlay_vol.vol,4)]);
+                            etc_render_fsbrain.overlay_stc=overlay_tmp(etc_render_fsbrain.vol_A(2).cort_idx,:);
+
                             if(~isempty(etc_render_fsbrain.overlay_aux_vol_stc))
                                 etc_render_fsbrain.overlay_aux_stc=aux_X_hemi_cort{2};
                             end;
 
-                            vv=etc_render_fsbrain.overlay_vertex;
-                            loc_surf=[etc_render_fsbrain.orig_vertex_coords(vv+1,:) ones(length(vv),1)]';
-                            tmp=inv(etc_render_fsbrain.vol.tkrvox2ras)*(etc_render_fsbrain.vol_reg)*loc_surf;
-                            loc_vol=round(tmp(1:3,:))';
-                            for ii=1:size(loc_vol,2)
-                                loc_vol(find(loc_vol(:,ii)<1),ii)=nan;
-                                loc_vol(find(loc_vol(:,ii)>etc_render_fsbrain.vol.volsize(ii)),ii)=nan;
-                            end;
-                            tmp=mean(loc_vol,2);
-                            loc_vol(find(isnan(tmp)),:)=[];
-
-                            etc_render_fsbrain.vol_A(1).src_wb_idx=[];
-                            etc_render_fsbrain.vol_A(2).src_wb_idx=sub2ind(size(etc_render_fsbrain.vol.vol),loc_vol(:,2),loc_vol(:,1),loc_vol(:,3));
+%                             vv=etc_render_fsbrain.overlay_vertex;
+%                             loc_surf=[etc_render_fsbrain.orig_vertex_coords(vv+1,:) ones(length(vv),1)]';
+%                             tmp=inv(etc_render_fsbrain.vol.tkrvox2ras)*(etc_render_fsbrain.vol_reg)*loc_surf;
+%                             loc_vol=round(tmp(1:3,:))';
+%                             for ii=1:size(loc_vol,2)
+%                                 loc_vol(find(loc_vol(:,ii)<1),ii)=nan;
+%                                 loc_vol(find(loc_vol(:,ii)>etc_render_fsbrain.vol.volsize(ii)),ii)=nan;
+%                             end;
+%                             tmp=mean(loc_vol,2);
+%                             loc_vol(find(isnan(tmp)),:)=[];
+% 
+%                             etc_render_fsbrain.vol_A(1).src_wb_idx=[];
+%                             etc_render_fsbrain.vol_A(2).src_wb_idx=sub2ind(size(etc_render_fsbrain.vol.vol),loc_vol(:,2),loc_vol(:,1),loc_vol(:,3));
 
                         end;
 
@@ -388,7 +417,8 @@ switch lower(param)
                         end;
                         etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
 
-
+                        %overlay source is volume.
+                        etc_render_fsbrain.overlay_source=4;
 
                         if(~isfield(etc_render_fsbrain,'overlay_buffer'))
                             etc_render_fsbrain.overlay_buffer=[];
@@ -2433,7 +2463,7 @@ switch lower(param)
                     etc_trcae_gui_update_time('flag_redraw',1);
                 end;
                 
-            end;
+            end
             
         else %clicked pt specified
             %add exploration toolbar
@@ -4277,6 +4307,18 @@ try
             end;
             xx=[]; yy=[]; zz=[];
             for idx=1:size(etc_render_fsbrain.aux_point_coords,1)
+                if(~isfield(etc_render_fsbrain,'aux_point_name'))
+                    %for i=1:size(etc_render_fsbrain.aux_point_coords,1)
+                        etc_render_fsbrain.aux_point_name{idx}='';
+                    %end;
+                else
+                    if(length(etc_render_fsbrain.aux_point_name)~=size(etc_render_fsbrain.aux_point_coords,1))
+                        %for i=1:size(etc_render_fsbrain.aux_point_coords,1)
+                            etc_render_fsbrain.aux_point_name{idx}='';
+                        %end;
+                    end;
+                end;
+
                 if(strcmp(etc_render_fsbrain.aux_point_name{idx},'.'))
                     xx=cat(1,xx,sx.*sr./3+etc_render_fsbrain.aux_point_coords(idx,1));
                     yy=cat(1,yy,sy.*sr./3+etc_render_fsbrain.aux_point_coords(idx,2));
@@ -4355,12 +4397,14 @@ try
                 
                 if(etc_render_fsbrain.all_electrode_flag)
                     
+                    n_e=[];
                     for e_idx=1:length(etc_render_fsbrain.electrode)
                         n_e(e_idx)=etc_render_fsbrain.electrode(e_idx).n_contact;
                     end;
                     n_e_cumsum=cumsum(n_e);
                     
                     xx=[]; yy=[]; zz=[];
+                    if(~isempty(n_e))
                     for idx=1:size(etc_render_fsbrain.aux2_point_coords,1)
                         xx=cat(1,xx,etc_render_fsbrain.aux2_point_coords(idx,1));
                         yy=cat(1,yy,etc_render_fsbrain.aux2_point_coords(idx,2));
@@ -4371,69 +4415,82 @@ try
                             end;
                         end;
                     end;
+                    end;
                     %etc_render_fsbrain.aux2_point_coords_h=plot3(xx,yy,zz,'.');
                     %set(etc_render_fsbrain.aux2_point_coords_h,'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
-                    
-                    for idx=1:size(etc_render_fsbrain.aux2_point_coords,1)
-                        etc_render_fsbrain.aux2_point_coords_h(idx)=plot3(xx(idx),yy(idx),zz(idx),'.');
-                        set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_color);
 
-                        if(isempty(etc_render_fsbrain.aux2_point_name_h))
-                            UserData.name=sprintf('%04d',idx);
-                            set(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData',UserData);
-                        else
-                            UserData.name=get(etc_render_fsbrain.aux2_point_name_h(idx),'String');
-                            set(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData',UserData);
+
+                    etc_render_fsbrain.flag_aux2_point_direct=0;
+                    if(etc_render_fsbrain.flag_aux2_point_direct)
+                        try
+                            delete(etc_render_fsbrain.aux2_point_coords_h);
+                        catch
                         end;
+                        etc_render_fsbrain.aux2_point_coords_h(1)=plot3(etc_render_fsbrain.aux2_point_coords(:,1),etc_render_fsbrain.aux2_point_coords(:,2),etc_render_fsbrain.aux2_point_coords(:,3),'.');
+                        etc_render_fsbrain.aux2_point_individual_color(1,:)=etc_render_fsbrain.aux2_point_color;
+                        set(etc_render_fsbrain.aux2_point_coords_h(1),'markersize',etc_render_fsbrain.aux2_point_size);
+                    else
+                        for idx=1:size(etc_render_fsbrain.aux2_point_coords,1)
+                            etc_render_fsbrain.aux2_point_coords_h(idx)=plot3(xx(idx),yy(idx),zz(idx),'.');
+                            set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_color);
 
-                        set(etc_render_fsbrain.aux2_point_coords_h(idx),'ButtonDownFcn',@aux2_point_click);
-                        if(isfield(etc_render_fsbrain,'aux2_point_individual_color')&& ~isempty(etc_render_fsbrain.aux2_point_individual_color)&&(size(etc_render_fsbrain.aux2_point_individual_color,1)==size(etc_render_fsbrain.aux2_point_coords,1)))
-                            try
-                                UserData=get(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData');
-                                UserData.color=etc_render_fsbrain.aux2_point_individual_color(idx,:);
+                            if(isempty(etc_render_fsbrain.aux2_point_name_h))
+                                UserData.name=sprintf('%04d',idx);
                                 set(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData',UserData);
-                        
-                                if(isfield(etc_render_fsbrain,'aux2_point_individual_size'))
-                                    set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_individual_color(idx,:),'markersize',etc_render_fsbrain.aux2_point_individual_size(idx));
-                                else
-                                    set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_individual_color(idx,:),'markersize',etc_render_fsbrain.aux2_point_size);
-                                end;
-                            catch ME
-                            end
-                            %set(etc_render_fsbrain.aux2_point_coords_h(idx),'markersize',etc_render_fsbrain.aux2_point_size);
-                        else
-                            electrode_idx=min(find((idx>n_e_cumsum)<eps));
-                            if(isfield(etc_render_fsbrain.electrode(electrode_idx),'color'))
-                                if(~isempty(etc_render_fsbrain.electrode(electrode_idx).color))
+                            else
+                                UserData.name=get(etc_render_fsbrain.aux2_point_name_h(idx),'String');
+                                set(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData',UserData);
+                            end;
 
+                            set(etc_render_fsbrain.aux2_point_coords_h(idx),'ButtonDownFcn',@aux2_point_click);
+                            if(isfield(etc_render_fsbrain,'aux2_point_individual_color')&& ~isempty(etc_render_fsbrain.aux2_point_individual_color)&&(size(etc_render_fsbrain.aux2_point_individual_color,1)==size(etc_render_fsbrain.aux2_point_coords,1)))
+                                try
                                     UserData=get(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData');
-                                    UserData.color=etc_render_fsbrain.electrode(electrode_idx).color;
+                                    UserData.color=etc_render_fsbrain.aux2_point_individual_color(idx,:);
                                     set(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData',UserData);
 
-                                    etc_render_fsbrain.aux2_point_individual_color(idx,:)=etc_render_fsbrain.electrode(electrode_idx).color;
+                                    if(isfield(etc_render_fsbrain,'aux2_point_individual_size'))
+                                        set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_individual_color(idx,:),'markersize',etc_render_fsbrain.aux2_point_individual_size(idx));
+                                    else
+                                        set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_individual_color(idx,:),'markersize',etc_render_fsbrain.aux2_point_size);
+                                    end;
+                                catch ME
+                                end
+                                %set(etc_render_fsbrain.aux2_point_coords_h(idx),'markersize',etc_render_fsbrain.aux2_point_size);
+                            else
+                                electrode_idx=min(find((idx>n_e_cumsum)<eps));
+                                if(isfield(etc_render_fsbrain.electrode(electrode_idx),'color'))
+                                    if(~isempty(etc_render_fsbrain.electrode(electrode_idx).color))
 
-                                    set(etc_render_fsbrain.aux2_point_coords_h(idx),'MarkerEdgeColor',etc_render_fsbrain.electrode(electrode_idx).color,'markersize',etc_render_fsbrain.aux2_point_size);
+                                        UserData=get(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData');
+                                        UserData.color=etc_render_fsbrain.electrode(electrode_idx).color;
+                                        set(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData',UserData);
+
+                                        etc_render_fsbrain.aux2_point_individual_color(idx,:)=etc_render_fsbrain.electrode(electrode_idx).color;
+
+                                        set(etc_render_fsbrain.aux2_point_coords_h(idx),'MarkerEdgeColor',etc_render_fsbrain.electrode(electrode_idx).color,'markersize',etc_render_fsbrain.aux2_point_size);
+                                    else
+                                        UserData=get(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData');
+                                        UserData.color=etc_render_fsbrain.aux2_point_color;
+                                        set(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData',UserData);
+
+                                        etc_render_fsbrain.aux2_point_individual_color(idx,:)=etc_render_fsbrain.aux2_point_color;
+
+                                        set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
+                                    end;
                                 else
+
                                     UserData=get(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData');
                                     UserData.color=etc_render_fsbrain.aux2_point_color;
                                     set(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData',UserData);
 
                                     etc_render_fsbrain.aux2_point_individual_color(idx,:)=etc_render_fsbrain.aux2_point_color;
-                                    
+
                                     set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
                                 end;
-                            else
-
-                                UserData=get(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData');
-                                UserData.color=etc_render_fsbrain.aux2_point_color;
-                                set(etc_render_fsbrain.aux2_point_coords_h(idx),'UserData',UserData);
-
-                                etc_render_fsbrain.aux2_point_individual_color(idx,:)=etc_render_fsbrain.aux2_point_color;
-
-                                set(etc_render_fsbrain.aux2_point_coords_h(idx),'color',etc_render_fsbrain.aux2_point_color,'markersize',etc_render_fsbrain.aux2_point_size);
                             end;
-                        end;
-                    end
+                        end
+                    end;
                 end;
                 
                 %highlight the selected contact
@@ -4591,7 +4648,10 @@ function update_overlay_vol()
 
 global etc_render_fsbrain;
 
-if(isempty(etc_render_fsbrain.vol_A)) return; end;
+if(isempty(etc_render_fsbrain.vol_A))
+    fprintf('no ''vol_A'' field for updating.\n');
+    return;
+end;
 
 if(etc_render_fsbrain.overlay_source~=4) %not overlay_vol as the source
     try
