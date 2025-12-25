@@ -37,12 +37,12 @@ vol = [];
 %   return;
 % end
 % 
-% Sm = mov.vox2ras0;
+Sm = mov.vox2ras0;
 Tm = mov.tkrvox2ras;
-% St = targ.vox2ras0;
+St = targ.vox2ras0;
 Tt = targ.tkrvox2ras;
 % 
-% if(nargin == 2)  R = Tm*inv(Sm)*St*inv(Tt); end
+if(isempty(R))  R = Tm*inv(Sm)*St*inv(Tt); end
 %   
 % % Target vox to Mov vox Matrix
 Vt2m = inv(Tm)*R*Tt;

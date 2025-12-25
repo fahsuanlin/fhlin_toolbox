@@ -192,12 +192,15 @@ switch lower(param)
             case 'i'
                 fprintf('\nload overlay volume...\n');
 
-                answer = questdlg('Use identity matrix as the registration matrix?','registration matrix');
+                %answer = questdlg('Use identity matrix as the registration matrix?','registration matrix');
+                answer=questdlg('Use identity matrix as the registration matrix?','registration matrix','identity','header','load','identity');
                 
-                if(strcmp(answer,'No'))
+                if(strcmp(answer,'load'))
                     [filename, pathname, filterindex] = uigetfile({'*.dat','registration matrix'}, 'Pick a registration matrix file');
                     if(filename==0) return; end;
-                elseif(strcmp(answer,'Yes'))
+                elseif(strcmp(answer,'identity'))
+                    filename='';
+                elseif(strcmp(answer,'header'))
                     filename='';
                 else
                     return;
@@ -208,9 +211,10 @@ switch lower(param)
                 if(filename1==0) return; end;
                 
                 try
-                    if(isempty(filename))
+                    xfm=[];
+                    if(isempty(filename)&strcmp(answer,'identity'))
                         xfm=eye(4);
-                    else
+                    elseif(strcmp(answer,'load'))
                         fprintf('reading registration matrix: [%s]....\n',sprintf('%s/%s',pathname,filename));
                         xfm=etc_read_xfm('file_xfm',sprintf('%s/%s',pathname,filename));
                     end;
@@ -242,10 +246,18 @@ switch lower(param)
                         etc_render_fsbrain.overlay_stc_timeVec=[0:size(mov.vol,4)-1];
                     end;
                     
-                    Tt = etc_render_fsbrain.vol.tkrvox2ras;
-                    Tm = mov.tkrvox2ras;
-                    etc_render_fsbrain.overlay_vol_xfm = inv(Tm)*xfm*Tt;
-                    
+                    if(~isempty(xfm)) %identity or loaded registration matrix
+                        Tt = etc_render_fsbrain.vol.tkrvox2ras;
+                        Tm = mov.tkrvox2ras;
+                        etc_render_fsbrain.overlay_vol_xfm = inv(Tm)*xfm*Tt;
+                    else %registration from header
+                        Sm = mov.vox2ras0;
+                        Tm = mov.tkrvox2ras;
+                        St = etc_render_fsbrain.vol.vox2ras0;
+                        Tt = etc_render_fsbrain.vol.tkrvox2ras;
+                        %
+                        etc_render_fsbrain.overlay_vol_xfm = Tm*inv(Sm)*St*inv(Tt); 
+                    end;
                     
                     %prepare overlay volume matched to the underlay volume
                     etc_render_fsbrain.overlay_vol = etc_MRIvol2vol(mov,etc_render_fsbrain.vol,xfm,'flag_display',1); %only the first volume
@@ -419,6 +431,10 @@ switch lower(param)
 
                         %overlay source is volume.
                         etc_render_fsbrain.overlay_source=4;
+
+                        
+                        etc_render_fsbrain.overlay_value_flag_pos=1;
+                        etc_render_fsbrain.overlay_value_flag_neg=1;
 
                         if(~isfield(etc_render_fsbrain,'overlay_buffer'))
                             etc_render_fsbrain.overlay_buffer=[];
