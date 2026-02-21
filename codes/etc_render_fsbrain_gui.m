@@ -2648,9 +2648,9 @@ if(isfield(etc_render_fsbrain,'label_register'))
             if(etc_render_fsbrain.label_register(ss)==1)
                 if(etc_render_fsbrain.flag_show_cort_label_boundary)
                     %plot label boundary
-                    set(etc_render_fsbrain.h_label_boundary{ss}(:),'visible','on');
+                    set(etc_render_fsbrain.h_label_boundary{ss},'visible','on');
                 else
-                    set(etc_render_fsbrain.h_label_boundary{ss}(:),'visible','off');
+                    set(etc_render_fsbrain.h_label_boundary{ss},'visible','off');
                 end;
             end;
         end;

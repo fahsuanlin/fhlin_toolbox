@@ -1,108 +1,163 @@
-function [fconn_grad] = etc_fconn_grad(C, k,varargin)
-% etc_fconn_grad A simple demonstration of calculating the gradient of a
-% connectivity matrix
+function [fconn_grad] = etc_fconn_grad(C, k, varargin)
+% etc_fconn_grad Calculate connectivity gradients from an ROI x ROI matrix.
 %
 %   INPUTS:
-%       C                     : [N x N ] 2D array of connectivity data
-%                               for N ROIs.
-%       k                     : Number of gradients to be calculated. k <= N
+%       C               : [N x N] connectivity matrix
+%       k               : number of gradients to return (1 <= k <= N-1)
 %
-%   OUTPUTS:
-%       fconn_grad : [N x k] k-top gradients
+%   OPTIONS (varargin as key/value pairs):
+%       'affinity_method'  : 'diffusion' (default), 'pearson', 'cosine'
+%       'sigma'            : Gaussian kernel width for 'diffusion'
+%                            (default: median nonzero pairwise distance)
+%       'regularization_eps': small positive constant for numeric stability
+%                            (default: 1e-12)
 %
-%   Author: (Your Name), 2025
+%   OUTPUT:
+%       fconn_grad      : [N x k] top-k non-trivial gradients
 
-affinity_method='diffusion';
+affinity_method = 'diffusion';
+sigma = [];
+regularization_eps = 1e-12;
 
-for i=1:length(varargin)/2
-    option=varargin{i*2-1};
-    option_value=varargin{i*2};
+if(mod(length(varargin), 2) ~= 0)
+    error('Options must be provided as key/value pairs.');
+end
+
+for i = 1:length(varargin)/2
+    option = varargin{i*2-1};
+    option_value = varargin{i*2};
     switch lower(option)
         case 'affinity_method'
-            affinity_method=option_value;
+            affinity_method = lower(option_value);
+        case 'sigma'
+            sigma = option_value;
+        case 'regularization_eps'
+            regularization_eps = option_value;
         otherwise
-            fprintf('unknown option [%s]. error!\n',option);
-            return;
-    end;
-end;
+            error('Unknown option [%s].', option);
+    end
+end
 
-switch(affinity_method)
+if(~ismatrix(C) || size(C,1) ~= size(C,2))
+    error('Input C must be a square matrix.');
+end
+if(~isnumeric(C) || ~isreal(C))
+    error('Input C must be a real numeric matrix.');
+end
+if(any(~isfinite(C(:))))
+    error('Input C contains NaN or Inf values.');
+end
+if(~isscalar(k) || ~isfinite(k))
+    error('Input k must be a finite scalar.');
+end
+if(~isscalar(regularization_eps) || regularization_eps <= 0)
+    error('regularization_eps must be a positive scalar.');
+end
 
+N = size(C,1);
+k = round(k);
+if(k < 1 || k > N-1)
+    error('k must satisfy 1 <= k <= N-1 (k=%d, N=%d).', k, N);
+end
+
+% Enforce symmetry on connectivity and remove trivial self-connections.
+C = (C + C.') ./ 2;
+
+clip_eps = 1e-7;
+switch affinity_method
     case 'pearson'
-        [N,~]=size(C);
-        Z=atanh(C);
-        Z(1:N+1:end)=0; % zero self-connections
+        C_safe = min(max(C, -1 + clip_eps), 1 - clip_eps);
+        Z = atanh(C_safe);
+        Z(1:N+1:end) = 0;
 
-        K = corr(Z);                             % corr between columns of Z
-        K(isnan(K)) = 0;
-        K = (K + 1) / 2;
-        K = (K + K.')/2;        % symmetrize again
+        % Correlation between ROI connectivity profiles.
+        K = corr(Z.');
+        K(~isfinite(K)) = 0;
+        K = (K + 1) ./ 2;
 
     case 'diffusion'
+        C_safe = min(max(C, -1), 1);
+        dist2 = max(0, 2 .* (1 - C_safe));
+        dist = sqrt(dist2);
 
-        % % Suppose 'C' is an N-by-N connectivity matrix (e.g., correlation).
-        % % If you have correlation data in [-1,1], you can convert it to distance using:
-        dist = sqrt(2 * (1 - C));  % NxN distance matrix
+        temp = dist(triu(true(size(dist)), 1));
+        temp = temp(temp > 0 & isfinite(temp));
+        if(isempty(sigma))
+            sigma_use = median(temp);
+        else
+            sigma_use = sigma;
+        end
+        if(~isscalar(sigma_use) || ~isfinite(sigma_use) || sigma_use <= 0)
+            if(isempty(temp))
+                sigma_use = 1;
+            else
+                sigma_use = median(temp);
+            end
+            if(~isfinite(sigma_use) || sigma_use <= 0)
+                sigma_use = 1;
+            end
+        end
 
-        % If your matrix is already some form of distance, skip/adjust as needed.
-
-        %% Step 2: Convert distance to an affinity (similarity) matrix
-        % Here we use a Gaussian kernel with sigma as the median of upper-triangular distances.
-        temp = dist(triu(true(size(dist)),1));  % upper triangle of dist
-        temp = temp(temp > 0);  % remove zero entries if any
-        sigma = median(temp);
-
-        % Build the kernel (affinity) matrix
-        K = exp(-dist.^2 / (2 * sigma^2));
-        N=size(C,1);
-        K(1:N+1:end) = 0;        % zero the diagonal of K
+        K = exp(-dist2 ./ (2 .* sigma_use.^2));
 
     case 'cosine'
-        % Fisher-z transform correlations
-        Z = atanh(C);              % Fisher z
-        Z(1:size(C,1)+1:end) = 0;  % zero diagonal
+        C_safe = min(max(C, -1 + clip_eps), 1 - clip_eps);
+        Z = atanh(C_safe);
+        Z(1:N+1:end) = 0;
 
-        % Cosine similarity between connectivity profiles
         normZ = sqrt(sum(Z.^2, 2));
+        normZ(normZ < regularization_eps) = 1;
         sim = (Z * Z.') ./ (normZ * normZ.');
-        K = (sim + 1) / 2;         % rescale 0–1
-        K(isnan(K)) = 0;
-        K = (K + K.') / 2;         % ensure symmetry
-end;
+        sim(~isfinite(sim)) = 0;
 
-%% Step 3: Markov normalization
-if(strcmp(affinity_method,'cosine'))
-    d = sum(K,2);
-    D_alpha = diag(d.^(-0.5));
-    M = D_alpha * K * D_alpha;
+        K = (sim + 1) ./ 2;
+
+    otherwise
+        error('Unknown affinity_method [%s].', affinity_method);
+end
+
+% Affinity cleanup.
+K(~isfinite(K)) = 0;
+K = max(K, 0);
+K = (K + K.') ./ 2;
+K(1:N+1:end) = 0;
+
+% Symmetric normalization to keep eigendecomposition real and stable.
+d = sum(K, 2);
+d(d < regularization_eps | ~isfinite(d)) = regularization_eps;
+D_inv_sqrt = diag(1 ./ sqrt(d));
+M = D_inv_sqrt * K * D_inv_sqrt;
+M = (M + M.') ./ 2;
+
+% Eigen decomposition: skip first trivial mode.
+num_modes = k + 1;
+if(num_modes >= N)
+    [V_full, D_full] = eig(full(M), 'vector');
+    [~, idx] = sort(real(D_full), 'descend');
+    V = V_full(:, idx);
 else
-    % Make each row sum to 1
-    rowSums = sum(K, 2);  % sum across columns
-    M = K ./ rowSums;     % row-stochastic matrix
-    idx=find(isnan(M(:)));
-    M(idx)=randn(size(idx)).*eps;
-end;
+    [V, D] = eigs(M, num_modes, 'la'); %#ok<ASGLU>
+    eigenvals = diag(D);
+    [~, idx] = sort(real(eigenvals), 'descend');
+    V = V(:, idx);
+end
 
-% (Note: M may not be strictly symmetric. Some pipelines symmetrize or use
-% different normalization schemes. Adjust per your chosen approach.)
+fconn_grad = V(:, 2:k+1);
 
-%% Step 4: Eigen decomposition
-% We'll solve M*v = lambda*v. For a row-stochastic matrix, the largest eigenvalue
-% is typically 1. The associated eigenvector may be "trivial" (all-positive).
-[V, D] = eigs(M,k+1);
+% Numerical guard: convert tiny imaginary residuals to real.
+if(~isreal(fconn_grad))
+    imag_max = max(abs(imag(fconn_grad(:))));
+    if(imag_max < 1e-8)
+        fconn_grad = real(fconn_grad);
+    else
+        error('Complex gradients detected (max imaginary part = %g).', imag_max);
+    end
+end
 
-% Extract eigenvalues in a vector
-eigenvals = diag(D);
-
-% Sort in descending order by eigenvalue
-[~, idx]  = sort(eigenvals, 'descend');
-eigenvals = eigenvals(idx);
-V         = V(:, idx);
-
-% The principal gradient is the 2nd eigenvector (column 2 of V),
-% because the 1st eigenvector (largest eigenvalue) is often the trivial one.
-fconn_grad = V(:,2:k+1);
-
-if((~isreal(fconn_grad(:))))
-    keyboard;
-end;
+% Deterministic sign convention across runs.
+for ii = 1:size(fconn_grad,2)
+    [~, idx_max] = max(abs(fconn_grad(:,ii)));
+    if(fconn_grad(idx_max,ii) < 0)
+        fconn_grad(:,ii) = -fconn_grad(:,ii);
+    end
+end

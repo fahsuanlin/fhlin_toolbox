@@ -844,20 +844,63 @@ switch lower(param)
                                 end;
                                 
                                 
+%                                 %create ROI boundary
+%                                 ss=size(etc_render_fsbrain.label_ctab.table,1);
+%                                 label_number=etc_render_fsbrain.label_ctab.table(ss,5);
+%                                 vidx=find((etc_render_fsbrain.label_value)==label_number);
+%                                 boundary_face_idx=find(sum(ismember(etc_render_fsbrain.faces,vidx-1),2)==2); %face indices at the boundary of the selected label; two vertices out of three are the selected label
+%                                 for b_idx=1:length(boundary_face_idx)
+%                                     boundary_face_vertex_idx=find(ismember(etc_render_fsbrain.faces(boundary_face_idx(b_idx),:),vidx-1)); %find vertices of a boundary face within a label
+%                                     etc_render_fsbrain.h_label_boundary{ss}(b_idx)=line(...
+%                                         etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,1)',...
+%                                         etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,2)',...
+%                                         etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,3)');
+%                                     
+%                                     set(etc_render_fsbrain.h_label_boundary{ss}(b_idx),'linewidth',2,'color',etc_render_fsbrain.cort_label_boundary_color,'visible','off');
+%                                 end;
+
                                 %create ROI boundary
                                 ss=size(etc_render_fsbrain.label_ctab.table,1);
                                 label_number=etc_render_fsbrain.label_ctab.table(ss,5);
                                 vidx=find((etc_render_fsbrain.label_value)==label_number);
-                                boundary_face_idx=find(sum(ismember(etc_render_fsbrain.faces,vidx-1),2)==2); %face indices at the boundary of the selected label; two vertices out of three are the selected label
-                                for b_idx=1:length(boundary_face_idx)
-                                    boundary_face_vertex_idx=find(ismember(etc_render_fsbrain.faces(boundary_face_idx(b_idx),:),vidx-1)); %find vertices of a boundary face within a label
-                                    etc_render_fsbrain.h_label_boundary{ss}(b_idx)=line(...
-                                        etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,1)',...
-                                        etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,2)',...
-                                        etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,3)');
-                                    
-                                    set(etc_render_fsbrain.h_label_boundary{ss}(b_idx),'linewidth',2,'color',etc_render_fsbrain.cort_label_boundary_color,'visible','on');
-                                end;
+
+                                % 1. Create a logical mask for all vertices for speed
+                                num_vertices = size(etc_render_fsbrain.vertex_coords_hemi, 1);
+                                is_inside = false(num_vertices, 1);
+                                is_inside(vidx) = true; % vidx are the 1-based indices of your ROI
+
+                                % 2. Extract all unique edges from the triangulation
+                                % 'edges' returns an [N x 2] matrix of vertex indices
+                                TR = triangulation(etc_render_fsbrain.faces+1, etc_render_fsbrain.vertex_coords_hemi);
+                                all_edges = edges(TR);
+
+                                % 3. Find boundary edges
+                                % A boundary edge has exactly one vertex inside the ROI
+                                % Logical XOR: (Inside V1 AND Outside V2) OR (Outside V1 AND Inside V2)
+                                v1_in = is_inside(all_edges(:,1));
+                                v2_in = is_inside(all_edges(:,2));
+                                boundary_edge_mask = xor(v1_in, v2_in);
+                                boundary_edges = all_edges(boundary_edge_mask, :);
+
+                                % 4. Plot the boundary efficiently
+                                % Instead of a loop, we can use NaN-separated vectors to plot all lines at once
+                                % This is SIGNIFICANTLY faster for large meshes
+                                p1 = etc_render_fsbrain.vertex_coords_hemi(boundary_edges(:,1), :);
+                                p2 = etc_render_fsbrain.vertex_coords_hemi(boundary_edges(:,2), :);
+
+                                % Create "segmented" vectors for the line function: [x1, x2, NaN, x3, x4, NaN...]
+                                n_edges = size(boundary_edges, 1);
+                                X = [p1(:,1), p2(:,1), NaN(n_edges, 1)]';
+                                Y = [p1(:,2), p2(:,2), NaN(n_edges, 1)]';
+                                Z = [p1(:,3), p2(:,3), NaN(n_edges, 1)]';
+
+                                % Plot as a single graphic object
+                                figure(etc_render_fsbrain.fig_brain);
+                                etc_render_fsbrain.h_label_boundary{ss} = line(X(:), Y(:), Z(:), ...
+                                    'LineWidth', 2, ...
+                                    'Color', etc_render_fsbrain.cort_label_boundary_color, ...
+                                    'Visible', 'off');
+                                
                                 
                                 
                                 if(~isempty(findobj('tag','listbox_label')))
@@ -1354,25 +1397,70 @@ switch lower(param)
                                 s.struct_names={filename};
                                 s.table=[0*256   0.4470*256   0.741*256         0        1];
                                 etc_render_fsbrain.label_ctab=s;
-                                
+
                                 etc_render_fsbrain.label_register=1;
                             end;
-                            
+
+%                             %create ROI boundary
+%                             ss=size(etc_render_fsbrain.label_ctab.table,1);
+%                             label_number=etc_render_fsbrain.label_ctab.table(ss,5);
+%                             vidx=find((etc_render_fsbrain.label_value)==label_number);
+%                             boundary_face_idx=find(sum(ismember(etc_render_fsbrain.faces,vidx-1),2)==2); %face indices at the boundary of the selected label; two vertices out of three are the selected label
+%                             for b_idx=1:length(boundary_face_idx)
+%                                 boundary_face_vertex_idx=find(ismember(etc_render_fsbrain.faces(boundary_face_idx(b_idx),:),vidx-1)); %find vertices of a boundary face within a label
+%                                 etc_render_fsbrain.h_label_boundary{ss}(b_idx)=line(...
+%                                     etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,1)',...
+%                                     etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,2)',...
+%                                     etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,3)');
+% 
+%                                 %set(etc_render_fsbrain.h_label_boundary{ss}(b_idx),'linewidth',2,'color',etc_render_fsbrain.cort_label_boundary_color,'visible','off');
+%                                 set(etc_render_fsbrain.h_label_boundary{ss}(b_idx),'linewidth',2,'color',etc_render_fsbrain.cort_label_boundary_color,'visible','on');
+% 
+%                             end;
+
                             %create ROI boundary
                             ss=size(etc_render_fsbrain.label_ctab.table,1);
                             label_number=etc_render_fsbrain.label_ctab.table(ss,5);
                             vidx=find((etc_render_fsbrain.label_value)==label_number);
-                            boundary_face_idx=find(sum(ismember(etc_render_fsbrain.faces,vidx-1),2)==2); %face indices at the boundary of the selected label; two vertices out of three are the selected label
-                            for b_idx=1:length(boundary_face_idx)
-                                boundary_face_vertex_idx=find(ismember(etc_render_fsbrain.faces(boundary_face_idx(b_idx),:),vidx-1)); %find vertices of a boundary face within a label
-                                etc_render_fsbrain.h_label_boundary{ss}(b_idx)=line(...
-                                    etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,1)',...
-                                    etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,2)',...
-                                    etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,3)');
-                                
-                                set(etc_render_fsbrain.h_label_boundary{ss}(b_idx),'linewidth',2,'color',etc_render_fsbrain.cort_label_boundary_color,'visible','off');
-                            end;
-                            
+
+                            % 1. Create a logical mask for all vertices for speed
+                            num_vertices = size(etc_render_fsbrain.vertex_coords_hemi, 1);
+                            is_inside = false(num_vertices, 1);
+                            is_inside(vidx) = true; % vidx are the 1-based indices of your ROI
+
+                            % 2. Extract all unique edges from the triangulation
+                            % 'edges' returns an [N x 2] matrix of vertex indices
+                            TR = triangulation(etc_render_fsbrain.faces+1, etc_render_fsbrain.vertex_coords_hemi);
+                            all_edges = edges(TR);
+
+                            % 3. Find boundary edges
+                            % A boundary edge has exactly one vertex inside the ROI
+                            % Logical XOR: (Inside V1 AND Outside V2) OR (Outside V1 AND Inside V2)
+                            v1_in = is_inside(all_edges(:,1));
+                            v2_in = is_inside(all_edges(:,2));
+                            boundary_edge_mask = xor(v1_in, v2_in);
+                            boundary_edges = all_edges(boundary_edge_mask, :);
+
+                            % 4. Plot the boundary efficiently
+                            % Instead of a loop, we can use NaN-separated vectors to plot all lines at once
+                            % This is SIGNIFICANTLY faster for large meshes
+                            p1 = etc_render_fsbrain.vertex_coords_hemi(boundary_edges(:,1), :);
+                            p2 = etc_render_fsbrain.vertex_coords_hemi(boundary_edges(:,2), :);
+
+                            % Create "segmented" vectors for the line function: [x1, x2, NaN, x3, x4, NaN...]
+                            n_edges = size(boundary_edges, 1);
+                            X = [p1(:,1), p2(:,1), NaN(n_edges, 1)]';
+                            Y = [p1(:,2), p2(:,2), NaN(n_edges, 1)]';
+                            Z = [p1(:,3), p2(:,3), NaN(n_edges, 1)]';
+
+                            % Plot as a single graphic object
+
+                            figure(etc_render_fsbrain.fig_brain);
+                            etc_render_fsbrain.h_label_boundary{ss} = line(X(:), Y(:), Z(:), ...
+                                'LineWidth', 2, ...
+                                'Color', etc_render_fsbrain.cort_label_boundary_color, ...
+                                'Visible', 'off');
+
                             update_label;
 
                             etc_render_fsbrain.fig_label_gui=etc_render_fsbrain_label_gui;
@@ -1508,22 +1596,50 @@ switch lower(param)
                                 end;
                                 
                                 %create ROI boundary
-                                ss=size(etc_render_fsbrain.label_ctab.table,1);
-                                label_number=etc_render_fsbrain.label_ctab.table(ss,5);
-                                vidx=find((etc_render_fsbrain.label_value)==label_number);
-                                boundary_face_idx=find(sum(ismember(etc_render_fsbrain.faces,vidx-1),2)==2); %face indices at the boundary of the selected label; two vertices out of three are the selected label
-                                for b_idx=1:length(boundary_face_idx)
-                                    boundary_face_vertex_idx=find(ismember(etc_render_fsbrain.faces(boundary_face_idx(b_idx),:),vidx-1)); %find vertices of a boundary face within a label
-                                    etc_render_fsbrain.h_label_boundary{ss}(b_idx)=line(...
-                                        etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,1)',...
-                                        etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,2)',...
-                                        etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,3)');
+                                for ss=1:size(etc_render_fsbrain.label_ctab.table,1);
+                                    label_number=etc_render_fsbrain.label_ctab.table(ss,5);
+                                    vidx=find((etc_render_fsbrain.label_value)==label_number);
                                     
-                                    set(etc_render_fsbrain.h_label_boundary{ss}(b_idx),'linewidth',2,'color',etc_render_fsbrain.cort_label_boundary_color,'visible','off');
+                                    % 1. Create a logical mask for all vertices for speed
+                                    num_vertices = size(etc_render_fsbrain.vertex_coords_hemi, 1);
+                                    is_inside = false(num_vertices, 1);
+                                    is_inside(vidx) = true; % vidx are the 1-based indices of your ROI
+
+                                    % 2. Extract all unique edges from the triangulation
+                                    % 'edges' returns an [N x 2] matrix of vertex indices
+                                    TR = triangulation(etc_render_fsbrain.faces+1, etc_render_fsbrain.vertex_coords_hemi);
+                                    all_edges = edges(TR);
+
+                                    % 3. Find boundary edges
+                                    % A boundary edge has exactly one vertex inside the ROI
+                                    % Logical XOR: (Inside V1 AND Outside V2) OR (Outside V1 AND Inside V2)
+                                    v1_in = is_inside(all_edges(:,1));
+                                    v2_in = is_inside(all_edges(:,2));
+                                    boundary_edge_mask = xor(v1_in, v2_in);
+                                    boundary_edges = all_edges(boundary_edge_mask, :);
+
+                                    % 4. Plot the boundary efficiently
+                                    % Instead of a loop, we can use NaN-separated vectors to plot all lines at once
+                                    % This is SIGNIFICANTLY faster for large meshes
+                                    p1 = etc_render_fsbrain.vertex_coords_hemi(boundary_edges(:,1), :);
+                                    p2 = etc_render_fsbrain.vertex_coords_hemi(boundary_edges(:,2), :);
+
+                                    % Create "segmented" vectors for the line function: [x1, x2, NaN, x3, x4, NaN...]
+                                    n_edges = size(boundary_edges, 1);
+                                    X = [p1(:,1), p2(:,1), NaN(n_edges, 1)]';
+                                    Y = [p1(:,2), p2(:,2), NaN(n_edges, 1)]';
+                                    Z = [p1(:,3), p2(:,3), NaN(n_edges, 1)]';
+
+                                    % Plot as a single graphic object
+                                    figure(etc_render_fsbrain.fig_brain);
+                                    etc_render_fsbrain.h_label_boundary{ss} = line(X(:), Y(:), Z(:), ...
+                                        'LineWidth', 2, ...
+                                        'Color', etc_render_fsbrain.cort_label_boundary_color, ...
+                                        'Visible', 'off');
                                 end;
-                                
+
                                 update_label;
-                                
+
                             end;
                         case '.nii' %AAL
                             file_annot=sprintf('%s/%s',pathname,filename);
@@ -4413,6 +4529,11 @@ try
                 
                 if(etc_render_fsbrain.all_electrode_flag)
                     
+                    %mimicking an electrode if not specified...
+                    if(isempty(etc_render_fsbrain.electrode))
+                        etc_render_fsbrain.electrode(1).n_contact=size(etc_render_fsbrain.aux2_point_coords,1); 
+                    end;
+
                     n_e=[];
                     for e_idx=1:length(etc_render_fsbrain.electrode)
                         n_e(e_idx)=etc_render_fsbrain.electrode(e_idx).n_contact;
@@ -4576,19 +4697,62 @@ global etc_render_fsbrain;
         try
             if(length(etc_render_fsbrain.label_register)>length(etc_render_fsbrain.h_label_boundary))
                 %create ROI boundary
+%                 ss=size(etc_render_fsbrain.label_ctab.table,1);
+%                 label_number=etc_render_fsbrain.label_ctab.table(ss,5);
+%                 vidx=find((etc_render_fsbrain.label_value)==label_number);
+%                 boundary_face_idx=find(sum(ismember(etc_render_fsbrain.faces,vidx-1),2)==2); %face indices at the boundary of the selected label; two vertices out of three are the selected label
+%                 for b_idx=1:length(boundary_face_idx)
+%                     boundary_face_vertex_idx=find(ismember(etc_render_fsbrain.faces(boundary_face_idx(b_idx),:),vidx-1)); %find vertices of a boundary face within a label
+%                     etc_render_fsbrain.h_label_boundary{ss}(b_idx)=line(...
+%                         etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,1)',...
+%                         etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,2)',...
+%                         etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,3)');
+% 
+%                     set(etc_render_fsbrain.h_label_boundary{ss}(b_idx),'linewidth',2,'color',etc_render_fsbrain.cort_label_boundary_color,'visible','off');
+%                 end;
+
+
                 ss=size(etc_render_fsbrain.label_ctab.table,1);
                 label_number=etc_render_fsbrain.label_ctab.table(ss,5);
                 vidx=find((etc_render_fsbrain.label_value)==label_number);
-                boundary_face_idx=find(sum(ismember(etc_render_fsbrain.faces,vidx-1),2)==2); %face indices at the boundary of the selected label; two vertices out of three are the selected label
-                for b_idx=1:length(boundary_face_idx)
-                    boundary_face_vertex_idx=find(ismember(etc_render_fsbrain.faces(boundary_face_idx(b_idx),:),vidx-1)); %find vertices of a boundary face within a label
-                    etc_render_fsbrain.h_label_boundary{ss}(b_idx)=line(...
-                        etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,1)',...
-                        etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,2)',...
-                        etc_render_fsbrain.vertex_coords_hemi(etc_render_fsbrain.faces(boundary_face_idx(b_idx),boundary_face_vertex_idx)+1,3)');
 
-                    set(etc_render_fsbrain.h_label_boundary{ss}(b_idx),'linewidth',2,'color',etc_render_fsbrain.cort_label_boundary_color,'visible','off');
-                end;
+                % 1. Create a logical mask for all vertices for speed
+                num_vertices = size(etc_render_fsbrain.vertex_coords_hemi, 1);
+                is_inside = false(num_vertices, 1);
+                is_inside(vidx) = true; % vidx are the 1-based indices of your ROI
+
+                % 2. Extract all unique edges from the triangulation
+                % 'edges' returns an [N x 2] matrix of vertex indices
+                TR = triangulation(etc_render_fsbrain.faces+1, etc_render_fsbrain.vertex_coords_hemi);
+                all_edges = edges(TR);
+
+                % 3. Find boundary edges
+                % A boundary edge has exactly one vertex inside the ROI
+                % Logical XOR: (Inside V1 AND Outside V2) OR (Outside V1 AND Inside V2)
+                v1_in = is_inside(all_edges(:,1));
+                v2_in = is_inside(all_edges(:,2));
+                boundary_edge_mask = xor(v1_in, v2_in);
+                boundary_edges = all_edges(boundary_edge_mask, :);
+
+                % 4. Plot the boundary efficiently
+                % Instead of a loop, we can use NaN-separated vectors to plot all lines at once
+                % This is SIGNIFICANTLY faster for large meshes
+                p1 = etc_render_fsbrain.vertex_coords_hemi(boundary_edges(:,1), :);
+                p2 = etc_render_fsbrain.vertex_coords_hemi(boundary_edges(:,2), :);
+
+                % Create "segmented" vectors for the line function: [x1, x2, NaN, x3, x4, NaN...]
+                n_edges = size(boundary_edges, 1);
+                X = [p1(:,1), p2(:,1), NaN(n_edges, 1)]';
+                Y = [p1(:,2), p2(:,2), NaN(n_edges, 1)]';
+                Z = [p1(:,3), p2(:,3), NaN(n_edges, 1)]';
+
+                % Plot as a single graphic object
+                figure(etc_render_fsbrain.fig_brain);
+                etc_render_fsbrain.h_label_boundary{ss} = line(X(:), Y(:), Z(:), ...
+                    'LineWidth', 2, ...
+                    'Color', etc_render_fsbrain.cort_label_boundary_color, ...
+                    'Visible', 'off');
+
             end;
 
             for ss=1:length(etc_render_fsbrain.label_register)   

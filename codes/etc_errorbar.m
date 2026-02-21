@@ -64,10 +64,10 @@ for type_idx=1:size(Y,2)
     set(h1, 'edgecolor', 'none');
     set(h1, 'FaceAlpha', alpha);
     hold on;
-    h2=plot(X(:),y(:));
+    h2(type_idx)=plot(X(:),y(:));
     if(isempty(order))
-        set(h2,'linewidth',2,'color',cc(type_idx,:),'linestyle',linestyle);
+        set( h2(type_idx),'linewidth',2,'color',cc(type_idx,:),'linestyle',linestyle);
     else
-        set(h2,'linewidth',2,'color',cc(order(type_idx),:),'linestyle',linestyle);
+        set( h2(type_idx),'linewidth',2,'color',cc(order(type_idx),:),'linestyle',linestyle);
     end;
 end;

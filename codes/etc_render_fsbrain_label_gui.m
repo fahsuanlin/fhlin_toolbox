@@ -213,7 +213,10 @@ try
                     fprintf('Top 3 closest contacts\n');
                     for ii=1:3 %show the nearest three contacts
                         [ee,cc]=ind2sub(size(electrode_dist_min),min_idx(ii));
-                        fprintf('closest electrode contact:: [%s_%02d]: %2.2f (mm) (%1.1f %1.1f %1.1f)\n',etc_render_fsbrain.electrode(ee).name,cc,dummy(ii),etc_render_fsbrain.electrode(ee).coord(cc,1),etc_render_fsbrain.electrode(ee).coord(cc,2),etc_render_fsbrain.electrode(ee).coord(cc,3));
+                        try
+                            fprintf('closest electrode contact:: [%s_%02d]: %2.2f (mm) (%1.1f %1.1f %1.1f)\n',etc_render_fsbrain.electrode(ee).name,cc,dummy(ii),etc_render_fsbrain.electrode(ee).coord(cc,1),etc_render_fsbrain.electrode(ee).coord(cc,2),etc_render_fsbrain.electrode(ee).coord(cc,3));
+                        catch
+                        end;
                     end;
                 end;
             end;
