@@ -1,4 +1,4 @@
-function [psi_values, freqs, psi_se, psi_ci] = etc_psi(source_data, fs, target_band, do_boot, n_boot)
+function [psi_values, freqs, psi_se, psi_ci, psi_segment] = etc_psi(source_data, fs, target_band, do_boot, n_boot)
 % Phase slope index calculated on the WHOLE time series with Spectral Bootstrapping.
 %
 % [psi_values, freqs, psi_se, psi_ci] = etc_psi(source_data, fs, target_band, do_boot, n_boot);
@@ -15,6 +15,8 @@ function [psi_values, freqs, psi_se, psi_ci] = etc_psi(source_data, fs, target_b
 % freqs       : Frequency vector.
 % psi_se      : [locations(depths) x 1] Standard error of the bootstrapped PSI.
 % psi_ci      : [locations(depths) x 2] 95% Confidence Intervals [lower, upper].
+
+psi_segment=[];
 
     % Input handling
     if nargin < 4 || isempty(do_boot), do_boot = false; end
