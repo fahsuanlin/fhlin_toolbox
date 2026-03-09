@@ -1444,10 +1444,10 @@ etc_render_fsbrain.brain_axis_pos=[];
 etc_render_fsbrain.h_label_boundary={};
 
 
-%label annotation
-if(~isempty(etc_render_fsbrain.label_file_annot))
-        etc_render_fsbrain_handle('kb','cc','l','cc_param','init');
-end;
+% %label annotation
+% if(~isempty(etc_render_fsbrain.label_file_annot))
+%         etc_render_fsbrain_handle('kb','cc','l','cc_param','init');
+% end;
 
 %ROI label
 if(~isempty(cort_label_filename))
@@ -1508,6 +1508,7 @@ if(~isempty(cort_label_filename))
 %     end;
 
     %create ROI boundary
+    fprintf('creating ROI boundaries...');
     for ss=1:size(etc_render_fsbrain.label_ctab.table,1);
         label_number=etc_render_fsbrain.label_ctab.table(ss,5);
         vidx=find((etc_render_fsbrain.label_value)==label_number);
@@ -1548,6 +1549,8 @@ if(~isempty(cort_label_filename))
             'Color', etc_render_fsbrain.cort_label_boundary_color, ...
             'Visible', 'off');
     end;
+    fprintf('\n');
+    
 
     etc_render_fsbrain_handle('update_label');
 end;

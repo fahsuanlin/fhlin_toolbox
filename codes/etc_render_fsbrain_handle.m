@@ -285,8 +285,8 @@ switch lower(param)
                         for hemi_idx=1:2
 
                             %choose 10,242 sources arbitrarily for cortical soruces
-                            etc_render_fsbrain.vol_A(hemi_idx).v_idx=[1:10242]-1;
-                            %etc_render_fsbrain.vol_A(hemi_idx).v_idx=[1:1:size(etc_render_fsbrain.orig_vertex_coords,1)]-1;
+                            %etc_render_fsbrain.vol_A(hemi_idx).v_idx=[1:10242]-1;
+                            etc_render_fsbrain.vol_A(hemi_idx).v_idx=[1:1:size(etc_render_fsbrain.orig_vertex_coords,1)]-1;
 
                             etc_render_fsbrain.vol_A(hemi_idx).vertex_coords=etc_render_fsbrain.vertex_coords;
                             etc_render_fsbrain.vol_A(hemi_idx).faces=etc_render_fsbrain.faces;
@@ -1596,6 +1596,7 @@ switch lower(param)
                                 end;
                                 
                                 %create ROI boundary
+                                fprintf('creating label boundaries...');
                                 for ss=1:size(etc_render_fsbrain.label_ctab.table,1);
                                     label_number=etc_render_fsbrain.label_ctab.table(ss,5);
                                     vidx=find((etc_render_fsbrain.label_value)==label_number);
@@ -1637,6 +1638,7 @@ switch lower(param)
                                         'Color', etc_render_fsbrain.cort_label_boundary_color, ...
                                         'Visible', 'off');
                                 end;
+                                fprintf('\n');
 
                                 update_label;
 
