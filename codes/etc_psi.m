@@ -61,7 +61,8 @@ psi_segment=[];
         [S_tgt, ~, ~] = spectrogram(sig_target, window, noverlap, win_len, fs);
         
         % Compute Cross-Spectral Density (CSD) and target Auto-Power Spectrum (PSD) for all windows
-        CSD_all     = conj(S_ref) .* S_tgt;
+        %CSD_all     = conj(S_ref) .* S_tgt;
+        CSD_all     = (S_ref) .* conj(S_tgt);
         PSD_tgt_all = abs(S_tgt).^2;
         
         % --- ORIGINAL WHOLE-DATA CALCULATION ---
