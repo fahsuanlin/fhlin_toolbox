@@ -1,5 +1,6 @@
 function H = etc_hurst_dfa(time_series)
     % Calculates the Hurst exponent using Detrended Fluctuation Analysis (DFA).
+    % Highly optimized using vectorized least-squares regression.
     %
     % Inputs:
     %   time_series - 1D array of the fMRI BOLD signal for a single vertex
@@ -15,7 +16,6 @@ function H = etc_hurst_dfa(time_series)
     y = cumsum(time_series - mean(time_series));
     
     % 2. Define the window scales (box sizes)
-    % Spanning from small windows to N/4
     min_scale = 10;
     max_scale = floor(N / 4);
     
@@ -25,7 +25,7 @@ function H = etc_hurst_dfa(time_series)
     % Array to hold the root-mean-square fluctuations
     F = zeros(length(scales), 1);
     
-    % 3. Loop through each box scale
+    % 3. Loop through each box scale (Inner loop removed entirely)
     for i = 1:length(scales)
         scale = scales(i);
         n_windows = floor(N / scale);
@@ -34,32 +34,46 @@ function H = etc_hurst_dfa(time_series)
         y_truncated = y(1:(n_windows * scale));
         
         % Reshape into non-overlapping windows (scale x n_windows)
+        % Each column is a separate window
         windows = reshape(y_truncated, scale, n_windows);
         
-        rms_sum = 0;
+        % --- VECTORIZED DETRENDING ---
+        % Create the design matrix X for a linear fit (y = mx + c)
+        % Column 1 is x (1 to scale), Column 2 is a constant (intercepts)
         x = (1:scale)';
+        X = [x, ones(scale, 1)]; 
         
-        % 4. Detrend each window individually
-        for w = 1:n_windows
-            % Fit a linear trend (polynomial degree 1) to the local window
-            p = polyfit(x, windows(:, w), 1);
-            trend = polyval(p, x);
-            
-            % Sum the squared errors (variance from the local trend)
-            rms_sum = rms_sum + sum((windows(:, w) - trend).^2);
-        end
+        % Solve X * beta = windows for ALL windows simultaneously
+        % beta will be a 2 x n_windows matrix (Row 1: slopes, Row 2: intercepts)
+        beta = X \ windows;
+        
+        % Reconstruct the linear trend for all windows at once
+        trends = X * beta;
+        
+        % Calculate residuals (actual data minus the trend)
+        residuals = windows - trends;
+        
+        % Sum the squared errors across all elements simultaneously
+        rms_sum = sum(residuals(:).^2);
         
         % Calculate the Root Mean Square fluctuation for this scale
         F(i) = sqrt(rms_sum / (n_windows * scale));
     end
     
-    % 5. Fit a line in log-log space to extract the Hurst exponent
+    % 4. Fit a line in log-log space to extract the Hurst exponent
     valid_idx = F > 0;
+    if sum(valid_idx) < 2
+        H = NaN; % Fallback if variance is flat
+        return;
+    end
+    
     log_scales = log10(scales(valid_idx))';
     log_F = log10(F(valid_idx));
     
     % Linear fit: log(F) = H * log(scales) + C
-    p_fit = polyfit(log_scales, log_F, 1);
+    % Using basic matrix math here instead of polyfit is also slightly faster
+    X_final = [log_scales, ones(length(log_scales), 1)];
+    beta_final = X_final \ log_F;
     
-    H = p_fit(1);
+    H = beta_final(1);
 end
