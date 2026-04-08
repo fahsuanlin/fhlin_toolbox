@@ -44,6 +44,11 @@ function [exponent, theta_peak, f_band, psd_band, b_int, b_slope, knee] = etc_fo
     
     % Mask for valid fitting data
     valid_mask = isfinite(log_f) & isfinite(log_psd);
+
+    %ignore 60 Hz
+    notch_mask = (f_band >= 58 & f_band <= 62);
+    valid_mask = valid_mask & ~notch_mask;
+
     f_clean = f_band(valid_mask);
     log_f_clean = log_f(valid_mask);
     log_psd_clean = log_psd(valid_mask);
@@ -65,30 +70,39 @@ function [exponent, theta_peak, f_band, psd_band, b_int, b_slope, knee] = etc_fo
         exponent = -b_slope;
         knee = 0;
     else
-        %% --- KNEE MODEL (Non-linear Fit) ---
+        %% --- KNEE MODEL (Robust Constrained Fit) ---
         % Model: log10(P) = b - log10(k + f^chi)
         % beta(1)=offset(b), beta(2)=knee(k), beta(3)=exponent(chi)
         modelfun = @(beta, x) beta(1) - log10(beta(2) + x.^beta(3));
         
-        % Initial Guesses
-        initial_offset = max(log_psd_clean);
-        initial_knee = 10; % Common starting point for knee
-        initial_exp = 2;   % Standard 1/f^2 guess
+        % 1. Smarter Initial Guesses
+        initial_offset = max(log_psd_clean); 
+        initial_knee = 10; 
+        initial_exp = 2;  
         beta0 = [initial_offset, initial_knee, initial_exp];
         
-        opts = statset('nlinfit');
-        opts.MaxIter = 400;
+        % 2. Define Strict Bounds
+        % [Offset, Knee, Exponent]
+        % We prevent Knee from being negative and Exponent from hitting 0
+        lb = [min(log_psd_clean)-2, 0.001, 0.5]; 
+        ub = [max(log_psd_clean)+2, 1000, 6];
+        
+        % 3. Use lsqcurvefit for better convergence with bounds
+        opts = optimoptions('lsqcurvefit', 'Display', 'off', 'MaxIterations', 1000);
         
         try
-            beta_fit = nlinfit(f_clean, log_psd_clean, modelfun, beta0, opts);
+            % We use f_clean (linear frequency) for the x-input
+            beta_fit = lsqcurvefit(modelfun, beta0, f_clean, log_psd_clean, lb, ub, opts);
+            
             b_int = beta_fit(1);
             knee = beta_fit(2);
             exponent = beta_fit(3);
-            b_slope = -exponent; % Slp is the high-freq decay
+            b_slope = -exponent; 
         catch
-            % Fallback to fixed if knee fit fails
-            p = polyfit(log_f_clean, log_psd_clean, 1);
-            b_int = p(2); b_slope = p(1); exponent = -b_slope; knee = 0;
+            % Fallback to robust linear fit if non-linear solver fails
+            fprintf('Knee fit failed for a channel, falling back to fixed model.\n');
+            b = robustfit(log_f_clean, log_psd_clean);
+            b_int = b(1); b_slope = b(2); exponent = -b_slope; knee = 0;
         end
     end
     
