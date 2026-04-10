@@ -107,7 +107,9 @@ switch affinity_method
 
         normZ = sqrt(sum(Z.^2, 2));
         normZ(normZ < regularization_eps) = 1;
-        sim = (Z * Z.') ./ (normZ * normZ.');
+        sim = Z * Z.';
+        sim = bsxfun(@rdivide, sim, normZ);
+        sim = bsxfun(@rdivide, sim, normZ.');
         sim(~isfinite(sim)) = 0;
 
         K = (sim + 1) ./ 2;
@@ -125,9 +127,13 @@ K(1:N+1:end) = 0;
 % Symmetric normalization to keep eigendecomposition real and stable.
 d = sum(K, 2);
 d(d < regularization_eps | ~isfinite(d)) = regularization_eps;
-D_inv_sqrt = diag(1 ./ sqrt(d));
-M = D_inv_sqrt * K * D_inv_sqrt;
+d_inv_sqrt = 1 ./ sqrt(d);
+M = bsxfun(@times, K, d_inv_sqrt);
+M = bsxfun(@times, M, d_inv_sqrt.');
 M = (M + M.') ./ 2;
+if(~isa(M, 'double'))
+    M = double(M);
+end
 
 % Eigen decomposition: skip first trivial mode.
 num_modes = k + 1;
@@ -136,7 +142,7 @@ if(num_modes >= N)
     [~, idx] = sort(real(D_full), 'descend');
     V = V_full(:, idx);
 else
-    [V, D] = eigs(M, num_modes, 'la'); %#ok<ASGLU>
+    [V, D] = eigs(M, num_modes, 'la');
     eigenvals = diag(D);
     [~, idx] = sort(real(eigenvals), 'descend');
     V = V(:, idx);
