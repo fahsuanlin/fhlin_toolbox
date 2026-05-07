@@ -101,6 +101,21 @@ switch affinity_method
         K = exp(-dist2 ./ (2 .* sigma_use.^2));
 
     case 'cosine'
+%         C_safe = min(max(C, -1 + clip_eps), 1 - clip_eps);
+%         Z = atanh(C_safe);
+%         Z(1:N+1:end) = 0;
+% 
+%         normZ = sqrt(sum(Z.^2, 2));
+%         normZ(normZ < regularization_eps) = 1;
+%         sim = Z * Z.';
+%         sim = bsxfun(@rdivide, sim, normZ);
+%         sim = bsxfun(@rdivide, sim, normZ.');
+%         sim(~isfinite(sim)) = 0;
+% 
+%         K = (sim + 1) ./ 2;
+
+
+
         C_safe = min(max(C, -1 + clip_eps), 1 - clip_eps);
         Z = atanh(C_safe);
         Z(1:N+1:end) = 0;
@@ -112,8 +127,24 @@ switch affinity_method
         sim = bsxfun(@rdivide, sim, normZ.');
         sim(~isfinite(sim)) = 0;
 
-        K = (sim + 1) ./ 2;
+        % Only keep positive similarities (or map to [0,1])
+        K = (sim + 1) ./ 2; 
 
+        % --- ADDED: THRESHOLD THE AFFINITY MATRIX ---
+        % Margulies 2016 typically keeps only the top 10% of affinities per row
+        keep_pct = 10; 
+        K_thresh = zeros(size(K));
+        k_edges = round((keep_pct/100) * (N-1));
+        
+        for i = 1:N
+            row = K(i,:);
+            row(i) = 0; % ignore self
+            [~, sort_idx] = sort(row, 'descend');
+            % Keep top k_edges, zero out the rest
+            thresh_val = row(sort_idx(k_edges));
+            K_thresh(i, row >= thresh_val) = row(row >= thresh_val);
+        end
+        K = K_thresh;        
     otherwise
         error('Unknown affinity_method [%s].', affinity_method);
 end
