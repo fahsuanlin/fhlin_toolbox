@@ -1,4 +1,4 @@
-function [fconn_grad] = etc_fconn_grad(C, k, varargin)
+function [fconn_grad, fconn_eig] = etc_fconn_grad(C, k, varargin)
 % etc_fconn_grad Calculate connectivity gradients from an ROI x ROI matrix.
 %
 %   INPUTS:
@@ -14,6 +14,7 @@ function [fconn_grad] = etc_fconn_grad(C, k, varargin)
 %
 %   OUTPUT:
 %       fconn_grad      : [N x k] top-k non-trivial gradients
+%       fconn_eig      : [k x 1] top-k non-trivial eigen values
 
 affinity_method = 'diffusion';
 sigma = [];
@@ -128,7 +129,15 @@ switch affinity_method
         sim(~isfinite(sim)) = 0;
 
         % Only keep positive similarities (or map to [0,1])
-        K = (sim + 1) ./ 2; 
+        % K = (sim + 1) ./ 2; 
+        % --- EXACT MARGULIES NORMALIZED ANGLE ---
+        % Clamp values to prevent complex outputs from acos() due to floating point math
+        sim(sim > 1) = 1; 
+        sim(sim < -1) = -1;
+        
+        % Convert cosine similarity to normalized angle [0, 1]
+        K = 1 - (acos(sim) ./ pi); 
+        % ----------------------------------------
 
         % --- ADDED: THRESHOLD THE AFFINITY MATRIX ---
         % Margulies 2016 typically keeps only the top 10% of affinities per row
@@ -154,6 +163,77 @@ K(~isfinite(K)) = 0;
 K = max(K, 0);
 K = (K + K.') ./ 2;
 K(1:N+1:end) = 0;
+
+
+
+% --- DIFFUSION MAP EMBEDDING (Margulies 2016 style) ---
+
+% 1. Density Normalization (alpha = 0.5)
+alpha = 0.5;
+d = sum(K, 2);
+d(d < regularization_eps | ~isfinite(d)) = regularization_eps;
+D_alpha_inv = d .^ (-alpha);
+
+% Create density-normalized affinity matrix K_alpha
+K_alpha = bsxfun(@times, K, D_alpha_inv);
+K_alpha = bsxfun(@times, K_alpha, D_alpha_inv.');
+K_alpha = (K_alpha + K_alpha.') ./ 2; % Ensure strict symmetry
+
+% 2. Symmetric Markov Normalization
+d_alpha = sum(K_alpha, 2);
+d_alpha(d_alpha < regularization_eps | ~isfinite(d_alpha)) = regularization_eps;
+D_new_inv_sqrt = 1 ./ sqrt(d_alpha);
+
+% Create the symmetric matrix for stable eigendecomposition
+M = bsxfun(@times, K_alpha, D_new_inv_sqrt);
+M = bsxfun(@times, M, D_new_inv_sqrt.');
+M = (M + M.') ./ 2;
+if(~isa(M, 'double'))
+    M = double(M);
+end
+
+% 3. Eigen decomposition: skip first trivial mode.
+num_modes = k + 1;
+if(num_modes >= N)
+    [V_full, D_full] = eig(full(M), 'vector');
+    [~, idx] = sort(real(D_full), 'descend');
+    V = V_full(:, idx);
+    eigenvals = diag(D_full);
+    eigenvals=eigenvals(idx);
+else
+    [V, D_eig] = eigs(M, num_modes, 'la');
+    eigenvals = diag(D_eig);
+    [~, idx] = sort(real(eigenvals), 'descend');
+    V = V(:, idx);
+    eigenvals=eigenvals(idx);
+end
+
+fconn_grad = V(:, 2:k+1);
+fconn_eig=eigenvals(2:k+1);
+
+% 4. Convert symmetric eigenvectors to true Markov right eigenvectors
+fconn_grad = bsxfun(@times, D_new_inv_sqrt, fconn_grad);
+
+% Numerical guard: convert tiny imaginary residuals to real.
+if(~isreal(fconn_grad))
+    imag_max = max(abs(imag(fconn_grad(:))));
+    if(imag_max < 1e-8)
+        fconn_grad = real(fconn_grad);
+    else
+        error('Complex gradients detected (max imaginary part = %g).', imag_max);
+    end
+end
+
+% Deterministic sign convention across runs.
+for ii = 1:size(fconn_grad,2)
+    [~, idx_max] = max(abs(fconn_grad(:,ii)));
+    if(fconn_grad(idx_max,ii) < 0)
+        fconn_grad(:,ii) = -fconn_grad(:,ii);
+    end
+end
+
+
+return;
 
 % Symmetric normalization to keep eigendecomposition real and stable.
 d = sum(K, 2);
