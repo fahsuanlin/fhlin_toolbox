@@ -203,18 +203,33 @@ n_block=size(all_blocks,3);
 if(n_block<1), error('No training blocks survived bad-interval exclusion.'); end
 n_cluster=min(cfg.n_cluster,n_block);
 
+%kernel estimation data
 eeg_dyn_runs=eeg;
+if(cfg.flag_dyn_hp)
+    wn=cfg.dyn_hp_hz./(fs./2);
+    if(wn>0 && wn<1)
+        [bb,aa]=butter(4,wn,'high');
+        for ch_idx=1:n_ch
+            eeg_dyn_runs(ch_idx,:)=filtfilt(bb,aa,eeg_dyn_runs(ch_idx,:));
+        end
+    end
+end
+
+
+%kernel application data
+apply_eeg_dyn_runs=eeg_process;
 if(cfg.flag_dyn_hp)
     wn=cfg.dyn_hp_hz./(fs./2);
     if(wn>0 && wn<1)
         [bb,aa]=butter(4,wn,'high');
         for r_idx=1:n_run
             for ch_idx=1:n_ch
-                eeg_dyn_runs(ch_idx,:)=filtfilt(bb,aa,eeg_dyn_runs(ch_idx,:));
+                apply_eeg_dyn_runs{r_idx}(ch_idx,:)=filtfilt(bb,aa,eeg_process{r_idx}(ch_idx,:));
             end
         end
     end
 end
+
 
 
 [~,s_idx]=sort(sum(abs(eeg),1));
@@ -253,7 +268,7 @@ for svd_idx=1:n_feat_svd
         r_idx=apply_blocks(b_idx,1);
         start_idx=apply_blocks(b_idx,2);
         q=start_idx:(start_idx+block_len_idx-1);
-        dd=uu(:,svd_idx)'*eeg_dyn_runs;
+        dd=uu(:,svd_idx)'*apply_eeg_dyn_runs{r_idx};
         x=dd(q);
         x=x-mean(x,'omitnan');
         sx=std(x,'omitnan');
