@@ -1,20 +1,9 @@
-function [eeg_bcg, cluster_bases_by_run]=eeg_bcg_rme(eeg,fs,varargin)
+function [eeg_bcg, cluster_bases_by_run]=eeg_bcg_rdm(eeg,fs,varargin)
 
 %recurrent dynamics modeling
 
 
 %defaults
-% flag_eeg_dyn=1;
-% flag_eeg_dyn_svd=1;
-% flag_ecg_dyn=1;
-% flag_auto_hp=0;
-% flag_display=0;
-% flag_avoid_extreme=0;
-% nn=[];
-% n_ecg=[]; %search the nearest -n_ecg:+n_ecg; 10 is a good number; consider how this interacts with 'nn'
-% dyn_duration_idx=round(fs/2); %duration (in samples; # samples in 0.5 s by default) of dyanmics to be examined; this will be the temporal range in feature definition
-% 
-% flag_reg=0;
 flag_dec=1;
 fs_dec=50; %Hz;
 
@@ -30,17 +19,12 @@ dyn_hp_hz=0.5;
 
 
 eeg_bcg=[];
-eeg_bcg_pred=[];
 
 cluster_bases_by_run={}; %empty kernel will trigger the kernel estimation
-
-%check=[];
-%n_svd=[];
 
 eeg_process=[];
 bad_ints=[];
 bad_ints_process={};
-
 
 cfg=struct( ...
     'name','dme_shared_eoonly_badtrain_svdsubK30_nsvd2_g1p25', ...
@@ -68,26 +52,8 @@ for i=1:length(varargin)/2
     switch lower(option)
         case 'flag_display'
             flag_display=option_value;
-%         case 'flag_reg'
-%             flag_reg=option_value;
-%         case 'flag_auto_hp'
-%             flag_auto_hp=option_value;
         case 'flag_avoid_extreme'
             flag_avoid_extreme=option_value;
-%         case 'flag_eeg_dyn'
-%             flag_eeg_dyn=option_value;
-%         case 'flag_eeg_dyn_svd'
-%             flag_eeg_dyn_svd=option_value;
-%         case 'flag_ecg_dyn'
-%             flag_ecg_dyn=option_value;
-%         case 'dyn_duration_idx'
-%             dyn_duration_idx=option_value;
-%         case 'nn'
-%             nn=option_value;
-%         case 'n_ecg'
-%             n_ecg=option_value;
-%         case 'n_svd'
-%             n_svd=option_value;
         case 'eeg_process'
             eeg_process=option_value;
         case 'flag_dec'
@@ -133,7 +99,9 @@ flag_upsample=0;
 if(flag_dec)
     if(fs_dec<fs)
         decim_factor=round(fs/fs_dec);
-        fprintf('down sampling from [%1.0f] Hz to [%1.0f] Hz...\n', fs, fs_dec);
+        if(flag_display)
+            fprintf('down sampling from [%1.0f] Hz to [%1.0f] Hz...\n', fs, fs_dec);
+        end;
 
         eeg_dec=zeros(size(eeg,1),ceil(size(eeg,2)./decim_factor));
         for ch_idx=1:size(eeg,1)
@@ -291,7 +259,6 @@ if(isempty(cluster_bases_by_run)) %only estimate kernels when it's not provided.
     end
 end;
 
-
 eeg_bcg=cell(size(eeg_process));
 wacc_runs=cell(size(eeg_process));
 for r_idx=1:n_run
@@ -340,7 +307,9 @@ for r_idx=1:n_run
 end
 
 if(flag_upsample)
-    fprintf('up sampling by [%1.0f] fold...\n', decim_factor);
+    if(flag_display)
+        fprintf('up sampling by [%1.0f] fold...\n', decim_factor);
+    end;
     for r_idx=1:numel(eeg_process_orig)
         eeg_up=zeros(size(eeg_process_orig{r_idx}));
         for ch_idx=1:size(eeg_bcg{r_idx},1)
@@ -351,9 +320,23 @@ if(flag_upsample)
     end
 end
 
+
+if(isempty(bad_ints_process))
+    %auto detect bad intervals...
+    for r_idx=1:numel(eeg_process_orig)
+        [bad_ints_process{r_idx}, detail] = eeg_bad_time_detect(eeg_bcg{r_idx}, fs);
+    end;
+end;
+if(isempty(bad_ints))
+    %auto detect bad intervals...
+    [bad_ints, detail] = eeg_bad_time_detect(eeg_bcg{r_idx}, fs);
+end;
+
 if(flag_display) fprintf('BCG RDM correction done!\n'); end;
 
 end
+
+%---------------- end of main function -------------------------------------
 
 function tf=block_overlaps_bad(start_idx,block_len_idx,fs,bad_ints)
 if(isempty(bad_ints))
@@ -416,5 +399,119 @@ if(isvector(x))
 elseif(size(x,1)~=size(all_blocks_basis,2))
     x=x';
 end
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%% detect bad intervals........
+function [bad_intervals, detail] = detect_bad_intervals_from_eeg(eeg, fs, params)
+% Detect bad intervals from multichannel EEG using robust windowed features.
+%
+% Inputs
+%   eeg    : channels x time
+%   fs     : sampling rate (Hz)
+%   params : struct with optional fields
+%            win_sec, step_sec, score_th, consensus_th, consensus_z_th,
+%            merge_gap_sec, min_dur_sec
+%
+% Outputs
+%   bad_intervals : Nx2 [start_sec end_sec]
+%   detail        : struct with score/consensus/time vectors
+
+if nargin < 3 || isempty(params), params = struct(); end
+params = fill_defaults(params);
+
+eeg = double(eeg);
+n = size(eeg, 2);
+nc = size(eeg, 1);
+
+win = max(2, round(params.win_sec * fs));
+step = max(1, round(params.step_sec * fs));
+starts = 1:step:max(1, n - win + 1);
+nw = numel(starts);
+
+rmsv = zeros(nw, nc);
+llv = zeros(nw, nc);
+jumpv = zeros(nw, nc);
+zcrv = zeros(nw, nc);
+
+for w = 1:nw
+    ii = starts(w):(starts(w) + win - 1);
+    x = eeg(:, ii);
+    dx = diff(x, 1, 2);
+    rmsv(w, :) = sqrt(mean(x .^ 2, 2));
+    llv(w, :) = sum(abs(dx), 2) ./ params.win_sec;
+    jumpv(w, :) = max(abs(dx), [], 2);
+    zcrv(w, :) = sum((x(:, 1:end-1) .* x(:, 2:end)) < 0, 2) ./ params.win_sec;
+end
+
+z_rms = robust_z(rmsv);
+z_ll = robust_z(llv);
+z_jump = robust_z(jumpv);
+z_zcr = robust_z(zcrv);
+
+z_ch = max(0, z_rms) + max(0, z_ll) + max(0, z_jump) + 0.5 .* max(0, z_zcr);
+score = median(z_ch, 2);
+consensus = sum(z_ch > params.consensus_z_th, 2);
+bad = (score > params.score_th) & (consensus >= params.consensus_th);
+
+bad_intervals = mask_to_intervals(bad, starts, win, fs);
+bad_intervals = merge_intervals(bad_intervals, params.merge_gap_sec);
+bad_intervals = drop_short(bad_intervals, params.min_dur_sec);
+
+detail = struct( ...
+    'score', score, ...
+    'consensus', consensus, ...
+    'starts_sec', ((starts - 1) ./ fs).', ...
+    'params', params);
+end
+
+function params = fill_defaults(params)
+if ~isfield(params, 'win_sec'), params.win_sec = 0.5; end
+if ~isfield(params, 'step_sec'), params.step_sec = 0.1; end
+if ~isfield(params, 'score_th'), params.score_th = 7; end
+if ~isfield(params, 'consensus_th'), params.consensus_th = 2; end
+if ~isfield(params, 'consensus_z_th'), params.consensus_z_th = 8; end
+if ~isfield(params, 'merge_gap_sec'), params.merge_gap_sec = 0.5; end
+if ~isfield(params, 'min_dur_sec'), params.min_dur_sec = 1.0; end
+end
+
+function z = robust_z(x)
+m = median(x, 1, 'omitnan');
+mad0 = median(abs(x - m), 1, 'omitnan');
+scale = 1.4826 .* mad0;
+scale(scale < eps) = 1;
+z = (x - m) ./ scale;
+end
+
+function ints = mask_to_intervals(mask, starts, win, fs)
+ints = [];
+if isempty(mask), return; end
+dm = [false; mask(:); false];
+on = find(diff(dm) == 1);
+off = find(diff(dm) == -1) - 1;
+for k = 1:numel(on)
+    s_idx = starts(on(k));
+    e_idx = starts(off(k)) + win - 1;
+    ints(end + 1, :) = [(s_idx - 1) ./ fs, e_idx ./ fs]; %#ok<AGROW>
+end
+end
+
+function ints = merge_intervals(ints, gap_sec)
+if isempty(ints), return; end
+out = ints(1, :);
+for i = 2:size(ints, 1)
+    if ints(i, 1) - out(end, 2) <= gap_sec
+        out(end, 2) = max(out(end, 2), ints(i, 2));
+    else
+        out = [out; ints(i, :)]; %#ok<AGROW>
+    end
+end
+ints = out;
+end
+
+function ints = drop_short(ints, min_dur_sec)
+if isempty(ints), return; end
+dur = ints(:, 2) - ints(:, 1);
+ints = ints(dur >= min_dur_sec, :);
 end
 
