@@ -66,6 +66,8 @@ for i=1:length(varargin)/2
             bad_ints_process=option_value;
         case 'cluster_bases_by_run'
             cluster_bases_by_run=option_value;
+        case 'cfg'
+            cfg=option_value;
         otherwise
             fprintf('unknown option [%s]...\n',option);
             fprintf('error!\n');
