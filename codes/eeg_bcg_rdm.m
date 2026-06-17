@@ -66,8 +66,43 @@ for i=1:length(varargin)/2
             bad_ints_process=option_value;
         case 'cluster_bases_by_run'
             cluster_bases_by_run=option_value;
-        case 'cfg'
-            cfg=option_value;
+        case 'n_cluster'
+            cfg.n_cluster=option_value;
+        case 'n_feat_svd'
+            cfg.n_feat_svd=option_value;
+        case 'n_template_svd'
+            cfg.n_template_svd=option_value;
+        case 'block_sec'
+            cfg.block_sec=option_value;
+            block_sec=option_value;
+        case 'block_step_sec'
+            cfg.block_step_sec=option_value;
+            block_step_sec=option_value;
+        case 'min_cluster_size'
+            cfg.min_cluster_size=option_value;
+            min_cluster_size=option_value;
+        case 'flag_dyn_hp'
+            cfg.flag_dyn_hp=option_value;
+        case 'dyn_hp_hz'
+            cfg.dyn_hp_hz=option_value;
+        case 'flag_exclude_bad_train'
+            cfg.flag_exclude_bad_train=option_value;
+        case 'flag_exclude_bad_apply'
+            cfg.flag_exclude_bad_apply=option_value;
+        case 'flag_leave_run_out'
+            cfg.flag_leave_run_out=option_value;
+        case 'ridge_lambda'
+            cfg.ridge_lambda=option_value;
+        case 'subtract_gain'
+            cfg.subtract_gain=option_value;
+        case 'pred_rms_cap'
+            cfg.pred_rms_cap=option_value;
+        case 'template_mode'
+            cfg.template_mode=option_value;
+        case 'train_target_sec'
+            cfg.train_target_sec=option_value;
+        case 'train_balance_seed'
+            cfg.train_balance_seed=option_value;
         otherwise
             fprintf('unknown option [%s]...\n',option);
             fprintf('error!\n');
@@ -141,6 +176,8 @@ n_ch=size(eeg,1);
 train_blocks=[];
 apply_blocks=[];
 all_blocks=[];
+candidate_blocks=[];
+candidate_starts=[];
 
 n_t=size(eeg,2);
 starts=1:block_step_idx:(n_t-block_len_idx+1);
@@ -149,10 +186,12 @@ if(starts(end)~=n_t-block_len_idx+1), starts(end+1)=n_t-block_len_idx+1; end
 %prepare block indices for RDM kernel estimation
 r_idx=1; %index for the kernel estimation data
 for s_idx=1:numel(starts)
+    q=starts(s_idx):(starts(s_idx)+block_len_idx-1);
+    candidate_blocks=cat(3,candidate_blocks,eeg(:,q)); %#ok<AGROW>
+    candidate_starts(end+1)=starts(s_idx); %#ok<AGROW>
     if(cfg.flag_exclude_bad_train && block_overlaps_bad(starts(s_idx),block_len_idx,fs,bad_ints))
         continue;
     end
-    q=starts(s_idx):(starts(s_idx)+block_len_idx-1);
     all_blocks=cat(3,all_blocks,eeg(:,q)); %#ok<AGROW>
     train_blocks(end+1,:)=[r_idx,starts(s_idx)]; %#ok<SAGROW>
 end
@@ -173,7 +212,38 @@ end
 
 
 n_block=size(all_blocks,3);
-if(n_block<1), error('No training blocks survived bad-interval exclusion.'); end
+if(isempty(all_blocks) || isempty(train_blocks) || n_block<1)
+    warning('No training blocks survived bad-interval exclusion; falling back to all candidate blocks.');
+    all_blocks=candidate_blocks;
+    train_blocks=[ones(numel(candidate_starts),1), candidate_starts(:)];
+    n_block=size(train_blocks,1);
+end
+n_block=size(train_blocks,1);
+if(size(all_blocks,3)~=n_block)
+    error('Training block bookkeeping mismatch: all_blocks=%d train_blocks=%d', size(all_blocks,3), n_block);
+end
+n_cluster=min(cfg.n_cluster,n_block);
+
+if(isfield(cfg,'train_target_sec') && isfinite(cfg.train_target_sec) && cfg.train_target_sec>0)
+    target_block_count=max(1, round(cfg.train_target_sec./block_sec));
+    if(n_block>target_block_count)
+        if(isfield(cfg,'train_balance_seed') && isfinite(cfg.train_balance_seed))
+            rng(cfg.train_balance_seed);
+        end
+        keep_idx=unique(round(linspace(1,n_block,target_block_count)));
+        if(numel(keep_idx)<target_block_count)
+            extra=setdiff(1:n_block,keep_idx,'stable');
+            keep_idx=sort([keep_idx(:); extra(1:min(numel(extra),target_block_count-numel(keep_idx)))]);
+        end
+        all_blocks=all_blocks(:,:,keep_idx);
+        train_blocks=train_blocks(keep_idx,:);
+        n_block=size(train_blocks,1);
+    end
+end
+if(n_block<1), error('No training blocks survived duration balancing.'); end
+if(size(all_blocks,3)~=n_block)
+    error('Balanced training bookkeeping mismatch: all_blocks=%d train_blocks=%d', size(all_blocks,3), n_block);
+end
 n_cluster=min(cfg.n_cluster,n_block);
 
 %kernel estimation data
@@ -519,4 +589,3 @@ if isempty(ints), return; end
 dur = ints(:, 2) - ints(:, 1);
 ints = ints(dur >= min_dur_sec, :);
 end
-
