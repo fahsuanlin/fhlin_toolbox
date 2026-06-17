@@ -10,6 +10,7 @@ function [exponent, theta_peak, f_band, psd_band, b_int, b_slope, knee] = etc_fo
     
     freq_range = [];
     use_knee = false; % Default to fixed model unless specified
+    freqVec=[];
     
     for i=1:length(varargin)/2
         option = varargin{i*2-1};
@@ -17,6 +18,8 @@ function [exponent, theta_peak, f_band, psd_band, b_int, b_slope, knee] = etc_fo
         switch lower(option)
             case 'freq_range'
                 freq_range = option_value;
+            case 'freqvec'
+                freqVec=option_value;
             case 'knee'
                 use_knee = option_value; % Set to true to use knee model
         end
@@ -33,8 +36,12 @@ function [exponent, theta_peak, f_band, psd_band, b_int, b_slope, knee] = etc_fo
     time_series = time_series(:);
     if window_length > length(time_series), window_length = length(time_series); end
     
-    [psd, freqs] = pwelch(time_series, hanning(window_length), [], [], fs);
-    
+    if(isempty(freqVec))
+        [psd, freqs] = pwelch(time_series, hanning(window_length), [], [], fs);
+    else
+        [psd, freqs] = pwelch(time_series, hanning(window_length), [], freqVec, fs);
+    end;
+
     valid_idx = (freqs >= freq_range(1)) & (freqs <= freq_range(2));
     f_band = freqs(valid_idx);
     psd_band = psd(valid_idx);
