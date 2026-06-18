@@ -1,4 +1,4 @@
-function [bad_intervals, detail] = eeg_bad_time_detect(eeg, fs, params)
+function [bad_intervals, bad_trigger, detail] = eeg_bad_time_detect(eeg, fs, params)
 % Detect bad intervals from multichannel EEG using robust windowed features.
 %
 % Inputs
@@ -11,6 +11,9 @@ function [bad_intervals, detail] = eeg_bad_time_detect(eeg, fs, params)
 % Outputs
 %   bad_intervals : Nx2 [start_sec end_sec]
 %   detail        : struct with score/consensus/time vectors
+bad_trigger=[];
+detail=[];
+bad_intervals=[];
 
 if nargin < 3 || isempty(params), params = struct(); end
 params = fill_defaults(params);
@@ -58,6 +61,14 @@ bad = (score > params.score_th) & (consensus >= params.consensus_th);
 bad_intervals = mask_to_intervals(bad, starts, win, fs);
 bad_intervals = merge_intervals(bad_intervals, params.merge_gap_sec);
 bad_intervals = drop_short(bad_intervals, params.min_dur_sec);
+
+for idx=1:length(bad_intervals)
+
+    bad_trigger.time(idx)=round(bad_intervals(idx,1)*fs); %onset time in sample
+    bad_trigger.event{idx}='bad'; %category name
+    bad_trigger.duration(idx)=bad_intervals(idx,2)-bad_intervals(idx,1); %duration in s
+    bad_trigger.ch{idx}='unspecified';
+end;
 
 detail = struct( ...
     'score', score, ...

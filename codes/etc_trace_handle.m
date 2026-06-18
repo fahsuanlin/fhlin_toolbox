@@ -1078,7 +1078,9 @@ switch lower(param)
             hObject=findobj('tag','edit_local_trigger_time');
             set(hObject,'String',(etc_trace_obj.time_select_idx-1)/etc_trace_obj.fs+etc_trace_obj.time_begin);
             hObject=findobj('tag','edit_local_trigger_duration');
-            set(hObject,'String','NaN');
+            if(isempty(get(hObject,'String')))
+                set(hObject,'String','NaN');
+            end;
             if(isfield(etc_trace_obj,'trigger_now'))
                 if(~isempty(etc_trace_obj.trigger_now))
                     hObject=findobj('tag','edit_local_trigger_class');

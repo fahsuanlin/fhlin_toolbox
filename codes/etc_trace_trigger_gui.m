@@ -109,7 +109,8 @@ if(~isempty(etc_trace_obj.trigger.time))
     if(isfield(etc_trace_obj.trigger,'duration'))
         str=[];
         for i=1:length(etc_trace_obj.trigger.duration)
-            str{i}=sprintf('%1.3f',(etc_trace_obj.trigger.duration(i)-1)./etc_trace_obj.fs+etc_trace_obj.time_begin);
+            %str{i}=sprintf('%1.3f',(etc_trace_obj.trigger.duration(i)-1)./etc_trace_obj.fs+etc_trace_obj.time_begin);
+            str{i}=sprintf('%1.3f',etc_trace_obj.trigger.duration(i));
         end;
     else
         str=[];

@@ -196,7 +196,6 @@ for s_idx=1:numel(starts)
     train_blocks(end+1,:)=[r_idx,starts(s_idx)]; %#ok<SAGROW>
 end
 
-
 %prepare block indices for RDM kernel application
 for r_idx=1:n_run
     n_t=size(eeg_process{r_idx},2);
@@ -356,6 +355,7 @@ for b_idx=1:n_apply_block
             pred=bases;
         else
             lambda=cfg.ridge_lambda;
+            bases=[bases, ones(size(bases,1),1),[0:size(bases,1)-1]'./size(bases,1)];
             beta=(bases'*bases+lambda.*eye(size(bases,2)))\(bases'*y);
             pred=bases*beta;
         end
