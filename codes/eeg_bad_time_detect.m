@@ -62,7 +62,7 @@ bad_intervals = mask_to_intervals(bad, starts, win, fs);
 bad_intervals = merge_intervals(bad_intervals, params.merge_gap_sec);
 bad_intervals = drop_short(bad_intervals, params.min_dur_sec);
 
-for idx=1:length(bad_intervals)
+for idx=1:size(bad_intervals,1)
 
     bad_trigger.time(idx)=round(bad_intervals(idx,1)*fs); %onset time in sample
     bad_trigger.event{idx}='bad'; %category name
