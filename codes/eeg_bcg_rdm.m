@@ -6,6 +6,7 @@ function [eeg_bcg, cluster_bases_by_run]=eeg_bcg_rdm(eeg,fs,varargin)
 %defaults
 flag_dec=1;
 fs_dec=50; %Hz;
+flag_display=0;
 
 
 block_sec=1.0; %s
@@ -25,6 +26,7 @@ cluster_bases_by_run={}; %empty kernel will trigger the kernel estimation
 eeg_process=[];
 bad_ints=[];
 bad_ints_process={};
+feature_aux=[];
 
 cfg=struct( ...
     'name','dme_shared_eoonly_badtrain_svdsubK30_nsvd2_g1p25', ...
@@ -37,13 +39,18 @@ cfg=struct( ...
     'flag_avoid_extreme',1, ...
     'flag_dyn_hp',1, ...
     'dyn_hp_hz',0.5, ...
+    'feature_filter_mode','highpass', ...
+    'feature_band_hz',[0.5 8], ...
+    'feature_pc_weight_mode','none', ...
     'flag_exclude_bad_train',1, ...
     'flag_exclude_bad_apply',1, ...
     'flag_leave_run_out',0, ...
     'ridge_lambda',0, ...
     'subtract_gain',1.0, ...
     'pred_rms_cap',0, ...
-    'template_mode','svd');
+    'template_mode','svd', ...
+    'template_basis_mode','channel', ...
+    'basis_confounds','dc_linear');
 
 
 for i=1:length(varargin)/2
@@ -64,6 +71,8 @@ for i=1:length(varargin)/2
             bad_ints=option_value;
         case 'bad_ints_process'
             bad_ints_process=option_value;
+        case 'feature_aux'
+            feature_aux=option_value;
         case 'cluster_bases_by_run'
             cluster_bases_by_run=option_value;
         case 'n_cluster'
@@ -85,6 +94,12 @@ for i=1:length(varargin)/2
             cfg.flag_dyn_hp=option_value;
         case 'dyn_hp_hz'
             cfg.dyn_hp_hz=option_value;
+        case 'feature_filter_mode'
+            cfg.feature_filter_mode=option_value;
+        case 'feature_band_hz'
+            cfg.feature_band_hz=option_value;
+        case 'feature_pc_weight_mode'
+            cfg.feature_pc_weight_mode=option_value;
         case 'flag_exclude_bad_train'
             cfg.flag_exclude_bad_train=option_value;
         case 'flag_exclude_bad_apply'
@@ -99,6 +114,10 @@ for i=1:length(varargin)/2
             cfg.pred_rms_cap=option_value;
         case 'template_mode'
             cfg.template_mode=option_value;
+        case 'template_basis_mode'
+            cfg.template_basis_mode=option_value;
+        case 'basis_confounds'
+            cfg.basis_confounds=option_value;
         case 'train_target_sec'
             cfg.train_target_sec=option_value;
         case 'train_balance_seed'
@@ -119,6 +138,12 @@ if(isempty(bad_ints_process))
     %bad intervals adopted for the input EEG data.
     bad_ints_process{1}=bad_ints;
 end;
+
+if(~isempty(feature_aux))
+    if(size(feature_aux,2)~=size(eeg,2))
+        error('feature_aux must match eeg sample count.');
+    end
+end
 
 %----------------------------
 % BCG start;
@@ -154,6 +179,14 @@ if(flag_dec)
                 eeg_process_dec{e_idx}(ch_idx,:)=tmp(1:decim_factor:end);
             end
         end;
+        if(~isempty(feature_aux))
+            feature_aux_dec=zeros(size(feature_aux,1),ceil(size(feature_aux,2)./decim_factor));
+            for ch_idx=1:size(feature_aux,1)
+                tmp=filtfilt(ones(decim_factor,1)./decim_factor,1,feature_aux(ch_idx,:));
+                feature_aux_dec(ch_idx,:)=tmp(1:decim_factor:end);
+            end
+            feature_aux=feature_aux_dec;
+        end
         eeg_process=eeg_process_dec;
 
         eeg=eeg_dec;
@@ -245,43 +278,41 @@ if(size(all_blocks,3)~=n_block)
 end
 n_cluster=min(cfg.n_cluster,n_block);
 
-%kernel estimation data
-eeg_dyn_runs=eeg;
-if(cfg.flag_dyn_hp)
-    wn=cfg.dyn_hp_hz./(fs./2);
-    if(wn>0 && wn<1)
-        [bb,aa]=butter(4,wn,'high');
-        for ch_idx=1:n_ch
-            eeg_dyn_runs(ch_idx,:)=filtfilt(bb,aa,eeg_dyn_runs(ch_idx,:));
-        end
-    end
+%kernel estimation/application feature data. The subtraction itself is still
+%fit and applied to eeg_process; this only controls recurrent-dynamics
+%features used for clustering and cluster assignment.
+eeg_dyn_runs=rdm_feature_filter(eeg,fs,cfg);
+if(~isempty(feature_aux))
+    eeg_dyn_runs=cat(1,eeg_dyn_runs,rdm_feature_filter(feature_aux,fs,cfg));
 end
-
-
-%kernel application data
 apply_eeg_dyn_runs=eeg_process;
-if(cfg.flag_dyn_hp)
-    wn=cfg.dyn_hp_hz./(fs./2);
-    if(wn>0 && wn<1)
-        [bb,aa]=butter(4,wn,'high');
-        for r_idx=1:n_run
-            for ch_idx=1:n_ch
-                apply_eeg_dyn_runs{r_idx}(ch_idx,:)=filtfilt(bb,aa,eeg_process{r_idx}(ch_idx,:));
-            end
-        end
+for r_idx=1:n_run
+    apply_eeg_dyn_runs{r_idx}=rdm_feature_filter(eeg_process{r_idx},fs,cfg);
+    if(~isempty(feature_aux))
+        apply_eeg_dyn_runs{r_idx}=cat(1,apply_eeg_dyn_runs{r_idx},rdm_feature_filter(feature_aux,fs,cfg));
     end
 end
 
 
-
-[~,s_idx]=sort(sum(abs(eeg),1));
+eeg_basis=eeg;
+if(~isempty(feature_aux))
+    eeg_basis=cat(1,eeg_basis,feature_aux);
+end
+[~,s_idx]=sort(sum(abs(eeg_basis),1));
 if(cfg.flag_avoid_extreme)
     keep_idx=s_idx(1:round(length(s_idx).*0.9));
-    [uu,~,~]=svd(eeg(:,keep_idx),'econ');
+    [uu,ss,~]=svd(eeg_basis(:,keep_idx),'econ');
 else
-    [uu,~,~]=svd(eeg,'econ');
+    [uu,ss,~]=svd(eeg_basis,'econ');
 end
 n_feat_svd=min(cfg.n_feat_svd,size(uu,2));
+sv=diag(ss);
+pc_weights=ones(1,n_feat_svd);
+if(strcmpi(cfg.feature_pc_weight_mode,'singular') || strcmpi(cfg.feature_pc_weight_mode,'sv') || strcmpi(cfg.feature_pc_weight_mode,'singular_value'))
+    if(~isempty(sv) && sv(1)>0)
+        pc_weights=sv(1:n_feat_svd)'./sv(1);
+    end
+end
 
 
 feat=zeros(n_block,block_len_idx.*n_feat_svd);
@@ -295,6 +326,7 @@ for svd_idx=1:n_feat_svd
         x=x-mean(x,'omitnan');
         sx=std(x,'omitnan');
         if(sx>0), x=x./sx; end
+        x=x.*pc_weights(svd_idx);
         feat(b_idx,cols)=x;
     end
 end
@@ -315,6 +347,7 @@ for svd_idx=1:n_feat_svd
         x=x-mean(x,'omitnan');
         sx=std(x,'omitnan');
         if(sx>0), x=x./sx; end
+        x=x.*pc_weights(svd_idx);
         apply_feat(b_idx,cols)=x;
     end
 end
@@ -355,7 +388,7 @@ for b_idx=1:n_apply_block
             pred=bases;
         else
             lambda=cfg.ridge_lambda;
-            bases=[bases, ones(size(bases,1),1),[0:size(bases,1)-1]'./size(bases,1)];
+            bases=[bases, rdm_basis_confounds(size(bases,1),cfg)];
             beta=(bases'*bases+lambda.*eye(size(bases,2)))\(bases'*y);
             pred=bases*beta;
         end
@@ -434,6 +467,25 @@ if(~isempty(exclude_run))
     end
 end
 
+if(isfield(cfg,'template_basis_mode') && any(strcmpi(cfg.template_basis_mode,{'shared','cluster_shared','shared_cluster','all_channels'})))
+    global_basis=template_from_blocks(block_matrix_all_channels(all_blocks_basis,find(keep)),cfg);
+    cluster_sizes=zeros(1,n_cluster);
+    cluster_bases=cell(n_ch,n_cluster);
+    for c_idx=1:n_cluster
+        members=find(cluster_id==c_idx & keep);
+        cluster_sizes(c_idx)=numel(members);
+        if(numel(members)>=cfg.min_cluster_size)
+            basis=template_from_blocks(block_matrix_all_channels(all_blocks_basis,members),cfg);
+        else
+            basis=global_basis;
+        end
+        for ch_idx=1:n_ch
+            cluster_bases{ch_idx,c_idx}=basis;
+        end
+    end
+    return;
+end
+
 global_bases=cell(n_ch,1);
 for ch_idx=1:n_ch
     x=block_matrix(all_blocks_basis,ch_idx,find(keep));
@@ -456,6 +508,57 @@ for c_idx=1:n_cluster
 end
 end
 
+function y=rdm_feature_filter(x,fs,cfg)
+y=x;
+mode=lower(cfg.feature_filter_mode);
+switch mode
+    case {'none','raw'}
+        return;
+    case {'highpass','hp'}
+        if(~cfg.flag_dyn_hp), return; end
+        wn=cfg.dyn_hp_hz./(fs./2);
+        if(wn>0 && wn<1)
+            [bb,aa]=butter(4,wn,'high');
+            for ch_idx=1:size(y,1)
+                y(ch_idx,:)=filtfilt(bb,aa,y(ch_idx,:));
+            end
+        end
+    case {'bandpass','bp','bcg_band'}
+        band=cfg.feature_band_hz;
+        wn=band./(fs./2);
+        wn(1)=max(wn(1),eps);
+        wn(2)=min(wn(2),0.999);
+        if(numel(wn)==2 && wn(1)>0 && wn(2)>wn(1) && wn(2)<1)
+            [bb,aa]=butter(4,wn,'bandpass');
+            for ch_idx=1:size(y,1)
+                y(ch_idx,:)=filtfilt(bb,aa,y(ch_idx,:));
+            end
+        end
+    otherwise
+        error('Unknown RDM feature_filter_mode: %s',cfg.feature_filter_mode);
+end
+end
+
+function conf=rdm_basis_confounds(n,cfg)
+t=(0:n-1)'./max(n-1,1);
+mode=lower(cfg.basis_confounds);
+switch mode
+    case {'none',''}
+        conf=zeros(n,0);
+    case {'dc','constant'}
+        conf=ones(n,1);
+    case {'dc_linear','linear','default'}
+        conf=[ones(n,1), t];
+    case {'dc_linear_quad','quadratic','poly2'}
+        conf=[ones(n,1), t, (t-mean(t)).^2];
+    case {'dc_linear_quad_cubic','poly3'}
+        tc=t-mean(t);
+        conf=[ones(n,1), t, tc.^2, tc.^3];
+    otherwise
+        error('Unknown RDM basis_confounds: %s',cfg.basis_confounds);
+end
+end
+
 function tmpl=template_from_blocks(x,cfg)
 if(strcmp(cfg.template_mode,'mean'))
     tmpl=mean(x,2,'omitnan');
@@ -473,6 +576,22 @@ if(isvector(x))
     x=x(:);
 elseif(size(x,1)~=size(all_blocks_basis,2))
     x=x';
+end
+end
+
+function x=block_matrix_all_channels(all_blocks_basis,members)
+if(isempty(members))
+    x=zeros(size(all_blocks_basis,2),0);
+    return;
+end
+n_ch=size(all_blocks_basis,1);
+block_len=size(all_blocks_basis,2);
+x=zeros(block_len,n_ch.*numel(members));
+col_idx=1;
+for m_idx=1:numel(members)
+    block=squeeze(all_blocks_basis(:,:,members(m_idx)));
+    x(:,col_idx:(col_idx+n_ch-1))=block';
+    col_idx=col_idx+n_ch;
 end
 end
 
