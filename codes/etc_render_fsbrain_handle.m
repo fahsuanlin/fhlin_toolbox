@@ -1424,13 +1424,21 @@ switch lower(param)
                             vidx=find((etc_render_fsbrain.label_value)==label_number);
 
                             % 1. Create a logical mask for all vertices for speed
-                            num_vertices = size(etc_render_fsbrain.vertex_coords_hemi, 1);
+                            if(iscell(etc_render_fsbrain.hemi))
+                                num_vertices = size(etc_render_fsbrain.vertex_coords, 1);
+                            else
+                                num_vertices = size(etc_render_fsbrain.vertex_coords_hemi, 1);
+                            end;
                             is_inside = false(num_vertices, 1);
                             is_inside(vidx) = true; % vidx are the 1-based indices of your ROI
 
                             % 2. Extract all unique edges from the triangulation
                             % 'edges' returns an [N x 2] matrix of vertex indices
-                            TR = triangulation(etc_render_fsbrain.faces+1, etc_render_fsbrain.vertex_coords_hemi);
+                            if(iscell(etc_render_fsbrain.hemi))
+                                TR = triangulation(etc_render_fsbrain.faces+1, etc_render_fsbrain.vertex_coords);
+                            else
+                                TR = triangulation(etc_render_fsbrain.faces+1, etc_render_fsbrain.vertex_coords_hemi);
+                            end;
                             all_edges = edges(TR);
 
                             % 3. Find boundary edges
@@ -1444,8 +1452,13 @@ switch lower(param)
                             % 4. Plot the boundary efficiently
                             % Instead of a loop, we can use NaN-separated vectors to plot all lines at once
                             % This is SIGNIFICANTLY faster for large meshes
-                            p1 = etc_render_fsbrain.vertex_coords_hemi(boundary_edges(:,1), :);
-                            p2 = etc_render_fsbrain.vertex_coords_hemi(boundary_edges(:,2), :);
+                            if(iscell(etc_render_fsbrain.hemi))
+                                p1 = etc_render_fsbrain.vertex_coords(boundary_edges(:,1), :);
+                                p2 = etc_render_fsbrain.vertex_coords(boundary_edges(:,2), :);
+                            else
+                                p1 = etc_render_fsbrain.vertex_coords_hemi(boundary_edges(:,1), :);
+                                p2 = etc_render_fsbrain.vertex_coords_hemi(boundary_edges(:,2), :);
+                            end;
 
                             % Create "segmented" vectors for the line function: [x1, x2, NaN, x3, x4, NaN...]
                             n_edges = size(boundary_edges, 1);
