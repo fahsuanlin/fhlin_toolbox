@@ -75,6 +75,7 @@ overlay_vol_xfm=[];
 overlay_buffer=[];
 overlay_buffer_idx=[];
 overlay_buffer_main_idx=[];
+overlay_vol_buffer={};
 
 overlay_truncate_pos=0;
 overlay_truncate_neg=0;
@@ -969,6 +970,8 @@ if(~isempty(overlay_vol))
     end;
     overlay_buffer(end).timeVec=overlay_stc_timeVec;
     overlay_buffer(end).hemi=hemi;
+    overlay_vol_buffer{1}.vol=overlay_vol;
+    overlay_vol_buffer{1}.xfm=overlay_vol_xfm;
 else
     flag_overlay_vol2surf=0;
 end;    
@@ -1326,6 +1329,7 @@ etc_render_fsbrain.flag_orthogonal_slice_cor=flag_orthogonal_slice_cor;
 etc_render_fsbrain.overlay_buffer=overlay_buffer;
 etc_render_fsbrain.overlay_buffer_idx=overlay_buffer_idx;
 etc_render_fsbrain.overlay_buffer_main_idx=overlay_buffer_main_idx;
+etc_render_fsbrain.overlay_vol_buffer=overlay_vol_buffer;
 
 etc_render_fsbrain.flag_colorbar=flag_colorbar;
 etc_render_fsbrain.flag_colorbar_vol=flag_colorbar_vol;

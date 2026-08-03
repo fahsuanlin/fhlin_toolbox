@@ -1953,11 +1953,13 @@ global etc_render_fsbrain;
 
 contents = cellstr(get(hObject,'String'));
 etc_render_fsbrain.overlay_buffer_main_idx=get(hObject,'Value');
+etc_render_fsbrain.overlay_buffer_idx=etc_render_fsbrain.overlay_buffer_main_idx;
 if(~strcmp(contents{etc_render_fsbrain.overlay_buffer_main_idx},'[none]'))
     etc_render_fsbrain.overlay_stc=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).stc;
     etc_render_fsbrain.overlay_vertex=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).vertex;
     etc_render_fsbrain.overlay_stc_timeVec=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).timeVec;
     etc_render_fsbrain.stc_hemi=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).hemi;
+    etc_render_fsbrain_handle('sync_overlay_buffer');
     
     
     etc_render_fsbrain.overlay_vol_stc=etc_render_fsbrain.overlay_stc;
@@ -2019,6 +2021,19 @@ function listbox_overlay_Callback(hObject, eventdata, handles)
 
 global etc_render_fsbrain;
 v=get(handles.listbox_overlay,'value');
+
+% There is only one active surface overlay.  Treat a selection in the
+% overlay list as the primary selection and keep both indices synchronized.
+if(~isempty(v))
+    v=v(1);
+    etc_render_fsbrain.overlay_buffer_main_idx=v;
+    etc_render_fsbrain.overlay_buffer_idx=v;
+    main_h=findobj('tag','listbox_overlay_main');
+    set(main_h,'value',v);
+    set(hObject,'value',v);
+    listbox_overlay_main_Callback(main_h,eventdata,handles);
+    return;
+end;
 
 contents = cellstr(get(hObject,'String'));
 
@@ -2098,6 +2113,7 @@ if(strcmp(eventdata.Key,'backspace')|strcmp(eventdata.Key,'delete'))
                     set(findobj('tag','listbox_overlay_main'),'value',s_idx);
                     etc_render_fsbrain.overlay_buffer_main_idx=s_idx;
                 end;
+                etc_render_fsbrain.overlay_buffer_idx=etc_render_fsbrain.overlay_buffer_main_idx;
             end;
             
             etc_render_fsbrain.overlay_stc=[];

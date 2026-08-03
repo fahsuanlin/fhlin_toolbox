@@ -64,6 +64,8 @@ switch lower(param)
         update_label;
     case 'update_overlay_vol'
         update_overlay_vol;
+    case 'sync_overlay_buffer'
+        sync_overlay_buffer;
     case 'update_tms_render'
         update_tms_render;
     case 'kb'
@@ -463,6 +465,30 @@ switch lower(param)
                         end;
                         etc_render_fsbrain.overlay_buffer(end).timeVec=etc_render_fsbrain.overlay_stc_timeVec;
                         etc_render_fsbrain.overlay_buffer(end).hemi=etc_render_fsbrain.hemi;
+                        if(~isfield(etc_render_fsbrain,'overlay_vol_buffer')) etc_render_fsbrain.overlay_vol_buffer={}; end;
+                        while(length(etc_render_fsbrain.overlay_vol_buffer)<length(etc_render_fsbrain.overlay_buffer)-1)
+                            etc_render_fsbrain.overlay_vol_buffer{end+1}=[];
+                        end;
+                        etc_render_fsbrain.overlay_vol_buffer{end+1}.vol=etc_render_fsbrain.overlay_vol;
+                        etc_render_fsbrain.overlay_vol_buffer{end}.xfm=etc_render_fsbrain.overlay_vol_xfm;
+                        % Keep the selected-overlay index synchronized with
+                        % the primary-overlay index.  Only one surface
+                        % overlay is rendered as the main layer.
+                        etc_render_fsbrain.overlay_buffer_main_idx=length(etc_render_fsbrain.overlay_buffer);
+                        etc_render_fsbrain.overlay_buffer_idx=etc_render_fsbrain.overlay_buffer_main_idx;
+
+                        % Refresh both overlay listboxes after loading a
+                        % volume overlay with the keyboard shortcut.
+                        str={};
+                        for str_idx=1:length(etc_render_fsbrain.overlay_buffer)
+                            str{str_idx}=etc_render_fsbrain.overlay_buffer(str_idx).name;
+                        end;
+                        set(findobj('tag','listbox_overlay_main'),'string',str);
+                        set(findobj('tag','listbox_overlay_main'),'value',etc_render_fsbrain.overlay_buffer_main_idx);
+                        set(findobj('tag','listbox_overlay'),'string',str);
+                        set(findobj('tag','listbox_overlay'),'min',0);
+                        set(findobj('tag','listbox_overlay'),'max',1);
+                        set(findobj('tag','listbox_overlay'),'value',etc_render_fsbrain.overlay_buffer_idx);
                     else
                         etc_render_fsbrain.flag_overlay_vol2surf=0;
                     end;
@@ -553,6 +579,11 @@ switch lower(param)
                             etc_render_fsbrain.overlay_buffer(end).vertex=vv;
                             etc_render_fsbrain.overlay_buffer(end).timeVec=timeVec;
                             etc_render_fsbrain.overlay_buffer(end).hemi=hemi;
+                            if(~isfield(etc_render_fsbrain,'overlay_vol_buffer')) etc_render_fsbrain.overlay_vol_buffer={}; end;
+                            while(length(etc_render_fsbrain.overlay_vol_buffer)<length(etc_render_fsbrain.overlay_buffer)-1)
+                                etc_render_fsbrain.overlay_vol_buffer{end+1}=[];
+                            end;
+                            etc_render_fsbrain.overlay_vol_buffer{end+1}=[];
                             
                             str={};
                             for str_idx=1:length(etc_render_fsbrain.overlay_buffer) str{str_idx}=etc_render_fsbrain.overlay_buffer(str_idx).name; end;
@@ -570,7 +601,7 @@ switch lower(param)
                                 set(findobj('tag','listbox_overlay'),'max',length(etc_render_fsbrain.overlay_buffer));
                             end;
                             
-                            etc_render_fsbrain.overlay_buffer_idx=union(etc_render_fsbrain.overlay_buffer_idx,length(etc_render_fsbrain.overlay_buffer));
+                            etc_render_fsbrain.overlay_buffer_idx=length(etc_render_fsbrain.overlay_buffer);
                             set(findobj('tag','listbox_overlay'),'value',etc_render_fsbrain.overlay_buffer_idx);
                             
                             %if(isempty(etc_render_fsbrain.vol_A))
@@ -621,6 +652,7 @@ switch lower(param)
                             %if(length(etc_render_fsbrain.overlay_buffer)==1) %the first STC is taken as the main layer
                                 %etc_render_fsbrain.overlay_buffer_main_idx=1;
                                 etc_render_fsbrain.overlay_buffer_main_idx=length(etc_render_fsbrain.overlay_buffer);
+                                etc_render_fsbrain.overlay_buffer_idx=etc_render_fsbrain.overlay_buffer_main_idx;
                                 set(findobj('tag','listbox_overlay_main'),'value',etc_render_fsbrain.overlay_buffer_main_idx);
                                 
                                 etc_render_fsbrain.overlay_stc=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).stc;
@@ -2130,12 +2162,14 @@ switch lower(param)
 
                 if(etc_render_fsbrain.overlay_buffer_main_idx==0) etc_render_fsbrain.overlay_buffer_main_idx=length(etc_render_fsbrain.overlay_buffer); end;
                 set(findobj('tag','listbox_overlay_main'),'value',etc_render_fsbrain.overlay_buffer_main_idx);
+                sync_overlay_buffer;
                 fprintf('rendering [%s]...\n',etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).name);
                 
                 etc_render_fsbrain.overlay_stc=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).stc;
                     etc_render_fsbrain.overlay_vertex=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).vertex;
                     etc_render_fsbrain.overlay_stc_timeVec=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).timeVec;
                     etc_render_fsbrain.stc_hemi=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).hemi;
+                    sync_overlay_buffer;
 
 
                     etc_render_fsbrain.overlay_vol_stc=etc_render_fsbrain.overlay_stc;
@@ -2181,13 +2215,16 @@ switch lower(param)
                 if(isempty(etc_render_fsbrain.overlay_buffer_main_idx)) return; end;
 
                 if(etc_render_fsbrain.overlay_buffer_main_idx>length(etc_render_fsbrain.overlay_buffer)) etc_render_fsbrain.overlay_buffer_main_idx=1; end;
+                etc_render_fsbrain.overlay_buffer_idx=etc_render_fsbrain.overlay_buffer_main_idx;
                 set(findobj('tag','listbox_overlay_main'),'value',etc_render_fsbrain.overlay_buffer_main_idx);
+                sync_overlay_buffer;
                 fprintf('rendering [%s]...\n',etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).name);
 
                 etc_render_fsbrain.overlay_stc=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).stc;
                     etc_render_fsbrain.overlay_vertex=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).vertex;
                     etc_render_fsbrain.overlay_stc_timeVec=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).timeVec;
                     etc_render_fsbrain.stc_hemi=etc_render_fsbrain.overlay_buffer(etc_render_fsbrain.overlay_buffer_main_idx).hemi;
+                    sync_overlay_buffer;
 
 
                     etc_render_fsbrain.overlay_vol_stc=etc_render_fsbrain.overlay_stc;
@@ -4838,6 +4875,32 @@ global etc_render_fsbrain;
         end;
         
 return;
+
+function sync_overlay_buffer()
+
+global etc_render_fsbrain;
+
+idx=etc_render_fsbrain.overlay_buffer_main_idx;
+if(isempty(idx)||isempty(etc_render_fsbrain.overlay_buffer)) return; end;
+
+etc_render_fsbrain.overlay_buffer_idx=idx;
+etc_render_fsbrain.overlay_stc=etc_render_fsbrain.overlay_buffer(idx).stc;
+etc_render_fsbrain.overlay_vertex=etc_render_fsbrain.overlay_buffer(idx).vertex;
+etc_render_fsbrain.overlay_stc_timeVec=etc_render_fsbrain.overlay_buffer(idx).timeVec;
+etc_render_fsbrain.stc_hemi=etc_render_fsbrain.overlay_buffer(idx).hemi;
+
+% A native volume, when available, must be restored together with its
+% projected surface data so draw_pointer uses the matching 3-D overlay.
+if(isfield(etc_render_fsbrain,'overlay_vol_buffer') && ...
+        length(etc_render_fsbrain.overlay_vol_buffer)>=idx && ...
+        ~isempty(etc_render_fsbrain.overlay_vol_buffer{idx}))
+    etc_render_fsbrain.overlay_vol=etc_render_fsbrain.overlay_vol_buffer{idx}.vol;
+    etc_render_fsbrain.overlay_vol_xfm=etc_render_fsbrain.overlay_vol_buffer{idx}.xfm;
+    etc_render_fsbrain.overlay_source=4;
+else
+    etc_render_fsbrain.overlay_vol_stc=etc_render_fsbrain.overlay_stc;
+    etc_render_fsbrain.overlay_source=2;
+end;
 
 function update_overlay_vol()
 
