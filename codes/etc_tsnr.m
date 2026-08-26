@@ -11,7 +11,7 @@ TR=2.0; %second
 exclude_time=[];
 %exclude_time=[];
 
-confound_polynomial_order=2;
+confound_polynomial_order=1;
 
 %output_stem='tsnr_epi_60deg';
 
@@ -36,7 +36,7 @@ for i=1:length(varargin)/2
         case 'exclude_time'
             exclude_time=option_value;
         case 'confound_polynomial_order'
-            confound_polynomial_order=2;
+            confound_polynomial_order=option_value;
         case 'flag_display'
             flag_display=option_value;
         otherwise

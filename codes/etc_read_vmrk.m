@@ -117,7 +117,8 @@ if(~isempty(trigger))
                 elseif(strcmp(lower(trigger.event_str{trigger_idx}),'EKG'))
                     trigger.event(trigger_idx)=token_EKG;
                 else
-                    trigger.event(trigger_idx)=find(cellfun(@(s) ~isempty(strfind(trigger.event_str{trigger_idx}, s)), all_events));
+                    %trigger.event(trigger_idx)=find(cellfun(@(s) ~isempty(strfind(trigger.event_str{trigger_idx}, s)), all_events));
+                    trigger.event(trigger_idx) = find(strcmp(trigger.event_str{trigger_idx}, all_events), 1, 'first');
                 end;
             else
                 trigger.event(trigger_idx)=event_code_empty;
