@@ -2153,7 +2153,116 @@ switch lower(param)
                         
                     end;
                 end;
+            case 28 %left arrow
 
+                try
+                    if(etc_render_fsbrain.overlay_stc_timeVec_idx>1)
+                        etc_render_fsbrain.overlay_stc_timeVec_idx=etc_render_fsbrain.overlay_stc_timeVec_idx-1;
+                        if(isempty(etc_render_fsbrain.overlay_stc_timeVec_unit))
+                            unt='sample';
+                        else
+                            unt=etc_render_fsbrain.overlay_stc_timeVec_unit;
+                        end;
+                        fprintf('showing STC at time [%2.2f] %s\n',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx),unt);
+
+                        %update the overlay values at current time point
+                        update_overlay_vol;
+
+                        if(~iscell(etc_render_fsbrain.overlay_value))
+                            etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
+                        else
+                            for h_idx=1:length(etc_render_fsbrain.overlay_value)
+                                etc_render_fsbrain.overlay_value{h_idx}=etc_render_fsbrain.overlay_stc_hemi{h_idx}(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
+                            end;
+                        end;
+
+                        if(~isempty(etc_render_fsbrain.overlay_stc))
+                            draw_stc;
+                        end
+
+                        if(ishandle(etc_render_fsbrain.fig_gui))
+                            set(findobj(etc_render_fsbrain.fig_gui,'tag','slider_timeVec'),'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
+                            set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_timeVec'),'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
+                            set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_timeVec'),'string',sprintf('%1.0f',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx)));
+                        end;
+
+                        if(isvalid(etc_render_fsbrain.fig_brain))
+                            figure(etc_render_fsbrain.fig_brain);
+                            etc_render_fsbrain.camposition=campos;
+                            redraw;
+                            draw_pointer('pt',etc_render_fsbrain.click_coord,'min_dist_idx',etc_render_fsbrain.click_vertex,'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
+                        end;
+                        figure(etc_render_fsbrain.fig_stc);
+
+
+                        global etc_trace_obj;
+
+                        if(~isempty(etc_trace_obj))
+                            etc_trace_obj.time_select_idx=etc_render_fsbrain.overlay_stc_timeVec_idx;
+                            etc_trace_obj.flag_time_window_auto_adjust=0;
+                            etc_trcae_gui_update_time('flag_redraw',1);
+                        end;
+
+
+                    end;
+                catch
+                end;
+
+            case 29 %right arrow
+
+                try
+                    if(etc_render_fsbrain.overlay_stc_timeVec_idx<size(etc_render_fsbrain.overlay_stc,2))
+                        etc_render_fsbrain.overlay_stc_timeVec_idx=etc_render_fsbrain.overlay_stc_timeVec_idx+1;
+                        if(isempty(etc_render_fsbrain.overlay_stc_timeVec_unit))
+                            unt='sample';
+                        else
+                            unt=etc_render_fsbrain.overlay_stc_timeVec_unit;
+                        end;
+                        fprintf('showing STC at time [%2.2f] %s\n',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx),unt);
+
+                        %update the overlay values at current time point
+                        update_overlay_vol;
+
+                        if(~iscell(etc_render_fsbrain.overlay_value))
+                            etc_render_fsbrain.overlay_value=etc_render_fsbrain.overlay_stc(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
+                        else
+                            for h_idx=1:length(etc_render_fsbrain.overlay_value)
+                                etc_render_fsbrain.overlay_value{h_idx}=etc_render_fsbrain.overlay_stc_hemi{h_idx}(:,etc_render_fsbrain.overlay_stc_timeVec_idx);
+                            end;
+                        end;
+
+                        if(~isempty(etc_render_fsbrain.overlay_stc))
+                            draw_stc;
+                        end
+
+                        if(ishandle(etc_render_fsbrain.fig_gui))
+                            set(findobj(etc_render_fsbrain.fig_gui,'tag','slider_timeVec'),'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
+                            set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_timeVec'),'value',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx));
+                            set(findobj(etc_render_fsbrain.fig_gui,'tag','edit_timeVec'),'string',sprintf('%1.0f',etc_render_fsbrain.overlay_stc_timeVec(etc_render_fsbrain.overlay_stc_timeVec_idx)));
+                        end;
+
+                        if(isvalid(etc_render_fsbrain.fig_brain))
+                            figure(etc_render_fsbrain.fig_brain);
+                            etc_render_fsbrain.camposition=campos;
+                            redraw;
+                            draw_pointer('pt',etc_render_fsbrain.click_coord,'min_dist_idx',etc_render_fsbrain.click_vertex,'click_vertex_vox',etc_render_fsbrain.click_vertex_vox);
+                        end;
+                        figure(etc_render_fsbrain.fig_stc);
+
+
+                        global etc_trace_obj;
+
+                        if(~isempty(etc_trace_obj))
+                            etc_trace_obj.time_select_idx=etc_render_fsbrain.overlay_stc_timeVec_idx;
+                            etc_trace_obj.flag_time_window_auto_adjust=0;
+                            etc_trcae_gui_update_time('flag_redraw',1);
+                        end;
+
+
+                    end;
+                catch
+                end;
+            
             case {'downarrow',31}
                 global etc_render_fsbrain;
 

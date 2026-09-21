@@ -1,10 +1,10 @@
-function [targ_value, target_vertices] = inverse_morph_stc(subj, source_stc, varargin)
+function [targ_value, target_vertices, morpher_cache] = inverse_morph_stc(subj, source_stc, varargin)
 %inverse_morph_stc Morph an STC using FreeSurfer spherical registration.
 %
 % This implementation is designed to approximate:
 %   mne_make_movie --morph fsaverage --smooth 5 --morphgrade 5
 %
-% [targ_value, target_vertices] = inverse_morph_stc(subj, source_stc, varargin)
+% [targ_value, target_vertices, morpher_cache] = inverse_morph_stc(subj, source_stc, varargin)
 %
 % subj           : source subject
 % source_stc     : hemisphere-specific STC file to morph
@@ -20,6 +20,29 @@ function [targ_value, target_vertices] = inverse_morph_stc(subj, source_stc, var
 %   'flag_display'     : print progress (default: 1)
 %   'flag_file_archive': save morphed STC (default: 1)
 %   'file_archive'     : output file name
+%   'morpher_cache'    : a morpher_cache struct returned by a PRIOR call
+%                        with the same subj/subj_targ/hemi/morph_grade and
+%                        source vertex list -- reuses the cached sparse
+%                        morph matrix instead of rebuilding it (rebuilding
+%                        is the expensive step: nearest-neighbor +
+%                        barycentric interpolation-map construction over
+%                        the target surface, seconds per call; applying a
+%                        cached matrix is a single sparse matrix multiply,
+%                        effectively free). If the cache's parameters
+%                        don't match this call's, it is ignored and the
+%                        matrix is rebuilt (with a warning), so passing a
+%                        stale/mismatched cache is safe, just not fast.
+%                        Only the matrix build is skipped -- the STC file
+%                        is still read fresh every call.
+%
+% Third output (new, purely additive -- existing callers requesting 1 or
+% 2 outputs are unaffected): morpher_cache, a struct with fields
+% {subj, subj_targ, hemi, morph_grade, target_vertices, source_vertex_ids,
+% morpher} describing and containing the sparse morph matrix used for
+% this call (freshly built, or reused from an input 'morpher_cache').
+% Pass it back in on subsequent calls for the SAME subject/hemi/grade
+% (e.g. looping over many poses/time points for one subject in a
+% real-time query loop) to skip the expensive rebuild every time.
 %
 % Notes
 %   - Without MNE, automatic target-vertex selection is only implemented
@@ -31,6 +54,8 @@ function [targ_value, target_vertices] = inverse_morph_stc(subj, source_stc, var
 %
 % fhlin @ May 29 2025
 % revised @ May 20 2026
+% revised @ Sep 12 2026: added optional morpher_cache reuse (backward
+% compatible -- default behavior unchanged when not passed)
 
 
 % Parameters
@@ -51,6 +76,8 @@ flag_match_mne_make_movie=0;
 % legacy compatibility, ignored in the MNE-like implementation
 lambda = [];
 parallelqueue = [];
+
+morpher_cache_in = [];
 
 targ_value = [];
 
@@ -86,6 +113,8 @@ for i = 1:length(varargin)/2
             file_archive = option_value;
         case 'parallelqueue'
             parallelqueue = option_value;
+        case 'morpher_cache'
+            morpher_cache_in = option_value;
         otherwise
             fprintf('unknown option [%s]!\n', option);
             return;
@@ -117,39 +146,69 @@ end
 v = double(v(:));
 source_vertex_ids = v + 1;
 
-% Load source and target spheres
-source_sphere = fullfile(fsdir, subj, 'surf', sprintf('%s.sphere.reg', hemi));
-target_sphere = fullfile(fsdir, subj_targ, 'surf', sprintf('%s.sphere.reg', hemi));
-if ~exist(source_sphere, 'file')
-    error('cannot find source sphere.reg: %s', source_sphere);
-end
-if ~exist(target_sphere, 'file')
-    error('cannot find target sphere.reg: %s', target_sphere);
-end
-
-try
-    [vertices, faces] = read_surf(source_sphere);
-    [vertices_targ, ~] = read_surf(target_sphere);
-catch
-    fprintf('loading spherical registration error!\n');
-    return;
-end
-
-vertices = local_normalize_rows(double(vertices));
-vertices_targ = local_normalize_rows(double(vertices_targ));
-faces = double(faces) + 1;
-
-target_vertices = local_resolve_target_vertices(subj_targ, morph_grade, target_vertices, size(vertices_targ, 1));
-target_rr = vertices_targ(target_vertices + 1, :);
-
-if flag_display
-    fprintf('morphing [%s|%s] for subject {%s} --> subject {%s} with MNE-like smoothing [%d] iterations...\n', ...
-        source_stc, hemi, subj, subj_targ, n_iter);
+% Reuse a cached morph matrix if one was provided and matches this call's
+% subject/target/hemi/grade/source-vertex-list; otherwise (the default,
+% when 'morpher_cache' isn't passed) build it fresh exactly as before.
+% Only subj/subj_targ/hemi/morph_grade/source_vertex_ids are checked --
+% not an explicitly-passed 'target_vertices' override, which is expected
+% to be constant for a given subj_targ/morph_grade pair in normal use.
+cache_valid = false;
+if ~isempty(morpher_cache_in)
+    cache_valid = isfield(morpher_cache_in, 'morpher') && ...
+        strcmpi(morpher_cache_in.subj, subj) && strcmpi(morpher_cache_in.subj_targ, subj_targ) && ...
+        strcmpi(morpher_cache_in.hemi, hemi) && isequal(morpher_cache_in.morph_grade, morph_grade) && ...
+        isequal(morpher_cache_in.source_vertex_ids, source_vertex_ids);
+    if ~cache_valid && flag_display
+        fprintf('morpher_cache does not match this call''s subject/hemi/grade/source vertices -- rebuilding.\n');
+    end
 end
 
-% Build the sparse operator once, then apply it to every time sample
-morpher = local_build_morph_matrix(vertices, faces, target_rr, source_vertex_ids, n_iter, flag_smooth, flag_display);
+if cache_valid
+    morpher = morpher_cache_in.morpher;
+    target_vertices = morpher_cache_in.target_vertices;
+    if flag_display
+        fprintf('reusing cached morph matrix [%s|%s] for subject {%s} --> subject {%s}...\n', ...
+            source_stc, hemi, subj, subj_targ);
+    end
+else
+    % Load source and target spheres
+    source_sphere = fullfile(fsdir, subj, 'surf', sprintf('%s.sphere.reg', hemi));
+    target_sphere = fullfile(fsdir, subj_targ, 'surf', sprintf('%s.sphere.reg', hemi));
+    if ~exist(source_sphere, 'file')
+        error('cannot find source sphere.reg: %s', source_sphere);
+    end
+    if ~exist(target_sphere, 'file')
+        error('cannot find target sphere.reg: %s', target_sphere);
+    end
+
+    try
+        [vertices, faces] = read_surf(source_sphere);
+        [vertices_targ, ~] = read_surf(target_sphere);
+    catch
+        fprintf('loading spherical registration error!\n');
+        return;
+    end
+
+    vertices = local_normalize_rows(double(vertices));
+    vertices_targ = local_normalize_rows(double(vertices_targ));
+    faces = double(faces) + 1;
+
+    target_vertices = local_resolve_target_vertices(subj_targ, morph_grade, target_vertices, size(vertices_targ, 1));
+    target_rr = vertices_targ(target_vertices + 1, :);
+
+    if flag_display
+        fprintf('morphing [%s|%s] for subject {%s} --> subject {%s} with MNE-like smoothing [%d] iterations...\n', ...
+            source_stc, hemi, subj, subj_targ, n_iter);
+    end
+
+    % Build the sparse operator once, then apply it to every time sample
+    morpher = local_build_morph_matrix(vertices, faces, target_rr, source_vertex_ids, n_iter, flag_smooth, flag_display);
+end
+
 targ_value = morpher * double(stc);
+
+morpher_cache = struct('subj', subj, 'subj_targ', subj_targ, 'hemi', hemi, 'morph_grade', morph_grade, ...
+    'target_vertices', target_vertices, 'source_vertex_ids', source_vertex_ids, 'morpher', morpher);
 
 if flag_file_archive
     if isempty(file_archive)

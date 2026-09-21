@@ -32,6 +32,9 @@ for i=1:length(varargin)/2
     end;
 end;
 
+X=X(:);
+Y=Y(:);
+E=E(:);
 
 if(isempty(E)&&~isempty(y_upper)&&~isempty(y_lower))
     fprintf('setting upper/lower Y by input values...\n');
