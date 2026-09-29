@@ -4,7 +4,7 @@ function dmdt=bloch(t,m,b1_t,b1,g_t,g,r,varargin)
 % b1_t: the time vector for b1 field (n_b1_t x 1) [s]
 % b1: b1 field (n_b1_t x 3) [T]
 % g_t: the time vector for gradient (n_g_t x 1) [s]
-% g: gradient field (n_g_t x 3) [T]
+% g: gradient field (n_g_t x 3) [T/m]
 % r: position vector (3x1) [m]
 
 gamma=267.522e6; %proton [rad/s/T] %42.58*1e6; %proton; MHz/T
@@ -70,8 +70,8 @@ if(~isempty(b1))
     B1(:,1)=interp1(b1_t,b1(:,1),t);
     B1(:,2)=interp1(b1_t,b1(:,2),t);
     B1(:,3)=interp1(b1_t,b1(:,3),t);
-else
-    B1=0;
+% else
+%     B1=0;
 end;
 
 %Gradient waveform interpolation
@@ -102,7 +102,8 @@ else
 end;
 %%%%%%%%%%%%%%%%%%%%%%%
 
-B=[Gx(:).*r(1)+B1(:,1)+B_add_interp(:,1), Gy(:).*r(2)+B1(:,2)+B_add_interp(:,2), Gz(:).*r(3)+B1(:,3)+B_add_interp(:,3)]; %the total effective magnetic field in the rotating frame
+%B=[Gx(:).*r(1)+B1(:,1)+B_add_interp(:,1), Gy(:).*r(2)+B1(:,2)+B_add_interp(:,2), Gz(:).*r(3)+B1(:,3)+B_add_interp(:,3)]; %the total effective magnetic field in the rotating frame
+B=[B1(:,1)+B_add_interp(:,1), B1(:,2)+B_add_interp(:,2), Gx(:).*r(1)+Gy(:).*r(2)+Gz(:).*r(3)+B1(:,3)+B_add_interp(:,3)]; %the total effective magnetic field in the rotating frame
 
 %dmdt=gamma.*cross(m,B).'-[m(1)/T2, m(2)/T2, (m(3)-m0(3))/T1].';
 dmdt=(gamma.*cross(m,B)).';
